@@ -1,36 +1,110 @@
-# Neighborly
+# Neighborly marketplace
 
-Neighborly is a standalone local discovery marketplace for finding products and services from nearby, subscribed businesses. It has separate discovery, business, agent and company-administration views.
+Neighborly is a mobile-first service marketplace with End User, Client, Agent, Admin and Super Admin workspaces. The existing platform uses **React**, **Node.js + Express**, **PostgreSQL** and **JWT sessions**. This repository also includes a separate local **Next.js marketplace demo** in `app/`; it does not connect to the Express API or PostgreSQL backend. This repository is separate from the Ticketing Platform repository.
 
-## Run locally
+## Structure
 
-```bash
-npm install
-npm run dev
+```text
+backend/
+  src/
+    db/                  PostgreSQL pool, schema and Super Admin bootstrap
+    middleware/          JWT authentication and role checks
+    routes/              OTP, marketplace, operations and payment APIs
+    services/            Twilio / MSG91 delivery adapter
+    server.js            Express API
+database/
+  schema.sql             PostgreSQL schema and starter plans
+frontend/
+  src/                   React portals, responsive UI
+  vite.config.js         Dev server and API proxy
+app/                     Next.js marketplace demo
+.env.example
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Use the workspace switcher in the left sidebar to move between portals.
+## Local setup
 
-## Demo behavior
+The original React/Express platform requires Node.js 20+ and PostgreSQL 14+.
 
-- Search the sample directory by product, service, business name, category and subcategory; adjust the radius and explicitly request device location access. Without permission, distances are sample values around a demo Bengaluru area. With permission, the app uses the device coordinates in memory to filter the directory's clearly synthetic sample coordinates; neither coordinate is saved or sent to a server.
-- Save favorite businesses, recent searches, product enquiries, catalogue edits, checkout previews and minimized demo activity records in this browser's local storage. They are not synced, transmitted or linked to a verified account.
-- Preview business registration, product/service catalogue management, referral tools, company reporting and subscription checkout.
-- The sign-in and OTP forms are UI demonstrations only. No account, credential or phone number is stored and no OTP is delivered.
-- Checkout previews do not contact a payment gateway, accept payment details, charge money or activate a subscription.
-- The SOS demo does not dispatch an emergency message. It can open the phone/SMS app for the user to review and send. For immediate danger in India, call 112.
-- To clear local demo data, remove the `neighborly-demo-v1` entry from this browser's local storage.
+1. Create a PostgreSQL database and user, then copy `.env.example` to `.env`. Set `DATABASE_URL`, `JWT_SECRET`, `OTP_PEPPER` and `BOOTSTRAP_SUPER_ADMIN_MOBILE`. The JWT secret and OTP pepper must be different random values; use at least 32 characters for `JWT_SECRET`.
 
-## Before production
+   Example SQL to run as a PostgreSQL administrator (choose a new local password):
 
-This repository is a frontend MVP, not a production service. Before launch, connect and test:
+   ```sql
+   CREATE USER neighborly WITH PASSWORD 'replace-this-local-password';
+   CREATE DATABASE neighborly OWNER neighborly;
+   ```
+2. Install the dependencies:
 
-- A secure backend and database with role-based access controls for customers, business owners, agents and company administrators.
-- A trusted identity provider for phone verification, OTP delivery, passcode/password handling, account recovery and session management.
-- A geospatial business directory and search API, including verified business locations, subscription eligibility and distance calculations.
-- A payment provider with server-created orders, signed webhook verification, subscription lifecycle handling, invoices and refunds.
-- Consent-aware, access-controlled audit events with data minimization, retention limits and user-facing privacy controls.
-- Business-document review, agent referral attribution and payout rules.
-- A regionally verified emergency workflow and emergency-contact management. Do not represent an SOS as delivered unless dispatch has been confirmed.
+   ```powershell
+   npm install
+   ```
 
-Keep provider secrets and sensitive customer data on the server; do not place them in client-side code.
+3. Apply the schema and create the first Super Admin account:
+
+   ```powershell
+   npm run db:schema
+   npm run db:bootstrap-admin
+   ```
+
+4. Start the Express API and React app:
+
+   ```powershell
+   npm run dev
+   ```
+
+5. Open <http://127.0.0.1:5173>. The API listens on <http://127.0.0.1:4180>.
+
+For a production-style single server, build the React app with `npm run build`, set `NODE_ENV=production`, then run `npm start`. Express serves the `dist` directory when it exists.
+
+## Next.js marketplace demo
+
+The separate Next.js demo runs on <http://localhost:3000>:
+
+```powershell
+npm run dev:next
+```
+
+Use `npm run build:next` and `npm run start:next` to build and run it in production mode. The original React/Vite app remains available through `npm run dev`; its Express API, database and authentication flows are separate from this demo.
+
+The Next.js demo searches a synthetic local directory and stores favorites, searches, enquiries, catalogue edits, checkout previews and activity in this browser's local storage. Its sign-in/OTP, checkout and SOS flows are demonstrations; it does not authenticate with the Express backend, send OTPs, process payments or dispatch emergency messages. Device location is requested only after the user chooses to use it and is not sent to a server. For immediate danger in India, call 112.
+
+Before connecting this demo to production, implement and test secure account/session management, verified business onboarding, consent-aware geospatial search, payment-provider integrations, access-controlled audit records and verified emergency dispatch. Keep secrets and sensitive customer data on the server.
+
+## Login and OTP
+
+The existing React app has one **Admin portal** choice. The signed-in database role decides whether an Admin or Super Admin dashboard is shown. Client, End User and Agent accounts also use mobile OTP. Newly verified Client accounts can fill out their profile; an Admin must approve the business before it can go online and receive orders.
+
+OTP codes expire after 5 minutes, allow at most 3 verification attempts and can be resent after 30 seconds. Only a hash of each OTP is stored. JWTs expire after 12 hours; every JWT is backed by a revocable database session. In development, when no SMS provider is configured, the API logs a demo OTP and returns it to the UI. Production requires Twilio or MSG91 credentials and never returns the OTP in the API response.
+
+Configure either Twilio (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM`) or MSG91 (`MSG91_AUTH_KEY`, `MSG91_TEMPLATE_ID`, `MSG91_SENDER_ID`) in `.env`.
+
+## Roles and included workflows
+
+- **Super Admin:** manage Admin accounts and permissions, subscription plans, platform settings, payment history, refunds and revenue reports.
+- **Admin:** create/edit/block clients, end users and agents; approve Client businesses; inspect orders and customer map coordinates; assign agents and track order statuses.
+- **Client:** maintain business details and map coordinates, configure a radius (3 km by default), go online after approval and accept nearest-first requests within that radius.
+- **End User:** find nearby approved Clients, place an order with latitude, longitude and address, track/cancel requests and open the saved map location.
+- **Agent:** see assigned orders, update progress and open turn-by-turn directions to the customer's coordinates.
+
+The 3 km order filter uses the Haversine formula in PostgreSQL and reads each Client's `radius_km` value. Orders outside that distance are omitted from that Client's nearby list.
+
+## Payment setup
+
+Plans and payment records are stored in PostgreSQL. Configure `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` to enable Razorpay checkout and refunds. The webhooks/production payment reconciliation path still needs to be configured for the live account before accepting real payments.
+
+## Main API routes
+
+Protected endpoints require a valid JWT in the `Authorization` header.
+
+| Area | Routes |
+| --- | --- |
+| Auth | `POST /api/auth/otp/request`, `POST /api/auth/otp/verify`, `GET /api/auth/me`, `POST /api/auth/logout` |
+| End User | `GET /api/clients/nearby`, `POST /api/orders`, `GET /api/orders`, `PATCH /api/orders/:id/cancel` |
+| Client | `GET/PATCH /api/client/profile`, `PATCH /api/client/online`, `GET /api/client/orders/nearby`, `POST /api/client/orders/:id/accept` |
+| Admin | `GET /api/admin/dashboard`, `GET/POST /api/admin/users`, `GET /api/admin/orders`, `PATCH /api/admin/orders/:id/assign` |
+| Super Admin | `/api/super-admin/admins`, `/api/super-admin/plans`, `/api/super-admin/settings` |
+| Payments | `/api/payments/plans`, `/api/payments/client/checkout`, `/api/payments/super-admin/transactions` |
+
+## Notes
+
+Map coordinates are stored explicitly in PostgreSQL and opened on OpenStreetMap from the role workspaces. Browser GPS is requested only after the user presses the location button. Do not commit `.env` or real provider/payment credentials.
