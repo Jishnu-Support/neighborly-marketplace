@@ -136,14 +136,14 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
 
   return <main className="login-page">
     <header className="login-page-header">
-      <Link className="brand" href="/" aria-label="Neighborly home">
-        <span className="brand-mark"><span /></span>
-        <span>neighborly<span className="brand-period">.</span></span>
+      <Link className="brand" href="/" aria-label="Bizearch home">
+        <img className="brand-mark" src="/bizearch-mark.svg" alt="" />
+        <span>bizearch<span className="brand-period">.</span></span>
       </Link>
       <div className="login-page-powered"><span>Powered by</span><img src="/jishnu-infotech-logo.png" alt="Jishnu Infotech" /></div>
     </header>
     <section className="portal-login-card">
-      <div className="login-brand-mark">✳</div>
+      <img className="login-brand-mark login-brand-mark-image" src="/bizearch-mark.svg" alt="" />
       <div className="eyebrow"><span /> {info.label}</div>
       <h1>{registering ? "Join your neighborhood" : info.title}</h1>
       <p className="portal-login-description">{registering ? portal === "Agent" ? "Apply to help local businesses reach their neighbors." : "Submit a demo registration request to discover and connect with nearby businesses." : info.description}</p>
@@ -157,7 +157,13 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
       {portal === "Account" && !registering && <p className="portal-login-demo-note">After sign in, your browser will ask to use your location for nearby results. Location is optional; declining will not block sign in.</p>}
       {!registering && <p className="portal-login-demo-note">Demo access only. Credentials are checked on the server and the session is stored in an HTTP-only cookie.</p>}
       <Link className="portal-login-back" href="/">← Back to Discover</Link>
-      <div className="company-login-shortcut"><span>Company administrator?</span> <Link href="/company-login">Company login</Link></div>
+      <nav className="login-portal-options" aria-label="Choose a portal">
+        <span>Choose a portal</span>
+        <Link href="/login?portal=Account">Customer</Link>
+        <Link href="/login?portal=Business">Business</Link>
+        <Link href="/login?portal=Agent">Agent</Link>
+        <Link href="/company-login">Company</Link>
+      </nav>
     </section>
   </main>;
 }

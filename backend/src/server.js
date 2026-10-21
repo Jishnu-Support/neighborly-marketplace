@@ -15,7 +15,7 @@ const app=express();
 const port=Number(process.env.API_PORT||4180);
 if(!process.env.JWT_SECRET||process.env.JWT_SECRET.length<32)throw new Error('JWT_SECRET must be set to at least 32 characters');
 app.disable('x-powered-by');
-app.use(helmet({crossOriginResourcePolicy:{policy:'cross-origin'}}));
+app.use(helmet({crossOriginResourcePolicy:{policy:'cross-origin'},contentSecurityPolicy:{directives:{frameSrc:["'self'",'https://www.openstreetmap.org']}}}));
 app.use(express.json({limit:'100kb'}));
 app.get('/api/health',async(_req,res)=>{try{await pool.query('SELECT 1');res.json({ok:true,database:'postgresql'})}catch{res.status(503).json({ok:false,database:'unavailable'})}});
 app.use('/api/auth',rateLimit({windowMs:60_000,limit:30,standardHeaders:true,legacyHeaders:false}),authRouter);
@@ -34,5 +34,5 @@ if(process.env.RUN_MIGRATIONS==='true'){
   const schemaPath=fileURLToPath(new URL('../../database/schema.sql',import.meta.url));
   await pool.query(await readFile(schemaPath,'utf8'));
 }
-app.listen(port,'127.0.0.1',()=>console.log(`Neighborly API listening at http://127.0.0.1:${port}`));
+app.listen(port,'127.0.0.1',()=>console.log(`Bizearch API listening at http://127.0.0.1:${port}`));
 process.on('SIGTERM',async()=>{await pool.end();process.exit(0)});

@@ -1,6 +1,6 @@
 export async function sendOtpSms(mobile, code) {
   if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_FROM) {
-    const form = new URLSearchParams({ To: mobile, From: process.env.TWILIO_FROM, Body: `Your Neighborly verification code is ${code}. It expires in 5 minutes.` });
+    const form = new URLSearchParams({ To: mobile, From: process.env.TWILIO_FROM, Body: `Your Bizearch verification code is ${code}. It expires in 5 minutes.` });
     const basic = Buffer.from(`${process.env.TWILIO_ACCOUNT_SID}:${process.env.TWILIO_AUTH_TOKEN}`).toString('base64');
     const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${process.env.TWILIO_ACCOUNT_SID}/Messages.json`, { method: 'POST', headers: { authorization: `Basic ${basic}`, 'content-type': 'application/x-www-form-urlencoded' }, body: form });
     if (!response.ok) throw new Error('SMS delivery failed');
@@ -12,6 +12,6 @@ export async function sendOtpSms(mobile, code) {
     return 'msg91';
   }
   if (process.env.NODE_ENV === 'production') throw new Error('Configure Twilio or MSG91 to send verification codes');
-  console.info(`[Neighborly demo OTP] ${mobile}: ${code}`);
+  console.info(`[Bizearch demo OTP] ${mobile}: ${code}`);
   return 'development';
 }

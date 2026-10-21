@@ -3,9 +3,17 @@ import BrandSplash from "./brand-splash";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Neighborly — Your neighborhood, in reach",
+  metadataBase: new URL("https://bizearch.in"),
+  alternates: {
+    canonical: "/",
+  },
+  title: "Bizearch | Your neighborhood, in reach",
   description:
-    "Find trusted local products and services from nearby businesses on Neighborly.",
+    "Find trusted local products and services from nearby businesses on Bizearch.",
+  icons: {
+    icon: "/bizearch-mark.svg",
+    shortcut: "/bizearch-mark.svg",
+  },
 };
 
 export default function RootLayout({

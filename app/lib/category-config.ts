@@ -19,7 +19,12 @@ function buildTree(paths: string[][]) {
 
 export function validateCategoryConfig(input: unknown): input is CategoryConfig {
   if (!input || typeof input !== "object") return false;
-  const sectors = (input as { sectors?: unknown }).sectors;
+  const value = input as { sectors?: unknown; brandLogos?: unknown };
+  const sectors = value.sectors;
+  if (value.brandLogos !== undefined && (!value.brandLogos || typeof value.brandLogos !== "object" || Array.isArray(value.brandLogos) ||
+    Object.entries(value.brandLogos).length > 500 ||
+    Object.entries(value.brandLogos).some(([name, url]) => !name.trim() || name.length > 60 ||
+      typeof url !== "string" || !/^\/api\/ads\/media\/[0-9a-f-]{36}\.(?:jpe?g|png|webp)$/i.test(url)))) return false;
   if (!Array.isArray(sectors) || sectors.length < 1 || sectors.length > 30) return false;
   const names = new Set<string>();
   for (const value of sectors) {
@@ -76,6 +81,7 @@ export async function readCategoryConfig(): Promise<CategoryConfig> {
 
 export async function saveCategoryConfig(config: CategoryConfig) {
   const normalized: CategoryConfig = {
+    brandLogos: Object.fromEntries(Object.entries(config.brandLogos || {}).map(([name, url]) => [name.trim().toLowerCase(), url])),
     sectors: config.sectors.map((sector) => ({
       name: sector.name.trim(),
       icon: sector.icon.trim(),

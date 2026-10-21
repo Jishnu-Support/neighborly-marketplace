@@ -157,5 +157,5 @@ const server=http.createServer(async(req,res)=>{
     fs.readFile(file,(err,data)=>{if(err)return fail(res,404,'Not found');res.writeHead(200,{'content-type':MIME[path.extname(file)]||'application/octet-stream','cache-control':path.extname(file)==='.html'?'no-cache':'public, max-age=300'});if(req.method==='HEAD')return res.end();res.end(data);});
   }catch(e){if(res.headersSent)return res.end();fail(res,e.status||500,e.status?e.message:'Internal server error');if(!e.status)console.error(e);}
 });
-server.listen(PORT,HOST,()=>console.log(`Neighborly running at http://${HOST}:${PORT}`));
+server.listen(PORT,HOST,()=>console.log(`Bizearch running at http://${HOST}:${PORT}`));
 process.on('SIGINT',()=>{server.close(()=>process.exit(0));});

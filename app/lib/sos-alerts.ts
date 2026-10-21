@@ -17,7 +17,7 @@ export type SosAlert = {
   accuracyMeters: number | null;
   locationStatus: "shared" | "unavailable";
   createdAt: string;
-  deliveryStatus: "Recorded by Neighborly demo; no emergency call was placed";
+  deliveryStatus: "Recorded by Bizearch demo; no emergency call was placed";
 };
 
 type NewSosAlert = Omit<SosAlert, "id" | "createdAt" | "deliveryStatus">;
@@ -40,7 +40,7 @@ export async function createSosAlert(input: NewSosAlert) {
     ...input,
     id: randomUUID(),
     createdAt: new Date().toISOString(),
-    deliveryStatus: "Recorded by Neighborly demo; no emergency call was placed",
+    deliveryStatus: "Recorded by Bizearch demo; no emergency call was placed",
   };
   await mkdir(path.dirname(storePath), { recursive: true });
   const temporaryPath = `${storePath}.${process.pid}.tmp`;

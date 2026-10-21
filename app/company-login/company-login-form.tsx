@@ -34,9 +34,9 @@ export default function CompanyLoginForm() {
 
   return <main className="login-page company-login-page">
     <header className="login-page-header">
-      <Link className="brand" href="/" aria-label="Neighborly home">
-        <span className="brand-mark"><span /></span>
-        <span>neighborly<span className="brand-period">.</span></span>
+      <Link className="brand" href="/" aria-label="Bizearch home">
+        <img className="brand-mark" src="/bizearch-mark.svg" alt="" />
+        <span>bizearch<span className="brand-period">.</span></span>
       </Link>
     </header>
     <section className="portal-login-card">
@@ -52,7 +52,7 @@ export default function CompanyLoginForm() {
       {message && <p className="company-login-message" role="alert">{message}</p>}
       <div className="demo-credentials"><strong>{accessLevel} demo credentials</strong><span>Login: <code>{credentials.username}</code></span><span>Password: <code>{credentials.password}</code></span></div>
       <p className="portal-login-demo-note">The initial Super Admin is seeded for this demo. Only that account can create or disable Admin accounts. Configure NEIGHBORLY_SUPER_ADMIN_EMAIL and NEIGHBORLY_SUPER_ADMIN_PASSWORD before deployment.</p>
-      <Link className="portal-login-back" href="/">&larr; Back to Neighborly</Link>
+      <Link className="portal-login-back" href="/">&larr; Back to Bizearch</Link>
     </section>
   </main>;
 }

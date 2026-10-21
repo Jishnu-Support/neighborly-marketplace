@@ -9,7 +9,7 @@ export type AdConfig = {
 export const defaultAdConfig: AdConfig = {
   tickerMessages: [
     "Local favorites, right around the corner",
-    "Discover neighborhood businesses on Neighborly",
+    "Discover neighborhood businesses on Bizearch",
     "Good things are closer than you think",
   ],
   imageAds: [

@@ -1,5 +1,5 @@
 export type CategorySector = { name: string; icon: string; paths: string[][] };
-export type CategoryConfig = { sectors: CategorySector[] };
+export type CategoryConfig = { sectors: CategorySector[]; brandLogos?: Record<string, string> };
 const categories = [
   { name: "All", icon: "✳" },
   { name: "Automobiles", icon: "\u{1F697}" },
