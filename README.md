@@ -27,12 +27,12 @@ The original React/Express platform requires Node.js 20+ and PostgreSQL 14+.
 
 1. Create a PostgreSQL database and user, then copy `.env.example` to `.env`. Set `DATABASE_URL`, `JWT_SECRET`, `OTP_PEPPER` and `BOOTSTRAP_SUPER_ADMIN_MOBILE`. The JWT secret and OTP pepper must be different random values; use at least 32 characters for `JWT_SECRET`.
 
-   Example SQL to run as a PostgreSQL administrator (choose a new local password):
+Example SQL to run as a PostgreSQL administrator (choose a new local password):
 
-   ```sql
-   CREATE USER neighborly WITH PASSWORD 'replace-this-local-password';
-   CREATE DATABASE neighborly OWNER neighborly;
-   ```
+```sql
+CREATE USER neighborly WITH PASSWORD 'replace-this-local-password';
+CREATE DATABASE neighborly OWNER neighborly;
+```
 2. Install the dependencies:
 
    ```powershell
@@ -66,7 +66,15 @@ npm run dev:next
 
 Use `npm run build:next` and `npm run start:next` to build and run it in production mode. The original React/Vite app remains available through `npm run dev`; its Express API, database and authentication flows are separate from this demo.
 
-The Next.js demo searches a synthetic local directory and stores favorites, searches, enquiries, catalogue edits, checkout previews and activity in this browser's local storage. Its sign-in/OTP, checkout and SOS flows are demonstrations; it does not authenticate with the Express backend, send OTPs, process payments or dispatch emergency messages. Device location is requested only after the user chooses to use it and is not sent to a server. For immediate danger in India, call 112.
+### Demo behavior
+
+- Search the synthetic directory by product, service, business name, category and subcategory; adjust the radius and explicitly request device location access. Without permission, distances are sample values around a demo Bengaluru area. With permission, the app uses device coordinates in memory to filter synthetic sample coordinates; neither coordinate is saved or sent to a server.
+- Save favorites, recent searches, product enquiries, catalogue edits, checkout previews and activity records in this browser's local storage. They are not synced or linked to a verified account.
+- Preview business registration, product/service catalogue management, referral tools, company reporting and subscription checkout.
+- The sign-in and OTP forms are demonstrations; no active customer account is created and no OTP is delivered. Registration requests and consented location are stored in local demo files. Two emergency contact numbers are kept in the browser's local storage until an SOS is submitted.
+- Checkout previews do not contact a payment gateway, accept payment details, charge money or activate a subscription.
+- The SOS demo records an alert and shared device coordinates in a local server file visible to Super Admins. Call links open the user's phone app, and SMS links prepare messages with coordinates; the user must confirm every call and message. Neighborly does not automatically dispatch or confirm them. For immediate danger in India, call 112.
+- To clear local demo data, remove the `neighborly-demo-v1` entry from this browser's local storage.
 
 Before connecting this demo to production, implement and test secure account/session management, verified business onboarding, consent-aware geospatial search, payment-provider integrations, access-controlled audit records and verified emergency dispatch. Keep secrets and sensitive customer data on the server.
 

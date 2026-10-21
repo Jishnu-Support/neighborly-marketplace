@@ -11,3 +11,10 @@ coverage/
 .env.*
 !.env.example
 AGENTS.md
+# Local demo Admin credentials are stored as password hashes
+.neighborly-admins.json
+.neighborly-customer-locations.json
+.neighborly-ad-config.json
+.neighborly-ad-media/
+.neighborly-category-config.json
+.neighborly-sos-alerts.json

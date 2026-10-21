@@ -1,0 +1,12 @@
+export type RegistrationChoice = { id: string; label: string; enabled: boolean };
+export type RegistrationField = { id: string; label: string; type: "text" | "phone" | "email" | "password" | "textarea" | "checkbox" | "choices"; placeholder: string; required: boolean; enabled: boolean; options: RegistrationChoice[] };
+export type RegistrationForm = { id: string; title: string; enabled: boolean; fields: RegistrationField[] };
+export type RegistrationFormConfig = { forms: RegistrationForm[] };
+
+const field = (id: string, label: string, type: RegistrationField["type"], required = true, options: string[] = []): RegistrationField => ({ id, label, type, placeholder: "", required, enabled: true, options: options.map((item, index) => ({ id: `${id}-${index + 1}`, label: item, enabled: true })) });
+export const defaultRegistrationFormConfig: RegistrationFormConfig = { forms: [
+  { id: "customer", title: "Customer registration", enabled: true, fields: [field("fullName", "Your name", "text"), field("phone", "Mobile number", "phone"), field("emergencyPhone1", "Emergency contact 1 mobile", "phone"), field("emergencyPhone2", "Emergency contact 2 mobile", "phone"), field("otp", "One-time password (OTP)", "text"), field("password", "Create passcode", "password"), field("acceptPolicies", "I accept the Terms and Conditions and Privacy Policy", "checkbox")] },
+  { id: "business", title: "Business registration", enabled: true, fields: [field("businessName", "Business name", "text"), field("address", "Business address", "text"), field("businessModes", "Business activity", "choices", true, ["Sales", "Service"]), field("businessSectors", "Business sector", "choices", true), field("vehicleTypes", "Vehicle type", "choices", false, ["Two wheeler", "Three wheeler", "Four wheeler", "Multi wheel"]), field("businessPhone", "Business mobile number", "phone"), field("password", "Create password", "password"), field("businessOtp", "Business mobile OTP", "text"), field("proof", "Upload business proof", "text", false)] },
+  { id: "agent", title: "Agent registration", enabled: true, fields: [field("fullName", "Agent name", "text"), field("phone", "Mobile number", "phone"), field("email", "Email address", "email"), field("password", "Create password", "password"), field("otp", "One-time password (OTP)", "text")] },
+  { id: "companyAdmin", title: "Company Admin account", enabled: true, fields: [field("name", "Admin name", "text"), field("email", "Work email", "email"), field("password", "Temporary password", "password")] },
+] };

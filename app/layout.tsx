@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import BrandSplash from "./brand-splash";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,8 +14,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" data-scroll-behavior="smooth">
+      <body>
+        <BrandSplash />
+        {children}
+      </body>
     </html>
   );
 }
