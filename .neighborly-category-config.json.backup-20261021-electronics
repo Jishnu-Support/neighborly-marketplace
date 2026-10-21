@@ -1,0 +1,771 @@
+{
+  "sectors": [
+    {
+      "name": "Automobiles",
+      "icon": "⌁",
+      "paths": [
+        [
+          "Car repair",
+          "Cars",
+          "Engine & transmission",
+          "Diagnostics"
+        ],
+        [
+          "Car repair",
+          "Cars",
+          "Wheels & tyres",
+          "Tyre replacement"
+        ],
+        [
+          "Two-wheeler service",
+          "Motorcycles",
+          "Routine service",
+          "Oil & filter"
+        ],
+        [
+          "Two-wheeler service",
+          "Scooters",
+          "Brake & tyre care",
+          "Brake pads"
+        ],
+        [
+          "Tyres & batteries",
+          "Vehicle batteries",
+          "Battery replacement",
+          "Car battery"
+        ],
+        [
+          "Car wash",
+          "Exterior care",
+          "Wash packages",
+          "Full service wash"
+        ]
+      ]
+    },
+    {
+      "name": "Electronics",
+      "icon": "▣",
+      "paths": [
+        [
+          "Mobile phones",
+          "Android phones",
+          "Repair",
+          "Screen replacement"
+        ],
+        [
+          "Mobile phones",
+          "Android phones",
+          "Repair",
+          "Battery replacement"
+        ],
+        [
+          "Mobile phones",
+          "Apple iPhone",
+          "Repair",
+          "Screen replacement"
+        ],
+        [
+          "Mobile phones",
+          "Apple iPhone",
+          "Repair",
+          "Battery replacement"
+        ],
+        [
+          "Mobile phones",
+          "Mobile accessories",
+          "Power & charging",
+          "Fast chargers"
+        ],
+        [
+          "Mobile phones",
+          "Mobile accessories",
+          "Cases & protection",
+          "Phone cases"
+        ],
+        [
+          "Computer & IT",
+          "Laptops",
+          "Repair",
+          "Laptop diagnostics"
+        ],
+        [
+          "Computer & IT",
+          "Laptops",
+          "Repair",
+          "Keyboard replacement"
+        ],
+        [
+          "Computer & IT",
+          "Desktops",
+          "Repair",
+          "Desktop diagnostics"
+        ],
+        [
+          "Computer & IT",
+          "Printers",
+          "Repair",
+          "Printer servicing"
+        ],
+        [
+          "Home appliances",
+          "Kitchen appliances",
+          "Repair",
+          "Refrigerator service"
+        ],
+        [
+          "Home appliances",
+          "Laundry appliances",
+          "Repair",
+          "Washing machine service"
+        ],
+        [
+          "Home appliances",
+          "Cooling appliances",
+          "Repair",
+          "Air conditioner service"
+        ],
+        [
+          "Audio & video",
+          "Televisions",
+          "Repair",
+          "TV installation & repair"
+        ],
+        [
+          "Audio & video",
+          "Speakers & audio",
+          "Repair",
+          "Speaker repair"
+        ],
+        [
+          "Cameras",
+          "Digital cameras",
+          "Repair",
+          "Camera servicing"
+        ],
+        [
+          "Electronics retail",
+          "Mobile phones",
+          "Smartphones",
+          "Android smartphones"
+        ]
+      ]
+    },
+    {
+      "name": "Fashion",
+      "icon": "◇",
+      "paths": [
+        [
+          "Clothing",
+          "Women",
+          "Everyday wear",
+          "Kurtas & kurtis"
+        ],
+        [
+          "Clothing",
+          "Women",
+          "Occasion wear",
+          "Sarees & dresses"
+        ],
+        [
+          "Clothing",
+          "Men",
+          "Everyday wear",
+          "Shirts & trousers"
+        ],
+        [
+          "Clothing",
+          "Men",
+          "Occasion wear",
+          "Ethnic wear"
+        ],
+        [
+          "Clothing",
+          "Kids",
+          "Everyday wear",
+          "Kids clothing"
+        ],
+        [
+          "Footwear",
+          "Shoes",
+          "Casual",
+          "Everyday sneakers"
+        ],
+        [
+          "Footwear",
+          "Shoes",
+          "Formal",
+          "Formal shoes"
+        ],
+        [
+          "Footwear",
+          "Sandals & slippers",
+          "Daily wear",
+          "Sandals"
+        ],
+        [
+          "Jewellery",
+          "Traditional jewellery",
+          "Earrings",
+          "Everyday earrings"
+        ],
+        [
+          "Jewellery",
+          "Handmade jewellery",
+          "Necklaces",
+          "Handcrafted necklaces"
+        ],
+        [
+          "Bags & accessories",
+          "Bags",
+          "Daily use",
+          "Handbags & backpacks"
+        ],
+        [
+          "Bags & accessories",
+          "Accessories",
+          "Fashion accessories",
+          "Belts & wallets"
+        ],
+        [
+          "Tailoring",
+          "Clothing alterations",
+          "Repairs",
+          "Alterations & fitting"
+        ],
+        [
+          "Tailoring",
+          "Custom stitching",
+          "Women",
+          "Blouse stitching"
+        ],
+        [
+          "Textiles",
+          "Handloom",
+          "Cotton fabrics",
+          "Dress materials"
+        ],
+        [
+          "Textiles",
+          "Home textiles",
+          "Bed & bath",
+          "Bedsheets & towels"
+        ]
+      ]
+    },
+    {
+      "name": "Home & furniture",
+      "icon": "⌂",
+      "paths": [
+        [
+          "Furniture",
+          "Living room",
+          "Seating",
+          "Sofas & chairs"
+        ],
+        [
+          "Furniture",
+          "Living room",
+          "Tables",
+          "Coffee & side tables"
+        ],
+        [
+          "Furniture",
+          "Bedroom",
+          "Beds",
+          "Beds & headboards"
+        ],
+        [
+          "Furniture",
+          "Bedroom",
+          "Storage",
+          "Wardrobes"
+        ],
+        [
+          "Furniture",
+          "Dining",
+          "Dining sets",
+          "Dining tables & chairs"
+        ],
+        [
+          "Home decor",
+          "Wall decor",
+          "Art & hangings",
+          "Wall art"
+        ],
+        [
+          "Home decor",
+          "Lighting",
+          "Indoor lighting",
+          "Lamps & fixtures"
+        ],
+        [
+          "Home decor",
+          "Soft furnishings",
+          "Windows",
+          "Curtains & blinds"
+        ],
+        [
+          "Kitchen & storage",
+          "Kitchen fittings",
+          "Cabinets",
+          "Modular kitchen cabinets"
+        ],
+        [
+          "Kitchen & storage",
+          "Storage solutions",
+          "Shelving",
+          "Storage racks"
+        ],
+        [
+          "Repairs",
+          "Carpentry",
+          "Furniture repair",
+          "Wood repair"
+        ],
+        [
+          "Repairs",
+          "Furniture assembly",
+          "Installation",
+          "Furniture fitting"
+        ],
+        [
+          "Interior design",
+          "Home planning",
+          "Room design",
+          "Design consultation"
+        ],
+        [
+          "Interior design",
+          "Home planning",
+          "Room makeover",
+          "Space planning"
+        ]
+      ]
+    },
+    {
+      "name": "Food & dining",
+      "icon": "♨",
+      "paths": [
+        [
+          "Restaurants",
+          "Indian",
+          "South Indian",
+          "Dosa & idli"
+        ],
+        [
+          "Restaurants",
+          "Indian",
+          "North Indian",
+          "Meals & thalis"
+        ],
+        [
+          "Restaurants",
+          "International",
+          "Asian",
+          "Chinese meals"
+        ],
+        [
+          "Meal delivery",
+          "Daily meals",
+          "Lunch",
+          "Homestyle lunch"
+        ],
+        [
+          "Meal delivery",
+          "Daily meals",
+          "Dinner",
+          "Dinner meals"
+        ],
+        [
+          "Meal delivery",
+          "Breakfast",
+          "Regional specials",
+          "Breakfast box"
+        ],
+        [
+          "Groceries & produce",
+          "Fresh produce",
+          "Vegetables",
+          "Seasonal vegetables"
+        ],
+        [
+          "Groceries & produce",
+          "Fresh produce",
+          "Fruits",
+          "Fresh fruits"
+        ],
+        [
+          "Groceries & produce",
+          "Pantry",
+          "Staples",
+          "Rice & pulses"
+        ],
+        [
+          "Bakery & sweets",
+          "Baked goods",
+          "Breads & buns",
+          "Fresh bread"
+        ],
+        [
+          "Bakery & sweets",
+          "Cakes",
+          "Celebrations",
+          "Custom cakes"
+        ],
+        [
+          "Bakery & sweets",
+          "Indian sweets",
+          "Fresh sweets",
+          "Traditional sweets"
+        ],
+        [
+          "Cafes & beverages",
+          "Coffee & tea",
+          "Hot drinks",
+          "Coffee & tea"
+        ],
+        [
+          "Cafes & beverages",
+          "Cold drinks",
+          "Juices",
+          "Fresh juice"
+        ],
+        [
+          "Catering",
+          "Events",
+          "Small gatherings",
+          "Party catering"
+        ],
+        [
+          "Catering",
+          "Events",
+          "Large gatherings",
+          "Event catering"
+        ]
+      ]
+    },
+    {
+      "name": "Health & wellness",
+      "icon": "✚",
+      "paths": [
+        [
+          "Clinics",
+          "General care",
+          "Appointments",
+          "Doctor consultation"
+        ],
+        [
+          "Clinics",
+          "Paediatrics",
+          "Appointments",
+          "Child health consultation"
+        ],
+        [
+          "Clinics",
+          "Eye care",
+          "Appointments",
+          "Eye examination"
+        ],
+        [
+          "Dental care",
+          "Dental clinics",
+          "Check-ups",
+          "Dental consultation"
+        ],
+        [
+          "Dental care",
+          "Dental clinics",
+          "Treatment",
+          "Cleaning & fillings"
+        ],
+        [
+          "Pharmacies",
+          "Medicines",
+          "Prescription support",
+          "Prescription medicines"
+        ],
+        [
+          "Pharmacies",
+          "Medicines",
+          "Local delivery",
+          "Medicine delivery"
+        ],
+        [
+          "Physiotherapy",
+          "Mobility care",
+          "Assessment",
+          "Physiotherapy assessment"
+        ],
+        [
+          "Physiotherapy",
+          "Mobility care",
+          "Treatment",
+          "Physiotherapy session"
+        ],
+        [
+          "Fitness",
+          "Personal training",
+          "Strength",
+          "Strength training"
+        ],
+        [
+          "Fitness",
+          "Group exercise",
+          "Classes",
+          "Yoga classes"
+        ],
+        [
+          "Personal care",
+          "Wellness",
+          "Consultation",
+          "Wellness consultation"
+        ],
+        [
+          "Personal care",
+          "Salon services",
+          "Hair care",
+          "Haircut & styling"
+        ]
+      ]
+    },
+    {
+      "name": "Travel",
+      "icon": "↗",
+      "paths": [
+        [
+          "Travel agents",
+          "Holiday planning",
+          "Domestic trips",
+          "Custom itinerary"
+        ],
+        [
+          "Travel agents",
+          "Holiday planning",
+          "International trips",
+          "Travel planning"
+        ],
+        [
+          "Stays",
+          "Hotels",
+          "Family stays",
+          "Hotel room booking"
+        ],
+        [
+          "Stays",
+          "Guest houses",
+          "Short stays",
+          "Guest house booking"
+        ],
+        [
+          "Local transport",
+          "Airport rides",
+          "Cars",
+          "Airport transfer"
+        ],
+        [
+          "Local transport",
+          "City rides",
+          "Two-wheelers",
+          "Local bike rental"
+        ],
+        [
+          "Tours & experiences",
+          "Local experiences",
+          "Guided tours",
+          "City tour"
+        ],
+        [
+          "Tours & experiences",
+          "Outdoor trips",
+          "Day trips",
+          "Local day trip"
+        ],
+        [
+          "Car rentals",
+          "Self drive",
+          "Daily rental",
+          "Car hire"
+        ],
+        [
+          "Car rentals",
+          "With driver",
+          "Local travel",
+          "Car with driver"
+        ],
+        [
+          "Bus & rail services",
+          "Bus tickets",
+          "Intercity travel",
+          "Bus booking support"
+        ]
+      ]
+    },
+    {
+      "name": "Entertainment",
+      "icon": "♫",
+      "paths": [
+        [
+          "Events",
+          "Community events",
+          "Workshops",
+          "Weekend workshop"
+        ],
+        [
+          "Events",
+          "Celebrations",
+          "Private events",
+          "Event planning"
+        ],
+        [
+          "Movies & cinema",
+          "Cinema",
+          "Show times",
+          "Movie tickets"
+        ],
+        [
+          "Movies & cinema",
+          "Home viewing",
+          "Equipment hire",
+          "Projector rental"
+        ],
+        [
+          "Music",
+          "Live music",
+          "Local artists",
+          "Live performance"
+        ],
+        [
+          "Music",
+          "Music lessons",
+          "Instruments",
+          "Music classes"
+        ],
+        [
+          "Classes & workshops",
+          "Arts & crafts",
+          "Creative classes",
+          "Craft workshop"
+        ],
+        [
+          "Classes & workshops",
+          "Dance",
+          "Dance classes",
+          "Dance lesson"
+        ],
+        [
+          "Outdoor activities",
+          "Family activities",
+          "Local outings",
+          "Activity booking"
+        ],
+        [
+          "Outdoor activities",
+          "Sports",
+          "Coaching",
+          "Sports coaching"
+        ],
+        [
+          "Gaming",
+          "Games & recreation",
+          "Indoor activities",
+          "Game session"
+        ]
+      ]
+    },
+    {
+      "name": "Everyday services",
+      "icon": "✳",
+      "paths": [
+        [
+          "Plumbing",
+          "Home plumbing",
+          "Repairs",
+          "Leak repair"
+        ],
+        [
+          "Plumbing",
+          "Bathroom plumbing",
+          "Installation",
+          "Tap & fixture installation"
+        ],
+        [
+          "Electrical",
+          "Home electrical",
+          "Repairs",
+          "Wiring repair"
+        ],
+        [
+          "Electrical",
+          "Home electrical",
+          "Installation",
+          "Lighting installation"
+        ],
+        [
+          "Cleaning",
+          "Home cleaning",
+          "Full home",
+          "Deep cleaning"
+        ],
+        [
+          "Cleaning",
+          "Home cleaning",
+          "Focused cleaning",
+          "Kitchen cleaning"
+        ],
+        [
+          "Appliance repair",
+          "Kitchen appliances",
+          "Repair",
+          "Refrigerator service"
+        ],
+        [
+          "Appliance repair",
+          "Laundry appliances",
+          "Repair",
+          "Washing machine service"
+        ],
+        [
+          "Home services",
+          "Pest control",
+          "Treatment",
+          "Home pest treatment"
+        ],
+        [
+          "Home services",
+          "Moving help",
+          "Packing & moving",
+          "Local move assistance"
+        ],
+        [
+          "Home services",
+          "Gardening",
+          "Garden care",
+          "Garden maintenance"
+        ],
+        [
+          "Professional services",
+          "Consulting",
+          "Local experts",
+          "Initial consultation"
+        ],
+        [
+          "Professional services",
+          "Accounting",
+          "Small business",
+          "Bookkeeping support"
+        ],
+        [
+          "Professional services",
+          "Photography",
+          "Events",
+          "Event photography"
+        ]
+      ]
+    },
+    {
+      "name": "New sector",
+      "icon": "✳",
+      "paths": []
+    }
+  ]
+}

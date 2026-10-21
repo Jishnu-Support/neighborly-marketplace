@@ -1,0 +1,363 @@
+{
+  "sectors": [
+    {
+      "name": "Automobiles",
+      "icon": "⌁",
+      "paths": [
+        [
+          "Car repair",
+          "Cars",
+          "Engine & transmission",
+          "Diagnostics"
+        ],
+        [
+          "Car repair",
+          "Cars",
+          "Wheels & tyres",
+          "Tyre replacement"
+        ],
+        [
+          "Two-wheeler service",
+          "Motorcycles",
+          "Routine service",
+          "Oil & filter"
+        ],
+        [
+          "Two-wheeler service",
+          "Scooters",
+          "Brake & tyre care",
+          "Brake pads"
+        ],
+        [
+          "Tyres & batteries",
+          "Vehicle batteries",
+          "Battery replacement",
+          "Car battery"
+        ],
+        [
+          "Car wash",
+          "Exterior care",
+          "Wash packages",
+          "Full service wash"
+        ]
+      ]
+    },
+    {
+      "name": "Electronics",
+      "icon": "▣",
+      "paths": [
+        [
+          "Phone repair",
+          "Mobile phones",
+          "Screen & display",
+          "Screen replacement"
+        ],
+        [
+          "Phone repair",
+          "Mobile phones",
+          "Diagnostics",
+          "Phone diagnostics"
+        ],
+        [
+          "Computers",
+          "Laptops",
+          "Repair",
+          "Laptop diagnostics"
+        ],
+        [
+          "Home appliances",
+          "Kitchen appliances",
+          "Repair",
+          "Refrigerator service"
+        ],
+        [
+          "Accessories",
+          "Mobile accessories",
+          "Chargers",
+          "Fast chargers"
+        ],
+        [
+          "Electronics retail",
+          "Mobile phones",
+          "Smartphones",
+          "Android phones"
+        ]
+      ]
+    },
+    {
+      "name": "Fashion",
+      "icon": "◇",
+      "paths": [
+        [
+          "Clothing",
+          "Women",
+          "Everyday wear",
+          "Cotton kurta"
+        ],
+        [
+          "Clothing",
+          "Men",
+          "Tailoring",
+          "Alterations"
+        ],
+        [
+          "Footwear",
+          "Shoes",
+          "Casual",
+          "Everyday sneakers"
+        ],
+        [
+          "Jewellery",
+          "Handmade",
+          "Earrings",
+          "Silver earrings"
+        ],
+        [
+          "Local textiles",
+          "Handloom",
+          "Cotton",
+          "Home textiles"
+        ]
+      ]
+    },
+    {
+      "name": "Home & furniture",
+      "icon": "⌂",
+      "paths": [
+        [
+          "Furniture",
+          "Living room",
+          "Tables",
+          "Side table"
+        ],
+        [
+          "Furniture",
+          "Bedroom",
+          "Storage",
+          "Wardrobes"
+        ],
+        [
+          "Home decor",
+          "Wall decor",
+          "Handmade",
+          "Local art"
+        ],
+        [
+          "Repairs",
+          "Carpentry",
+          "Furniture repair",
+          "Wood repair"
+        ],
+        [
+          "Interior design",
+          "Home planning",
+          "Room makeover",
+          "Consultation"
+        ]
+      ]
+    },
+    {
+      "name": "Food & dining",
+      "icon": "♨",
+      "paths": [
+        [
+          "Restaurants",
+          "Indian",
+          "South Indian",
+          "Breakfast"
+        ],
+        [
+          "Restaurants",
+          "Indian",
+          "Homestyle meals",
+          "Thali"
+        ],
+        [
+          "Meal delivery",
+          "Lunch",
+          "Thali",
+          "Homestyle lunch plate"
+        ],
+        [
+          "Meal delivery",
+          "Breakfast",
+          "Regional specials",
+          "Breakfast box"
+        ],
+        [
+          "Groceries",
+          "Fresh produce",
+          "Vegetables",
+          "Seasonal vegetables"
+        ],
+        [
+          "Bakeries",
+          "Cakes",
+          "Celebrations",
+          "Custom cake"
+        ],
+        [
+          "Cafes",
+          "Coffee & tea",
+          "Drinks",
+          "Coffee"
+        ]
+      ]
+    },
+    {
+      "name": "Health & wellness",
+      "icon": "✚",
+      "paths": [
+        [
+          "Clinics",
+          "General care",
+          "Appointments",
+          "Doctor consultation"
+        ],
+        [
+          "Pharmacies",
+          "Medicines",
+          "Prescription support",
+          "Medicine delivery"
+        ],
+        [
+          "Physiotherapy",
+          "Mobility care",
+          "Assessment",
+          "Physiotherapy assessment"
+        ],
+        [
+          "Physiotherapy",
+          "Mobility care",
+          "Follow-up",
+          "Follow-up session"
+        ],
+        [
+          "Fitness",
+          "Personal training",
+          "Strength",
+          "Training session"
+        ],
+        [
+          "Personal care",
+          "Wellness",
+          "Consultation",
+          "Wellness consultation"
+        ]
+      ]
+    },
+    {
+      "name": "Travel",
+      "icon": "↗",
+      "paths": [
+        [
+          "Travel agents",
+          "Holiday planning",
+          "Domestic trips",
+          "Custom itinerary"
+        ],
+        [
+          "Stays",
+          "Hotels",
+          "Family stays",
+          "Room booking"
+        ],
+        [
+          "Local transport",
+          "Airport rides",
+          "Cars",
+          "One-way transfer"
+        ],
+        [
+          "Tours",
+          "Local experiences",
+          "Guided tours",
+          "City tour"
+        ],
+        [
+          "Car rentals",
+          "Self drive",
+          "Daily rental",
+          "Compact car"
+        ]
+      ]
+    },
+    {
+      "name": "Entertainment",
+      "icon": "♫",
+      "paths": [
+        [
+          "Events",
+          "Community events",
+          "Workshops",
+          "Weekend workshop"
+        ],
+        [
+          "Movies",
+          "Cinema",
+          "Show times",
+          "Movie tickets"
+        ],
+        [
+          "Live music",
+          "Concerts",
+          "Local artists",
+          "Concert tickets"
+        ],
+        [
+          "Activities",
+          "Outdoor",
+          "Family activities",
+          "Activity booking"
+        ],
+        [
+          "Arts & crafts",
+          "Creative classes",
+          "Handmade arts",
+          "Craft workshop"
+        ]
+      ]
+    },
+    {
+      "name": "Everyday services",
+      "icon": "✳",
+      "paths": [
+        [
+          "Plumbing",
+          "Home plumbing",
+          "Repairs",
+          "Leak repair"
+        ],
+        [
+          "Electrical",
+          "Home electrical",
+          "Repairs",
+          "Wiring repair"
+        ],
+        [
+          "Cleaning",
+          "Home cleaning",
+          "Full home",
+          "Deep cleaning"
+        ],
+        [
+          "Repairs",
+          "Appliance repair",
+          "Home appliances",
+          "Appliance service"
+        ],
+        [
+          "Professional services",
+          "Consulting",
+          "Local experts",
+          "Initial consultation"
+        ]
+      ]
+    },
+    {
+      "name": "New sector",
+      "icon": "✳",
+      "paths": []
+    }
+  ]
+}
