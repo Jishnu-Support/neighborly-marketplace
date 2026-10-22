@@ -1,3 +1,5 @@
+import { buildAutomobileTaxonomyPaths } from "./vehicle-taxonomy.shared";
+
 export type CategorySector = { name: string; icon: string; paths: string[][] };
 export type CategoryConfig = { sectors: CategorySector[]; brandLogos?: Record<string, string> };
 const categories = [
@@ -21,15 +23,19 @@ const electronicsDeviceGroups: [string, [string, string[]][]][] = [
   ["Cameras", [["Canon", ["EOS R50", "EOS R6 Mark III"]], ["Sony", ["Alpha a6400", "Alpha a7 IV"]], ["Nikon", ["Z50II", "Z6III"]], ["Fujifilm", ["X-S20", "X-T5"]], ["Panasonic", ["LUMIX G97", "LUMIX S5II"]], ["GoPro", ["HERO13 Black", "MAX2"]]]],
 ];
 
+// Keep the original automobile paths separately so saved demo defaults can be
+// migrated without replacing any taxonomy an Admin or Super Admin customized.
+const legacyAutomobilePaths = [
+  ["Car repair", "Cars", "Engine & transmission", "Diagnostics"],
+  ["Car repair", "Cars", "Wheels & tyres", "Tyre replacement"],
+  ["Two-wheeler service", "Motorcycles", "Routine service", "Oil & filter"],
+  ["Two-wheeler service", "Scooters", "Brake & tyre care", "Brake pads"],
+  ["Tyres & batteries", "Vehicle batteries", "Battery replacement", "Car battery"],
+  ["Car wash", "Exterior care", "Wash packages", "Full service wash"],
+];
+
 const taxonomyPaths: Record<string, string[][]> = {
-  Automobiles: [
-    ["Car repair", "Cars", "Engine & transmission", "Diagnostics"],
-    ["Car repair", "Cars", "Wheels & tyres", "Tyre replacement"],
-    ["Two-wheeler service", "Motorcycles", "Routine service", "Oil & filter"],
-    ["Two-wheeler service", "Scooters", "Brake & tyre care", "Brake pads"],
-    ["Tyres & batteries", "Vehicle batteries", "Battery replacement", "Car battery"],
-    ["Car wash", "Exterior care", "Wash packages", "Full service wash"],
-  ],
+  Automobiles: buildAutomobileTaxonomyPaths(),
   Electronics: [
     ...["Sales", "Service"].flatMap((activity) => electronicsDeviceGroups.flatMap(([productType, companies]) =>
       companies.flatMap(([company, models]) => models.map((model) => [activity, productType, company, model]))
@@ -152,7 +158,11 @@ function addSalesAndService(paths: string[][]): string[][] {
 
 // Used to safely migrate saved defaults without overwriting admin-customized paths.
 export const legacyDefaultCategoryConfig: CategoryConfig = {
-  sectors: categories.slice(1).map(({ name, icon }) => ({ name, icon, paths: taxonomyPaths[name] || [] })),
+  sectors: categories.slice(1).map(({ name, icon }) => ({
+    name,
+    icon,
+    paths: name === "Automobiles" ? legacyAutomobilePaths : taxonomyPaths[name] || [],
+  })),
 };
 
 export const defaultCategoryConfig: CategoryConfig = {

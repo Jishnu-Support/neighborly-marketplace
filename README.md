@@ -46,6 +46,8 @@ CREATE DATABASE neighborly OWNER neighborly;
    npm run db:bootstrap-admin
    ```
 
+   To add repeatable local sample accounts and listings, run `npm run db:seed-demo` after the schema is applied. It creates two businesses, two end-user customers, one Agent, a Company Admin, and a Super Admin. Demo mobile numbers use the fictional `+1 212-555-01xx` range. In development, OTP codes are shown in the login flow or API log. The seed command refuses to run when `NODE_ENV=production`.
+
 4. Start the Express API and React app:
 
    ```powershell
@@ -65,6 +67,7 @@ npm run dev:next
 ```
 
 Use `npm run build:next` and `npm run start:next` to build and run it in production mode. The original React/Vite app remains available through `npm run dev`; its Express API, database and authentication flows are separate from this demo.
+For a production Next.js launch, set `NEIGHBORLY_AUTH_SECRET`, `NEIGHBORLY_SUPER_ADMIN_EMAIL`, and `NEIGHBORLY_SUPER_ADMIN_PASSWORD`; known demo Super Admin credentials are rejected in production when the explicit Super Admin settings are missing.
 
 ### Demo behavior
 
@@ -76,10 +79,12 @@ Use `npm run build:next` and `npm run start:next` to build and run it in product
 - Manufacturer tiles use the TVS horse mark and Hero “H” mark from their official sites by default; custom Company Admin uploads override these defaults. The marks are trademarks of their respective owners.
 - The sign-in and OTP forms are demonstrations; no active customer account is created and no OTP is delivered. Registration requests and consented location are stored in local demo files. Two emergency contact numbers are kept in the browser's local storage until an SOS is submitted.
 - Checkout previews do not contact a payment gateway, accept payment details, charge money or activate a subscription.
-- The SOS demo records an alert and shared device coordinates in a local server file visible to Super Admins. Call links open the user's phone app, and SMS links prepare messages with coordinates; the user must confirm every call and message. Bizearch does not automatically dispatch or confirm them. For immediate danger in India, call 112.
+- The authenticated SOS workflow validates two distinct emergency contacts, records the account identity, role, name, mobile, selected emergency type, timestamp and (when location permission is granted) device coordinates and accuracy. Alerts are kept in a server-side, append-only local JSON store. The `/api/company/sos` endpoint returns the latest 100 records; only Super Admin sessions can access the listing and exact coordinates/contact details. Requests use an idempotency key to avoid duplicate records after retries. Use the Safety tab to review the newest alerts.
+- SOS storage is a single-machine demo implementation, not a production database: records are not encrypted at rest, the rate limit is process-local, and local files are not suitable for multi-instance deployment, backups, retention controls or audit compliance. Before production, move alerts to a durable access-controlled database and configure encryption, retention, monitoring and a trusted distributed rate limiter.
+- Recording an SOS does not notify emergency services or contacts. The customer or administrator may explicitly open a device dialer or prepare an SMS, but Bizearch does not place calls or send messages. Automatic dispatch requires a separately approved and configured telephony/SMS integration; no such gateway is connected. For immediate danger in India, call 112.
 - To clear local demo data, remove the `neighborly-demo-v1` entry from this browser's local storage.
 
-Before connecting this demo to production, implement and test secure account/session management, verified business onboarding, consent-aware geospatial search, payment-provider integrations, access-controlled audit records and verified emergency dispatch. Keep secrets and sensitive customer data on the server.
+Before connecting this demo to production, replace demo customer/business/agent authentication with verified account/session management, verified business onboarding, consent-aware geospatial search, payment-provider integrations, access-controlled audit records and verified emergency dispatch. Keep secrets and sensitive customer data on the server.
 
 ## Login and OTP
 

@@ -12,6 +12,7 @@
     "build": "vite --config frontend/vite.config.js build",
     "db:schema": "node backend/src/db/apply-schema.js",
     "db:bootstrap-admin": "node backend/src/db/bootstrap-superadmin.js",
+    "db:seed-demo": "node backend/src/db/seed-demo.js",
     "dev:next": "next dev --hostname 0.0.0.0",
     "build:next": "next build",
     "start:next": "next start",

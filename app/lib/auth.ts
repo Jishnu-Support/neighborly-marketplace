@@ -78,8 +78,11 @@ export async function verifyCredentials(role: PortalRole, identity: string, pass
   const normalizedIdentity = identity.trim().toLowerCase();
   if (role === "Company") {
     if (accessLevel === "Super Admin") {
-      const adminEmail = (process.env.NEIGHBORLY_SUPER_ADMIN_EMAIL || "superadmin@neighborly.demo").trim().toLowerCase();
-      const adminPassword = process.env.NEIGHBORLY_SUPER_ADMIN_PASSWORD || "SuperAdmin123!";
+      const configuredEmail = process.env.NEIGHBORLY_SUPER_ADMIN_EMAIL?.trim().toLowerCase();
+      const configuredPassword = process.env.NEIGHBORLY_SUPER_ADMIN_PASSWORD;
+      if (process.env.NODE_ENV === "production" && (!configuredEmail || !configuredPassword)) return false;
+      const adminEmail = configuredEmail || "superadmin@neighborly.demo";
+      const adminPassword = configuredPassword || "SuperAdmin123!";
       return normalizedIdentity === adminEmail && password === adminPassword;
     }
     if (accessLevel !== "Admin") return false;

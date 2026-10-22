@@ -5,6 +5,7 @@ import type { CompanyAccessLevel } from "./lib/auth";
 import { defaultAdConfig, type AdConfig } from "./lib/ad-config.shared";
 import { defaultCategoryConfig, legacyDefaultCategoryConfig, type CategoryConfig, type CategorySector } from "./lib/category-config.shared";
 import { defaultRegistrationFormConfig, type RegistrationFormConfig, type RegistrationForm, type RegistrationField } from "./lib/registration-form-config.shared";
+import { buildAutomobileTaxonomyPaths as buildSharedAutomobileTaxonomyPaths, commercialVehicleSubcategories, getVehicleModelsForType as getSharedVehicleModelsForType } from "./lib/vehicle-taxonomy.shared";
 
 type Role = "Discover" | "Account" | "Business" | "Agent" | "Company";
 type EmergencyType = "police" | "medical" | "fire" | "women-safety" | "general";
@@ -92,8 +93,10 @@ type SosAlert = {
   id: string;
   customerName: string;
   profileRole: "Account" | "Business" | "Agent" | "Company";
+  identity?: string;
   emergencyType: EmergencyType;
   serviceNumber: string;
+  customerPhone?: string;
   customerPhoneLast4: string;
   emergencyPhones: [string, string];
   latitude: number | null;
@@ -126,7 +129,7 @@ const vehicleMakesByType: Record<string, string[]> = {
   "Two wheeler": ["TVS", "Hero", "Honda", "Bajaj", "Royal Enfield", "Suzuki", "Yamaha", "KTM", "Jawa", "Yezdi", "Triumph", "BMW Motorrad", "Kawasaki", "Ducati", "Aprilia", "Vespa", "Ather Energy", "Ola Electric", "Revolt Motors", "Ampere", "Ultraviolette", "Simple Energy", "Other / not listed"],
   "Three wheeler": ["Bajaj", "TVS", "Mahindra", "Piaggio", "Atul Auto", "Force Motors", "Euler Motors", "Omega Seiki", "Kinetic Green", "YC Electric", "Lohia Auto", "Other / not listed"],
   "Four wheeler": ["Maruti Suzuki", "Tata Motors", "Mahindra", "Hyundai", "Toyota", "Kia", "Honda", "Renault", "Volkswagen", "Skoda", "MG Motor", "Nissan", "Jeep", "Mercedes-Benz", "BMW", "Audi", "Volvo", "BYD", "Citroën", "Force Motors", "Other / not listed"],
-  "Multi wheel / commercial": ["Tata Motors", "Ashok Leyland", "Eicher", "Mahindra", "BharatBenz", "Force Motors", "Isuzu", "SML Isuzu", "Volvo", "Scania", "Other / not listed"],
+  "Multi wheel / commercial": ["Tata Motors", "Ashok Leyland", "Eicher", "Mahindra", "BharatBenz", "Force Motors", "Isuzu", "SML Isuzu", "Volvo", "Scania", "JCB", "Tata Hitachi", "Komatsu", "Caterpillar", "CASE Construction", "ACE", "Escorts Kubota", "SANY", "XCMG", "Swaraj", "Sonalika", "Massey Ferguson", "John Deere", "New Holland", "Kubota", "BEML", "Ammann", "Other / not listed"],
 };
 const vehicleModelsByMake: Record<string, string[]> = {
   TVS: ["Jupiter", "Ntorq 125", "Apache RTR 160", "Apache RTR 200", "Raider", "Sport", "Radeon", "iQube", "King (3W)"],
@@ -166,10 +169,9 @@ const vehicleModelsByTypeAndMake: Record<string, Record<string, string[]>> = {
   },
 };
 function getVehicleModelsForType(vehicleType: string, make: string) {
-  const scopedModels = vehicleModelsByTypeAndMake[vehicleType]?.[make];
-  if (scopedModels) return scopedModels;
-  if (vehicleType === "Three wheeler" || vehicleType === "Multi wheel / commercial") return [];
-  return vehicleModelsByMake[make] || [];
+  const models = getSharedVehicleModelsForType(vehicleType, make);
+  if (vehicleType !== "Multi wheel / commercial" || models.length) return models;
+  return Object.values(commercialVehicleSubcategories).flatMap((groups) => groups[make] || []);
 }
 function isDemoData(value: unknown): value is DemoData {
   if (!value || typeof value !== "object") return false;
@@ -234,9 +236,203 @@ function brandLogoKey(name: string) {
   return name.trim().toLowerCase();
 }
 
+const categoryIconIds: Record<string, string> = {
+  sales: "sales",
+  service: "service",
+  automobiles: "four-wheeler",
+  electronics: "electronics",
+  fashion: "fashion",
+  "home & furniture": "home",
+  "food & dining": "food",
+  "health & wellness": "health",
+  travel: "plane",
+  entertainment: "event",
+  "everyday services": "tools",
+  "two wheeler": "two-wheeler",
+  "three wheeler": "three-wheeler",
+  "four wheeler": "four-wheeler",
+  "multi wheel / commercial": "multi-wheel-commercial",
+  trucks: "trucks",
+  buses: "buses",
+  cranes: "cranes",
+  "earth movers": "earth-movers",
+  tractors: "tractors",
+  "road construction equipment": "road-construction",
+  "mining equipment": "mining-equipment",
+  "special-purpose vehicles": "special-purpose-vehicles",
+  "laptops & computers": "computer",
+  "mobile phones": "phone",
+  "home appliances": "appliance",
+  "audio & video": "electronics",
+  cameras: "camera",
+  clothing: "fashion",
+  footwear: "shoes",
+  jewellery: "jewellery",
+  "bags & accessories": "bag",
+  tailoring: "fashion",
+  textiles: "fashion",
+  furniture: "furniture",
+  "home decor": "home",
+  "kitchen & storage": "kitchen",
+  repairs: "tools",
+  "interior design": "home",
+  restaurants: "food",
+  "meal delivery": "food",
+  "groceries & produce": "produce",
+  "bakery & sweets": "bakery",
+  "cafes & beverages": "coffee",
+  catering: "food",
+  clinics: "health",
+  "dental care": "dental",
+  pharmacies: "medicine",
+  physiotherapy: "health",
+  fitness: "fitness",
+  "personal care": "health",
+  "travel agents": "plane",
+  stays: "hotel",
+  "local transport": "multi-wheel-commercial",
+  "tours & experiences": "plane",
+  "car rentals": "four-wheeler",
+  "bus & rail services": "buses",
+  events: "event",
+  "movies & cinema": "cinema",
+  music: "music",
+  "classes & workshops": "book",
+  "home services": "home",
+  "professional services": "briefcase",
+};
+
+function categoryIconIdFor(name: string, sector = "") {
+  const key = name.trim().toLowerCase();
+  if (categoryIconIds[key]) return categoryIconIds[key];
+  if (/motorcycle|scooter|moped/.test(key)) return "two-wheeler";
+  if (/car|automobile/.test(key)) return "four-wheeler";
+  if (/tyre|tire|wheel|battery/.test(key)) return "multi-wheel-commercial";
+  if (/phone|mobile/.test(key)) return "phone";
+  if (/laptop|computer|tablet/.test(key)) return "computer";
+  if (/camera|photograph/.test(key)) return "camera";
+  if (/appliance|refrigerat|washing machine/.test(key)) return "appliance";
+  if (/audio|video|television|speaker|cinema/.test(key)) return "electronics";
+  if (/shoe|footwear|sandal/.test(key)) return "shoes";
+  if (/jewel|earring|necklace/.test(key)) return "jewellery";
+  if (/bag|accessor/.test(key)) return "bag";
+  if (/clothing|fashion|tailor|textile|wear|shirt|saree|kurta/.test(key)) return "fashion";
+  if (/furniture|sofa|chair|table|bed|wardrobe/.test(key)) return "furniture";
+  if (/kitchen|cabinet|storage/.test(key)) return "kitchen";
+  if (/home|garden|decor|lighting|curtain|interior/.test(key)) return "home";
+  if (/restaurant|meal|food|catering|dining/.test(key)) return "food";
+  if (/grocery|produce|fruit|vegetable|market/.test(key)) return "produce";
+  if (/bakery|cake|sweet|bread/.test(key)) return "bakery";
+  if (/cafe|coffee|tea|beverage|juice|drink/.test(key)) return "coffee";
+  if (/dental|tooth/.test(key)) return "dental";
+  if (/pharmacy|medicine|medical|clinic|doctor|health|wellness/.test(key)) return "health";
+  if (/fitness|yoga|training|exercise/.test(key)) return "fitness";
+  if (/travel|tour|holiday|trip|flight/.test(key)) return "plane";
+  if (/hotel|stay|guest house|accommodation/.test(key)) return "hotel";
+  if (/bus|transport|ride|rail/.test(key)) return "buses";
+  if (/rental|car hire/.test(key)) return "four-wheeler";
+  if (/event|celebration|party/.test(key)) return "event";
+  if (/movie|cinema|film/.test(key)) return "cinema";
+  if (/music|instrument|artist/.test(key)) return "music";
+  if (/class|workshop|lesson|education|book/.test(key)) return "book";
+  if (/repair|service|maintenance|diagnostic|installation|cleaning|plumbing|carpentry/.test(key)) return "tools";
+  if (/professional|consult|account|business/.test(key)) return "briefcase";
+  return categoryIconIds[sector.trim().toLowerCase()] || "default-category";
+}
+
+function CategoryIcon({ name, sector = "" }: { name: string; sector?: string }) {
+  const iconId = categoryIconIdFor(name, sector);
+  return <svg className="category-illustration" viewBox="0 0 48 48" aria-hidden="true"><use href={`/vehicle-category-icons.svg#${iconId}`} /></svg>;
+}
+
 const verifiedBrandLogos: Record<string, string> = {
+  acer: "/brand-logos/acer.svg",
+  ampere: "/brand-logos/ampere.png",
+  "apple": "/brand-logos/apple.svg",
+  aprilia: "/brand-logos/aprilia.png",
+  "ashok leyland": "/brand-logos/ashokleyland.png",
+  ashokleyland: "/brand-logos/ashokleyland.png",
+  asus: "/brand-logos/asus.svg",
+  audi: "/brand-logos/audi.svg",
+  bajaj: "/brand-logos/bajaj.png",
+  bharatbenz: "/brand-logos/bharatbenz.png",
+  "bharat benz": "/brand-logos/bharatbenz.png",
+  "bmw motorrad": "/brand-logos/bmw.svg",
+  bmw: "/brand-logos/bmw.svg",
+  bosch: "/brand-logos/bosch.svg",
+  bose: "/brand-logos/bose.svg",
+  byd: "/brand-logos/byd.png",
+  canon: "/brand-logos/canon.png",
+  citroën: "/brand-logos/citroen.svg",
+  citroen: "/brand-logos/citroen.svg",
+  dell: "/brand-logos/dell.svg",
+  ducati: "/brand-logos/ducati.svg",
+  "euler motors": "/brand-logos/euler.png",
+  euler: "/brand-logos/euler.png",
+  "force motors": "/brand-logos/forcemotors.png",
+  "fujifilm": "/brand-logos/fujifilm.svg",
+  godrej: "/brand-logos/godrej.svg",
+  google: "/brand-logos/google.svg",
+  gopro: "/brand-logos/gopro.png",
+  hero: "/brand-logos/hero-motocorp.svg",
+  honda: "/brand-logos/honda.svg",
+  hp: "/brand-logos/hp.svg",
+  hyundai: "/brand-logos/hyundai.svg",
+  ifb: "/brand-logos/ifb.png",
+  isuzu: "/brand-logos/isuzu.png",
+  jawa: "/brand-logos/jawa.png",
+  jbl: "/brand-logos/jbl.svg",
+  jeep: "/brand-logos/jeep.svg",
+  "kawasaki": "/brand-logos/kawasaki.png",
+  kia: "/brand-logos/kia.svg",
+  "kinetic green": "/brand-logos/kineticgreen.png",
+  "kineticgreen": "/brand-logos/kineticgreen.png",
+  ktm: "/brand-logos/ktm.svg",
+  lenovo: "/brand-logos/lenovo.svg",
+  "lg": "/brand-logos/lg.svg",
+  "lohia auto": "/brand-logos/lohia.png",
+  lohia: "/brand-logos/lohia.png",
+  mahindra: "/brand-logos/mahindra.svg",
+  "maruti suzuki": "/brand-logos/maruti-suzuki.svg",
+  "mercedes-benz": "/brand-logos/mercedes.png",
+  "mg motor": "/brand-logos/mg.svg",
+  mg: "/brand-logos/mg.svg",
+  motorola: "/brand-logos/motorola.svg",
+  nikon: "/brand-logos/nikon.svg",
+  nissan: "/brand-logos/nissan.svg",
+  "ola electric": "/brand-logos/ola.webp",
+  ola: "/brand-logos/ola.webp",
+  "omega seiki": "/brand-logos/omegaseiki.png",
+  "omega seiki mobility": "/brand-logos/omegaseiki.png",
+  "oneplus": "/brand-logos/oneplus.svg",
+  panasonic: "/brand-logos/panasonic.svg",
+  philips: "/brand-logos/philips.png",
+  piaggio: "/brand-logos/piaggio.png",
+  "piaggio group": "/brand-logos/piaggiogroup.svg",
+  renault: "/brand-logos/renault.svg",
+  "revolt motors": "/brand-logos/revolt.png",
+  revolt: "/brand-logos/revolt.png",
+  "royal enfield": "/brand-logos/royalenfield.png",
+  samsung: "/brand-logos/samsung.svg",
+  scania: "/brand-logos/scania.svg",
+  "simple energy": "/brand-logos/simpleenergy.png",
+  sml: "/brand-logos/smlisuzu.png",
+  "sml isuzu": "/brand-logos/smlisuzu.png",
+  sony: "/brand-logos/sony.svg",
+  suzuki: "/brand-logos/suzuki.svg",
+  tata: "/brand-logos/tata.svg",
+  "tata motors": "/brand-logos/tata.svg",
+  toyota: "/brand-logos/toyota.svg",
   tvs: "/brand-logos/tvs-horse.svg",
-  hero: "/brand-logos/hero-h.svg",
+  triumph: "/brand-logos/triumph.png",
+  ultraviolette: "/brand-logos/ultraviolette.png",
+  vespa: "/brand-logos/vespa.svg",
+  volkswagen: "/brand-logos/volkswagen.svg",
+  volvo: "/brand-logos/volvo.svg",
+  whirlpool: "/brand-logos/whirlpool.png",
+  xiaomi: "/brand-logos/xiaomi.svg",
+  yamaha: "/brand-logos/yamahamotorcorporation.svg",
+  yezdi: "/brand-logos/yezdi.png",
 };
 
 function brandLogoFor(name: string, overrides?: Record<string, string>) {
@@ -248,18 +444,15 @@ function brandMonogram(name: string) {
   return (words.length > 1 ? words.map((word) => word[0]).join("") : words[0] || "").slice(0, 3).toUpperCase();
 }
 
-function isBrandOption(sector: string, parentPath: string[], node: TaxonomyNode) {
-  return node.children.length > 0 ||
-    (sector.trim().toLowerCase() === "automobiles" &&
-      parentPath.length === 2 &&
-      ["sales", "service"].includes(parentPath[0].trim().toLowerCase()));
+function isBrandOption(sector: string, parentPath: string[], node: TaxonomyNode, brandLogos?: Record<string, string>) {
+  if (sector.trim().toLowerCase() !== "automobiles") return Boolean(brandLogoFor(node.name, brandLogos));
+  return ["sales", "service"].includes(parentPath[0]?.trim().toLowerCase() || "") &&
+    ((parentPath.length === 2 && parentPath[1] !== "Multi wheel / commercial") ||
+      (parentPath.length === 3 && parentPath[1] === "Multi wheel / commercial"));
 }
 
 function buildAutomobileTaxonomyPaths(): string[][] {
-  return ["Sales", "Service"].flatMap((activity) => vehicleTypeOptions.flatMap((vehicleType) => (vehicleMakesByType[vehicleType] || []).flatMap((make) => {
-    const models = getVehicleModelsForType(vehicleType, make);
-    return models.length ? models.map((model) => [activity, vehicleType, make, model]) : [[activity, vehicleType, make]];
-  })));
+  return buildSharedAutomobileTaxonomyPaths();
 }
 
 function isLegacyAutomobileTaxonomy(paths: string[][]) {
@@ -910,7 +1103,7 @@ export default function Home() {
             {categories.slice(1).map((item) => (
               <button key={item.name} className={`category-link ${category === item.name ? "selected" : ""}`}
                 onClick={() => { setCategory(item.name); setCategoryPath([]); setQuery(""); setRole("Discover"); setMobileMenuOpen(false); }}>
-                <Icon>{item.icon}</Icon><span>{item.name}</span>
+                <Icon><CategoryIcon name={item.name} sector={item.name} /></Icon><span>{item.name}</span>
               </button>
             ))}
             <button className={`category-link view-all ${category === "All" ? "selected" : ""}`} onClick={() => { setCategory("All"); setCategoryPath([]); setQuery(""); setRole("Discover"); setMobileMenuOpen(false); }}>
@@ -1018,7 +1211,7 @@ export default function Home() {
               {category === "All" ? categories.slice(1).map((item, index) => (
                 <button key={item.name} className={`category-card cat-${index} ${category === item.name ? "category-active" : ""}`}
                   onClick={() => { setCategory(category === item.name ? "All" : item.name); setCategoryPath([]); setQuery(""); }}>
-                  <span className="category-art">{item.icon}</span><span>{item.name}</span><span className="category-arrow">↗</span>
+                  <span className="category-art"><CategoryIcon name={item.name} sector={item.name} /></span><span>{item.name}</span><span className="category-arrow">↗</span>
                 </button>
               )) : (() => {
                 const options = getTaxonomyOptions(category, categoryPath, categoryConfig);
@@ -1027,8 +1220,8 @@ export default function Home() {
                 const icon = tileIcons[Math.min(categoryPath.length, tileIcons.length - 1)];
                 return options.map((option, index) => {
                   const logo = brandLogoFor(option.name, categoryConfig.brandLogos);
-                  const isBrand = isBrandOption(category, categoryPath, option);
-                  return <button key={option.name} type="button" className={`category-card cat-${index}`} onClick={() => { setCategoryPath((current) => [...current, option.name]); setQuery(""); }}><span className={`category-art${isBrand && !logo ? " category-brand-monogram" : ""}`}>{logo ? <img className="category-brand-logo" src={logo} alt={`${option.name} logo`} /> : isBrand ? brandMonogram(option.name) : icon}</span><span>{option.name}</span><span className="category-arrow">↗</span></button>;
+                  const isBrand = isBrandOption(category, categoryPath, option, categoryConfig.brandLogos);
+                  return <button key={option.name} type="button" className={`category-card cat-${index}`} onClick={() => { setCategoryPath((current) => [...current, option.name]); setQuery(""); }}><span className={`category-art${isBrand && !logo ? " category-brand-monogram" : ""}`}>{logo ? <img className="category-brand-logo" src={logo} alt={`${option.name} logo`} /> : isBrand ? brandMonogram(option.name) : <CategoryIcon name={option.name} sector={category} />}</span><span>{option.name}</span><span className="category-arrow">↗</span></button>;
                 });
               })()}
             </div>
@@ -1269,6 +1462,7 @@ function AgentPortal({ showNotice }: { showNotice: (message: string) => void }) 
 function ProfilePanel({ role, label, identity = "" }: { role: "Account" | "Business" | "Agent" | "Company"; label: string; identity?: string }) {
   const [profile, setProfile] = useState<MemberProfile>(emptyMemberProfile);
   const [saved, setSaved] = useState(false);
+  const [profileError, setProfileError] = useState("");
   useEffect(() => {
     try {
       const stored = window.localStorage.getItem(profileStorageKey(role, identity));
@@ -1283,15 +1477,26 @@ function ProfilePanel({ role, label, identity = "" }: { role: "Account" | "Busin
       setProfile({ fullName: parsed.fullName || "", phone: parsed.phone || "", email: parsed.email || "", address: parsed.address || "", emergencyPhones: [parsed.emergencyPhones?.[0] || "", parsed.emergencyPhones?.[1] || ""] });
     } catch { setSaved(false); }
   }, [role, identity]);
-  function update<K extends keyof MemberProfile>(key: K, value: MemberProfile[K]) { setProfile((current) => ({ ...current, [key]: value })); setSaved(false); }
+  function update<K extends keyof MemberProfile>(key: K, value: MemberProfile[K]) { setProfile((current) => ({ ...current, [key]: value })); setSaved(false); setProfileError(""); }
   function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const digits = profile.emergencyPhones.map((value) => value.replace(/\D/g, ""));
-    if (digits.some((value) => value.length < 8 || value.length > 15) || digits[0] === digits[1]) { window.alert("Enter two different valid emergency contact numbers."); return; }
-    try { window.localStorage.setItem(profileStorageKey(role, identity), JSON.stringify(profile)); setSaved(true); }
-    catch { window.alert("Could not save the profile on this device."); }
+    const phoneDigits = profile.phone.replace(/\D/g, "");
+    const contactDigits = profile.emergencyPhones.map((value) => value.replace(/\D/g, ""));
+    if (!profile.fullName.trim() || profile.fullName.trim().length > 100 || phoneDigits.length < 8 || phoneDigits.length > 15) {
+      setProfileError("Enter your name and a valid mobile number.");
+      return;
+    }
+    if (contactDigits.some((value) => value.length < 8 || value.length > 15) || contactDigits[0] === contactDigits[1]) {
+      setProfileError("Enter two different valid emergency contact numbers.");
+      return;
+    }
+    try {
+      window.localStorage.setItem(profileStorageKey(role, identity), JSON.stringify({ ...profile, fullName: profile.fullName.trim(), phone: profile.phone.trim() }));
+      setSaved(true);
+      setProfileError("");
+    } catch { setProfileError("Could not save the profile on this device."); }
   }
-  return <section className="panel tab-panel"><div className="eyebrow">{label.toUpperCase()} PROFILE</div><h2>Your details and emergency contacts</h2><p>Saved in this browser demo. SOS uses these two numbers and shares your current coordinates with the Super Admin.</p><form className="stacked-form" onSubmit={save}><label>Full name<input value={profile.fullName} onChange={(event) => update("fullName", event.target.value)} maxLength={100} required /></label><label>Mobile number<input type="tel" value={profile.phone} onChange={(event) => update("phone", event.target.value)} minLength={8} maxLength={20} required /></label><label>Email address<input type="email" value={profile.email} onChange={(event) => update("email", event.target.value)} maxLength={254} /></label><label>{role === "Business" ? "Business address" : "Address"}<input value={profile.address} onChange={(event) => update("address", event.target.value)} maxLength={300} /></label><div className="eyebrow">SOS CONTACTS</div><label>Emergency contact 1<input type="tel" value={profile.emergencyPhones[0]} onChange={(event) => update("emergencyPhones", [event.target.value, profile.emergencyPhones[1]])} minLength={8} maxLength={20} required /></label><label>Emergency contact 2<input type="tel" value={profile.emergencyPhones[1]} onChange={(event) => update("emergencyPhones", [profile.emergencyPhones[0], event.target.value])} minLength={8} maxLength={20} required /></label><div className="form-button-row"><button className="primary-button" type="submit">Save profile</button>{saved && <span role="status">Profile saved</span>}</div></form><p className="fine-print">Calls and messages open your device apps for confirmation. This demo cannot automatically call or message contacts.</p></section>;
+  return <section className="panel tab-panel"><div className="eyebrow">{label.toUpperCase()} PROFILE</div><h2>Your details and emergency contacts</h2><p>Profile details and emergency contacts are saved in this browser. When you send an SOS, its contact and location details are recorded server-side for Super Admin review.</p><form className="stacked-form" onSubmit={save}><label>Full name<input value={profile.fullName} onChange={(event) => update("fullName", event.target.value)} maxLength={100} required /></label><label>Mobile number<input type="tel" value={profile.phone} onChange={(event) => update("phone", event.target.value)} minLength={8} maxLength={20} required /></label><label>Email address<input type="email" value={profile.email} onChange={(event) => update("email", event.target.value)} maxLength={254} /></label><label>{role === "Business" ? "Business address" : "Address"}<input value={profile.address} onChange={(event) => update("address", event.target.value)} maxLength={300} /></label><div className="eyebrow">SOS CONTACTS</div><label>Emergency contact 1<input type="tel" value={profile.emergencyPhones[0]} onChange={(event) => update("emergencyPhones", [event.target.value, profile.emergencyPhones[1]])} minLength={8} maxLength={20} required /></label><label>Emergency contact 2<input type="tel" value={profile.emergencyPhones[1]} onChange={(event) => update("emergencyPhones", [profile.emergencyPhones[0], event.target.value])} minLength={8} maxLength={20} required /></label>{profileError && <p className="form-error" role="alert">{profileError}</p>}<div className="form-button-row"><button className="primary-button" type="submit">Save profile</button>{saved && <span role="status">Profile saved</span>}</div></form><p className="fine-print">Calls and messages open your device apps for confirmation. This demo never automatically calls or messages contacts.</p></section>;
 }
 
 function ProductManager({
@@ -1352,7 +1557,7 @@ function CatalogueTaxonomyOptions({
       const checked = selections.some((selection) => selection.activity === activity && selection.sector === sector && selection.path.length === path.length && selection.path.every((part, index) => part === path[index]));
       const logo = brandLogoFor(node.name, brandLogos);
       return <div className="catalogue-taxonomy-option" key={path.join("/")}>
-        <label><input type="checkbox" checked={checked} onChange={(event) => onToggle(activity, sector, path, event.target.checked)} />{logo && <img className="category-brand-logo" src={logo} alt="" />}{node.name}</label>
+        <label><input type="checkbox" checked={checked} onChange={(event) => onToggle(activity, sector, path, event.target.checked)} />{logo ? <img className="category-brand-logo" src={logo} alt="" /> : <CategoryIcon name={node.name} sector={sector} />}{node.name}</label>
         {node.children.length > 0 && <div className="catalogue-taxonomy-children">{renderOptions(node.children, path)}</div>}
       </div>;
     });
@@ -1511,7 +1716,7 @@ function CompanyPortal({
     {activeTab === "Admins" && accessLevel === "Super Admin" && <section className="panel tab-panel"><div className="eyebrow">PLATFORM ACCESS</div><h2>Manage Admin accounts</h2><p>Only the initial Super Admin can create or disable company Admin accounts. Super Admin access cannot be self-registered.</p><form className="product-form" onSubmit={registerAdmin}><label>{companyAdminLabel("name", "Admin name")}<input name="name" placeholder="e.g. Priya Sharma" maxLength={100} required /></label><label>{companyAdminLabel("email", "Work email")}<input name="email" type="email" placeholder="priya@company.com" required /></label><label>{companyAdminLabel("password", "Temporary password")}<input name="password" type="password" minLength={10} autoComplete="new-password" placeholder="At least 10 characters" required /></label><button className="primary-button" type="submit">Create Admin account</button>{adminError && <span className="form-error" role="alert">{adminError}</span>}</form><div className="form-note"><strong>Account store</strong><span>Passwords are stored as salted hashes on this local server. Share temporary passwords through a private channel.</span></div>{adminLoading ? <p>Loading Admin accounts...</p> : admins.map((admin) => <div className="listing-row" key={admin.id}><span className="listing-icon lavender">A</span><span className="listing-name"><strong>{admin.name}</strong><small>{admin.email} · Created {new Date(admin.createdAt).toLocaleDateString()}</small></span><span className={`status-pill ${admin.active ? "verified" : "pending"}`}>{admin.active ? "Active" : "Disabled"}</span><button className="outline-button" type="button" onClick={() => void setAdminActive(admin.id, !admin.active)}>{admin.active ? "Disable access" : "Restore access"}</button></div>)}</section>}
     {activeTab === "Activity log" && <section className="panel tab-panel"><div className="panel-heading"><div><div className="eyebrow">LOCAL DEMO AUDIT</div><h2>Recent activity</h2></div><span className="status-pill pending">Browser only</span></div><p>Events are stored locally in this browser and are not sent to the company.</p>{events.length ? events.map((event) => <div className="activity-row" key={event.id}><span className="activity-dot" /><strong>{event.action}</strong><small>{new Date(event.createdAt).toLocaleString()}</small></div>) : <EmptyState title="No activity recorded" text="Searches and selections will appear here as local demo events." />}</section>}
     {activeTab === "Billing" && <section className="panel tab-panel"><div className="eyebrow">SUBSCRIPTIONS & CHECKOUT</div><h2>Payment previews</h2><p>These previews never create a payment or activate a subscription.</p>{checkouts.length ? checkouts.map((item, index) => <div className="listing-row" key={`${item.createdAt}-${index}`}><span className="listing-icon lavender">₹</span><span className="listing-name"><strong>{item.businessName} · {item.plan}</strong><small>{item.paymentMethod} · {new Date(item.createdAt).toLocaleString()}</small></span><span className="status-pill pending">{item.status}</span></div>) : <EmptyState title="No checkout previews" text="Business plan selections will be listed here in this browser." />}</section>}
-    {activeTab === "Safety" && <section className="panel tab-panel"><div className="eyebrow">SAFETY & ESCALATION</div><h2>Emergency response setup</h2>{accessLevel === "Super Admin" ? <><p>SOS alerts from customers, businesses and agents appear here. Exact coordinates and emergency contact numbers are restricted to Super Admins. The local demo records alerts but does not place or confirm calls.</p>{sosLoading && <p>Loading SOS alerts...</p>}{sosError && <p className="form-error" role="alert">{sosError}</p>}{!sosLoading && !sosError && sosAlerts.length === 0 && <EmptyState title="No SOS alerts" text="Customer SOS alerts will appear here when submitted." />}{sosAlerts.map((alert) => <article className="sos-alert-card" key={alert.id}><div className="sos-alert-heading"><div><strong>{alert.customerName} ? {alert.profileRole === "Account" ? "Customer" : alert.profileRole}</strong><small>{emergencyTypes.find((item) => item.id === alert.emergencyType)?.title ?? alert.emergencyType} ? dial {alert.serviceNumber} ? mobile ending {alert.customerPhoneLast4} ? {new Date(alert.createdAt).toLocaleString()}</small></div><span className={`status-pill ${alert.locationStatus === "shared" ? "verified" : "pending"}`}>{alert.locationStatus === "shared" ? "Location shared" : "Location unavailable"}</span></div>{alert.latitude !== null && alert.longitude !== null ? <p><strong>Exact coordinates:</strong> {alert.latitude.toFixed(6)}, {alert.longitude.toFixed(6)}{alert.accuracyMeters !== null ? ` ? accuracy ?${Math.round(alert.accuracyMeters)} m` : ""}</p> : <p>Customer location was unavailable when the SOS was submitted.</p>}<div className="sos-alert-contacts">{alert.emergencyPhones.map((phone, index) => <a key={`${alert.id}-${index}`} className="outline-button" href={`tel:${phone}`}>Call emergency contact {index + 1}</a>)}</div><small className="sos-alert-status">{alert.deliveryStatus}</small></article>)}</> : <p>SOS alert details and exact customer coordinates are available to Super Admins only. This demo does not dispatch emergency calls.</p>}</section>}
+    {activeTab === "Safety" && <section className="panel tab-panel"><div className="eyebrow">SAFETY & ESCALATION</div><h2>Emergency response setup</h2>{accessLevel === "Super Admin" ? <><p>Recent SOS alerts are recorded on this server and restricted to Super Admins. Alert details include personal contacts and precise coordinates; handle them as sensitive information. Bizearch does not place calls or send messages.</p><button className="outline-button" type="button" disabled={sosLoading} onClick={() => { setSosLoading(true); setSosError(""); fetch("/api/company/sos", { cache: "no-store" }).then(async (response) => { const result = await response.json() as { alerts?: SosAlert[]; error?: string }; if (!response.ok) throw new Error(result.error || "Could not load SOS alerts."); setSosAlerts(result.alerts || []); }).catch((reason) => setSosError(reason instanceof Error ? reason.message : "Could not load SOS alerts.")).finally(() => setSosLoading(false)); }}>Refresh alerts</button>{sosLoading && <p role="status">Loading SOS alerts...</p>}{sosError && <p className="form-error" role="alert">{sosError}</p>}{!sosLoading && !sosError && sosAlerts.length === 0 && <EmptyState title="No SOS alerts" text="Customer SOS alerts will appear here when submitted." />}{sosAlerts.map((alert) => <article className="sos-alert-card" key={alert.id}><div className="sos-alert-heading"><div><strong>{alert.customerName} · {alert.profileRole === "Account" ? "Customer" : alert.profileRole}</strong><small>{emergencyTypes.find((item) => item.id === alert.emergencyType)?.title ?? alert.emergencyType} · dial {alert.serviceNumber} · {new Date(alert.createdAt).toLocaleString()}</small><small>Account: {alert.identity || "Identity not available on this legacy alert"}</small><small>Mobile: {alert.customerPhone || `ending ${alert.customerPhoneLast4}`}</small></div><span className={`status-pill ${alert.locationStatus === "shared" ? "verified" : "pending"}`}>{alert.locationStatus === "shared" ? "Location shared" : "Location unavailable"}</span></div>{alert.latitude !== null && alert.longitude !== null ? <p><strong>Exact coordinates:</strong> {alert.latitude.toFixed(6)}, {alert.longitude.toFixed(6)}{alert.accuracyMeters !== null ? ` · accuracy ±${Math.round(alert.accuracyMeters)} m` : ""}</p> : <p>Customer location was unavailable when the SOS was submitted.</p>}<div className="sos-alert-contacts">{alert.emergencyPhones.map((phone, index) => <a key={`${alert.id}-${index}`} className="outline-button" href={`tel:${phone}`}>Call emergency contact {index + 1}</a>)}</div><small className="sos-alert-status">{alert.deliveryStatus}</small></article>)}</> : <p>SOS alert details and exact customer coordinates are available to Super Admins only. This demo does not dispatch emergency calls.</p>}</section>}
     {activeTab === "Profile" && <ProfilePanel role="Company" label={accessLevel} identity={identity} />}
   </div>;
 }
@@ -1684,7 +1889,7 @@ function CategoryTreeEditor({
             validPath.length === 2 &&
             ["sales", "service"].includes(validPath[0].trim().toLowerCase()))
         );
-        return <div className="category-tree-choice" key={node.name}>{editingBranch.length === validPath.length + 1 && editingBranch[editingBranch.length - 1] === node.name ? <><input value={editingName} onChange={(event) => setEditingName(event.target.value)} maxLength={60} aria-label={`Rename ${node.name}`} /><button type="button" className="outline-button" onClick={commitRename}>Save</button><button type="button" className="outline-button" onClick={() => setEditingBranch([])}>Cancel</button></> : <><label><input type="checkbox" checked={false} onChange={() => { setActivePath([...validPath, node.name]); setEditingBranch([]); setMessage(""); }} />{logo && <img className="category-brand-logo" src={logo} alt="" />}<span>{node.name}</span><small>{node.children.length ? `${node.children.length} ${node.children.length === 1 ? "subcategory" : "subcategories"}` : "No subcategories"}</small></label>{canUploadLogo && <label className="category-logo-upload">{logo ? "Replace logo" : "Add logo"}<input type="file" accept="image/png,image/jpeg,image/webp" disabled={Boolean(uploadingLogo)} aria-label={`${logo ? "Replace" : "Add"} ${node.name} company logo`} onChange={(event) => { const file = event.currentTarget.files?.[0]; event.currentTarget.value = ""; if (file) void uploadLogo(node.name, file); }} /></label>}{canUploadLogo && uploadingLogo === node.name && <small>Uploading...</small>}<button type="button" className="category-tree-action rename" aria-label={`Rename ${node.name}`} title="Rename" onClick={() => beginRename(node.name)}>Rename</button><button type="button" className="category-tree-action remove" aria-label={`Remove ${node.name}`} title="Remove" onClick={() => removeChoice(node.name)}>&#215;</button></>}</div>;
+        return <div className="category-tree-choice" key={node.name}>{editingBranch.length === validPath.length + 1 && editingBranch[editingBranch.length - 1] === node.name ? <><input value={editingName} onChange={(event) => setEditingName(event.target.value)} maxLength={60} aria-label={`Rename ${node.name}`} /><button type="button" className="outline-button" onClick={commitRename}>Save</button><button type="button" className="outline-button" onClick={() => setEditingBranch([])}>Cancel</button></> : <><label><input type="checkbox" checked={false} onChange={() => { setActivePath([...validPath, node.name]); setEditingBranch([]); setMessage(""); }} />{logo ? <img className="category-brand-logo" src={logo} alt="" /> : <CategoryIcon name={node.name} sector={sectorName} />}<span>{node.name}</span><small>{node.children.length ? `${node.children.length} ${node.children.length === 1 ? "subcategory" : "subcategories"}` : "No subcategories"}</small></label>{canUploadLogo && <label className="category-logo-upload">{logo ? "Replace logo" : "Add logo"}<input type="file" accept="image/png,image/jpeg,image/webp" disabled={Boolean(uploadingLogo)} aria-label={`${logo ? "Replace" : "Add"} ${node.name} company logo`} onChange={(event) => { const file = event.currentTarget.files?.[0]; event.currentTarget.value = ""; if (file) void uploadLogo(node.name, file); }} /></label>}{canUploadLogo && uploadingLogo === node.name && <small>Uploading...</small>}<button type="button" className="category-tree-action rename" aria-label={`Rename ${node.name}`} title="Rename" onClick={() => beginRename(node.name)}>Rename</button><button type="button" className="category-tree-action remove" aria-label={`Remove ${node.name}`} title="Remove" onClick={() => removeChoice(node.name)}>&#215;</button></>}</div>;
       })}</div> : <p className="category-empty-note">No options at this level. Use + New to add one.</p>}
       {message && <p className="category-tree-message" role="alert">{message}</p>}
     </div>
@@ -1895,7 +2100,8 @@ function Dialog({
   const [sosBusy, setSosBusy] = useState(false);
   const [sosError, setSosError] = useState("");
   const [selectedEmergencyType, setSelectedEmergencyType] = useState<EmergencyType | "">("");
-  const [sosResult, setSosResult] = useState<{ locationStatus: "shared" | "unavailable"; latitude: number | null; longitude: number | null; accuracyMeters: number | null; emergencyType: EmergencyType } | null>(null);
+  const [sosResult, setSosResult] = useState<{ id: string; createdAt: string; customerName: string; emergencyPhones: [string, string]; locationStatus: "shared" | "unavailable"; latitude: number | null; longitude: number | null; accuracyMeters: number | null; emergencyType: EmergencyType; duplicate: boolean } | null>(null);
+  const sosRequestKey = useRef("");
   const [step, setStep] = useState(1);
   const [checkoutPlan, setCheckoutPlan] = useState("");
   const [checkoutBusiness, setCheckoutBusiness] = useState(businesses[0]?.name || "");
@@ -1907,7 +2113,7 @@ function Dialog({
     businessCategories: [] as string[],
   });
   const [businessSectors, setBusinessSectors] = useState<string[]>([]);
-  const [businessTaxonomySelections, setBusinessTaxonomySelections] = useState<CatalogueSelection[]>([]);
+  const [businessTaxonomySelections] = useState<CatalogueSelection[]>([]);
   const [businessCategoryError, setBusinessCategoryError] = useState("");
   const [businessAddress, setBusinessAddress] = useState<BusinessAddress>({ doorNumber: "", street: "", area: "", cityTown: "", taluka: "", district: "", state: "", pincode: "" });
   const [businessCoordinates, setBusinessCoordinates] = useState<Coordinates | null>(null);
@@ -1927,7 +2133,6 @@ function Dialog({
   function toggleBusinessSector(sector: string) {
     const removing = businessSectors.includes(sector);
     setBusinessSectors((current) => removing ? current.filter((item) => item !== sector) : [...current, sector]);
-    if (removing) setBusinessTaxonomySelections((current) => current.filter((selection) => selection.sector !== sector));
     if (removing && sector === "Automobiles") {
       setVehicleTypes([]); setVehicleMakes([]); setVehicleModels([]); setCustomVehicleMake(""); setCustomVehicleModels(""); setVehicleSelectionError("");
     }
@@ -1937,13 +2142,7 @@ function Dialog({
   function toggleBusinessMode(activity: CatalogueActivity) {
     const removing = businessModes.includes(activity);
     setBusinessModes((current) => removing ? current.filter((item) => item !== activity) : [...current, activity]);
-    if (removing) setBusinessTaxonomySelections((current) => current.filter((selection) => selection.activity !== activity));
     setBusinessModeError("");
-    setBusinessCategoryError("");
-  }
-
-  function toggleBusinessTaxonomyPath(activity: CatalogueActivity, sector: string, path: string[], checked: boolean) {
-    setBusinessTaxonomySelections((current) => updateCatalogueSelections(current, activity, sector, path, checked));
     setBusinessCategoryError("");
   }
 
@@ -2016,28 +2215,50 @@ function Dialog({
   }, [kind, profileRole, profileIdentity]);
   async function recordSos(location: { locationStatus: "shared" | "unavailable"; latitude: number | null; longitude: number | null; accuracyMeters: number | null }) {
     try {
-      const response = await fetch("/api/customers/sos", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...emergencyProfile, profileRole, emergencyType: selectedEmergencyType, ...location }) });
-      const result = await response.json() as { alert?: { id: string }; error?: string };
+      if (!sosRequestKey.current) sosRequestKey.current = crypto.randomUUID();
+      const response = await fetch("/api/customers/sos", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...emergencyProfile, requestKey: sosRequestKey.current, emergencyType: selectedEmergencyType, ...location }) });
+      const result = await response.json() as { alert?: SosAlert; duplicate?: boolean; error?: string };
       if (!response.ok || !result.alert) throw new Error(result.error || "Could not send the SOS alert.");
-      setSosResult({ ...location, emergencyType: selectedEmergencyType as EmergencyType }); setSosError("");
-      showNotice(location.locationStatus === "shared" ? "SOS alert and coordinates were recorded for the Super Admin. Use the call buttons to contact emergency services and your contacts." : "SOS alert was recorded, but this device could not share its location. Use the call buttons now.");
-    } catch (reason) { setSosError(reason instanceof Error ? reason.message : "Could not send the SOS alert."); }
+      setSosResult({
+        id: result.alert.id,
+        createdAt: result.alert.createdAt,
+        customerName: result.alert.customerName,
+        emergencyPhones: result.alert.emergencyPhones,
+        locationStatus: result.alert.locationStatus,
+        latitude: result.alert.latitude,
+        longitude: result.alert.longitude,
+        accuracyMeters: result.alert.accuracyMeters,
+        emergencyType: result.alert.emergencyType,
+        duplicate: Boolean(result.duplicate),
+      });
+      sosRequestKey.current = crypto.randomUUID();
+      setSosError("");
+      showNotice(result.alert.locationStatus === "shared" ? "SOS alert and coordinates were recorded for the Super Admin. Open a call or message only if you choose to." : "SOS alert was recorded, but this device could not share its location. Use your phone to call emergency services if needed.");
+    } catch (reason) {
+      setSosError(`${reason instanceof Error ? reason.message : "Could not send the SOS alert."} If you may be in immediate danger, call your local emergency number now.`);
+    }
     finally { setSosBusy(false); }
   }
   function submitSos(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setSosBusy(true); setSosError(""); setSosResult(null);
+    event.preventDefault();
+    if (sosBusy) return;
+    setSosBusy(true); setSosError(""); setSosResult(null);
     const emergencyDigits = emergencyProfile.emergencyPhones.map((phone) => phone.replace(/\D/g, ""));
     if (!selectedEmergencyType) { setSosError("Select the type of emergency first."); setSosBusy(false); return; }
-    if (!emergencyProfile.customerName.trim() || emergencyProfile.customerPhone.replace(/\D/g, "").length < 8 || emergencyDigits.some((phone) => phone.length < 8 || phone.length > 15) || emergencyDigits[0] === emergencyDigits[1]) {
+    if (!emergencyProfile.customerName.trim() || emergencyProfile.customerName.trim().length > 100 || emergencyProfile.customerPhone.replace(/\D/g, "").length < 8 || emergencyProfile.customerPhone.replace(/\D/g, "").length > 15 || emergencyDigits.some((phone) => phone.length < 8 || phone.length > 15) || emergencyDigits[0] === emergencyDigits[1]) {
       setSosError("Enter your name, mobile and two different emergency contact numbers."); setSosBusy(false); return;
     }
     try { window.localStorage.setItem(profileStorageKey(profileRole, profileIdentity), JSON.stringify({ ...emptyMemberProfile, fullName: emergencyProfile.customerName, phone: emergencyProfile.customerPhone, emergencyPhones: emergencyProfile.emergencyPhones })); } catch { /* SOS submission can still proceed if local storage is unavailable. */ }
     if (!navigator.geolocation) { void recordSos({ locationStatus: "unavailable", latitude: null, longitude: null, accuracyMeters: null }); return; }
-    navigator.geolocation.getCurrentPosition(
-      (position) => void recordSos({ locationStatus: "shared", latitude: position.coords.latitude, longitude: position.coords.longitude, accuracyMeters: position.coords.accuracy }),
-      () => void recordSos({ locationStatus: "unavailable", latitude: null, longitude: null, accuracyMeters: null }),
-      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 },
-    );
+    try {
+      navigator.geolocation.getCurrentPosition(
+        (position) => void recordSos({ locationStatus: "shared", latitude: position.coords.latitude, longitude: position.coords.longitude, accuracyMeters: position.coords.accuracy }),
+        () => void recordSos({ locationStatus: "unavailable", latitude: null, longitude: null, accuracyMeters: null }),
+        { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 },
+      );
+    } catch {
+      void recordSos({ locationStatus: "unavailable", latitude: null, longitude: null, accuracyMeters: null });
+    }
   }
   async function handleAccountSubmit(event: React.FormEvent<HTMLFormElement>) {
     if (!isSignup) {
@@ -2104,7 +2325,6 @@ function Dialog({
           if (!businessCoordinates) { setBusinessLocationError("Capture the business location pin to continue."); return; }
           if (!businessModes.length) { setBusinessModeError("Select Sales, Service, or both."); return; }
           if (!businessSectors.length) { setBusinessCategoryError("Choose at least one business sector to continue."); return; }
-          if (!businessTaxonomySelections.length) { setBusinessCategoryError("Choose at least one category or subcategory for Sales or Service."); return; }
           if (isAutomobileBusiness && !vehicleTypes.length) { setVehicleSelectionError("Select at least one vehicle type."); return; }
           if (isAutomobileBusiness && !vehicleMakes.length) { setVehicleSelectionError("Select at least one make / manufacturer."); return; }
           if (isAutomobileBusiness && vehicleMakes.includes("Other / not listed") && !customVehicleMake.trim()) { setVehicleSelectionError("Enter the other manufacturer name."); return; }
@@ -2150,18 +2370,6 @@ function Dialog({
             {vehicleSelectionError && <p className="form-error" role="alert">{vehicleSelectionError}</p>}
           </fieldset>}
 
-          {businessModes.filter((mode): mode is CatalogueActivity => mode === "Sales" || mode === "Service").map((activity) => <fieldset className="registration-taxonomy" key={`registration-${activity}`}>
-            <legend>{activity} categories</legend>
-            <p>Select the categories and specialties that match your {activity.toLowerCase()}.</p>
-            {businessSectors.length ? <div className="catalogue-sector-list">{businessSectors.map((sectorName) => {
-              const sector = categories.find((item) => item.name === sectorName);
-              if (!sector) return null;
-              return <fieldset className="catalogue-sector registration-category-tree" key={`${activity}-${sector.name}`}>
-                <legend>{sector.name}</legend>
-                <CatalogueTaxonomyOptions activity={activity} sector={sector.name} paths={getSectorActivityPaths(sector, activity)} selections={businessTaxonomySelections} brandLogos={brandLogos} onToggle={toggleBusinessTaxonomyPath} />
-              </fieldset>;
-            })}</div> : <p>Select a business sector above to see its categories.</p>}
-          </fieldset>)}
           {businessCategoryError && <p className="form-error" role="alert">{businessCategoryError}</p>}
           {regEnabled(businessForm, "businessPhone") && <label>{regLabel(businessForm, "businessPhone", "Business mobile number")}<input name="businessPhone" type="tel" placeholder="+91 98765 43210" defaultValue={businessDetails.businessPhone} required={regField(businessForm, "businessPhone")?.required ?? true} /></label>}
           <button className="primary-button full-button" type="submit">Continue to verification</button>
@@ -2178,18 +2386,18 @@ function Dialog({
             <div className="form-button-row"><button type="button" className="outline-button" onClick={() => setCheckoutPlan("")}>← Plans</button><button className="primary-button" type="submit">Preview checkout →</button></div>
           </form>}
         <div className="fine-print">Production payments require server-created orders, a payment provider, verified webhooks, refunds and secure billing records.</div></>}
-      {kind === "sos" && <><div className="sos-modal-mark">+</div><div className="eyebrow">EMERGENCY HELP</div><h2>What kind of emergency?</h2><p>Select a type, then send one SOS alert with your location and saved emergency contacts. This demo cannot place calls automatically.</p>
+      {kind === "sos" && <><div className="sos-modal-mark">+</div><div className="eyebrow">EMERGENCY HELP</div><h2>What kind of emergency?</h2><p>Select a type, then record one SOS alert with your location and saved emergency contacts. No call or message is placed automatically.</p>
         <div className="sos-emergency-tiles" role="group" aria-label="Emergency type">
-          {emergencyTypes.map((item) => <button key={item.id} type="button" className={`sos-emergency-tile ${selectedEmergencyType === item.id ? "selected" : ""}`} aria-pressed={selectedEmergencyType === item.id} onClick={() => { setSelectedEmergencyType(item.id); setSosError(""); setSosResult(null); }}><span className="sos-type-icon">{item.icon}</span><strong>{item.title}</strong><small>{item.description}</small></button>)}
+          {emergencyTypes.map((item) => <button key={item.id} type="button" disabled={sosBusy} className={`sos-emergency-tile ${selectedEmergencyType === item.id ? "selected" : ""}`} aria-pressed={selectedEmergencyType === item.id} onClick={() => { setSelectedEmergencyType(item.id); setSosError(""); setSosResult(null); }}><span className="sos-type-icon">{item.icon}</span><strong>{item.title}</strong><small>{item.description}</small></button>)}
         </div>
         <form className="emergency-contact-form sos-submit-form" onSubmit={submitSos}>
-          <div className="sos-profile-summary"><strong>{emergencyProfile.customerName || "Profile details not set"}</strong><span>{emergencyProfile.customerPhone || "Add your mobile number in Profile"}</span><span>Emergency contacts: {emergencyProfile.emergencyPhones.map((phone) => phone || "Not set").join(" ? ")}</span><button type="button" className="text-link" onClick={onOpenProfile}>Edit profile and emergency contacts</button></div>
-          <p className="fine-print">SOS shares the selected emergency type, current coordinates and saved contacts with Super Admins. After the alert is recorded, you can open a call or message for the selected service and your contacts; your device asks you to confirm each action.</p>
+          <div className="sos-profile-summary"><strong>{emergencyProfile.customerName || "Profile details not set"}</strong><span>{emergencyProfile.customerPhone || "Add your mobile number in Profile"}</span><span>Emergency contacts: {emergencyProfile.emergencyPhones.map((phone) => phone || "Not set").join(" · ")}</span><button type="button" className="text-link" disabled={sosBusy} onClick={onOpenProfile}>Edit profile and emergency contacts</button></div>
+          <p className="fine-print">Your account identity, name, mobile, selected emergency type, location result and two contact numbers are recorded for Super Admin review. Calls and messages below open your device app only after you choose them.</p>
           {sosError && <p className="form-error" role="alert">{sosError}</p>}
           <button className="primary-button sos-trigger-button" type="submit" disabled={sosBusy || !selectedEmergencyType}>{sosBusy ? "Sending SOS alert..." : "Send SOS"}</button>
         </form>
-        {sosResult && <div className="sos-call-panel"><strong>{emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.title} alert recorded ? {sosResult.locationStatus === "shared" ? `${sosResult.latitude?.toFixed(6)}, ${sosResult.longitude?.toFixed(6)}` : "location unavailable"}</strong><p>Call the selected emergency service, then contact your saved numbers. Confirm each call or message on your device.</p><div className="emergency-call-links"><a className="primary-button" href={`tel:${emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.phone}`}>Call {emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.title} ({emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.phone})</a>{emergencyProfile.emergencyPhones.map((phone, index) => <a className="outline-button" key={`sos-call-${index}`} href={`tel:${phone}`}>Call contact {index + 1}</a>)}</div><div className="emergency-call-links emergency-sms-links">{emergencyProfile.emergencyPhones.map((phone, index) => { const coordinates = sosResult.latitude !== null && sosResult.longitude !== null ? `Coordinates: ${sosResult.latitude.toFixed(6)}, ${sosResult.longitude.toFixed(6)}` : "Location unavailable on this device"; const message = encodeURIComponent(`SOS ${emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.title} alert from ${emergencyProfile.customerName}. Please help. ${coordinates}`); return <a className="outline-button" key={`sos-sms-${index}`} href={`sms:${phone}?body=${message}`}>Text location to contact {index + 1}</a>; })}</div></div>}
-        <div className="fine-print">India's 112 system covers police, fire and health emergencies, with existing numbers including 100 (police), 101 (fire) and 108 (ambulance) integrated. Emergency calls and messages require your confirmation.</div></>}
+        {sosResult && <div className="sos-call-panel"><strong>{emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.title} alert {sosResult.duplicate ? "was already recorded" : "recorded"} · {sosResult.locationStatus === "shared" ? `${sosResult.latitude?.toFixed(6)}, ${sosResult.longitude?.toFixed(6)} · accuracy ±${Math.round(sosResult.accuracyMeters || 0)} m` : "location unavailable"}</strong><p>Alert ID: {sosResult.id} · recorded {new Date(sosResult.createdAt).toLocaleString()}. This confirms storage only; no call or message was sent.</p><div className="emergency-call-links"><a className="primary-button" href={`tel:${emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.phone}`}>Open dialer · {emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.title} ({emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.phone})</a>{sosResult.emergencyPhones.map((phone, index) => <a className="outline-button" key={`sos-call-${index}`} href={`tel:${phone}`}>Open dialer · contact {index + 1}</a>)}</div><div className="emergency-call-links emergency-sms-links">{sosResult.emergencyPhones.map((phone, index) => { const coordinates = sosResult.latitude !== null && sosResult.longitude !== null ? `Coordinates: ${sosResult.latitude.toFixed(6)}, ${sosResult.longitude.toFixed(6)}` : "Location unavailable on this device"; const message = encodeURIComponent(`SOS ${emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.title} alert from ${sosResult.customerName}. Please help. ${coordinates}`); return <a className="outline-button" key={`sos-sms-${index}`} href={`sms:${phone}?body=${message}`}>Prepare SMS · contact {index + 1}</a>; })}</div></div>}
+        <div className="fine-print">If this is an emergency, call the local emergency number yourself. Bizearch has no telephony/SMS dispatch integration; opening a dialer or composing a text requires your explicit action and any device confirmation.</div></>}
     </section>
   </div>;
 }

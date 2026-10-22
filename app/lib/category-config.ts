@@ -65,7 +65,7 @@ export async function readCategoryConfig(): Promise<CategoryConfig> {
       const hasSalesOrService = sector.paths.some((item) => ["sales", "service"].includes(item[0]?.trim().toLowerCase() || ""));
       if (current === "electronics" && !hasSalesOrService) return { ...sector, paths: nextDefault.paths };
       if (current === "automobiles" && previousDefault && JSON.stringify(sector.paths) === JSON.stringify(previousDefault.paths)) {
-        return { ...sector, icon: nextDefault.icon };
+        return { ...sector, icon: nextDefault.icon, paths: nextDefault.paths };
       }
       if (current !== "automobiles" && previousDefault && JSON.stringify(sector.paths) === JSON.stringify(previousDefault.paths)) {
         return { ...sector, paths: nextDefault.paths };
