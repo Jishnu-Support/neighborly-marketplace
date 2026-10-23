@@ -368,3 +368,106 @@ h1 em{font-family:var(--serif);font-weight:400;color:#507959;letter-spacing:-1px
 .registration-category-tree .catalogue-taxonomy-option input[type=checkbox]{flex:0 0 auto;width:13px;height:13px;margin:1px 0 0;accent-color:#477650}
 .catalogue-item-categories{display:block;margin-top:3px;color:#718078}
 @media(max-width:760px){.catalogue-sector-list{grid-template-columns:1fr}}
+
+/* ============================================================
+   A to Z Directory & Product/Service Navigation Styles
+   ============================================================ */
+
+.browse-mode-tabs{display:inline-flex;align-items:center;background:#edf2ec;padding:4px;border-radius:10px;gap:4px;margin-bottom:22px;border:1px solid #e1e8df}
+.browse-tab{display:inline-flex;align-items:center;gap:8px;border:0;background:transparent;color:#5a685e;font:600 11px Manrope,sans-serif;padding:8px 16px;border-radius:7px;transition:all .18s;cursor:pointer}
+.browse-tab:hover{color:#273b2f;background:rgba(255,255,255,.5)}
+.browse-tab.active{background:#fff;color:#244936;box-shadow:0 2px 8px rgba(36,73,54,.08);font-weight:700}
+.browse-tab-badge{background:#e2ebe1;color:#2b543c;font-size:9px;padding:2px 6px;border-radius:10px;font-weight:700;letter-spacing:.5px}
+
+.atoz-directory-container{background:#fff;border:1px solid #e7ebe6;border-radius:12px;padding:28px 30px 38px;box-shadow:0 6px 24px rgba(36,60,42,.04);margin-bottom:38px}
+.atoz-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:24px}
+.atoz-badge{font-size:9px;font-weight:800;letter-spacing:1.3px;color:#78887b;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.atoz-badge:before{content:"";width:6px;height:6px;border-radius:50%;background:#386b4b;display:inline-block}
+.atoz-title{font:700 26px Manrope,sans-serif;color:#233529;margin:0 0 7px;letter-spacing:-.6px}
+.atoz-title em{font-family:var(--serif);font-weight:400;color:#386b4b;font-style:italic}
+.atoz-subtitle{font-size:12px;color:#738176;line-height:1.55;margin:0;max-width:640px}
+.atoz-close-button{border:1px solid #dce4da;background:#fbfdfb;color:#496450;border-radius:6px;padding:7px 12px;font-size:10px;font-weight:600;white-space:nowrap;transition:all .18s}
+.atoz-close-button:hover{background:#edf4ec;border-color:#b9ceba}
+
+/* Alphabet Bar */
+.atoz-alphabet-bar{display:flex;align-items:center;flex-wrap:wrap;gap:4px;padding:12px 14px;background:#f7faf6;border:1px solid #e7efe5;border-radius:9px;margin-bottom:20px}
+.atoz-letter-pill{border:1px solid #dce5da;background:#fff;color:#3d5042;border-radius:6px;padding:5px 9px;font:700 11px Manrope,sans-serif;display:inline-flex;align-items:center;gap:5px;transition:all .15s;cursor:pointer}
+.atoz-letter-pill:hover{background:#edf4ec;border-color:#99b89c;color:#1e3f2c;transform:translateY(-1px)}
+.atoz-letter-pill.active{background:#386b4b;border-color:#386b4b;color:#fff;box-shadow:0 3px 8px rgba(56,107,75,.28)}
+.atoz-letter-pill.active .atoz-pill-count{background:rgba(255,255,255,.25);color:#fff}
+.atoz-letter-pill.empty{opacity:.4;cursor:default}
+.atoz-pill-count{font-size:8px;font-weight:700;color:#798c7d;background:#edf2ec;padding:1px 5px;border-radius:8px;line-height:1}
+
+/* Filter controls */
+.atoz-controls-row{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+.atoz-search-input-wrap{position:relative;flex:1;min-width:260px;display:flex;align-items:center}
+.atoz-search-icon{position:absolute;left:12px;font-size:14px;color:#859a89;pointer-events:none}
+.atoz-search-input{width:100%;border:1px solid #dbe3da;border-radius:7px;padding:9px 34px 9px 34px;font-size:12px;color:#2c3f32;background:#fff;transition:border-color .18s,box-shadow .18s}
+.atoz-search-input:focus{outline:0;border-color:#538564;box-shadow:0 0 0 3px rgba(83,133,100,.12)}
+.atoz-search-input::placeholder{color:#a4afa5}
+.atoz-clear-search{position:absolute;right:10px;border:0;background:transparent;color:#94a196;font-size:12px;cursor:pointer;padding:3px 5px}
+
+.atoz-filter-chips{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.atoz-button-group{display:inline-flex;border:1px solid #dce4db;border-radius:7px;overflow:hidden;background:#f7faf6}
+.atoz-filter-chip{border:0;background:transparent;color:#5a6d5f;padding:7px 12px;font-size:10px;font-weight:600;transition:all .15s}
+.atoz-filter-chip:hover{color:#25412e;background:#edf4ec}
+.atoz-filter-chip.selected{background:#386b4b;color:#fff}
+.atoz-sector-select{border:1px solid #dce4db;border-radius:7px;padding:7px 11px;font-size:10px;font-weight:600;color:#3f5445;background:#fff;cursor:pointer}
+.atoz-sector-select:focus{outline:0;border-color:#538564}
+
+/* Status bar */
+.atoz-status-bar{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#6d7d71;padding:8px 0 16px;border-bottom:1px solid #eef2ec;margin-bottom:24px}
+.atoz-status-bar strong{color:#244936}
+.atoz-reset-button{border:0;background:none;color:#386b4b;font-weight:700;text-decoration:underline;cursor:pointer;padding:0;font-size:10px}
+
+/* Letter sections and cards */
+.atoz-listings-wrapper{display:flex;flex-direction:column;gap:30px}
+.atoz-letter-section{scroll-margin-top:80px}
+.atoz-letter-heading{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.atoz-letter-glyph{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:8px;background:#386b4b;color:#fff;font:800 16px Manrope,sans-serif;box-shadow:0 3px 8px rgba(56,107,75,.2)}
+.atoz-letter-divider{flex:1;height:1px;background:#e5ebe3}
+.atoz-letter-badge{font-size:10px;color:#7e8d81;font-weight:600;background:#f0f5ee;padding:3px 8px;border-radius:10px}
+
+.atoz-cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.atoz-card{display:flex;flex-direction:column;justify-content:space-between;border:1px solid #e6ece4;background:#fff;border-radius:9px;padding:15px;transition:all .2s;position:relative}
+.atoz-card:hover{border-color:#97b79b;transform:translateY(-2px);box-shadow:0 6px 18px rgba(36,65,44,.07)}
+
+.atoz-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+.atoz-card-icon{font-size:24px;width:38px;height:38px;border-radius:8px;background:#f3f7f2;display:grid;place-items:center;flex-shrink:0}
+.atoz-card-tags{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
+.atoz-tag-type{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding:3px 6px;border-radius:4px}
+.atoz-tag-type.service{background:#e6f3eb;color:#276b3f}
+.atoz-tag-type.product{background:#fdf2e4;color:#a26522}
+.atoz-tag-sector{font-size:8px;font-weight:600;background:#f0f4f0;color:#607364;padding:3px 6px;border-radius:4px}
+.atoz-tag-popular{font-size:8px;font-weight:700;background:#fdf8e6;color:#a07e1c;padding:3px 6px;border-radius:4px}
+
+.atoz-card-title{font:700 13px Manrope,sans-serif;color:#223628;margin:0 0 6px;letter-spacing:-.2px;line-height:1.35}
+.atoz-card-desc{font-size:10px;color:#728175;line-height:1.55;margin:0 0 14px;flex-grow:1}
+
+.atoz-card-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:11px;border-top:1px solid #f2f5f1}
+.atoz-card-price{font-size:10px;font-weight:700;color:#335b3e}
+.atoz-card-actions{display:flex;align-items:center;gap:6px}
+.atoz-card-btn{border:0;border-radius:5px;font-size:9px;font-weight:700;padding:6px 10px;transition:all .18s;cursor:pointer}
+.atoz-card-btn.primary{background:#386b4b;color:#fff}
+.atoz-card-btn.primary:hover{background:#234a32}
+.atoz-card-btn.primary span{margin-left:3px}
+.atoz-card-btn.secondary{background:#edf4ec;color:#356041;border:1px solid #d4e2d3}
+.atoz-card-btn.secondary:hover{background:#e0ecd9}
+
+/* Empty state */
+.atoz-empty-state{text-align:center;padding:48px 20px;background:#fbfdfa;border:1px dashed #d5ded4;border-radius:9px}
+.atoz-empty-icon{font-size:32px;color:#85a08a;margin-bottom:10px}
+.atoz-empty-state h3{font:700 16px Manrope,sans-serif;color:#2c4333;margin:0 0 6px}
+.atoz-empty-state p{font-size:11px;color:#7d8c80;margin:0 0 16px}
+.atoz-action-btn{border:0;border-radius:6px;padding:9px 16px;font:700 11px Manrope,sans-serif;cursor:pointer}
+.atoz-action-btn.primary{background:#386b4b;color:#fff}
+
+.atoz-sidebar-pill{display:inline-flex;align-items:center;gap:5px;background:#eaf2e8;color:#2c5b3b;font-weight:800;font-size:9px;padding:2px 6px;border-radius:4px;letter-spacing:.4px}
+
+@media(max-width:768px){
+  .atoz-directory-container{padding:18px 16px}
+  .atoz-title{font-size:20px}
+  .atoz-controls-row{flex-direction:column;align-items:stretch}
+  .atoz-cards-grid{grid-template-columns:1fr}
+}
+

@@ -6,6 +6,8 @@ import { defaultAdConfig, type AdConfig } from "./lib/ad-config.shared";
 import { defaultCategoryConfig, legacyDefaultCategoryConfig, type CategoryConfig, type CategorySector } from "./lib/category-config.shared";
 import { defaultRegistrationFormConfig, type RegistrationFormConfig, type RegistrationForm, type RegistrationField } from "./lib/registration-form-config.shared";
 import { buildAutomobileTaxonomyPaths as buildSharedAutomobileTaxonomyPaths, commercialVehicleSubcategories, getVehicleModelsForType as getSharedVehicleModelsForType } from "./lib/vehicle-taxonomy.shared";
+import AtoZDirectory from "./atoz-directory";
+import type { AtoZItem } from "./lib/atoz-catalog";
 
 type Role = "Discover" | "Account" | "Business" | "Agent" | "Company";
 type EmergencyType = "police" | "medical" | "fire" | "women-safety" | "general";
@@ -615,6 +617,68 @@ const initialBusinesses: Business[] = [
     subscribed: true,
     taxonomyTags: ["Physiotherapy", "Mobility care", "Assessment", "Physiotherapy assessment", "Follow-up", "Follow-up session"],
   },
+  {
+    name: "ProFix Home & Appliance Services",
+    category: "Everyday services",
+    subcategories: ["Appliance repair", "Plumbing", "Electrical", "Cleaning"],
+    products: [
+      { id: "profix-ac", name: "AC Repair & Servicing", description: "Filter clean, gas recharge and cooling coil inspection.", price: 499, unit: "from" },
+      { id: "profix-elec", name: "Electrical Wiring & Fixing", description: "Switchboard repair, fan installation and emergency fixes.", price: 249, unit: "from" },
+      { id: "profix-plumb", name: "Plumbing & Leak Repairs", description: "Tap, sink, toilet and drainage repair.", price: 299, unit: "from" },
+      { id: "profix-ro", name: "Water Purifier (RO) Service", description: "Filter replacement and membrane service.", price: 349, unit: "from" },
+    ],
+    description: "Doorstep AC repair, electrical wiring, plumbing leak fixes and home appliance maintenance.",
+    distance: 1.5,
+    demoCoordinates: { latitude: 12.975, longitude: 77.620 },
+    rating: 4.9,
+    reviews: 142,
+    price: "Services from ₹249",
+    icon: "🛠️",
+    color: "mint",
+    subscribed: true,
+    taxonomyTags: ["AC repair", "Air conditioning", "Appliance repair", "Electrical", "Wiring repair", "Plumbing", "Leak repair", "Washing machine service", "Refrigerator service", "Water purifier", "Deep cleaning", "Handyman", "Carpentry", "Pest control"],
+    tag: "Top rated nearby",
+  },
+  {
+    name: "Urban Blossom & Fitness Studio",
+    category: "Health & wellness",
+    subcategories: ["Fitness", "Personal care", "Salon services"],
+    products: [
+      { id: "ub-yoga", name: "Yoga Classes & Meditation", description: "Morning and evening Hatha & Vinyasa flow sessions.", price: 1000, unit: "per month" },
+      { id: "ub-zumba", name: "Zumba & Cardio Dance", description: "High-energy rhythm cardio workout.", price: 1200, unit: "per month" },
+      { id: "ub-hair", name: "Hair Styling & Salon Grooming", description: "Haircut, blow dry, facial and personal care.", price: 250, unit: "from" },
+    ],
+    description: "Holistic fitness center offering yoga, Zumba, personal training and salon grooming.",
+    distance: 2.3,
+    demoCoordinates: { latitude: 12.965, longitude: 77.615 },
+    rating: 4.8,
+    reviews: 110,
+    price: "Sessions from ₹250",
+    icon: "🧘",
+    color: "peach",
+    subscribed: true,
+    taxonomyTags: ["Fitness", "Yoga classes", "Zumba", "Personal training", "Strength", "Hair care", "Haircut", "Salon services", "Wellness", "Wellness consultation", "Diet", "Nutrition"],
+  },
+  {
+    name: "Apex City Travel & Logistics",
+    category: "Travel",
+    subcategories: ["Local transport", "Airport rides", "Moving help"],
+    products: [
+      { id: "apex-airport", name: "Airport Transfer Cab", description: "Prompt, sanitized airport pickup and drop.", price: 999, unit: "per ride" },
+      { id: "apex-tour", name: "Local City Sightseeing Cab", description: "Full-day sightseeing with professional driver.", price: 1499, unit: "per day" },
+      { id: "apex-movers", name: "Movers & Packers Assistance", description: "Household packing, transport and unpacking.", price: 2499, unit: "from" },
+    ],
+    description: "Reliable airport transfers, day tours, vehicle rentals and moving help across town.",
+    distance: 3.1,
+    demoCoordinates: { latitude: 12.985, longitude: 77.635 },
+    rating: 4.7,
+    reviews: 78,
+    price: "Cabs from ₹999",
+    icon: "✈️",
+    color: "butter",
+    subscribed: true,
+    taxonomyTags: ["Airport transfer", "City tour", "Local transport", "Car hire", "Car rentals", "Hotels", "Guest houses", "Moving help", "Movers & packers", "Logistics", "Tours & experiences"],
+  },
 ];
 
 const emptyDemoData: DemoData = {
@@ -657,6 +721,7 @@ export default function Home() {
   const [category, setCategory] = useState("All");
   const [categoryPath, setCategoryPath] = useState<string[]>([]);
   const [categoryConfig, setCategoryConfig] = useState<CategoryConfig>(defaultCategoryConfig);
+  const [browseMode, setBrowseMode] = useState<"sectors" | "atoz">("sectors");
   const [query, setQuery] = useState("");
   const [radius, setRadius] = useState(5);
   const [demoData, setDemoData] = useState(emptyDemoData);
@@ -811,6 +876,36 @@ export default function Home() {
   function recordEvent(action: string) {
     const event: DemoEvent = { id: `${Date.now()}-${Math.random()}`, action, createdAt: new Date().toISOString() };
     setDemoData((current) => ({ ...current, events: [event, ...current.events].slice(0, 100) }));
+  }
+
+  function handleAtoZSelect(itemQuery: string, itemSector?: string) {
+    setQuery(itemQuery);
+    if (itemSector && itemSector !== "All") {
+      setCategory(itemSector);
+    } else {
+      setCategory("All");
+    }
+    setCategoryPath([]);
+    setBrowseMode("sectors");
+    setRole("Discover");
+    recordEvent(`A-Z item selected: ${itemQuery}`);
+    showNotice(`Showing providers for “${itemQuery}” nearby.`);
+    window.setTimeout(() => {
+      document.getElementById("results")?.scrollIntoView({ behavior: "smooth" });
+    }, 120);
+  }
+
+  function handleAtoZEnquiry(item: AtoZItem) {
+    const matchingBiz = businesses.find((b) => b.category === item.sector || (b.categories || []).includes(item.sector)) || businesses[0];
+    const syntheticProduct: Product = {
+      id: `atoz-${item.id}`,
+      name: item.name,
+      description: item.description,
+      price: parseInt(item.priceHint.replace(/\D/g, "")) || 499,
+      unit: item.type === "Service" ? "service" : "unit",
+    };
+    setEnquiryProduct({ business: matchingBiz, product: syntheticProduct });
+    recordEvent(`Customer enquiry initiated for A-Z item: ${item.name}`);
   }
 
   function searchNearby() {
@@ -1100,13 +1195,26 @@ export default function Home() {
           <div className="sidebar-divider" />
           <div className="workspace-label">BROWSE BY</div>
           <nav className="category-nav" aria-label="Browse categories">
+            <button
+              className={`category-link view-all ${browseMode === "atoz" ? "selected" : ""}`}
+              onClick={() => {
+                setBrowseMode("atoz");
+                setRole("Discover");
+                setMobileMenuOpen(false);
+                window.setTimeout(() => {
+                  document.getElementById("atoz-directory")?.scrollIntoView({ behavior: "smooth" });
+                }, 100);
+              }}
+            >
+              <Icon><span className="atoz-sidebar-pill">A–Z</span></Icon><span>All Products & Services</span>
+            </button>
             {categories.slice(1).map((item) => (
-              <button key={item.name} className={`category-link ${category === item.name ? "selected" : ""}`}
-                onClick={() => { setCategory(item.name); setCategoryPath([]); setQuery(""); setRole("Discover"); setMobileMenuOpen(false); }}>
+              <button key={item.name} className={`category-link ${browseMode === "sectors" && category === item.name ? "selected" : ""}`}
+                onClick={() => { setBrowseMode("sectors"); setCategory(item.name); setCategoryPath([]); setQuery(""); setRole("Discover"); setMobileMenuOpen(false); }}>
                 <Icon><CategoryIcon name={item.name} sector={item.name} /></Icon><span>{item.name}</span>
               </button>
             ))}
-            <button className={`category-link view-all ${category === "All" ? "selected" : ""}`} onClick={() => { setCategory("All"); setCategoryPath([]); setQuery(""); setRole("Discover"); setMobileMenuOpen(false); }}>
+            <button className={`category-link view-all ${browseMode === "sectors" && category === "All" ? "selected" : ""}`} onClick={() => { setBrowseMode("sectors"); setCategory("All"); setCategoryPath([]); setQuery(""); setRole("Discover"); setMobileMenuOpen(false); }}>
               <Icon>&#43;</Icon><span>All categories</span>
             </button>
           </nav>
@@ -1203,28 +1311,75 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="section-heading category-heading">
-              <div><div className="eyebrow">{category === "All" ? "A LITTLE BIT OF EVERYTHING" : "BROWSE WITHIN SECTOR"}</div><h2>{category === "All" ? "Explore your local scene" : category}</h2>{categoryPath.length > 0 && <p className="selected-taxonomy-path">{categoryPath.join(" › ")}</p>}</div>
-              {category === "All" ? <button className="text-link" onClick={() => { setCategory("All"); setCategoryPath([]); setQuery(""); }}>All categories <span>→</span></button> : <div className="taxonomy-navigation"><button type="button" onClick={() => categoryPath.length ? setCategoryPath((current) => current.slice(0, -1)) : setCategory("All")}>← Back</button><button type="button" onClick={() => { setCategory("All"); setCategoryPath([]); setQuery(""); }}>All sectors</button></div>}
+            {/* Mode Switcher: Browse by Sector vs A–Z Directory */}
+            <div className="browse-mode-tabs" role="tablist" aria-label="Browse modes">
+              <button
+                type="button"
+                className={`browse-tab ${browseMode === "sectors" ? "active" : ""}`}
+                onClick={() => setBrowseMode("sectors")}
+                aria-selected={browseMode === "sectors"}
+              >
+                <span>❖</span> Browse by Sector
+              </button>
+              <button
+                type="button"
+                className={`browse-tab ${browseMode === "atoz" ? "active" : ""}`}
+                onClick={() => setBrowseMode("atoz")}
+                aria-selected={browseMode === "atoz"}
+              >
+                <span>🔤</span> A–Z Directory (All Products & Services) <span className="browse-tab-badge">A–Z</span>
+              </button>
             </div>
-            <div className="category-grid">
-              {category === "All" ? categories.slice(1).map((item, index) => (
-                <button key={item.name} className={`category-card cat-${index} ${category === item.name ? "category-active" : ""}`}
-                  onClick={() => { setCategory(category === item.name ? "All" : item.name); setCategoryPath([]); setQuery(""); }}>
-                  <span className="category-art"><CategoryIcon name={item.name} sector={item.name} /></span><span>{item.name}</span><span className="category-arrow">↗</span>
-                </button>
-              )) : (() => {
-                const options = getTaxonomyOptions(category, categoryPath, categoryConfig);
-                if (!options.length) return <div className="taxonomy-complete"><strong>{categoryPath[categoryPath.length - 1] || category}</strong><span>{category === "Automobiles" && categoryPath.length === 3 ? "No verified models are listed for this make yet. Showing matching businesses instead." : categoryPath.length ? "Showing matching listings for this selection." : "No subcategories are listed yet. Showing matching businesses."}</span></div>;
-                const tileIcons = ["◈", "◇", "•", "⌂"];
-                const icon = tileIcons[Math.min(categoryPath.length, tileIcons.length - 1)];
-                return options.map((option, index) => {
-                  const logo = brandLogoFor(option.name, categoryConfig.brandLogos);
-                  const isBrand = isBrandOption(category, categoryPath, option, categoryConfig.brandLogos);
-                  return <button key={option.name} type="button" className={`category-card cat-${index}`} onClick={() => { setCategoryPath((current) => [...current, option.name]); setQuery(""); }}><span className={`category-art${isBrand && !logo ? " category-brand-monogram" : ""}`}>{logo ? <img className="category-brand-logo" src={logo} alt={`${option.name} logo`} /> : isBrand ? brandMonogram(option.name) : <CategoryIcon name={option.name} sector={category} />}</span><span>{option.name}</span><span className="category-arrow">↗</span></button>;
-                });
-              })()}
-            </div>
+
+            {browseMode === "atoz" ? (
+              <AtoZDirectory
+                onSelectSearchQuery={handleAtoZSelect}
+                onRequestEnquiry={handleAtoZEnquiry}
+                onClose={() => setBrowseMode("sectors")}
+              />
+            ) : (
+              <>
+                <div className="section-heading category-heading">
+                  <div>
+                    <div className="eyebrow">{category === "All" ? "A LITTLE BIT OF EVERYTHING" : "BROWSE WITHIN SECTOR"}</div>
+                    <h2>{category === "All" ? "Explore your local scene" : category}</h2>
+                    {categoryPath.length > 0 && <p className="selected-taxonomy-path">{categoryPath.join(" › ")}</p>}
+                  </div>
+                  {category === "All" ? (
+                    <button className="text-link" onClick={() => setBrowseMode("atoz")}>
+                      A–Z Directory <span>→</span>
+                    </button>
+                  ) : (
+                    <div className="taxonomy-navigation">
+                      <button type="button" onClick={() => categoryPath.length ? setCategoryPath((current) => current.slice(0, -1)) : setCategory("All")}>
+                        ← Back
+                      </button>
+                      <button type="button" onClick={() => { setCategory("All"); setCategoryPath([]); setQuery(""); }}>
+                        All sectors
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <div className="category-grid">
+                  {category === "All" ? categories.slice(1).map((item, index) => (
+                    <button key={item.name} className={`category-card cat-${index} ${category === item.name ? "category-active" : ""}`}
+                      onClick={() => { setCategory(category === item.name ? "All" : item.name); setCategoryPath([]); setQuery(""); }}>
+                      <span className="category-art"><CategoryIcon name={item.name} sector={item.name} /></span><span>{item.name}</span><span className="category-arrow">↗</span>
+                    </button>
+                  )) : (() => {
+                    const options = getTaxonomyOptions(category, categoryPath, categoryConfig);
+                    if (!options.length) return <div className="taxonomy-complete"><strong>{categoryPath[categoryPath.length - 1] || category}</strong><span>{category === "Automobiles" && categoryPath.length === 3 ? "No verified models are listed for this make yet. Showing matching businesses instead." : categoryPath.length ? "Showing matching listings for this selection." : "No subcategories are listed yet. Showing matching businesses."}</span></div>;
+                    const tileIcons = ["◈", "◇", "•", "⌂"];
+                    const icon = tileIcons[Math.min(categoryPath.length, tileIcons.length - 1)];
+                    return options.map((option, index) => {
+                      const logo = brandLogoFor(option.name, categoryConfig.brandLogos);
+                      const isBrand = isBrandOption(category, categoryPath, option, categoryConfig.brandLogos);
+                      return <button key={option.name} type="button" className={`category-card cat-${index}`} onClick={() => { setCategoryPath((current) => [...current, option.name]); setQuery(""); }}><span className={`category-art${isBrand && !logo ? " category-brand-monogram" : ""}`}>{logo ? <img className="category-brand-logo" src={logo} alt={`${option.name} logo`} /> : isBrand ? brandMonogram(option.name) : <CategoryIcon name={option.name} sector={category} />}</span><span>{option.name}</span><span className="category-arrow">↗</span></button>;
+                    });
+                  })()}
+                </div>
+              </>
+            )}
 
             <section className="image-ad-panel mobile-image-ad" aria-label="Rotating image advertisement">
               <button className="sos-fab sos-ad-button" aria-label="Emergency help (SOS)" onClick={() => setDialog("sos")}><span>✚</span> SOS <small>Emergency help</small></button>
@@ -1242,7 +1397,7 @@ export default function Home() {
               <div className="sort-label"><span className="green-dot" /> Subscribed listings · {locationEnabled ? "device radius" : "demo distances"}</div>
             </div>
             {results.length ? <div className="business-grid">
-              {results.slice(0, 4).map((business, index) => (
+              {results.slice(0, 12).map((business, index) => (
                 <article className="business-card" key={`${business.name}-${index}`}>
                   <div className={`business-image ${business.color}`}><span className="business-emoji">{business.icon}</span>
                     {business.tag && <span className="business-tag">{business.tag}</span>}
