@@ -2325,6 +2325,79 @@ function Icon({
   return <span className={`icon ${className}`} aria-hidden="true">{children}</span>;
 }
 
+const SEARCH_SYNONYMS: Record<string, string[]> = {
+  car: ["car", "cars", "four wheeler", "four-wheeler", "automobile", "maruti", "tata", "hyundai", "swift", "punch", "nexon", "creta", "sedan", "suv", "hatchback", "dealership", "vehicle", "auto"],
+  cars: ["car", "cars", "four wheeler", "four-wheeler", "automobile", "maruti", "tata", "hyundai", "swift", "punch", "nexon", "creta"],
+  swift: ["swift", "maruti", "maruti swift", "car", "four wheeler", "hatchback"],
+  maruti: ["maruti", "suzuki", "swift", "baleno", "brezza", "car", "four wheeler"],
+  tata: ["tata", "nexon", "punch", "tiago", "harrier", "safari", "car", "four wheeler"],
+  hyundai: ["hyundai", "creta", "venue", "i20", "car", "four wheeler"],
+  bike: ["bike", "bikes", "two wheeler", "two-wheeler", "motorcycle", "scooter", "hero", "honda", "royal enfield", "tvs", "bajaj", "activa", "splendor", "pulsar", "classic 350"],
+  bikes: ["bike", "bikes", "two wheeler", "two-wheeler", "motorcycle", "scooter", "hero", "honda", "royal enfield", "activa", "splendor"],
+  scooter: ["scooter", "two wheeler", "two-wheeler", "activa", "dio", "chetak", "vida", "ev 2w"],
+  hero: ["hero", "splendor", "hf deluxe", "xtreme", "vida", "two wheeler", "bike"],
+  honda: ["honda", "activa", "shine", "unicorn", "cb350", "dio", "two wheeler", "bike", "scooter"],
+  enfield: ["royal enfield", "classic 350", "hunter 350", "bullet", "meteor", "himalayan", "two wheeler", "bike"],
+  bajaj: ["bajaj", "pulsar", "chetak", "two wheeler", "bike"],
+  tvs: ["tvs", "jupiter", "apache", "two wheeler", "bike"],
+  tyre: ["tyre", "tyres", "mrf", "apollo", "ceat", "puncture", "wheel alignment", "battery"],
+  tyres: ["tyre", "tyres", "mrf", "apollo", "ceat", "puncture", "wheel alignment", "battery"],
+  battery: ["battery", "batteries", "amaron", "exide", "luminous", "inverter", "tyres & batteries"],
+  wash: ["wash", "car wash", "foam wash", "detailing", "sanitization", "cleaning"],
+  mobile: ["mobile", "phone", "smartphone", "samsung", "apple", "iphone", "redmi", "screen replacement", "croma"],
+  phone: ["phone", "mobile", "smartphone", "samsung", "apple", "iphone", "screen replacement", "croma"],
+  iphone: ["iphone", "apple", "mobile", "phone", "macbook", "ipad", "croma", "reliance digital"],
+  samsung: ["samsung", "galaxy", "galaxy s25", "mobile", "phone", "tv", "refrigerator", "washing machine", "screen replacement"],
+  laptop: ["laptop", "laptops", "computer", "pc", "gaming pc", "hp", "dell", "lenovo", "asus", "macbook"],
+  tv: ["tv", "smart tv", "television", "led tv", "sony", "samsung", "lg"],
+  fridge: ["refrigerator", "fridge", "home appliances", "samsung", "lg", "whirlpool"],
+  ac: ["air conditioner", "ac", "ac service", "cooling", "appliances"],
+  gold: ["gold", "jewellery", "tanishq", "necklace", "ring", "diamond", "earrings", "bangles"],
+  jewellery: ["jewellery", "gold", "diamond", "tanishq", "necklace", "ring", "silver", "earrings"],
+  saree: ["saree", "sarees", "silk saree", "cotton saree", "handloom", "saree palace", "textiles"],
+  sarees: ["saree", "sarees", "silk saree", "cotton saree", "handloom", "saree palace", "textiles"],
+  suit: ["suit", "raymond", "tailoring", "formal", "shirts", "blazer", "clothing"],
+  shoes: ["shoes", "footwear", "bata", "sandals", "sneakers", "boots", "formal shoes"],
+  dress: ["dress", "clothing", "ethnic wear", "kurtas", "kids clothing", "fashion"],
+  hospital: ["hospital", "clinic", "doctor", "consultation", "emergency", "icu", "kauvery", "sbs"],
+  doctor: ["doctor", "consultation", "hospital", "clinic", "physician", "kauvery", "sbs", "opd"],
+  dental: ["dental", "dentist", "teeth", "tooth", "root canal", "implant", "apollo dental", "whitening"],
+  dentist: ["dentist", "dental", "teeth", "tooth", "apollo dental"],
+  physiotherapy: ["physiotherapy", "physio", "rehab", "mobility", "orthopaedic", "back pain"],
+  eye: ["eye", "ophthalmology", "eye check", "opticals", "glasses", "spectacles"],
+  gym: ["gym", "fitness", "workout", "weight training", "bodybuilding", "crossfit", "ketone", "h&t", "orien", "membership"],
+  fitness: ["fitness", "gym", "workout", "training", "personal training", "zumba", "yoga"],
+  badminton: ["badminton", "shuttle", "little england", "court", "indoor court", "coaching", "turf"],
+  cricket: ["cricket", "box cricket", "turf", "eagles sports", "prabhu turf", "coaching"],
+  turf: ["turf", "football turf", "box cricket", "prabhu turf", "court rental", "sports ground"],
+  swimming: ["swimming", "pool", "royal wellfit", "swimming lessons", "aquatics"],
+  yoga: ["yoga", "pilates", "meditation", "orien fitness", "wellness"],
+  biryani: ["biryani", "thalappakatti", "ammi", "hyderabadi biryani", "chicken biryani", "mutton biryani", "restaurant"],
+  food: ["food", "restaurant", "hotel", "cafe", "dining", "meals", "south indian", "north indian"],
+  coffee: ["coffee", "tea", "cafe", "bakery", "snacks", "filter coffee"],
+  sweets: ["sweets", "bakery", "cake", "mithai", "dessert"],
+  furniture: ["furniture", "sofa", "bed", "wardrobe", "dining table", "godrej", "royaloak", "nilkamal"],
+  sofa: ["sofa", "couch", "living room", "furniture", "royaloak", "godrej"],
+  interior: ["interior", "interior design", "false ceiling", "surya decor", "home renovation"],
+  plumber: ["plumber", "plumbing", "pipe leak", "tap repair", "hope home care", "water heater"],
+  electrician: ["electrician", "electrical", "wiring", "fan installation", "switch repair"],
+  painting: ["painting", "painters", "home painting", "emulsion", "waterproofing"],
+  pest: ["pest control", "cockroach", "termite", "bed bug", "balaji pest control"],
+  taxi: ["taxi", "cab", "airport taxi", "outstation", "a1 call taxi", "red taxi", "car rental"],
+  hotel: ["hotel", "stay", "room booking", "grand continent", "hotel hills", "lodge", "accommodation"]
+};
+
+function escapeRegex(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function matchesWord(text: string, token: string): boolean {
+  if (token.length <= 4) {
+    return new RegExp(`\\b${escapeRegex(token)}\\b`, "i").test(text);
+  }
+  return text.toLowerCase().includes(token.toLowerCase());
+}
+
 export default function Home() {
   const [role, setRole] = useState<Role>("Discover");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -2338,7 +2411,6 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [radius, setRadius] = useState(5);
   const [visibleCount, setVisibleCount] = useState(24);
-  const [searchTab, setSearchTab] = useState<"all" | "products" | "businesses">("all");
   const [demoData, setDemoData] = useState(emptyDemoData);
   const [storageReady, setStorageReady] = useState(false);
   const [storageError, setStorageError] = useState("");
@@ -2476,42 +2548,155 @@ export default function Home() {
     }
   }, [demoData, storageReady]);
 
-  const results = useMemo(() => {
-    const search = query.trim().toLowerCase();
-    return businesses.filter((business) => {
+  const { results, relatedProducts, relatedSearches } = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const rawTokens = q.split(/[^a-z0-9]+/).filter((t) => t.length > 1);
+
+    const eligible = businesses.filter((business) => {
       const categoryMatch = category === "All" || business.category === category || (business.categories || []).includes(category);
       const listingText = `${business.name} ${business.category} ${(business.categories || []).join(" ")} ${business.subcategories.join(" ")} ${(business.businessModes || []).join(" ")} ${(business.vehicleTypes || []).join(" ")} ${(business.vehicleMakes || []).join(" ")} ${(business.vehicleModels || []).join(" ")} ${(business.taxonomyTags || []).join(" ")} ${business.description} ${business.products.map((product) => `${product.name} ${product.description}`).join(" ")}`.toLowerCase();
       const taxonomyTerms = new Set((business.taxonomyTags || []).map((term) => term.toLowerCase()));
       const taxonomyMatch = categoryPath.every((term) => taxonomyTerms.has(term.toLowerCase()) || listingText.includes(term.toLowerCase()));
-      const searchMatch =
-        !search ||
-        `${business.name} ${business.category} ${business.description} ${business.products.map((product) => `${product.name} ${product.description}`).join(" ")}`.toLowerCase().includes(search);
-      return categoryMatch && taxonomyMatch && searchMatch && businessDistance(business) <= radius && business.subscribed;
+      const distMatch = !locationEnabled || businessDistance(business) <= radius;
+      return categoryMatch && taxonomyMatch && distMatch && business.subscribed;
     });
-  }, [businesses, category, categoryPath, query, radius, locationCoordinates]);
 
-  const matchingProducts = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const list: { product: Product; business: Business }[] = [];
-    for (const b of businesses) {
-      const categoryMatch = category === "All" || b.category === category || (b.categories || []).includes(category);
-      if (!categoryMatch) continue;
-      if (locationEnabled && businessDistance(b) > radius) continue;
-      for (const p of b.products) {
-        if (!q) {
-          if (category !== "All") {
-            list.push({ product: p, business: b });
-          }
+    if (!q || rawTokens.length === 0) {
+      return {
+        results: eligible,
+        relatedProducts: [],
+        relatedSearches: []
+      };
+    }
+
+    const directMatches: { business: Business; score: number }[] = [];
+    const relatedMatches: { business: Business; score: number }[] = [];
+
+    for (const b of eligible) {
+      const nameLower = b.name.toLowerCase();
+      const catLower = `${b.category} ${(b.categories || []).join(" ")}`.toLowerCase();
+      const subLower = `${b.subcategories.join(" ")} ${(b.taxonomyTags || []).join(" ")} ${(b.vehicleTypes || []).join(" ")} ${(b.vehicleMakes || []).join(" ")} ${(b.vehicleModels || []).join(" ")}`.toLowerCase();
+      const descLower = b.description.toLowerCase();
+      const prodsLower = b.products.map((p) => `${p.name} ${p.description}`).join(" ").toLowerCase();
+      const allText = `${nameLower} ${catLower} ${subLower} ${descLower} ${prodsLower}`;
+
+      let score = 0;
+      let directTokensHit = 0;
+      let synonymHit = false;
+
+      for (const token of rawTokens) {
+        if (matchesWord(nameLower, token)) {
+          score += 15;
+          directTokensHit++;
+        } else if (matchesWord(prodsLower, token)) {
+          score += 10;
+          directTokensHit++;
+        } else if (matchesWord(subLower, token)) {
+          score += 8;
+          directTokensHit++;
+        } else if (matchesWord(descLower, token) || matchesWord(catLower, token)) {
+          score += 4;
+          directTokensHit++;
         } else {
-          const text = `${p.name} ${p.description} ${p.unit} ${b.name} ${b.category} ${(b.subcategories || []).join(" ")} ${(b.taxonomyTags || []).join(" ")}`.toLowerCase();
-          if (text.includes(q)) {
-            list.push({ product: p, business: b });
+          const syns = SEARCH_SYNONYMS[token] || [];
+          for (const s of syns) {
+            if (matchesWord(allText, s)) {
+              score += 3;
+              synonymHit = true;
+              break;
+            }
           }
         }
       }
+
+      if (directTokensHit === rawTokens.length) {
+        directMatches.push({ business: b, score });
+      } else if (directTokensHit > 0 || synonymHit) {
+        relatedMatches.push({ business: b, score });
+      }
     }
-    return list;
-  }, [businesses, query, category, radius, locationEnabled]);
+
+    directMatches.sort((a, b) => b.score - a.score);
+    relatedMatches.sort((a, b) => b.score - a.score);
+
+    const sortedResults = [...directMatches.map((m) => m.business), ...relatedMatches.map((m) => m.business)];
+
+    // Generate Related Searches suggestions
+    const suggestions = new Set<string>();
+    if (q.includes("swift") || q.includes("car")) {
+      suggestions.add("Maruti Swift");
+      suggestions.add("Four wheelers");
+      suggestions.add("Car repair");
+      suggestions.add("Tata Nexon");
+      suggestions.add("Hyundai Creta");
+      suggestions.add("Car wash & detailing");
+      suggestions.add("Tyres & batteries");
+    } else if (q.includes("bike") || q.includes("two wheeler") || q.includes("scooter") || q.includes("activa") || q.includes("splendor") || q.includes("hero") || q.includes("honda")) {
+      suggestions.add("Hero Splendor");
+      suggestions.add("Honda Activa");
+      suggestions.add("Royal Enfield Classic");
+      suggestions.add("Two-wheeler service");
+      suggestions.add("Electric scooter");
+    } else if (q.includes("phone") || q.includes("mobile") || q.includes("samsung") || q.includes("screen") || q.includes("laptop")) {
+      suggestions.add("Samsung Galaxy");
+      suggestions.add("Screen replacement");
+      suggestions.add("Laptop service");
+      suggestions.add("Smart TV");
+    } else if (q.includes("gym") || q.includes("fitness") || q.includes("workout")) {
+      suggestions.add("Gym membership");
+      suggestions.add("Personal training");
+      suggestions.add("Badminton courts");
+      suggestions.add("Swimming pool");
+      suggestions.add("Zumba classes");
+    } else if (q.includes("hospital") || q.includes("doctor") || q.includes("dental") || q.includes("clinic")) {
+      suggestions.add("Dental check-up");
+      suggestions.add("Physiotherapy");
+      suggestions.add("Doctor consultation");
+    }
+
+    for (const b of sortedResults.slice(0, 5)) {
+      for (const sub of b.subcategories) {
+        if (suggestions.size < 7 && sub.toLowerCase() !== q) {
+          suggestions.add(sub);
+        }
+      }
+    }
+    const finalRelatedSearches = Array.from(suggestions).filter((s) => s.toLowerCase() !== q).slice(0, 6);
+
+    // Generate Related Products/Services
+    const relProds: { product: Product; business: Business }[] = [];
+    const seenProductIds = new Set<string>();
+
+    for (const b of sortedResults) {
+      for (const p of b.products) {
+        if (seenProductIds.has(p.id)) continue;
+        const pFull = `${p.name} ${p.description} ${b.name} ${b.category} ${b.subcategories.join(" ")}`.toLowerCase();
+        const matchesAnyToken = rawTokens.some((t) => matchesWord(pFull, t));
+        let matchesSynonym = false;
+        if (!matchesAnyToken) {
+          for (const t of rawTokens) {
+            const syns = SEARCH_SYNONYMS[t] || [];
+            if (syns.some((s) => matchesWord(pFull, s))) {
+              matchesSynonym = true;
+              break;
+            }
+          }
+        }
+        if (matchesAnyToken || matchesSynonym) {
+          seenProductIds.add(p.id);
+          relProds.push({ product: p, business: b });
+          if (relProds.length >= 10) break;
+        }
+      }
+      if (relProds.length >= 10) break;
+    }
+
+    return {
+      results: sortedResults,
+      relatedProducts: relProds,
+      relatedSearches: finalRelatedSearches
+    };
+  }, [businesses, category, categoryPath, query, radius, locationCoordinates, locationEnabled]);
 
   function showNotice(message: string) {
     setNotice(message);
@@ -3115,90 +3300,69 @@ export default function Home() {
               </div>
             </section>
 
-            {query.trim() && (
-              <div className="search-type-tabs" aria-label="Search result types">
-                <button
-                  type="button"
-                  className={`search-type-tab ${searchTab === "all" ? "active" : ""}`}
-                  onClick={() => setSearchTab("all")}
-                >
-                  <span>All Matches</span>
-                  <span className="tab-count">{matchingProducts.length + results.length}</span>
-                </button>
-                <button
-                  type="button"
-                  className={`search-type-tab ${searchTab === "products" ? "active" : ""}`}
-                  onClick={() => setSearchTab("products")}
-                >
-                  <span>Products & Services</span>
-                  <span className="tab-count">{matchingProducts.length}</span>
-                </button>
-                <button
-                  type="button"
-                  className={`search-type-tab ${searchTab === "businesses" ? "active" : ""}`}
-                  onClick={() => setSearchTab("businesses")}
-                >
-                  <span>Businesses & Providers</span>
-                  <span className="tab-count">{results.length}</span>
-                </button>
+            {query.trim() && relatedSearches.length > 0 && (
+              <div className="related-searches-bar" aria-label="Related searches">
+                <span className="related-searches-label">
+                  <span className="related-search-icon">🔍</span> Related searches:
+                </span>
+                <div className="related-searches-pills">
+                  {relatedSearches.map((term) => (
+                    <button
+                      key={term}
+                      type="button"
+                      className="related-search-pill"
+                      onClick={() => {
+                        setQuery(term);
+                        recordEvent(`Related search clicked: ${term}`);
+                      }}
+                    >
+                      {term}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
-            {(searchTab === "all" || searchTab === "products") && matchingProducts.length > 0 && (
-              <div className="product-search-section">
-                <div className="product-search-header">
+            {query.trim() && relatedProducts.length > 0 && (
+              <div className="related-products-shelf">
+                <div className="related-shelf-header">
                   <div>
-                    <div className="eyebrow">PRODUCTS & SERVICES DIRECTORY</div>
-                    <h3>{query ? `Products & Services matching “${query}”` : `Services & Products in ${category}`}</h3>
-                    <p>Direct items available for immediate order, enquiry or booking with local providers in Hosur.</p>
+                    <div className="shelf-eyebrow">RELATED PRODUCTS & SERVICES</div>
+                    <h3 className="shelf-title">Popular items related to “{query}”</h3>
                   </div>
-                  <span className="result-count">{matchingProducts.length} items</span>
+                  <span className="shelf-count">{relatedProducts.length} items</span>
                 </div>
-                <div className="product-search-grid">
-                  {matchingProducts.slice(0, 24).map(({ product, business }) => (
-                    <div className="product-search-card" key={`${business.name}-${product.id}`}>
+                <div className="related-products-scroll">
+                  {relatedProducts.map(({ product, business }) => (
+                    <div className="related-product-card" key={`${business.name}-${product.id}`}>
                       <div>
-                        <div className="product-search-top">
-                          <h4 className="product-search-name">{product.name}</h4>
-                          <span className="product-search-price">
-                            ₹{product.price.toLocaleString("en-IN")}
-                            {product.unit ? <small> /{product.unit}</small> : null}
-                          </span>
+                        <div className="related-product-header">
+                          <span className="related-product-name" title={product.name}>{product.name}</span>
+                          <span className="related-product-price">₹{product.price.toLocaleString("en-IN")}{product.unit ? <small> /{product.unit}</small> : null}</span>
                         </div>
-                        <p className="product-search-desc">{product.description}</p>
+                        <p className="related-product-desc">{product.description}</p>
                       </div>
-                      <div>
-                        <div className="product-search-provider">
-                          <button
-                            type="button"
-                            className="provider-badge"
-                            onClick={() => setSelectedBusiness(business)}
-                            title={`View ${business.name}`}
-                          >
-                            <span>{business.icon}</span>
-                            <span>{business.name}</span>
-                          </button>
-                          <span className="provider-dist">⌖ {businessDistance(business).toFixed(1)} km</span>
-                        </div>
-                        <div className="product-search-actions">
-                          <button
-                            type="button"
-                            className="product-search-btn-primary"
-                            onClick={() => {
-                              setEnquiryProduct({ business, product });
-                              recordEvent(`Product enquiry clicked: ${product.name}`);
-                            }}
-                          >
-                            Enquire / Book ↗
-                          </button>
-                          <button
-                            type="button"
-                            className="product-search-btn-secondary"
-                            onClick={() => setSelectedBusiness(business)}
-                          >
-                            View Shop
-                          </button>
-                        </div>
+                      <div className="related-product-footer">
+                        <button
+                          type="button"
+                          className="related-product-provider"
+                          onClick={() => setSelectedBusiness(business)}
+                          title={`View ${business.name}`}
+                        >
+                          <span>{business.icon}</span>
+                          <span className="provider-name-truncate">{business.name}</span>
+                          <span className="provider-dist">· {businessDistance(business).toFixed(1)} km</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="related-product-enquire-btn"
+                          onClick={() => {
+                            setEnquiryProduct({ business, product });
+                            recordEvent(`Related product enquiry: ${product.name}`);
+                          }}
+                        >
+                          Enquire ↗
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -3206,88 +3370,51 @@ export default function Home() {
               </div>
             )}
 
-            {(searchTab === "all" || searchTab === "businesses") && (
+            <div className="section-heading results-heading" id="results">
+              <div>
+                <div className="eyebrow">LOCAL VERIFIED PROVIDERS</div>
+                <h2>{query ? `Providers for “${query}”` : category !== "All" ? `${categoryPath.length ? `${categoryPath.join(" › ")} providers` : `${category} providers`}` : "Around your corner"} <span className="result-count">{results.length}</span></h2>
+              </div>
+              <div className="sort-label"><span className="green-dot" /> Subscribed listings · {locationEnabled ? "device radius" : "demo distances"}</div>
+            </div>
+            {results.length ? (
               <>
-                <div className="section-heading results-heading" id="results">
-                  <div>
-                    <div className="eyebrow">LOCAL VERIFIED PROVIDERS</div>
-                    <h2>{query ? `Providers for “${query}”` : category !== "All" ? `${categoryPath.length ? `${categoryPath.join(" › ")} providers` : `${category} providers`}` : "Around your corner"} <span className="result-count">{results.length}</span></h2>
-                  </div>
-                  <div className="sort-label"><span className="green-dot" /> Subscribed listings · {locationEnabled ? "device radius" : "demo distances"}</div>
-                </div>
-                {results.length ? (
-                  <>
-                    <div className="business-grid">
-                      {results.slice(0, visibleCount).map((business, index) => (
-                        <article className="business-card" key={`${business.name}-${index}`}>
-                          <div className={`business-image ${business.color}`}><span className="business-emoji">{business.icon}</span>
-                            {business.tag && <span className="business-tag">{business.tag}</span>}
-                            <button className="save-button" aria-label={`${demoData.favorites.includes(business.name) ? "Remove saved" : "Save"} ${business.name}`} aria-pressed={demoData.favorites.includes(business.name)} onClick={() => toggleFavorite(business.name)}>{demoData.favorites.includes(business.name) ? "♥" : "♡"}</button>
-                          </div>
-                          <div className="business-info">
-                            <div className="business-meta"><span>{business.category}</span><span className="distance">⌖ {businessDistance(business).toFixed(1)} km{locationEnabled ? "" : " sample"}</span></div>
-                            <h3>{business.name}</h3>
-                            <p>{business.description}</p>
-                            {business.products && business.products.length > 0 && (
-                              <div className="card-products-preview">
-                                <div className="card-products-preview-header">
-                                  <span>Products & Services ({business.products.length})</span>
-                                  <small>Tap to enquire</small>
-                                </div>
-                                <div className="card-products-pills">
-                                  {business.products.slice(0, 3).map((prod) => {
-                                    const isMatch = Boolean(
-                                      query.trim() &&
-                                      (prod.name.toLowerCase().includes(query.trim().toLowerCase()) ||
-                                       prod.description.toLowerCase().includes(query.trim().toLowerCase()))
-                                    );
-                                    return (
-                                      <button
-                                        key={prod.id}
-                                        type="button"
-                                        className={`card-product-pill ${isMatch ? "highlight" : ""}`}
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setEnquiryProduct({ business, product: prod });
-                                          recordEvent(`Direct product selected from card: ${prod.name}`);
-                                        }}
-                                        title={prod.description}
-                                      >
-                                        <span className="card-product-name">{prod.name}</span>
-                                        <span className="card-product-price">₹{prod.price.toLocaleString("en-IN")}{prod.unit ? ` ${prod.unit}` : ""}</span>
-                                      </button>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            )}
-                            <div className="business-footer"><span className="rating">★ <b>{business.rating.toFixed(1)}</b> <small>({business.reviews})</small></span>
-                              <span className="price">{business.price}</span></div>
-                            <button className="contact-button" onClick={() => { setSelectedBusiness(business); recordEvent("Business catalogue viewed"); }}>View all products & services <span>↗</span></button>
-                          </div>
-                        </article>
-                      ))}
-                    </div>
-                    {results.length > visibleCount && (
-                      <div style={{ textAlign: "center", margin: "28px 0 16px", display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-                        <button type="button" className="outline-button" onClick={() => setVisibleCount((v) => v + 24)}>
-                          Show more ({results.length - visibleCount} remaining)
-                        </button>
-                        <button type="button" className="outline-button" onClick={() => setVisibleCount(results.length)}>
-                          Show all {results.length} businesses
-                        </button>
+                <div className="business-grid">
+                  {results.slice(0, visibleCount).map((business, index) => (
+                    <article className="business-card" key={`${business.name}-${index}`}>
+                      <div className={`business-image ${business.color}`}><span className="business-emoji">{business.icon}</span>
+                        {business.tag && <span className="business-tag">{business.tag}</span>}
+                        <button className="save-button" aria-label={`${demoData.favorites.includes(business.name) ? "Remove saved" : "Save"} ${business.name}`} aria-pressed={demoData.favorites.includes(business.name)} onClick={() => toggleFavorite(business.name)}>{demoData.favorites.includes(business.name) ? "♥" : "♡"}</button>
                       </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="empty-results">
-                    <span>⌕</span>
-                    <strong>No businesses found</strong>
-                    <p>{matchingProducts.length ? "Matching products were found above! Or try another search term." : "Try a larger search radius or another category."}</p>
-                    <button onClick={() => { setRadius(25); setCategory("All"); setQuery(""); }}>Show more nearby</button>
+                      <div className="business-info">
+                        <div className="business-meta"><span>{business.category}</span><span className="distance">⌖ {businessDistance(business).toFixed(1)} km{locationEnabled ? "" : " sample"}</span></div>
+                        <h3>{business.name}</h3>
+                        <p>{business.description}</p>
+                        <div className="business-footer"><span className="rating">★ <b>{business.rating.toFixed(1)}</b> <small>({business.reviews})</small></span>
+                          <span className="price">{business.price}</span></div>
+                        <button className="contact-button" onClick={() => { setSelectedBusiness(business); recordEvent("Business catalogue viewed"); }}>View all products & services <span>↗</span></button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+                {results.length > visibleCount && (
+                  <div style={{ textAlign: "center", margin: "28px 0 16px", display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+                    <button type="button" className="outline-button" onClick={() => setVisibleCount((v) => v + 24)}>
+                      Show more ({results.length - visibleCount} remaining)
+                    </button>
+                    <button type="button" className="outline-button" onClick={() => setVisibleCount(results.length)}>
+                      Show all {results.length} businesses
+                    </button>
                   </div>
                 )}
               </>
+            ) : (
+              <div className="empty-results">
+                <span>⌕</span>
+                <strong>No businesses found</strong>
+                <p>{relatedProducts.length ? "Related products were found above! Try tapping a related search term or broadening your search." : "Try a larger search radius or another category."}</p>
+                <button onClick={() => { setRadius(25); setCategory("All"); setQuery(""); }}>Show more nearby</button>
+              </div>
             )}
             <section className="video-ad-panel mobile-video-ad" aria-label="Video advertisement">
               <div className="video-ad-heading"><span>VIDEO ADVERTISEMENT</span><small>Local spotlight</small></div>
