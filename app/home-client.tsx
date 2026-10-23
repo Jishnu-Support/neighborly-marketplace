@@ -2398,6 +2398,85 @@ function matchesWord(text: string, token: string): boolean {
   return text.toLowerCase().includes(token.toLowerCase());
 }
 
+const VOCABULARY = [
+  "maruti", "suzuki", "swift", "brezza", "baleno", "wagonr", "dzire", "tata", "nexon", "punch", "tiago", "harrier", "safari",
+  "hyundai", "creta", "venue", "i20", "hero", "splendor", "xtreme", "vida", "honda", "activa", "shine", "unicorn", "cb350",
+  "royal enfield", "classic 350", "hunter 350", "bullet", "meteor", "himalayan", "bajaj", "pulsar", "chetak", "tvs", "jupiter", "apache",
+  "car", "bike", "scooter", "automobile", "tyre", "battery", "service", "repair", "puncture", "detailing", "wash",
+  "mobile", "phone", "iphone", "apple", "samsung", "galaxy", "laptop", "computer", "tv", "refrigerator", "washing machine", "ac",
+  "hospital", "doctor", "clinic", "dental", "dentist", "physiotherapy", "kauvery", "sbs", "apollo",
+  "gym", "fitness", "workout", "crossfit", "badminton", "cricket", "turf", "swimming", "yoga", "zumba",
+  "biryani", "restaurant", "hotel", "food", "cafe", "bakery", "sweets", "meals",
+  "saree", "jewellery", "gold", "diamond", "clothing", "suit", "footwear", "shoes", "tanishq", "raymond", "bata",
+  "furniture", "sofa", "bed", "wardrobe", "interior", "godrej", "royaloak", "nilkamal",
+  "plumber", "electrician", "pest control", "painting", "photography", "taxi", "cab"
+];
+
+function levenshtein(a: string, b: string): number {
+  const an = a ? a.length : 0;
+  const bn = b ? b.length : 0;
+  if (an === 0) return bn;
+  if (bn === 0) return an;
+  const matrix: number[][] = Array.from({ length: bn + 1 }, () => new Array(an + 1));
+  for (let i = 0; i <= an; i++) matrix[0][i] = i;
+  for (let j = 0; j <= bn; j++) matrix[j][0] = j;
+  for (let j = 1; j <= bn; j++) {
+    for (let i = 1; i <= an; i++) {
+      if (b[j - 1] === a[i - 1]) matrix[j][i] = matrix[j - 1][i - 1];
+      else matrix[j][i] = Math.min(matrix[j - 1][i - 1] + 1, matrix[j][i - 1] + 1, matrix[j - 1][i] + 1);
+    }
+  }
+  return matrix[bn][an];
+}
+
+function getWordCorrection(rawWord: string): string | null {
+  const w = rawWord.toLowerCase();
+  if (w.length < 3 || VOCABULARY.includes(w)) return null;
+  let best: string | null = null;
+  let minD = 99;
+  for (const v of VOCABULARY) {
+    const d = levenshtein(w, v);
+    const maxD = w.length <= 4 ? 1 : 2;
+    if (d <= maxD && d < minD) {
+      minD = d;
+      best = v;
+    }
+  }
+  return best;
+}
+
+function stemToken(token: string): string {
+  const t = token.toLowerCase();
+  if (t.endsWith("ies") && t.length > 4) return t.slice(0, -3) + "y";
+  if (t.endsWith("es") && t.length > 4 && (t.endsWith("shes") || t.endsWith("ches") || t.endsWith("sses") || t.endsWith("xes"))) {
+    return t.slice(0, -2);
+  }
+  if (t.endsWith("s") && !t.endsWith("ss") && t.length > 3) return t.slice(0, -1);
+  if (t.endsWith("ing") && t.length > 5) return t.slice(0, -3);
+  return t;
+}
+
+function highlightMatch(text: string, q: string) {
+  if (!q.trim() || !text) return text;
+  const words = q.trim().toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 1);
+  if (!words.length) return text;
+  const pattern = new RegExp(`(${words.map(escapeRegex).join("|")})`, "gi");
+  const parts = text.split(pattern);
+  return (
+    <>
+      {parts.map((part, i) =>
+        pattern.test(part) ? (
+          <mark key={i} className="search-highlight">
+            {part}
+          </mark>
+        ) : (
+          part
+        )
+      )}
+    </>
+  );
+}
+
 export default function Home() {
   const [role, setRole] = useState<Role>("Discover");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -2411,6 +2490,10 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [radius, setRadius] = useState(5);
   const [visibleCount, setVisibleCount] = useState(24);
+  const [searchSort, setSearchSort] = useState<"relevance" | "distance" | "rating" | "price" | "name">("relevance");
+  const [searchFilterTab, setSearchFilterTab] = useState<"all" | "businesses" | "products">("all");
+  const [searchDropdownOpen, setSearchDropdownOpen] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
   const [demoData, setDemoData] = useState(emptyDemoData);
   const [storageReady, setStorageReady] = useState(false);
   const [storageError, setStorageError] = useState("");
@@ -2448,6 +2531,16 @@ export default function Home() {
         if (result.config?.sectors?.length) setCategoryConfig(result.config);
       }).catch(() => undefined);
     return () => window.removeEventListener("neighborly-categories-updated", onCategoriesUpdated);
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setSearchDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
@@ -2548,9 +2641,10 @@ export default function Home() {
     }
   }, [demoData, storageReady]);
 
-  const { results, relatedProducts, relatedSearches } = useMemo(() => {
+  const { results, relatedProducts, relatedSearches, correctedQuery, searchDurationMs, autocompleteData } = useMemo(() => {
+    const t0 = typeof performance !== "undefined" ? performance.now() : Date.now();
     const q = query.trim().toLowerCase();
-    const rawTokens = q.split(/[^a-z0-9]+/).filter((t) => t.length > 1);
+    const rawWords = q.split(/[^a-z0-9]+/).filter((w) => w.length > 0);
 
     const eligible = businesses.filter((business) => {
       const categoryMatch = category === "All" || business.category === category || (business.categories || []).includes(category);
@@ -2561,16 +2655,98 @@ export default function Home() {
       return categoryMatch && taxonomyMatch && distMatch && business.subscribed;
     });
 
-    if (!q || rawTokens.length === 0) {
+    // Compute live autocomplete data for dropdown
+    const computeAutocomplete = () => {
+      if (!q) {
+        return {
+          queries: [
+            "Maruti Swift",
+            "Hero Splendor",
+            "Kauvery Hospital",
+            "Samsung Galaxy S25",
+            "Apollo Dental Clinic",
+            "Thalappakatti Biryani",
+            "Car Wash & Detailing",
+            "Badminton Court"
+          ],
+          businesses: businesses.slice(0, 3),
+          products: businesses.flatMap((b) => b.products.slice(0, 1).map((p) => ({ product: p, business: b }))).slice(0, 3),
+          categories: ["Automobiles", "Electronics", "Health & wellness", "Food & dining"]
+        };
+      }
+      const matchedQueries = new Set<string>();
+      const matchedBiz: Business[] = [];
+      const matchedProd: { product: Product; business: Business }[] = [];
+
+      for (const b of businesses) {
+        if (b.name.toLowerCase().includes(q)) {
+          matchedBiz.push(b);
+          matchedQueries.add(b.name);
+        }
+        for (const sub of b.subcategories) {
+          if (sub.toLowerCase().includes(q)) matchedQueries.add(sub);
+        }
+        for (const prod of b.products) {
+          if (prod.name.toLowerCase().includes(q)) {
+            matchedProd.push({ product: prod, business: b });
+            matchedQueries.add(prod.name);
+          }
+        }
+        if (matchedBiz.length >= 3 && matchedProd.length >= 3 && matchedQueries.size >= 5) break;
+      }
+      return {
+        queries: Array.from(matchedQueries).slice(0, 4),
+        businesses: matchedBiz.slice(0, 3),
+        products: matchedProd.slice(0, 3),
+        categories: categories.filter((c) => c.name !== "All" && c.name.toLowerCase().includes(q)).map((c) => c.name).slice(0, 2)
+      };
+    };
+
+    const autocompleteData = computeAutocomplete();
+
+    if (!q || rawWords.length === 0) {
       return {
         results: eligible,
         relatedProducts: [],
-        relatedSearches: []
+        relatedSearches: [],
+        correctedQuery: null,
+        searchDurationMs: 0,
+        autocompleteData
       };
     }
 
-    const directMatches: { business: Business; score: number }[] = [];
-    const relatedMatches: { business: Business; score: number }[] = [];
+    // Stop words (ignore in multi-word queries)
+    const stopWords = new Set(["in", "near", "at", "for", "the", "hosur", "me", "best", "top", "good", "find", "and", "or", "of", "to"]);
+    const filteredWords = rawWords.filter((w) => !stopWords.has(w) || rawWords.length === 1);
+
+    // Typo checking
+    let correctedQuery: string | null = null;
+    const correctedTokens: string[] = [];
+    let hadTypo = false;
+
+    for (const w of filteredWords) {
+      const corr = getWordCorrection(w);
+      if (corr) {
+        hadTypo = true;
+        correctedTokens.push(corr);
+      } else {
+        correctedTokens.push(w);
+      }
+    }
+    if (hadTypo) {
+      correctedQuery = correctedTokens.join(" ");
+    }
+
+    // Stemming & Token normalization
+    const searchTokens = new Set<string>();
+    for (const w of correctedTokens) {
+      searchTokens.add(w);
+      searchTokens.add(stemToken(w));
+    }
+    const tokenArray = Array.from(searchTokens).filter((t) => t.length > 1);
+
+    // Relevance Scoring
+    const scoredList: { business: Business; score: number; direct: boolean }[] = [];
 
     for (const b of eligible) {
       const nameLower = b.name.toLowerCase();
@@ -2581,27 +2757,31 @@ export default function Home() {
       const allText = `${nameLower} ${catLower} ${subLower} ${descLower} ${prodsLower}`;
 
       let score = 0;
-      let directTokensHit = 0;
+      let directHitCount = 0;
       let synonymHit = false;
 
-      for (const token of rawTokens) {
+      // Exact full query matches
+      if (nameLower.includes(q)) score += 50;
+      if (prodsLower.includes(q)) score += 35;
+
+      for (const token of tokenArray) {
         if (matchesWord(nameLower, token)) {
-          score += 15;
-          directTokensHit++;
+          score += 30;
+          directHitCount++;
         } else if (matchesWord(prodsLower, token)) {
-          score += 10;
-          directTokensHit++;
+          score += 20;
+          directHitCount++;
         } else if (matchesWord(subLower, token)) {
-          score += 8;
-          directTokensHit++;
+          score += 15;
+          directHitCount++;
         } else if (matchesWord(descLower, token) || matchesWord(catLower, token)) {
-          score += 4;
-          directTokensHit++;
+          score += 8;
+          directHitCount++;
         } else {
           const syns = SEARCH_SYNONYMS[token] || [];
           for (const s of syns) {
             if (matchesWord(allText, s)) {
-              score += 3;
+              score += 5;
               synonymHit = true;
               break;
             }
@@ -2609,19 +2789,44 @@ export default function Home() {
         }
       }
 
-      if (directTokensHit === rawTokens.length) {
-        directMatches.push({ business: b, score });
-      } else if (directTokensHit > 0 || synonymHit) {
-        relatedMatches.push({ business: b, score });
+      // Star rating bonus
+      score += (b.rating || 4.0) * 2;
+
+      // Proximity bonus: closer businesses get a gentle boost
+      const dist = businessDistance(b);
+      if (dist <= 2) score += 4;
+      else if (dist <= 5) score += 2;
+
+      if (directHitCount > 0 || synonymHit || score > 15) {
+        scoredList.push({
+          business: b,
+          score,
+          direct: directHitCount >= Math.min(2, tokenArray.length)
+        });
       }
     }
 
-    directMatches.sort((a, b) => b.score - a.score);
-    relatedMatches.sort((a, b) => b.score - a.score);
+    // Multi-factor Sorting
+    if (searchSort === "distance") {
+      scoredList.sort((a, b) => businessDistance(a.business) - businessDistance(b.business));
+    } else if (searchSort === "rating") {
+      scoredList.sort((a, b) => b.business.rating - a.business.rating);
+    } else if (searchSort === "price") {
+      scoredList.sort((a, b) => {
+        const pa = parseInt(a.business.price.replace(/[^\d]/g, "")) || 0;
+        const pb = parseInt(b.business.price.replace(/[^\d]/g, "")) || 0;
+        return pa - pb;
+      });
+    } else if (searchSort === "name") {
+      scoredList.sort((a, b) => a.business.name.localeCompare(b.business.name));
+    } else {
+      // Relevance
+      scoredList.sort((a, b) => b.score - a.score);
+    }
 
-    const sortedResults = [...directMatches.map((m) => m.business), ...relatedMatches.map((m) => m.business)];
+    const sortedResults = scoredList.map((m) => m.business);
 
-    // Generate Related Searches suggestions
+    // Dynamic Related Searches
     const suggestions = new Set<string>();
     if (q.includes("swift") || q.includes("car")) {
       suggestions.add("Maruti Swift");
@@ -2663,7 +2868,7 @@ export default function Home() {
     }
     const finalRelatedSearches = Array.from(suggestions).filter((s) => s.toLowerCase() !== q).slice(0, 6);
 
-    // Generate Related Products/Services
+    // Matching Products/Services
     const relProds: { product: Product; business: Business }[] = [];
     const seenProductIds = new Set<string>();
 
@@ -2671,10 +2876,10 @@ export default function Home() {
       for (const p of b.products) {
         if (seenProductIds.has(p.id)) continue;
         const pFull = `${p.name} ${p.description} ${b.name} ${b.category} ${b.subcategories.join(" ")}`.toLowerCase();
-        const matchesAnyToken = rawTokens.some((t) => matchesWord(pFull, t));
+        const matchesAnyToken = tokenArray.some((t) => matchesWord(pFull, t));
         let matchesSynonym = false;
         if (!matchesAnyToken) {
-          for (const t of rawTokens) {
+          for (const t of tokenArray) {
             const syns = SEARCH_SYNONYMS[t] || [];
             if (syns.some((s) => matchesWord(pFull, s))) {
               matchesSynonym = true;
@@ -2691,12 +2896,18 @@ export default function Home() {
       if (relProds.length >= 10) break;
     }
 
+    const t1 = typeof performance !== "undefined" ? performance.now() : Date.now();
+    const searchDurationMs = Math.max(1, Math.round(t1 - t0));
+
     return {
       results: sortedResults,
       relatedProducts: relProds,
-      relatedSearches: finalRelatedSearches
+      relatedSearches: finalRelatedSearches,
+      correctedQuery,
+      searchDurationMs,
+      autocompleteData
     };
-  }, [businesses, category, categoryPath, query, radius, locationCoordinates, locationEnabled]);
+  }, [businesses, category, categoryPath, query, radius, locationCoordinates, locationEnabled, searchSort]);
 
   function showNotice(message: string) {
     setNotice(message);
@@ -2738,12 +2949,14 @@ export default function Home() {
     recordEvent(`Customer enquiry initiated for A-Z item: ${item.name}`);
   }
 
-  function searchNearby() {
-    const term = query.trim();
+  function searchNearby(overrideTerm?: string) {
+    const term = (overrideTerm ?? query).trim();
     if (term) {
-      setDemoData((current) => ({ ...current, recentSearches: [term, ...current.recentSearches.filter((item) => item !== term)].slice(0, 8) }));
-      recordEvent("Customer search performed");
+      if (overrideTerm) setQuery(overrideTerm);
+      setDemoData((current) => ({ ...current, recentSearches: [term, ...current.recentSearches.filter((item) => item.toLowerCase() !== term.toLowerCase())].slice(0, 8) }));
+      recordEvent(`Customer search performed: ${term}`);
     }
+    setSearchDropdownOpen(false);
     document.getElementById("results")?.scrollIntoView({ behavior: "smooth" });
   }
 
@@ -3360,12 +3573,203 @@ export default function Home() {
             </div>
 
             <div className="search-panel">
-              <div className="search-main">
+              <div className="search-main" ref={searchContainerRef} style={{ position: "relative" }}>
                 <label htmlFor="what-search">WHAT DO YOU NEED?</label>
-                <div className="search-input-wrap"><span className="search-symbol">🔍</span>
-                  <input id="what-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Try “phone repair” or “fresh dosa”…" />
-                  <button className="search-submit" onClick={searchNearby}>Find nearby <span>↗</span></button>
+                <div className="search-input-wrap">
+                  <span className="search-symbol">🔍</span>
+                  <input
+                    id="what-search"
+                    value={query}
+                    onChange={(event) => {
+                      setQuery(event.target.value);
+                      setSearchDropdownOpen(true);
+                    }}
+                    onFocus={() => setSearchDropdownOpen(true)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        searchNearby();
+                      } else if (e.key === "Escape") {
+                        setSearchDropdownOpen(false);
+                      }
+                    }}
+                    placeholder="Search 85+ Hosur businesses, Maruti Swift, Hero bike, Kauvery Hospital, Biryani..."
+                    autoComplete="off"
+                  />
+                  {query && (
+                    <button
+                      type="button"
+                      className="search-clear-input-btn"
+                      onClick={() => {
+                        setQuery("");
+                        setSearchDropdownOpen(false);
+                      }}
+                      title="Clear search"
+                      aria-label="Clear search"
+                    >
+                      ✕
+                    </button>
+                  )}
+                  <button className="search-submit" onClick={() => searchNearby()}>
+                    Find nearby <span>↗</span>
+                  </button>
                 </div>
+
+                {/* Live Autocomplete Typeahead Dropdown */}
+                {searchDropdownOpen && (
+                  <div className="search-autocomplete-dropdown">
+                    {!query.trim() ? (
+                      <>
+                        {demoData.recentSearches.length > 0 && (
+                          <div className="autocomplete-section">
+                            <div className="autocomplete-section-header">
+                              <span>🕐 Recent Searches</span>
+                              <button
+                                type="button"
+                                className="autocomplete-clear-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDemoData((d) => ({ ...d, recentSearches: [] }));
+                                }}
+                              >
+                                Clear all
+                              </button>
+                            </div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                              {demoData.recentSearches.slice(0, 4).map((term) => (
+                                <button
+                                  key={term}
+                                  type="button"
+                                  className="autocomplete-item"
+                                  onClick={() => searchNearby(term)}
+                                >
+                                  <span style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "11.5px", color: "#243e2b" }}>
+                                    <span style={{ color: "#7a8f7e" }}>🕐</span>
+                                    <strong>{term}</strong>
+                                  </span>
+                                  <span style={{ fontSize: "10px", color: "#8a9b8e" }}>Search ↗</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        <div className="autocomplete-section">
+                          <div className="autocomplete-section-header">
+                            <span>🔥 Popular Searches in Hosur</span>
+                          </div>
+                          <div className="autocomplete-popular-chips">
+                            {[
+                              "Maruti Swift",
+                              "Hero Splendor",
+                              "Kauvery Hospital",
+                              "Samsung Galaxy S25",
+                              "Apollo Dental Clinic",
+                              "Thalappakatti Biryani",
+                              "Car Wash & Detailing",
+                              "Badminton Court",
+                              "Godrej Interio",
+                              "Airport Taxi"
+                            ].map((chip) => (
+                              <button
+                                key={chip}
+                                type="button"
+                                className="autocomplete-popular-chip"
+                                onClick={() => searchNearby(chip)}
+                              >
+                                {chip}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {autocompleteData.queries.length > 0 && (
+                          <div className="autocomplete-section">
+                            <div className="autocomplete-section-header">
+                              <span>Keywords &amp; Suggestions</span>
+                            </div>
+                            {autocompleteData.queries.map((qItem) => (
+                              <button
+                                key={qItem}
+                                type="button"
+                                className="autocomplete-item"
+                                onClick={() => searchNearby(qItem)}
+                              >
+                                <span style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#1f3927" }}>
+                                  <span style={{ color: "#6e8573" }}>🔍</span>
+                                  <span>{highlightMatch(qItem, query)}</span>
+                                </span>
+                                <span style={{ fontSize: "10px", color: "#778d7c" }}>Search ↗</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        {autocompleteData.businesses.length > 0 && (
+                          <div className="autocomplete-section">
+                            <div className="autocomplete-section-header">
+                              <span>Verified Businesses</span>
+                            </div>
+                            {autocompleteData.businesses.map((biz) => (
+                              <button
+                                key={biz.name}
+                                type="button"
+                                className="autocomplete-item"
+                                onClick={() => {
+                                  setSelectedBusiness(biz);
+                                  setSearchDropdownOpen(false);
+                                  recordEvent(`Autocomplete selected business: ${biz.name}`);
+                                }}
+                              >
+                                <div className="autocomplete-biz-info">
+                                  <span className="autocomplete-biz-icon">{biz.icon}</span>
+                                  <div>
+                                    <div className="autocomplete-biz-name">{highlightMatch(biz.name, query)}</div>
+                                    <div className="autocomplete-biz-cat">{biz.category} · ★ {biz.rating.toFixed(1)} · ⌖ {businessDistance(biz).toFixed(1)} km</div>
+                                  </div>
+                                </div>
+                                <span style={{ fontSize: "10px", color: "#2d693f", fontWeight: 700 }}>View Profile ↗</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        {autocompleteData.products.length > 0 && (
+                          <div className="autocomplete-section">
+                            <div className="autocomplete-section-header">
+                              <span>Direct Products &amp; Services</span>
+                            </div>
+                            {autocompleteData.products.map(({ product, business }) => (
+                              <button
+                                key={`${business.name}-${product.id}`}
+                                type="button"
+                                className="autocomplete-item"
+                                onClick={() => {
+                                  setEnquiryProduct({ business, product });
+                                  setSearchDropdownOpen(false);
+                                  recordEvent(`Autocomplete enquiry: ${product.name}`);
+                                }}
+                              >
+                                <div>
+                                  <div style={{ fontSize: "12px", fontWeight: 700, color: "#1a3321" }}>{highlightMatch(product.name, query)}</div>
+                                  <div style={{ fontSize: "9.5px", color: "#748677" }}>by {business.name}</div>
+                                </div>
+                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                  <span style={{ fontSize: "11px", fontWeight: 700, color: "#2d693f" }}>₹{product.price.toLocaleString("en-IN")}</span>
+                                  <span style={{ fontSize: "9.5px", background: "#386b4b", color: "#fff", padding: "3px 8px", borderRadius: "4px", fontWeight: 700 }}>Enquire ↗</span>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    )}
+                    <div className="autocomplete-footer">
+                      <span>Press <strong>Enter</strong> to search all listings</span>
+                      <span><strong>Esc</strong> to close</span>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="search-divider" />
               <div className="radius-control">
@@ -3534,6 +3938,41 @@ export default function Home() {
               </div>
             </section>
 
+            {query.trim() && (
+              <div className="search-engine-toolbar">
+                <div className="search-engine-stats">
+                  <div className="search-engine-count">
+                    <span className="search-sparkle">⚡</span>
+                    <span>Found <strong>{results.length}</strong> verified providers &amp; <strong>{relatedProducts.length}</strong> products for <em>“{query.trim()}”</em> <span className="search-speed">({searchDurationMs}ms)</span></span>
+                  </div>
+                  {correctedQuery && correctedQuery.toLowerCase() !== query.trim().toLowerCase() && (
+                    <div className="search-did-you-mean">
+                      <span>Did you mean:</span>
+                      <button type="button" className="did-you-mean-btn" onClick={() => searchNearby(correctedQuery)}>{correctedQuery}</button>?
+                    </div>
+                  )}
+                </div>
+                <div className="search-engine-controls">
+                  <div className="search-sort-group">
+                    <label htmlFor="search-sort-select">Sort by:</label>
+                    <select id="search-sort-select" className="search-sort-select" value={searchSort} onChange={(e) => setSearchSort(e.target.value as any)}>
+                      <option value="relevance">⚡ Most Relevant</option>
+                      <option value="distance">⌖ Nearest to me</option>
+                      <option value="rating">★ Highest Rated</option>
+                      <option value="price">🏷️ Lowest Starting Price</option>
+                      <option value="name">🔤 Name (A–Z)</option>
+                    </select>
+                  </div>
+                  <div className="search-type-filters">
+                    <button type="button" className={`search-filter-tab ${searchFilterTab === "all" ? "active" : ""}`} onClick={() => setSearchFilterTab("all")}>All ({results.length + relatedProducts.length})</button>
+                    <button type="button" className={`search-filter-tab ${searchFilterTab === "businesses" ? "active" : ""}`} onClick={() => setSearchFilterTab("businesses")}>Businesses ({results.length})</button>
+                    <button type="button" className={`search-filter-tab ${searchFilterTab === "products" ? "active" : ""}`} onClick={() => setSearchFilterTab("products")}>Products ({relatedProducts.length})</button>
+                  </div>
+                  <button type="button" className="search-clear-all-btn" onClick={() => { setQuery(""); setCategory("All"); setCategoryPath([]); setSearchFilterTab("all"); }}>✕ Reset search</button>
+                </div>
+              </div>
+            )}
+
             {query.trim() && relatedSearches.length > 0 && (
               <div className="related-searches-bar" aria-label="Related searches" style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", margin: "16px 0 20px", padding: "10px 14px", background: "#f5f8f5", border: "1px solid #dbe6da", borderRadius: "10px" }}>
                 <span className="related-searches-label" style={{ font: "700 11.5px Manrope, sans-serif", color: "#274b32", display: "inline-flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
@@ -3558,7 +3997,7 @@ export default function Home() {
               </div>
             )}
 
-            {query.trim() && relatedProducts.length > 0 && (
+            {query.trim() && relatedProducts.length > 0 && (searchFilterTab === "all" || searchFilterTab === "products") && (
               <div className="related-products-shelf" style={{ background: "#fbfdfa", border: "1px solid #e1ebe0", borderRadius: "12px", padding: "16px 18px 18px", margin: "0 0 24px", boxShadow: "0 2px 8px rgba(30,50,35,0.03)" }}>
                 <div className="related-shelf-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", gap: "8px", flexWrap: "wrap" }}>
                   <div>
@@ -3572,12 +4011,12 @@ export default function Home() {
                     <div className="related-product-card" key={`${business.name}-${product.id}`} style={{ flex: "0 0 270px", width: "270px", minWidth: "270px", background: "#ffffff", border: "1px solid #e2ede0", borderRadius: "10px", padding: "14px 15px", display: "flex", flexDirection: "column", justifyContent: "space-between", boxSizing: "border-box" }}>
                       <div>
                         <div className="related-product-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px", marginBottom: "6px" }}>
-                          <span className="related-product-name" title={product.name} style={{ font: "700 12.5px Manrope, sans-serif", color: "#1c3222", lineHeight: 1.3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "165px" }}>{product.name}</span>
+                          <span className="related-product-name" title={product.name} style={{ font: "700 12.5px Manrope, sans-serif", color: "#1c3222", lineHeight: 1.3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "165px" }}>{highlightMatch(product.name, query)}</span>
                           <span className="related-product-price" style={{ font: "700 11.5px Manrope, sans-serif", color: "#256037", background: "#edf6ec", padding: "2px 7px", borderRadius: "5px", whiteSpace: "nowrap" }}>
                             ₹{product.price.toLocaleString("en-IN")}{product.unit ? <small style={{ fontSize: "8.5px", color: "#6a7c6f", fontWeight: 500 }}> /{product.unit}</small> : null}
                           </span>
                         </div>
-                        <p className="related-product-desc" style={{ font: "10px/1.45 'DM Sans', sans-serif", color: "#6d7f71", margin: "6px 0 12px" }}>{product.description}</p>
+                        <p className="related-product-desc" style={{ font: "10px/1.45 'DM Sans', sans-serif", color: "#6d7f71", margin: "6px 0 12px" }}>{highlightMatch(product.description, query)}</p>
                       </div>
                       <div className="related-product-footer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", paddingTop: "10px", borderTop: "1px solid #f0f5ef" }}>
                         <button
@@ -3609,51 +4048,79 @@ export default function Home() {
               </div>
             )}
 
-            <div className="section-heading results-heading" id="results">
-              <div>
-                <div className="eyebrow">LOCAL VERIFIED PROVIDERS</div>
-                <h2>{query ? `Providers for “${query}”` : category !== "All" ? `${categoryPath.length ? `${categoryPath.join(" › ")} providers` : `${category} providers`}` : "Around your corner"} <span className="result-count">{results.length}</span></h2>
-              </div>
-              <div className="sort-label"><span className="green-dot" /> Subscribed listings · {locationEnabled ? "device radius" : "demo distances"}</div>
-            </div>
-            {results.length ? (
+            {(searchFilterTab === "all" || searchFilterTab === "businesses") && (
               <>
-                <div className="business-grid">
-                  {results.slice(0, visibleCount).map((business, index) => (
-                    <article className="business-card" key={`${business.name}-${index}`}>
-                      <div className={`business-image ${business.color}`}><span className="business-emoji">{business.icon}</span>
-                        {business.tag && <span className="business-tag">{business.tag}</span>}
-                        <button className="save-button" aria-label={`${demoData.favorites.includes(business.name) ? "Remove saved" : "Save"} ${business.name}`} aria-pressed={demoData.favorites.includes(business.name)} onClick={() => toggleFavorite(business.name)}>{demoData.favorites.includes(business.name) ? "♥" : "♡"}</button>
-                      </div>
-                      <div className="business-info">
-                        <div className="business-meta"><span>{business.category}</span><span className="distance">⌖ {businessDistance(business).toFixed(1)} km{locationEnabled ? "" : " sample"}</span></div>
-                        <h3>{business.name}</h3>
-                        <p>{business.description}</p>
-                        <div className="business-footer"><span className="rating">★ <b>{business.rating.toFixed(1)}</b> <small>({business.reviews})</small></span>
-                          <span className="price">{business.price}</span></div>
-                        <button className="contact-button" onClick={() => { setSelectedBusiness(business); recordEvent("Business catalogue viewed"); }}>View all products & services <span>↗</span></button>
-                      </div>
-                    </article>
-                  ))}
+                <div className="section-heading results-heading" id="results">
+                  <div>
+                    <div className="eyebrow">LOCAL VERIFIED PROVIDERS</div>
+                    <h2>{query ? `Providers for “${query}”` : category !== "All" ? `${categoryPath.length ? `${categoryPath.join(" › ")} providers` : `${category} providers`}` : "Around your corner"} <span className="result-count">{results.length}</span></h2>
+                  </div>
+                  <div className="sort-label"><span className="green-dot" /> Subscribed listings · {locationEnabled ? "device radius" : "demo distances"}</div>
                 </div>
-                {results.length > visibleCount && (
-                  <div style={{ textAlign: "center", margin: "28px 0 16px", display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-                    <button type="button" className="outline-button" onClick={() => setVisibleCount((v) => v + 24)}>
-                      Show more ({results.length - visibleCount} remaining)
-                    </button>
-                    <button type="button" className="outline-button" onClick={() => setVisibleCount(results.length)}>
-                      Show all {results.length} businesses
-                    </button>
+                {results.length ? (
+                  <>
+                    <div className="business-grid">
+                      {results.slice(0, visibleCount).map((business, index) => (
+                        <article className="business-card" key={`${business.name}-${index}`}>
+                          <div className={`business-image ${business.color}`}><span className="business-emoji">{business.icon}</span>
+                            {business.tag && <span className="business-tag">{business.tag}</span>}
+                            <button className="save-button" aria-label={`${demoData.favorites.includes(business.name) ? "Remove saved" : "Save"} ${business.name}`} aria-pressed={demoData.favorites.includes(business.name)} onClick={() => toggleFavorite(business.name)}>{demoData.favorites.includes(business.name) ? "♥" : "♡"}</button>
+                          </div>
+                          <div className="business-info">
+                            <div className="business-meta"><span>{business.category}</span><span className="distance">⌖ {businessDistance(business).toFixed(1)} km{locationEnabled ? "" : " sample"}</span></div>
+                            <h3>{highlightMatch(business.name, query)}</h3>
+                            <p>{highlightMatch(business.description, query)}</p>
+                            <div className="business-footer"><span className="rating">★ <b>{business.rating.toFixed(1)}</b> <small>({business.reviews})</small></span>
+                              <span className="price">{business.price}</span></div>
+                            <button className="contact-button" onClick={() => { setSelectedBusiness(business); recordEvent("Business catalogue viewed"); }}>View all products & services <span>↗</span></button>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                    {results.length > visibleCount && (
+                      <div style={{ textAlign: "center", margin: "28px 0 16px", display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+                        <button type="button" className="outline-button" onClick={() => setVisibleCount((v) => v + 24)}>
+                          Show more ({results.length - visibleCount} remaining)
+                        </button>
+                        <button type="button" className="outline-button" onClick={() => setVisibleCount(results.length)}>
+                          Show all {results.length} businesses
+                        </button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="empty-results">
+                    <span>⌕</span>
+                    <strong>No businesses found</strong>
+                    <p>{relatedProducts.length ? "Related products were found above! Try tapping a related search term or broadening your search." : "Try a larger search radius or another category."}</p>
+                    {correctedQuery && correctedQuery.toLowerCase() !== query.trim().toLowerCase() && (
+                      <div style={{ margin: "14px 0", fontSize: "13px" }}>
+                        Did you mean:{" "}
+                        <button
+                          type="button"
+                          className="did-you-mean-btn"
+                          onClick={() => {
+                            setCategory("All");
+                            setCategoryPath([]);
+                            searchNearby(correctedQuery);
+                          }}
+                          style={{ background: "#e8f2e7", border: "1px solid #cbe0cb", borderRadius: "14px", padding: "4px 12px", color: "#1c542b", fontWeight: 700, cursor: "pointer" }}
+                        >
+                          {correctedQuery}
+                        </button>
+                        ?
+                      </div>
+                    )}
+                    <div style={{ display: "flex", gap: "8px", justifyContent: "center", flexWrap: "wrap", marginTop: "12px" }}>
+                      <button onClick={() => { setRadius(25); setCategory("All"); setQuery(""); setSearchFilterTab("all"); }}>Show all nearby</button>
+                      <button type="button" className="outline-button" onClick={() => { setCategory("All"); setCategoryPath([]); searchNearby("Car repair"); }}>Car repair</button>
+                      <button type="button" className="outline-button" onClick={() => { setCategory("All"); setCategoryPath([]); searchNearby("Dentist"); }}>Dentist</button>
+                      <button type="button" className="outline-button" onClick={() => { setCategory("All"); setCategoryPath([]); searchNearby("Samsung"); }}>Samsung</button>
+                      <button type="button" className="outline-button" onClick={() => { setCategory("All"); setCategoryPath([]); searchNearby("Gym"); }}>Gym</button>
+                    </div>
                   </div>
                 )}
               </>
-            ) : (
-              <div className="empty-results">
-                <span>⌕</span>
-                <strong>No businesses found</strong>
-                <p>{relatedProducts.length ? "Related products were found above! Try tapping a related search term or broadening your search." : "Try a larger search radius or another category."}</p>
-                <button onClick={() => { setRadius(25); setCategory("All"); setQuery(""); }}>Show more nearby</button>
-              </div>
             )}
             <section className="video-ad-panel mobile-video-ad" aria-label="Video advertisement">
               <div className="video-ad-heading"><span>VIDEO ADVERTISEMENT</span><small>Local spotlight</small></div>
