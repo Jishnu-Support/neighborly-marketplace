@@ -7,7 +7,19 @@ import { defaultCategoryConfig, legacyDefaultCategoryConfig, type CategoryConfig
 import { defaultRegistrationFormConfig, type RegistrationFormConfig, type RegistrationForm, type RegistrationField } from "./lib/registration-form-config.shared";
 import { buildAutomobileTaxonomyPaths as buildSharedAutomobileTaxonomyPaths, commercialVehicleSubcategories, getVehicleModelsForType as getSharedVehicleModelsForType } from "./lib/vehicle-taxonomy.shared";
 import AtoZDirectory from "./atoz-directory";
-import type { AtoZItem } from "./lib/atoz-catalog";
+import { atozCatalog, type AtoZItem } from "./lib/atoz-catalog";
+
+const subcategoriesSummary: Record<string, string> = {
+  Automobiles: "Two-wheelers · Car repair · Tyres · Wash",
+  Electronics: "Mobiles · Laptops · Appliances · TV & Audio",
+  Fashion: "Clothing · Footwear · Jewellery · Tailoring",
+  "Home & furniture": "Furniture · Decor · Kitchen · Repairs",
+  "Food & dining": "Restaurants · Meal delivery · Bakery · Cafes",
+  "Health & wellness": "Clinics · Dental · Pharmacies · Physio",
+  Travel: "Travel agents · Stays · Airport cabs · Tours",
+  Entertainment: "Events · Music · Workshops · Gaming",
+  "Everyday services": "Plumbing · Electrical · Cleaning · Repairs",
+};
 
 type Role = "Discover" | "Account" | "Business" | "Agent" | "Company";
 type EmergencyType = "police" | "medical" | "fire" | "women-safety" | "general";
@@ -464,9 +476,7 @@ function isLegacyAutomobileTaxonomy(paths: string[][]) {
 
 function getTaxonomyOptions(sector: string, path: string[], config: CategoryConfig): TaxonomyNode[] {
   const entry = config.sectors.find((item) => item.name === sector);
-  const isAutomobiles = sector.trim().toLowerCase() === "automobiles";
-  const hasAutomobileFlow = Boolean(entry?.paths.some((item) => ["sales", "service"].includes(item[0]?.toLowerCase() || "")));
-  const paths = isAutomobiles && (!hasAutomobileFlow && isLegacyAutomobileTaxonomy(entry?.paths || [])) ? buildAutomobileTaxonomyPaths() : entry?.paths || [];
+  const paths = entry?.paths || [];
   let level: TaxonomyNode[] = buildTaxonomy(paths);
   for (const selected of path) {
     level = level.find((node) => node.name === selected)?.children || [];
@@ -1360,24 +1370,102 @@ export default function Home() {
                     </div>
                   )}
                 </div>
+                {category !== "All" && (() => {
+                  const topSubcats = getTaxonomyOptions(category, [], categoryConfig);
+                  if (!topSubcats.length) return null;
+                  return (
+                    <div className="subcategory-strip" aria-label="Subcategories list">
+                      <button
+                        type="button"
+                        className={`subcategory-pill ${categoryPath.length === 0 ? "active" : ""}`}
+                        onClick={() => setCategoryPath([])}
+                      >
+                        All in {category}
+                      </button>
+                      {topSubcats.map((subcat) => (
+                        <button
+                          key={subcat.name}
+                          type="button"
+                          className={`subcategory-pill ${categoryPath[0] === subcat.name ? "active" : ""}`}
+                          onClick={() => setCategoryPath([subcat.name])}
+                        >
+                          <span>{subcat.name}</span>
+                          {subcat.children.length > 0 && <small className="subcat-pill-count">{subcat.children.length}</small>}
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })()}
+
                 <div className="category-grid">
                   {category === "All" ? categories.slice(1).map((item, index) => (
                     <button key={item.name} className={`category-card cat-${index} ${category === item.name ? "category-active" : ""}`}
                       onClick={() => { setCategory(category === item.name ? "All" : item.name); setCategoryPath([]); setQuery(""); }}>
-                      <span className="category-art"><CategoryIcon name={item.name} sector={item.name} /></span><span>{item.name}</span><span className="category-arrow">↗</span>
+                      <span className="category-art"><CategoryIcon name={item.name} sector={item.name} /></span>
+                      <div className="category-card-content">
+                        <strong>{item.name}</strong>
+                        {subcategoriesSummary[item.name] && <span className="category-sub-summary">{subcategoriesSummary[item.name]}</span>}
+                      </div>
+                      <span className="category-arrow">↗</span>
                     </button>
                   )) : (() => {
                     const options = getTaxonomyOptions(category, categoryPath, categoryConfig);
-                    if (!options.length) return <div className="taxonomy-complete"><strong>{categoryPath[categoryPath.length - 1] || category}</strong><span>{category === "Automobiles" && categoryPath.length === 3 ? "No verified models are listed for this make yet. Showing matching businesses instead." : categoryPath.length ? "Showing matching listings for this selection." : "No subcategories are listed yet. Showing matching businesses."}</span></div>;
-                    const tileIcons = ["◈", "◇", "•", "⌂"];
-                    const icon = tileIcons[Math.min(categoryPath.length, tileIcons.length - 1)];
+                    if (!options.length) return <div className="taxonomy-complete"><strong>{categoryPath[categoryPath.length - 1] || category}</strong><span>{categoryPath.length ? "Showing matching listings for this subcategory." : "No subcategories are listed yet. Showing matching businesses."}</span></div>;
                     return options.map((option, index) => {
                       const logo = brandLogoFor(option.name, categoryConfig.brandLogos);
                       const isBrand = isBrandOption(category, categoryPath, option, categoryConfig.brandLogos);
-                      return <button key={option.name} type="button" className={`category-card cat-${index}`} onClick={() => { setCategoryPath((current) => [...current, option.name]); setQuery(""); }}><span className={`category-art${isBrand && !logo ? " category-brand-monogram" : ""}`}>{logo ? <img className="category-brand-logo" src={logo} alt={`${option.name} logo`} /> : isBrand ? brandMonogram(option.name) : <CategoryIcon name={option.name} sector={category} />}</span><span>{option.name}</span><span className="category-arrow">↗</span></button>;
+                      return <button key={option.name} type="button" className={`category-card cat-${index}`} onClick={() => { setCategoryPath((current) => [...current, option.name]); setQuery(""); }}><span className={`category-art${isBrand && !logo ? " category-brand-monogram" : ""}`}>{logo ? <img className="category-brand-logo" src={logo} alt={`${option.name} logo`} /> : isBrand ? brandMonogram(option.name) : <CategoryIcon name={option.name} sector={category} />}</span><div className="category-card-content"><strong>{option.name}</strong>{option.children.length > 0 && <span className="category-sub-summary">{option.children.length} sub-options</span>}</div><span className="category-arrow">↗</span></button>;
                     });
                   })()}
                 </div>
+
+                {category !== "All" && (() => {
+                  const arrangedItems = atozCatalog.filter((item) => {
+                    if (item.sector !== category) return false;
+                    if (categoryPath.length > 0 && item.subcategory) {
+                      const targetSub = categoryPath[0].toLowerCase();
+                      const itemSub = item.subcategory.toLowerCase();
+                      return itemSub.includes(targetSub) || targetSub.includes(itemSub);
+                    }
+                    return true;
+                  });
+                  if (!arrangedItems.length) return null;
+                  return (
+                    <div className="category-arranged-details">
+                      <div className="category-arranged-header">
+                        <div>
+                          <h3>
+                            Services & Products under {categoryPath.length ? `${categoryPath[0]} (${category})` : category}
+                          </h3>
+                          <p>Arranged catalog of everyday services and retail items with direct local provider connections.</p>
+                        </div>
+                        <span className="result-count">{arrangedItems.length} items</span>
+                      </div>
+                      <div className="category-arranged-grid">
+                        {arrangedItems.map((item) => (
+                          <div key={item.id} className="arranged-item-card">
+                            <div className="arranged-item-top">
+                              <span className="arranged-item-icon">{item.icon}</span>
+                              <span className="arranged-item-subcat">{item.subcategory || item.sector}</span>
+                            </div>
+                            <h4 className="arranged-item-name">{item.name}</h4>
+                            <p className="arranged-item-desc">{item.description}</p>
+                            <div className="arranged-item-footer">
+                              <span className="arranged-item-price">{item.priceHint}</span>
+                              <button
+                                type="button"
+                                className="arranged-item-btn"
+                                onClick={() => handleAtoZSelect(item.searchQuery, item.sector)}
+                              >
+                                Find Providers ↗
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
               </>
             )}
 
@@ -1393,7 +1481,10 @@ export default function Home() {
             </section>
 
             <div className="section-heading results-heading" id="results">
-              <div><div className="eyebrow">GOOD THINGS, CLOSE BY</div><h2>{query ? `Results for “${query}”` : "Around your corner"} <span className="result-count">{results.length}</span></h2></div>
+              <div>
+                <div className="eyebrow">LOCAL VERIFIED PROVIDERS</div>
+                <h2>{query ? `Results for “${query}”` : category !== "All" ? `${categoryPath.length ? `${categoryPath.join(" › ")} providers` : `${category} providers`}` : "Around your corner"} <span className="result-count">{results.length}</span></h2>
+              </div>
               <div className="sort-label"><span className="green-dot" /> Subscribed listings · {locationEnabled ? "device radius" : "demo distances"}</div>
             </div>
             {results.length ? <div className="business-grid">

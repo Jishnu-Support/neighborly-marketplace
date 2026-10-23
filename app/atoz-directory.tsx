@@ -20,12 +20,23 @@ export default function AtoZDirectory({
   const [searchFilter, setSearchFilter] = useState<string>("");
   const [typeFilter, setTypeFilter] = useState<MarketplaceType | "ALL">("ALL");
   const [sectorFilter, setSectorFilter] = useState<string>("ALL");
+  const [subcatFilter, setSubcatFilter] = useState<string>("ALL");
 
   const sectors = useMemo(() => {
     const set = new Set<string>();
     atozCatalog.forEach((item) => set.add(item.sector));
     return Array.from(set).sort();
   }, []);
+
+  const subcategoriesForSector = useMemo(() => {
+    const set = new Set<string>();
+    atozCatalog.forEach((item) => {
+      if ((sectorFilter === "ALL" || item.sector === sectorFilter) && item.subcategory) {
+        set.add(item.subcategory);
+      }
+    });
+    return Array.from(set).sort();
+  }, [sectorFilter]);
 
   // Compute item counts per letter
   const countsPerLetter = useMemo(() => {
@@ -44,16 +55,18 @@ export default function AtoZDirectory({
       if (selectedLetter !== "ALL" && item.letter !== selectedLetter) return false;
       if (typeFilter !== "ALL" && item.type !== typeFilter) return false;
       if (sectorFilter !== "ALL" && item.sector !== sectorFilter) return false;
+      if (subcatFilter !== "ALL" && item.subcategory !== subcatFilter) return false;
       if (query) {
         const matchesName = item.name.toLowerCase().includes(query);
         const matchesDesc = item.description.toLowerCase().includes(query);
         const matchesSector = item.sector.toLowerCase().includes(query);
+        const matchesSubcat = item.subcategory?.toLowerCase().includes(query);
         const matchesQuery = item.searchQuery.toLowerCase().includes(query);
-        if (!matchesName && !matchesDesc && !matchesSector && !matchesQuery) return false;
+        if (!matchesName && !matchesDesc && !matchesSector && !matchesSubcat && !matchesQuery) return false;
       }
       return true;
     });
-  }, [selectedLetter, searchFilter, typeFilter, sectorFilter]);
+  }, [selectedLetter, searchFilter, typeFilter, sectorFilter, subcatFilter]);
 
   // Group filtered items by letter
   const groupedItems = useMemo(() => {
@@ -162,7 +175,10 @@ export default function AtoZDirectory({
           <select
             className="atoz-sector-select"
             value={sectorFilter}
-            onChange={(e) => setSectorFilter(e.target.value)}
+            onChange={(e) => {
+              setSectorFilter(e.target.value);
+              setSubcatFilter("ALL");
+            }}
             aria-label="Filter by sector"
           >
             <option value="ALL">All Sectors ({sectors.length})</option>
@@ -172,6 +188,23 @@ export default function AtoZDirectory({
               </option>
             ))}
           </select>
+
+          {/* Subcategory filter */}
+          {subcategoriesForSector.length > 0 && (
+            <select
+              className="atoz-sector-select"
+              value={subcatFilter}
+              onChange={(e) => setSubcatFilter(e.target.value)}
+              aria-label="Filter by subcategory"
+            >
+              <option value="ALL">All Subcategories ({subcategoriesForSector.length})</option>
+              {subcategoriesForSector.map((sc) => (
+                <option key={sc} value={sc}>
+                  {sc}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
       </div>
 
@@ -187,8 +220,9 @@ export default function AtoZDirectory({
           )}
           {typeFilter !== "ALL" && <> · {typeFilter}s</>}
           {sectorFilter !== "ALL" && <> · {sectorFilter}</>}
+          {subcatFilter !== "ALL" && <> · {subcatFilter}</>}
         </span>
-        {(selectedLetter !== "ALL" || searchFilter || typeFilter !== "ALL" || sectorFilter !== "ALL") && (
+        {(selectedLetter !== "ALL" || searchFilter || typeFilter !== "ALL" || sectorFilter !== "ALL" || subcatFilter !== "ALL") && (
           <button
             className="atoz-reset-button"
             onClick={() => {
@@ -196,6 +230,7 @@ export default function AtoZDirectory({
               setSearchFilter("");
               setTypeFilter("ALL");
               setSectorFilter("ALL");
+              setSubcatFilter("ALL");
             }}
           >
             Reset all filters
@@ -216,6 +251,7 @@ export default function AtoZDirectory({
               setSearchFilter("");
               setTypeFilter("ALL");
               setSectorFilter("ALL");
+              setSubcatFilter("ALL");
             }}
           >
             Show All A–Z Items
@@ -243,6 +279,7 @@ export default function AtoZDirectory({
                         <div className="atoz-card-tags">
                           <span className={`atoz-tag-type ${item.type.toLowerCase()}`}>{item.type}</span>
                           <span className="atoz-tag-sector">{item.sector}</span>
+                          {item.subcategory && <span className="arranged-item-subcat">{item.subcategory}</span>}
                           {item.popular && <span className="atoz-tag-popular">★ Popular</span>}
                         </div>
                       </div>

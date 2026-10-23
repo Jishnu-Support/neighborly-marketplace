@@ -23,24 +23,26 @@ const electronicsDeviceGroups: [string, [string, string[]][]][] = [
   ["Cameras", [["Canon", ["EOS R50", "EOS R6 Mark III"]], ["Sony", ["Alpha a6400", "Alpha a7 IV"]], ["Nikon", ["Z50II", "Z6III"]], ["Fujifilm", ["X-S20", "X-T5"]], ["Panasonic", ["LUMIX G97", "LUMIX S5II"]], ["GoPro", ["HERO13 Black", "MAX2"]]]],
 ];
 
-// Keep the original automobile paths separately so saved demo defaults can be
-// migrated without replacing any taxonomy an Admin or Super Admin customized.
-const legacyAutomobilePaths = [
-  ["Car repair", "Cars", "Engine & transmission", "Diagnostics"],
-  ["Car repair", "Cars", "Wheels & tyres", "Tyre replacement"],
+const automobilePaths = [
   ["Two-wheeler service", "Motorcycles", "Routine service", "Oil & filter"],
   ["Two-wheeler service", "Scooters", "Brake & tyre care", "Brake pads"],
-  ["Tyres & batteries", "Vehicle batteries", "Battery replacement", "Car battery"],
-  ["Car wash", "Exterior care", "Wash packages", "Full service wash"],
+  ["Two-wheeler service", "Electric 2W", "Battery & motor check", "Diagnostics"],
+  ["Car repair", "Cars", "Engine & transmission", "Diagnostics"],
+  ["Car repair", "Cars", "Wheels & tyres", "Tyre replacement"],
+  ["Car repair", "Cars", "Air conditioning", "AC cooling recharge"],
+  ["Tyres & batteries", "Vehicle batteries", "Battery replacement", "Car & bike battery"],
+  ["Tyres & batteries", "Tyres & wheels", "Wheel balancing", "Puncture repair"],
+  ["Car wash & detailing", "Exterior care", "Wash packages", "Full service foam wash"],
+  ["Car wash & detailing", "Interior care", "Deep sanitization", "Upholstery shampoo"],
+  ["Commercial vehicles", "Trucks", "Heavy service", "Fleet maintenance"],
+  ["Commercial vehicles", "Buses & vans", "Inspection", "Routine service"],
 ];
 
 const taxonomyPaths: Record<string, string[][]> = {
-  Automobiles: buildAutomobileTaxonomyPaths(),
-  Electronics: [
-    ...["Sales", "Service"].flatMap((activity) => electronicsDeviceGroups.flatMap(([productType, companies]) =>
-      companies.flatMap(([company, models]) => models.map((model) => [activity, productType, company, model]))
-    )),
-  ],
+  Automobiles: automobilePaths,
+  Electronics: electronicsDeviceGroups.flatMap(([productType, companies]) =>
+    companies.flatMap(([company, models]) => models.map((model) => [productType, company, model]))
+  ),
   Fashion: [
     ["Clothing", "Women", "Everyday wear", "Kurtas & kurtis"],
     ["Clothing", "Women", "Occasion wear", "Sarees & dresses"],
@@ -152,16 +154,12 @@ const taxonomyPaths: Record<string, string[][]> = {
   ],
 };
 
-function addSalesAndService(paths: string[][]): string[][] {
-  return paths.flatMap((path) => ["Sales", "Service"].map((activity) => [activity, ...path]));
-}
-
-// Used to safely migrate saved defaults without overwriting admin-customized paths.
+// Default category configuration with direct intuitive subcategories
 export const legacyDefaultCategoryConfig: CategoryConfig = {
   sectors: categories.slice(1).map(({ name, icon }) => ({
     name,
     icon,
-    paths: name === "Automobiles" ? legacyAutomobilePaths : taxonomyPaths[name] || [],
+    paths: taxonomyPaths[name] || [],
   })),
 };
 
@@ -169,8 +167,6 @@ export const defaultCategoryConfig: CategoryConfig = {
   sectors: categories.slice(1).map(({ name, icon }) => ({
     name,
     icon,
-    paths: name === "Electronics" || name === "Automobiles"
-      ? taxonomyPaths[name] || []
-      : addSalesAndService(taxonomyPaths[name] || []),
+    paths: taxonomyPaths[name] || [],
   })),
 };
