@@ -3005,6 +3005,240 @@ export default function Home() {
 
   return (
     <main className="app-shell">
+      <style>{`
+        .related-searches-bar {
+          display: flex !important;
+          align-items: center !important;
+          gap: 10px !important;
+          flex-wrap: wrap !important;
+          margin: 16px 0 20px !important;
+          padding: 10px 14px !important;
+          background: #f5f8f5 !important;
+          border: 1px solid #dbe6da !important;
+          border-radius: 10px !important;
+          font-family: inherit !important;
+        }
+        .related-searches-label {
+          font-family: 'Manrope', sans-serif !important;
+          font-weight: 700 !important;
+          font-size: 11.5px !important;
+          color: #274b32 !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          gap: 6px !important;
+          white-space: nowrap !important;
+        }
+        .related-search-icon {
+          font-size: 13px !important;
+        }
+        .related-searches-pills {
+          display: flex !important;
+          align-items: center !important;
+          gap: 8px !important;
+          flex-wrap: wrap !important;
+        }
+        .related-search-pill {
+          border: 1px solid #c9d9cb !important;
+          background: #ffffff !important;
+          color: #26432f !important;
+          padding: 5px 13px !important;
+          border-radius: 20px !important;
+          font-family: 'Manrope', sans-serif !important;
+          font-weight: 600 !important;
+          font-size: 11px !important;
+          cursor: pointer !important;
+          transition: all 0.16s ease !important;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
+          outline: none !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          white-space: nowrap !important;
+        }
+        .related-search-pill:hover {
+          background: #386b4b !important;
+          color: #ffffff !important;
+          border-color: #386b4b !important;
+          transform: translateY(-1px) !important;
+          box-shadow: 0 3px 8px rgba(40,75,50,0.18) !important;
+        }
+        .related-products-shelf {
+          background: #fbfdfa !important;
+          border: 1px solid #e1ebe0 !important;
+          border-radius: 12px !important;
+          padding: 16px 18px 18px !important;
+          margin: 0 0 24px !important;
+          box-shadow: 0 2px 8px rgba(30,50,35,0.03) !important;
+          font-family: inherit !important;
+        }
+        .related-shelf-header {
+          display: flex !important;
+          justify-content: space-between !important;
+          align-items: center !important;
+          margin-bottom: 14px !important;
+          gap: 8px !important;
+          flex-wrap: wrap !important;
+        }
+        .shelf-eyebrow {
+          font-family: 'Manrope', sans-serif !important;
+          font-weight: 800 !important;
+          font-size: 9px !important;
+          letter-spacing: 0.8px !important;
+          color: #4b7a57 !important;
+          text-transform: uppercase !important;
+          margin-bottom: 3px !important;
+        }
+        .shelf-title {
+          font-family: 'Manrope', sans-serif !important;
+          font-weight: 700 !important;
+          font-size: 14px !important;
+          color: #1a3020 !important;
+          margin: 0 !important;
+        }
+        .shelf-count {
+          font-family: 'Manrope', sans-serif !important;
+          font-size: 10px !important;
+          color: #386244 !important;
+          background: #e7f2e6 !important;
+          padding: 3px 9px !important;
+          border-radius: 12px !important;
+          font-weight: 700 !important;
+          border: 1px solid #d5e5d4 !important;
+        }
+        .related-products-scroll {
+          display: flex !important;
+          flex-direction: row !important;
+          gap: 14px !important;
+          overflow-x: auto !important;
+          padding: 4px 2px 10px !important;
+          scrollbar-width: thin !important;
+          -webkit-overflow-scrolling: touch !important;
+        }
+        .related-products-scroll::-webkit-scrollbar {
+          height: 6px !important;
+        }
+        .related-products-scroll::-webkit-scrollbar-thumb {
+          background: #cddccd !important;
+          border-radius: 6px !important;
+        }
+        .related-product-card {
+          flex: 0 0 270px !important;
+          width: 270px !important;
+          min-width: 270px !important;
+          background: #ffffff !important;
+          border: 1px solid #e2ede0 !important;
+          border-radius: 10px !important;
+          padding: 14px 15px !important;
+          display: flex !important;
+          flex-direction: column !important;
+          justify-content: space-between !important;
+          box-shadow: 0 2px 6px rgba(35,55,40,0.04) !important;
+          transition: all 0.18s ease !important;
+          box-sizing: border-box !important;
+        }
+        .related-product-card:hover {
+          border-color: #8bb591 !important;
+          box-shadow: 0 6px 18px rgba(35,60,42,0.09) !important;
+          transform: translateY(-2px) !important;
+        }
+        .related-product-header {
+          display: flex !important;
+          justify-content: space-between !important;
+          align-items: flex-start !important;
+          gap: 8px !important;
+          margin-bottom: 6px !important;
+        }
+        .related-product-name {
+          font-family: 'Manrope', sans-serif !important;
+          font-weight: 700 !important;
+          font-size: 12.5px !important;
+          color: #1c3222 !important;
+          line-height: 1.3 !important;
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          max-width: 165px !important;
+        }
+        .related-product-price {
+          font-family: 'Manrope', sans-serif !important;
+          font-weight: 700 !important;
+          font-size: 11.5px !important;
+          color: #256037 !important;
+          background: #edf6ec !important;
+          padding: 2px 7px !important;
+          border-radius: 5px !important;
+          white-space: nowrap !important;
+        }
+        .related-product-price small {
+          font-size: 8.5px !important;
+          color: #6a7c6f !important;
+          font-weight: 500 !important;
+        }
+        .related-product-desc {
+          font-family: 'DM Sans', sans-serif !important;
+          font-size: 10px !important;
+          color: #6d7f71 !important;
+          line-height: 1.45 !important;
+          margin: 6px 0 12px !important;
+          display: -webkit-box !important;
+          -webkit-line-clamp: 2 !important;
+          -webkit-box-orient: vertical !important;
+          overflow: hidden !important;
+        }
+        .related-product-footer {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          gap: 8px !important;
+          padding-top: 10px !important;
+          border-top: 1px solid #f0f5ef !important;
+        }
+        .related-product-provider {
+          border: 1px solid #e4eee3 !important;
+          background: #f7faf6 !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          gap: 5px !important;
+          font-family: 'Manrope', sans-serif !important;
+          font-size: 9.5px !important;
+          font-weight: 600 !important;
+          color: #36593e !important;
+          cursor: pointer !important;
+          padding: 4px 8px !important;
+          border-radius: 5px !important;
+          max-width: 175px !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          white-space: nowrap !important;
+          transition: all 0.15s ease !important;
+        }
+        .related-product-provider:hover {
+          background: #edf5eb !important;
+          border-color: #a3c7a9 !important;
+          color: #1a3c25 !important;
+        }
+        .provider-name-truncate {
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          white-space: nowrap !important;
+        }
+        .related-product-enquire-btn {
+          border: 0 !important;
+          background: #386b4b !important;
+          color: #ffffff !important;
+          border-radius: 5px !important;
+          padding: 6px 12px !important;
+          font-family: 'Manrope', sans-serif !important;
+          font-size: 9.5px !important;
+          font-weight: 700 !important;
+          cursor: pointer !important;
+          white-space: nowrap !important;
+          transition: background 0.15s ease !important;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
+        }
+        .related-product-enquire-btn:hover {
+          background: #234a32 !important;
+        }
+      `}</style>
       <aside className={`sidebar ${mobileMenuOpen ? "mobile-menu-open" : ""}`}>
         <a className="brand" href="#" onClick={(event) => { event.preventDefault(); openPortal("Discover"); }} aria-label="Bizearch home">
           <img className="brand-mark" src="/bizearch-mark.svg" alt="" />
@@ -3301,16 +3535,17 @@ export default function Home() {
             </section>
 
             {query.trim() && relatedSearches.length > 0 && (
-              <div className="related-searches-bar" aria-label="Related searches">
-                <span className="related-searches-label">
-                  <span className="related-search-icon">🔍</span> Related searches:
+              <div className="related-searches-bar" aria-label="Related searches" style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", margin: "16px 0 20px", padding: "10px 14px", background: "#f5f8f5", border: "1px solid #dbe6da", borderRadius: "10px" }}>
+                <span className="related-searches-label" style={{ font: "700 11.5px Manrope, sans-serif", color: "#274b32", display: "inline-flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
+                  <span className="related-search-icon" style={{ fontSize: "13px" }}>🔍</span> Related searches:
                 </span>
-                <div className="related-searches-pills">
+                <div className="related-searches-pills" style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
                   {relatedSearches.map((term) => (
                     <button
                       key={term}
                       type="button"
                       className="related-search-pill"
+                      style={{ border: "1px solid #c9d9cb", background: "#ffffff", color: "#26432f", padding: "5px 13px", borderRadius: "20px", font: "600 11px Manrope, sans-serif", cursor: "pointer", display: "inline-flex", alignItems: "center", whiteSpace: "nowrap" }}
                       onClick={() => {
                         setQuery(term);
                         recordEvent(`Related search clicked: ${term}`);
@@ -3324,38 +3559,42 @@ export default function Home() {
             )}
 
             {query.trim() && relatedProducts.length > 0 && (
-              <div className="related-products-shelf">
-                <div className="related-shelf-header">
+              <div className="related-products-shelf" style={{ background: "#fbfdfa", border: "1px solid #e1ebe0", borderRadius: "12px", padding: "16px 18px 18px", margin: "0 0 24px", boxShadow: "0 2px 8px rgba(30,50,35,0.03)" }}>
+                <div className="related-shelf-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", gap: "8px", flexWrap: "wrap" }}>
                   <div>
-                    <div className="shelf-eyebrow">RELATED PRODUCTS & SERVICES</div>
-                    <h3 className="shelf-title">Popular items related to “{query}”</h3>
+                    <div className="shelf-eyebrow" style={{ font: "800 9px Manrope, sans-serif", letterSpacing: "0.8px", color: "#4b7a57", textTransform: "uppercase", marginBottom: "3px" }}>RELATED PRODUCTS & SERVICES</div>
+                    <h3 className="shelf-title" style={{ font: "700 14px Manrope, sans-serif", color: "#1a3020", margin: 0 }}>Popular items related to “{query.trim()}”</h3>
                   </div>
-                  <span className="shelf-count">{relatedProducts.length} items</span>
+                  <span className="shelf-count" style={{ font: "700 10px Manrope, sans-serif", color: "#386244", background: "#e7f2e6", padding: "3px 9px", borderRadius: "12px", border: "1px solid #d5e5d4" }}>{relatedProducts.length} items</span>
                 </div>
-                <div className="related-products-scroll">
+                <div className="related-products-scroll" style={{ display: "flex", flexDirection: "row", gap: "14px", overflowX: "auto", padding: "4px 2px 10px", WebkitOverflowScrolling: "touch" }}>
                   {relatedProducts.map(({ product, business }) => (
-                    <div className="related-product-card" key={`${business.name}-${product.id}`}>
+                    <div className="related-product-card" key={`${business.name}-${product.id}`} style={{ flex: "0 0 270px", width: "270px", minWidth: "270px", background: "#ffffff", border: "1px solid #e2ede0", borderRadius: "10px", padding: "14px 15px", display: "flex", flexDirection: "column", justifyContent: "space-between", boxSizing: "border-box" }}>
                       <div>
-                        <div className="related-product-header">
-                          <span className="related-product-name" title={product.name}>{product.name}</span>
-                          <span className="related-product-price">₹{product.price.toLocaleString("en-IN")}{product.unit ? <small> /{product.unit}</small> : null}</span>
+                        <div className="related-product-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px", marginBottom: "6px" }}>
+                          <span className="related-product-name" title={product.name} style={{ font: "700 12.5px Manrope, sans-serif", color: "#1c3222", lineHeight: 1.3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "165px" }}>{product.name}</span>
+                          <span className="related-product-price" style={{ font: "700 11.5px Manrope, sans-serif", color: "#256037", background: "#edf6ec", padding: "2px 7px", borderRadius: "5px", whiteSpace: "nowrap" }}>
+                            ₹{product.price.toLocaleString("en-IN")}{product.unit ? <small style={{ fontSize: "8.5px", color: "#6a7c6f", fontWeight: 500 }}> /{product.unit}</small> : null}
+                          </span>
                         </div>
-                        <p className="related-product-desc">{product.description}</p>
+                        <p className="related-product-desc" style={{ font: "10px/1.45 'DM Sans', sans-serif", color: "#6d7f71", margin: "6px 0 12px" }}>{product.description}</p>
                       </div>
-                      <div className="related-product-footer">
+                      <div className="related-product-footer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", paddingTop: "10px", borderTop: "1px solid #f0f5ef" }}>
                         <button
                           type="button"
                           className="related-product-provider"
+                          style={{ border: "1px solid #e4eee3", background: "#f7faf6", display: "inline-flex", alignItems: "center", gap: "5px", font: "600 9.5px Manrope, sans-serif", color: "#36593e", cursor: "pointer", padding: "4px 8px", borderRadius: "5px", maxWidth: "175px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
                           onClick={() => setSelectedBusiness(business)}
                           title={`View ${business.name}`}
                         >
                           <span>{business.icon}</span>
-                          <span className="provider-name-truncate">{business.name}</span>
-                          <span className="provider-dist">· {businessDistance(business).toFixed(1)} km</span>
+                          <span className="provider-name-truncate" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{business.name}</span>
+                          <span className="provider-dist" style={{ fontSize: "8.5px", color: "#7a8a7d" }}>· {businessDistance(business).toFixed(1)} km</span>
                         </button>
                         <button
                           type="button"
                           className="related-product-enquire-btn"
+                          style={{ border: 0, background: "#386b4b", color: "#ffffff", borderRadius: "5px", padding: "6px 12px", font: "700 9.5px Manrope, sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}
                           onClick={() => {
                             setEnquiryProduct({ business, product });
                             recordEvent(`Related product enquiry: ${product.name}`);
