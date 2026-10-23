@@ -2338,6 +2338,7 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [radius, setRadius] = useState(5);
   const [visibleCount, setVisibleCount] = useState(24);
+  const [searchTab, setSearchTab] = useState<"all" | "products" | "businesses">("all");
   const [demoData, setDemoData] = useState(emptyDemoData);
   const [storageReady, setStorageReady] = useState(false);
   const [storageError, setStorageError] = useState("");
@@ -2488,6 +2489,29 @@ export default function Home() {
       return categoryMatch && taxonomyMatch && searchMatch && businessDistance(business) <= radius && business.subscribed;
     });
   }, [businesses, category, categoryPath, query, radius, locationCoordinates]);
+
+  const matchingProducts = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const list: { product: Product; business: Business }[] = [];
+    for (const b of businesses) {
+      const categoryMatch = category === "All" || b.category === category || (b.categories || []).includes(category);
+      if (!categoryMatch) continue;
+      if (locationEnabled && businessDistance(b) > radius) continue;
+      for (const p of b.products) {
+        if (!q) {
+          if (category !== "All") {
+            list.push({ product: p, business: b });
+          }
+        } else {
+          const text = `${p.name} ${p.description} ${p.unit} ${b.name} ${b.category} ${(b.subcategories || []).join(" ")} ${(b.taxonomyTags || []).join(" ")}`.toLowerCase();
+          if (text.includes(q)) {
+            list.push({ product: p, business: b });
+          }
+        }
+      }
+    }
+    return list;
+  }, [businesses, query, category, radius, locationEnabled]);
 
   function showNotice(message: string) {
     setNotice(message);
@@ -3091,44 +3115,180 @@ export default function Home() {
               </div>
             </section>
 
-            <div className="section-heading results-heading" id="results">
-              <div>
-                <div className="eyebrow">LOCAL VERIFIED PROVIDERS</div>
-                <h2>{query ? `Results for “${query}”` : category !== "All" ? `${categoryPath.length ? `${categoryPath.join(" › ")} providers` : `${category} providers`}` : "Around your corner"} <span className="result-count">{results.length}</span></h2>
+            {query.trim() && (
+              <div className="search-type-tabs" aria-label="Search result types">
+                <button
+                  type="button"
+                  className={`search-type-tab ${searchTab === "all" ? "active" : ""}`}
+                  onClick={() => setSearchTab("all")}
+                >
+                  <span>All Matches</span>
+                  <span className="tab-count">{matchingProducts.length + results.length}</span>
+                </button>
+                <button
+                  type="button"
+                  className={`search-type-tab ${searchTab === "products" ? "active" : ""}`}
+                  onClick={() => setSearchTab("products")}
+                >
+                  <span>Products & Services</span>
+                  <span className="tab-count">{matchingProducts.length}</span>
+                </button>
+                <button
+                  type="button"
+                  className={`search-type-tab ${searchTab === "businesses" ? "active" : ""}`}
+                  onClick={() => setSearchTab("businesses")}
+                >
+                  <span>Businesses & Providers</span>
+                  <span className="tab-count">{results.length}</span>
+                </button>
               </div>
-              <div className="sort-label"><span className="green-dot" /> Subscribed listings · {locationEnabled ? "device radius" : "demo distances"}</div>
-            </div>
-            {results.length ? (
-              <>
-                <div className="business-grid">
-                  {results.slice(0, visibleCount).map((business, index) => (
-                    <article className="business-card" key={`${business.name}-${index}`}>
-                      <div className={`business-image ${business.color}`}><span className="business-emoji">{business.icon}</span>
-                        {business.tag && <span className="business-tag">{business.tag}</span>}
-                        <button className="save-button" aria-label={`${demoData.favorites.includes(business.name) ? "Remove saved" : "Save"} ${business.name}`} aria-pressed={demoData.favorites.includes(business.name)} onClick={() => toggleFavorite(business.name)}>{demoData.favorites.includes(business.name) ? "♥" : "♡"}</button>
+            )}
+
+            {(searchTab === "all" || searchTab === "products") && matchingProducts.length > 0 && (
+              <div className="product-search-section">
+                <div className="product-search-header">
+                  <div>
+                    <div className="eyebrow">PRODUCTS & SERVICES DIRECTORY</div>
+                    <h3>{query ? `Products & Services matching “${query}”` : `Services & Products in ${category}`}</h3>
+                    <p>Direct items available for immediate order, enquiry or booking with local providers in Hosur.</p>
+                  </div>
+                  <span className="result-count">{matchingProducts.length} items</span>
+                </div>
+                <div className="product-search-grid">
+                  {matchingProducts.slice(0, 24).map(({ product, business }) => (
+                    <div className="product-search-card" key={`${business.name}-${product.id}`}>
+                      <div>
+                        <div className="product-search-top">
+                          <h4 className="product-search-name">{product.name}</h4>
+                          <span className="product-search-price">
+                            ₹{product.price.toLocaleString("en-IN")}
+                            {product.unit ? <small> /{product.unit}</small> : null}
+                          </span>
+                        </div>
+                        <p className="product-search-desc">{product.description}</p>
                       </div>
-                      <div className="business-info">
-                        <div className="business-meta"><span>{business.category}</span><span className="distance">⌖ {businessDistance(business).toFixed(1)} km{locationEnabled ? "" : " sample"}</span></div>
-                        <h3>{business.name}</h3><p>{business.description}</p>
-                        <div className="business-footer"><span className="rating">★ <b>{business.rating.toFixed(1)}</b> <small>({business.reviews})</small></span>
-                          <span className="price">{business.price}</span></div>
-                        <button className="contact-button" onClick={() => { setSelectedBusiness(business); recordEvent("Business catalogue viewed"); }}>View products & services <span>↗</span></button>
+                      <div>
+                        <div className="product-search-provider">
+                          <button
+                            type="button"
+                            className="provider-badge"
+                            onClick={() => setSelectedBusiness(business)}
+                            title={`View ${business.name}`}
+                          >
+                            <span>{business.icon}</span>
+                            <span>{business.name}</span>
+                          </button>
+                          <span className="provider-dist">⌖ {businessDistance(business).toFixed(1)} km</span>
+                        </div>
+                        <div className="product-search-actions">
+                          <button
+                            type="button"
+                            className="product-search-btn-primary"
+                            onClick={() => {
+                              setEnquiryProduct({ business, product });
+                              recordEvent(`Product enquiry clicked: ${product.name}`);
+                            }}
+                          >
+                            Enquire / Book ↗
+                          </button>
+                          <button
+                            type="button"
+                            className="product-search-btn-secondary"
+                            onClick={() => setSelectedBusiness(business)}
+                          >
+                            View Shop
+                          </button>
+                        </div>
                       </div>
-                    </article>
+                    </div>
                   ))}
                 </div>
-                {results.length > visibleCount && (
-                  <div style={{ textAlign: "center", margin: "28px 0 16px", display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-                    <button type="button" className="outline-button" onClick={() => setVisibleCount((v) => v + 24)}>
-                      Show more ({results.length - visibleCount} remaining)
-                    </button>
-                    <button type="button" className="outline-button" onClick={() => setVisibleCount(results.length)}>
-                      Show all {results.length} businesses
-                    </button>
+              </div>
+            )}
+
+            {(searchTab === "all" || searchTab === "businesses") && (
+              <>
+                <div className="section-heading results-heading" id="results">
+                  <div>
+                    <div className="eyebrow">LOCAL VERIFIED PROVIDERS</div>
+                    <h2>{query ? `Providers for “${query}”` : category !== "All" ? `${categoryPath.length ? `${categoryPath.join(" › ")} providers` : `${category} providers`}` : "Around your corner"} <span className="result-count">{results.length}</span></h2>
+                  </div>
+                  <div className="sort-label"><span className="green-dot" /> Subscribed listings · {locationEnabled ? "device radius" : "demo distances"}</div>
+                </div>
+                {results.length ? (
+                  <>
+                    <div className="business-grid">
+                      {results.slice(0, visibleCount).map((business, index) => (
+                        <article className="business-card" key={`${business.name}-${index}`}>
+                          <div className={`business-image ${business.color}`}><span className="business-emoji">{business.icon}</span>
+                            {business.tag && <span className="business-tag">{business.tag}</span>}
+                            <button className="save-button" aria-label={`${demoData.favorites.includes(business.name) ? "Remove saved" : "Save"} ${business.name}`} aria-pressed={demoData.favorites.includes(business.name)} onClick={() => toggleFavorite(business.name)}>{demoData.favorites.includes(business.name) ? "♥" : "♡"}</button>
+                          </div>
+                          <div className="business-info">
+                            <div className="business-meta"><span>{business.category}</span><span className="distance">⌖ {businessDistance(business).toFixed(1)} km{locationEnabled ? "" : " sample"}</span></div>
+                            <h3>{business.name}</h3>
+                            <p>{business.description}</p>
+                            {business.products && business.products.length > 0 && (
+                              <div className="card-products-preview">
+                                <div className="card-products-preview-header">
+                                  <span>Products & Services ({business.products.length})</span>
+                                  <small>Tap to enquire</small>
+                                </div>
+                                <div className="card-products-pills">
+                                  {business.products.slice(0, 3).map((prod) => {
+                                    const isMatch = Boolean(
+                                      query.trim() &&
+                                      (prod.name.toLowerCase().includes(query.trim().toLowerCase()) ||
+                                       prod.description.toLowerCase().includes(query.trim().toLowerCase()))
+                                    );
+                                    return (
+                                      <button
+                                        key={prod.id}
+                                        type="button"
+                                        className={`card-product-pill ${isMatch ? "highlight" : ""}`}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setEnquiryProduct({ business, product: prod });
+                                          recordEvent(`Direct product selected from card: ${prod.name}`);
+                                        }}
+                                        title={prod.description}
+                                      >
+                                        <span className="card-product-name">{prod.name}</span>
+                                        <span className="card-product-price">₹{prod.price.toLocaleString("en-IN")}{prod.unit ? ` ${prod.unit}` : ""}</span>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+                            <div className="business-footer"><span className="rating">★ <b>{business.rating.toFixed(1)}</b> <small>({business.reviews})</small></span>
+                              <span className="price">{business.price}</span></div>
+                            <button className="contact-button" onClick={() => { setSelectedBusiness(business); recordEvent("Business catalogue viewed"); }}>View all products & services <span>↗</span></button>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                    {results.length > visibleCount && (
+                      <div style={{ textAlign: "center", margin: "28px 0 16px", display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+                        <button type="button" className="outline-button" onClick={() => setVisibleCount((v) => v + 24)}>
+                          Show more ({results.length - visibleCount} remaining)
+                        </button>
+                        <button type="button" className="outline-button" onClick={() => setVisibleCount(results.length)}>
+                          Show all {results.length} businesses
+                        </button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="empty-results">
+                    <span>⌕</span>
+                    <strong>No businesses found</strong>
+                    <p>{matchingProducts.length ? "Matching products were found above! Or try another search term." : "Try a larger search radius or another category."}</p>
+                    <button onClick={() => { setRadius(25); setCategory("All"); setQuery(""); }}>Show more nearby</button>
                   </div>
                 )}
               </>
-            ) : <div className="empty-results"><span>⌕</span><strong>No matches in this radius yet</strong><p>Try a larger search radius or another category.</p><button onClick={() => { setRadius(25); setCategory("All"); setQuery(""); }}>Show more nearby</button></div>}
+            )}
             <section className="video-ad-panel mobile-video-ad" aria-label="Video advertisement">
               <div className="video-ad-heading"><span>VIDEO ADVERTISEMENT</span><small>Local spotlight</small></div>
               <video key={adConfig.videoAd.sourceUrl} className="video-ad-player" controls muted loop playsInline poster={adConfig.videoAd.posterUrl || undefined} src={adConfig.videoAd.sourceUrl}>Your browser does not support embedded video.</video>
