@@ -24,26 +24,15 @@ const electronicsDeviceGroups: [string, [string, string[]][]][] = [
   ["Cameras", [["Canon", ["EOS R50", "EOS R6 Mark III"]], ["Sony", ["Alpha a6400", "Alpha a7 IV"]], ["Nikon", ["Z50II", "Z6III"]], ["Fujifilm", ["X-S20", "X-T5"]], ["Panasonic", ["LUMIX G97", "LUMIX S5II"]], ["GoPro", ["HERO13 Black", "MAX2"]]]],
 ];
 
-const automobilePaths = [
-  ["Two-wheeler service", "Motorcycles", "Routine service", "Oil & filter"],
-  ["Two-wheeler service", "Scooters", "Brake & tyre care", "Brake pads"],
-  ["Two-wheeler service", "Electric 2W", "Battery & motor check", "Diagnostics"],
-  ["Car repair", "Cars", "Engine & transmission", "Diagnostics"],
-  ["Car repair", "Cars", "Wheels & tyres", "Tyre replacement"],
-  ["Car repair", "Cars", "Air conditioning", "AC cooling recharge"],
-  ["Tyres & batteries", "Vehicle batteries", "Battery replacement", "Car & bike battery"],
-  ["Tyres & batteries", "Tyres & wheels", "Wheel balancing", "Puncture repair"],
-  ["Car wash & detailing", "Exterior care", "Wash packages", "Full service foam wash"],
-  ["Car wash & detailing", "Interior care", "Deep sanitization", "Upholstery shampoo"],
-  ["Commercial vehicles", "Trucks", "Heavy service", "Fleet maintenance"],
-  ["Commercial vehicles", "Buses & vans", "Inspection", "Routine service"],
-];
-
 const taxonomyPaths: Record<string, string[][]> = {
-  Automobiles: automobilePaths,
-  Electronics: electronicsDeviceGroups.flatMap(([productType, companies]) =>
-    companies.flatMap(([company, models]) => models.map((model) => [productType, company, model]))
-  ),
+  Automobiles: buildAutomobileTaxonomyPaths(),
+  Electronics: [
+    ...["Sales", "Service"].flatMap((activity) =>
+      electronicsDeviceGroups.flatMap(([productType, companies]) =>
+        companies.flatMap(([company, models]) => models.map((model) => [activity, productType, company, model]))
+      )
+    ),
+  ],
   Fashion: [
     ["Clothing", "Women", "Everyday wear", "Kurtas & kurtis"],
     ["Clothing", "Women", "Occasion wear", "Sarees & dresses"],

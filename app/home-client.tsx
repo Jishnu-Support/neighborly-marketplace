@@ -10,8 +10,8 @@ import AtoZDirectory from "./atoz-directory";
 import { atozCatalog, type AtoZItem } from "./lib/atoz-catalog";
 
 const subcategoriesSummary: Record<string, string> = {
-  Automobiles: "Two-wheelers · Car repair · Tyres · Wash",
-  Electronics: "Mobiles · Laptops · Appliances · TV & Audio",
+  Automobiles: "Sales · Service → Two wheelers · Three wheelers · Four wheelers · Heavy vehicles",
+  Electronics: "Sales · Service → Mobiles · Laptops · Appliances · Cameras",
   Fashion: "Clothing · Footwear · Jewellery · Tailoring",
   "Home & furniture": "Furniture · Decor · Kitchen · Repairs",
   "Food & dining": "Restaurants · Meal delivery · Bakery · Cafes",
@@ -470,10 +470,19 @@ function brandMonogram(name: string) {
 }
 
 function isBrandOption(sector: string, parentPath: string[], node: TaxonomyNode, brandLogos?: Record<string, string>) {
-  if (sector.trim().toLowerCase() !== "automobiles") return Boolean(brandLogoFor(node.name, brandLogos));
-  return ["sales", "service"].includes(parentPath[0]?.trim().toLowerCase() || "") &&
-    ((parentPath.length === 2 && parentPath[1] !== "Multi wheel / commercial") ||
-      (parentPath.length === 3 && parentPath[1] === "Multi wheel / commercial"));
+  const sectorKey = sector.trim().toLowerCase();
+  // For Automobiles: Sales/Service → Vehicle type → [BRAND] → Model
+  if (sectorKey === "automobiles") {
+    return ["sales", "service"].includes(parentPath[0]?.trim().toLowerCase() || "") &&
+      ((parentPath.length === 2 && parentPath[1] !== "Multi wheel / commercial") ||
+        (parentPath.length === 3 && parentPath[1] === "Multi wheel / commercial"));
+  }
+  // For Electronics: Sales/Service → Device type → [BRAND] → Model
+  if (sectorKey === "electronics") {
+    return ["sales", "service"].includes(parentPath[0]?.trim().toLowerCase() || "") &&
+      parentPath.length === 2;
+  }
+  return Boolean(brandLogoFor(node.name, brandLogos));
 }
 
 function buildAutomobileTaxonomyPaths(): string[][] {
@@ -496,11 +505,11 @@ function getTaxonomyOptions(sector: string, path: string[], config: CategoryConf
 }
 
 function getSectorActivityPaths(sector: CategorySector, activity: CatalogueActivity) {
-  const isAutomobiles = sector.name.trim().toLowerCase() === "automobiles";
+  const sectorKey = sector.name.trim().toLowerCase();
   const hasActivityRoot = sector.paths.some((path) => ["sales", "service"].includes(path[0]?.toLowerCase() || ""));
-  const paths = isAutomobiles && !hasActivityRoot && isLegacyAutomobileTaxonomy(sector.paths)
-    ? buildAutomobileTaxonomyPaths()
-    : sector.paths;
+  // Legacy migration: if Automobiles paths lack Sales/Service root, rebuild from shared taxonomy
+  const isLegacyAuto = sectorKey === "automobiles" && !hasActivityRoot && isLegacyAutomobileTaxonomy(sector.paths);
+  const paths = isLegacyAuto ? buildAutomobileTaxonomyPaths() : sector.paths;
   return paths.some((path) => ["sales", "service"].includes(path[0]?.toLowerCase() || ""))
     ? paths.filter((path) => path[0]?.toLowerCase() === activity.toLowerCase()).map((path) => path.slice(1)).filter((path) => path.length > 0)
     : paths;
@@ -2144,6 +2153,9 @@ function CategoryTreeEditor({
         const canUploadLogo = validPath.length >= 2 && (
           node.children.length > 0 ||
           (sectorName.trim().toLowerCase() === "automobiles" &&
+            validPath.length === 2 &&
+            ["sales", "service"].includes(validPath[0].trim().toLowerCase())) ||
+          (sectorName.trim().toLowerCase() === "electronics" &&
             validPath.length === 2 &&
             ["sales", "service"].includes(validPath[0].trim().toLowerCase()))
         );
