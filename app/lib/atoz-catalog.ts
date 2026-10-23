@@ -100,6 +100,43 @@ export const atozCatalog: AtoZItem[] = [
 
   // --- B ---
   {
+    id: "books-textbooks-novels",
+    name: "Books, School Textbooks & Novels",
+    letter: "B",
+    sector: "Books & Stationery",
+    subcategory: "Books",
+    type: "Product",
+    icon: "📚",
+    description: "CBSE, Samacheer Kalvi school textbooks, college guides, Tamil literature novels and competitive exam books.",
+    priceHint: "From ₹80",
+    searchQuery: "Books",
+    popular: true,
+  },
+  {
+    id: "bangles-fancy-jewellery",
+    name: "Bangles & Fashion Jewellery",
+    letter: "B",
+    sector: "Toys & Fancy Stores",
+    subcategory: "Fancy Store",
+    type: "Product",
+    icon: "✨",
+    description: "Traditional glass bangles, velvet bangles, matte finish 1-gram gold temple jewellery and accessories.",
+    priceHint: "From ₹50",
+    searchQuery: "Bangles",
+  },
+  {
+    id: "bus-stand-intercity-transit",
+    name: "Bus Stand & Intercity Transit Services",
+    letter: "B",
+    sector: "Public & Common Places",
+    subcategory: "Transit & Stations",
+    type: "Service",
+    icon: "🚌",
+    description: "TNSTC and KSRTC bus services to Bengaluru, Chennai, Salem, cloakroom facility and town departures.",
+    priceHint: "Public amenity",
+    searchQuery: "MGR Bus Stand",
+  },
+  {
     id: "bakery-artisan",
     name: "Bakery & Artisan Breads",
     letter: "B",
@@ -383,6 +420,19 @@ export const atozCatalog: AtoZItem[] = [
   },
 
   // --- F ---
+  {
+    id: "fancy-store-gifts",
+    name: "Fancy Store, Gifts & Cosmetics",
+    letter: "F",
+    sector: "Toys & Fancy Stores",
+    subcategory: "Fancy Store",
+    type: "Product",
+    icon: "🎁",
+    description: "Party celebration items, return gifts, vanity makeup cosmetics, hair accessories, perfumes and gifts.",
+    priceHint: "From ₹40",
+    searchQuery: "Fancy Store",
+    popular: true,
+  },
   {
     id: "fashion-apparel-wear",
     name: "Fashion & Everyday Clothing",
@@ -873,6 +923,19 @@ export const atozCatalog: AtoZItem[] = [
 
   // --- P ---
   {
+    id: "public-common-places-heritage",
+    name: "Public Places, Parks & Heritage Sites",
+    letter: "P",
+    sector: "Public & Common Places",
+    subcategory: "Heritage & Temples",
+    type: "Service",
+    icon: "🏛️",
+    description: "Malai Kovil temple, Kelavarapalli Dam, Rajaji Eco Park, Municipal Corporation, HPO and Town Library.",
+    priceHint: "Public access",
+    searchQuery: "Public & Common Places",
+    popular: true,
+  },
+  {
     id: "painting-wall-decor",
     name: "Painting & Waterproofing",
     letter: "P",
@@ -1017,6 +1080,19 @@ export const atozCatalog: AtoZItem[] = [
 
   // --- S ---
   {
+    id: "stationery-school-office-supplies",
+    name: "Stationery & School Supplies",
+    letter: "S",
+    sector: "Books & Stationery",
+    subcategory: "Stationery",
+    type: "Product",
+    icon: "✏️",
+    description: "Classmate notebooks, pens, Faber-Castell art materials, box files, geometry kits and drawing boards.",
+    priceHint: "From ₹20",
+    searchQuery: "Stationery",
+    popular: true,
+  },
+  {
     id: "saree-draping-festive-wear",
     name: "Sarees, Drapes & Occasion Wear",
     letter: "S",
@@ -1080,6 +1156,19 @@ export const atozCatalog: AtoZItem[] = [
   },
 
   // --- T ---
+  {
+    id: "toys-games-rc-cars",
+    name: "Toys, Board Games & RC Cars",
+    letter: "T",
+    sector: "Toys & Fancy Stores",
+    subcategory: "Toys & Games",
+    type: "Product",
+    icon: "🧸",
+    description: "Remote control cars, STEM building blocks, Barbie dolls, soft teddy bears, carrom and board games.",
+    priceHint: "From ₹99",
+    searchQuery: "Toys & Games",
+    popular: true,
+  },
   {
     id: "tailoring-custom-stitching",
     name: "Tailoring & Custom Blouse Stitching",
@@ -1334,6 +1423,18 @@ export const atozCatalog: AtoZItem[] = [
     description: "Digital radiography, bone density scans, ultrasound appointments and prompt digital report access.",
     priceHint: "From ₹450",
     searchQuery: "Clinics",
+  },
+  {
+    id: "xerox-printing-binding",
+    name: "Xerox, Digital Printing & Binding",
+    letter: "X",
+    sector: "Books & Stationery",
+    subcategory: "Printing & Xerox",
+    type: "Service",
+    icon: "🖨️",
+    description: "Color digital xerox, student project spiral binding, thesis printing, lamination and copier paper.",
+    priceHint: "From ₹5",
+    searchQuery: "Printing & Xerox",
   },
 
   // --- Y ---

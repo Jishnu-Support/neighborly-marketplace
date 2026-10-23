@@ -20,6 +20,9 @@ const subcategoriesSummary: Record<string, string> = {
   Travel: "Travel agents · Stays · Airport cabs · Tours",
   Entertainment: "Events · Music · Workshops · Gaming",
   "Everyday services": "Plumbing · Electrical · Cleaning · Repairs",
+  "Books & Stationery": "Books · School textbooks · Notebooks · Printing & Xerox",
+  "Toys & Fancy Stores": "Toys & Games · Fancy store · Bangles & Gifts · Cosmetics",
+  "Public & Common Places": "Bus stand · Railway station · Temples · Parks & Civic hubs",
 };
 
 type Role = "Discover" | "Account" | "Business" | "Agent" | "Company";
@@ -2292,6 +2295,371 @@ const initialBusinesses: Business[] = [
     taxonomyTags: ["Professional services", "Photography", "Events", "Event photography", "Consulting", "Local experts"],
   },
 
+  // ================= BOOKS & STATIONERY =================
+  {
+    name: "Sri Murugan Book Center & Stationery – Netaji Road",
+    category: "Books & Stationery",
+    subcategories: ["Books", "Stationery"],
+    products: [
+      { id: "smbc-textbooks", name: "CBSE & Samacheer Kalvi School Textbooks", description: "Standard 1 to 12 state board and CBSE curriculum textbooks.", price: 180, unit: "book" },
+      { id: "smbc-notebooks", name: "Classmate Long Notebooks (Bundle of 6)", description: "High quality ruled and unruled 192-page Classmate notebooks.", price: 290, unit: "bundle" },
+      { id: "smbc-colors", name: "Camlin Artist Water Color & Brush Set", description: "24-shade water colors with artist paint brush assortment.", price: 350, unit: "set" },
+      { id: "smbc-tnpsc", name: "TNPSC Group 4 & Banking Exam Preparation Guide", description: "Comprehensive Tamil & English general studies and aptitude guide.", price: 450, unit: "book" }
+    ],
+    description: "Hosur's landmark bookstore on Netaji Road. Complete school & college textbooks, NCERT guides, competitive exam books, Classmate notebooks, and Camlin art materials.",
+    distance: 0.9,
+    demoCoordinates: { latitude: 12.7335, longitude: 77.8288 },
+    rating: 4.8,
+    reviews: 342,
+    price: "from ₹40",
+    icon: "📚",
+    color: "mint",
+    tag: "Hosur favourite",
+    subscribed: true,
+    taxonomyTags: ["Books", "School & College", "Textbooks", "School textbooks", "Stationery", "School supplies", "Notebooks & pens", "Classmate notebooks", "Competitive Exams", "TNPSC & Bank exams"]
+  },
+  {
+    name: "Higginbothams Books – Station Road, Hosur",
+    category: "Books & Stationery",
+    subcategories: ["Books", "Libraries & Study"],
+    products: [
+      { id: "higg-novels", name: "Tamil & English Bestselling Fiction Novels", description: "Contemporary bestsellers, thrillers, classics and non-fiction.", price: 299, unit: "book" },
+      { id: "higg-ponniyin", name: "Ponniyin Selvan Full Set (Tamil - 5 Vols)", description: "Classic historical masterpiece by Kalki with box set cover.", price: 999, unit: "set" },
+      { id: "higg-kids", name: "Children's Illustrated Story Books & Comics", description: "Amar Chitra Katha, Panchatantra, Enid Blyton and fairy tales.", price: 150, unit: "book" },
+      { id: "higg-magazines", name: "National & International Magazines & Periodicals", description: "Frontline, India Today, Business Today and competitive journals.", price: 80, unit: "copy" }
+    ],
+    description: "Iconic bookstore chain near Station Road, Hosur. Bestselling English fiction, Tamil literature classics, self-help books, children's storybooks, and magazines.",
+    distance: 1.2,
+    demoCoordinates: { latitude: 12.7290, longitude: 77.8315 },
+    rating: 4.7,
+    reviews: 215,
+    price: "from ₹80",
+    icon: "📖",
+    color: "lavender",
+    tag: "Heritage bookstore",
+    subscribed: true,
+    taxonomyTags: ["Books", "Literature & Fiction", "Tamil novels", "Historical fiction", "English fiction", "Bestsellers", "Children's Books", "Story books"]
+  },
+  {
+    name: "Vignesh Stationery, Xerox & Project Mart – Bagalur Road",
+    category: "Books & Stationery",
+    subcategories: ["Stationery", "Printing & Xerox"],
+    products: [
+      { id: "vig-binding", name: "Spiral Binding & Project Report Printing", description: "Color cover sheet, high-speed duplex printing and spiral comb binding.", price: 120, unit: "report" },
+      { id: "vig-xerox", name: "Color Laser Print & Digital Photocopy", description: "High-resolution color laser printouts and crisp black-and-white xerox.", price: 10, unit: "page" },
+      { id: "vig-paper", name: "JK Copier A4 Paper Rim (75 GSM 500 Sheets)", description: "Bright white smudge-free multipurpose copier paper.", price: 320, unit: "rim" },
+      { id: "vig-files", name: "Office Box Files & Document Folders (Pack of 5)", description: "Heavy-duty lever arch files for corporate and tax filing.", price: 250, unit: "pack" }
+    ],
+    description: "Complete stationery, digital xerox and student project binding center on Bagalur Road, Hosur. Color printouts, lamination, thesis binding, and corporate office supplies.",
+    distance: 1.6,
+    demoCoordinates: { latitude: 12.7380, longitude: 77.8340 },
+    rating: 4.6,
+    reviews: 189,
+    price: "from ₹5",
+    icon: "🖨️",
+    color: "butter",
+    subscribed: true,
+    taxonomyTags: ["Stationery", "Office supplies", "Files & folders", "Printing & Xerox", "Document services", "Photocopy & print", "Color & B/W xerox", "Binding & lamination", "Spiral binding"]
+  },
+  {
+    name: "Reliance Stationery & Art Center – MG Road",
+    category: "Books & Stationery",
+    subcategories: ["Stationery"],
+    products: [
+      { id: "rel-pens", name: "Faber-Castell Connector Pens & Sketch Set", description: "Washable vibrant colors ideal for school art and coloring.", price: 199, unit: "set" },
+      { id: "rel-canvas", name: "Canvas Board & Acrylic Paints Kit", description: "Stretched 10x12 canvas board with 12 acrylic color tubes.", price: 499, unit: "kit" },
+      { id: "rel-geometry", name: "Doms Mathematical Drawing & Geometry Box", description: "Precision compass, divider, protractor and set squares.", price: 120, unit: "box" },
+      { id: "rel-parker", name: "Executive Parker Pen Gift Set", description: "Classic rollerball metal finish pen in luxury presentation box.", price: 550, unit: "piece" }
+    ],
+    description: "All-in-one stationery and fine art depot on MG Road, Hosur. Acrylics, oil paints, drawing boards, engineering drafting instruments, fountain pens, and school project accessories.",
+    distance: 0.8,
+    demoCoordinates: { latitude: 12.7312, longitude: 77.8270 },
+    rating: 4.6,
+    reviews: 164,
+    price: "from ₹30",
+    icon: "✏️",
+    color: "peach",
+    subscribed: true,
+    taxonomyTags: ["Stationery", "School supplies", "Geometry & kits", "Art & craft", "Drawing & painting", "Paints & canvases", "Craft materials"]
+  },
+
+  // ================= TOYS & FANCY STORES =================
+  {
+    name: "Pooja Fancy & Bridal Gift World – MG Road",
+    category: "Toys & Fancy Stores",
+    subcategories: ["Fancy Store", "Gifts & Novelties"],
+    products: [
+      { id: "pooja-bangles", name: "Traditional Glass & Velvet Bangles (Set of 24)", description: "Handcrafted festive glass bangles in assorted bridal shades.", price: 180, unit: "set" },
+      { id: "pooja-jewel", name: "Matte Finish 1-Gram Gold Temple Jewellery Set", description: "Antique choker necklace with matching jhumkas.", price: 1450, unit: "set" },
+      { id: "pooja-makeup", name: "Lakme & Maybelline Bridal Vanity Makeup Kit", description: "Kajal, foundation, compact powder and long-stay lipstick combo.", price: 1200, unit: "kit" },
+      { id: "pooja-gifts", name: "Custom Photo Clock & Personalized Gift Frame", description: "Personalized wooden tabletop frame with quartz clock.", price: 550, unit: "piece" }
+    ],
+    description: "Hosur's most renowned fancy and bridal gift showroom on MG Road. Premium glass bangles, imitation jewellery, branded cosmetics, hair accessories, luxury perfumes, and customized gifts.",
+    distance: 0.7,
+    demoCoordinates: { latitude: 12.7318, longitude: 77.8265 },
+    rating: 4.8,
+    reviews: 388,
+    price: "from ₹50",
+    icon: "🎁",
+    color: "peach",
+    tag: "Hosur top fancy store",
+    subscribed: true,
+    taxonomyTags: ["Fancy Store", "Bangles & jewelry", "Glass & metal bangles", "Bridal & daily bangles", "Imitation jewelry", "Beauty & cosmetics", "Makeup & vanity", "Gifts & novelties", "Gift articles"]
+  },
+  {
+    name: "Sri Balaji Novelties & Toy Kingdom – Netaji Road",
+    category: "Toys & Fancy Stores",
+    subcategories: ["Toys & Games", "Kids Essentials"],
+    products: [
+      { id: "bal-rc", name: "Rechargeable High-Speed RC Monster Truck", description: "2.4GHz remote control 4WD off-road climbing vehicle.", price: 1250, unit: "piece" },
+      { id: "bal-lego", name: "Lego-Compatible STEM Building Block Set (500 pcs)", description: "Creative architectural blocks for cognitive learning.", price: 850, unit: "set" },
+      { id: "bal-carrom", name: "Carrom Board Champion Tournament Size (32 inch)", description: "Smooth waterproof playing surface with coins and striker.", price: 1600, unit: "board" },
+      { id: "bal-doll", name: "Barbie Fashionista & Indian Doll Collection", description: "Articulated fashion doll with modern interchangeable outfits.", price: 499, unit: "doll" }
+    ],
+    description: "Largest toy showroom in Hosur on Netaji Road. Remote control cars, drones, educational STEM building blocks, board games, Hot Wheels tracks, and baby developmental toys.",
+    distance: 1.0,
+    demoCoordinates: { latitude: 12.7340, longitude: 77.8295 },
+    rating: 4.7,
+    reviews: 275,
+    price: "from ₹99",
+    icon: "🧸",
+    color: "mint",
+    tag: "Top rated toys",
+    subscribed: true,
+    taxonomyTags: ["Toys & Games", "Action & vehicles", "RC cars & drones", "Learning & STEM", "Puzzles & blocks", "Board games", "Family classics", "Kids & baby toys"]
+  },
+  {
+    name: "Kids Zone Toy World & Ride-Ons – Denkanikottai Road",
+    category: "Toys & Fancy Stores",
+    subcategories: ["Toys & Games", "Kids Essentials"],
+    products: [
+      { id: "kz-electric-jeep", name: "Kids Battery-Operated Electric Jeep (with Remote)", description: "12V dual motor rechargeable electric ride-on with headlights and music.", price: 8999, unit: "piece" },
+      { id: "kz-tricycle", name: "Kids Tricycle with Canopy & Parent Push Handle", description: "Ergonomic comfortable trike with rear storage basket.", price: 2400, unit: "piece" },
+      { id: "kz-teddy", name: "Giant 4-Foot Soft Plush Teddy Bear", description: "Ultra-soft hypo-allergenic plush cuddle bear.", price: 1200, unit: "piece" },
+      { id: "kz-backpack", name: "Insulated Cartoon School Backpack & Water Bottle", description: "Water-resistant kids school bag with leakproof thermos bottle.", price: 750, unit: "combo" }
+    ],
+    description: "Specialized kids toys and battery ride-on showroom on Denkanikottai Road, Hosur. Electric cars, bikes, tricycles, soft plush toys, baby walkers, and school accessories.",
+    distance: 1.5,
+    demoCoordinates: { latitude: 12.7260, longitude: 77.8290 },
+    rating: 4.7,
+    reviews: 198,
+    price: "from ₹150",
+    icon: "🚗",
+    color: "lavender",
+    subscribed: true,
+    taxonomyTags: ["Toys & Games", "Kids & baby toys", "Soft toys & plush", "Kids Essentials", "Ride-ons", "Battery vehicles", "Kids cycles", "School accessories"]
+  },
+  {
+    name: "Mahalakshmi Fancy Store & Party Hub – Bagalur Circle",
+    category: "Toys & Fancy Stores",
+    subcategories: ["Fancy Store", "Gifts & Novelties"],
+    products: [
+      { id: "maha-decor", name: "Birthday Party Decoration Kit (Balloons, Banner & Props)", description: "Theme foil balloons, happy birthday banner and photobooth props.", price: 450, unit: "set" },
+      { id: "maha-return-gifts", name: "Kids Birthday Return Gift Packs (Bundle of 10)", description: "Stationery kit, puzzle and novelty gift packaged packs.", price: 350, unit: "pack" },
+      { id: "maha-clips", name: "Fancy Hair Clips, Clutches & Scrunchies Collection", description: "Korean style pastel hair accessories and pearl clips.", price: 90, unit: "set" },
+      { id: "maha-showpiece", name: "Musical Snow Globe & Decorative Idols", description: "LED lighting musical showpiece for birthdays and home gifting.", price: 399, unit: "piece" }
+    ],
+    description: "Friendly neighbourhood fancy store and party decoration hub near Bagalur Circle. Helium balloons, party supplies, return gifts for kids, hair accessories, cosmetics, and seasonal decor.",
+    distance: 2.1,
+    demoCoordinates: { latitude: 12.7420, longitude: 77.8360 },
+    rating: 4.5,
+    reviews: 172,
+    price: "from ₹40",
+    icon: "🎈",
+    color: "butter",
+    subscribed: true,
+    taxonomyTags: ["Fancy Store", "Beauty & cosmetics", "Hair accessories", "Gifts & novelties", "Party supplies", "Birthday celebration", "Return gifts", "Gift articles"]
+  },
+
+  // ================= PUBLIC & COMMON PLACES =================
+  {
+    name: "Hosur MGR Central Bus Stand – NH 44 Bypass",
+    category: "Public & Common Places",
+    subcategories: ["Transit & Stations"],
+    products: [
+      { id: "mgr-bus-bengaluru", name: "TNSTC Hosur to Bengaluru City / Electronic City Bus", description: "Frequent express town and highway shuttle service every 10 minutes.", price: 45, unit: "trip" },
+      { id: "mgr-bus-intercity", name: "Intercity Superfast Express to Chennai / Salem / Madurai", description: "Long-distance government passenger buses connecting major Tamil Nadu cities.", price: 210, unit: "ticket" },
+      { id: "mgr-cloakroom", name: "24-Hour Passenger Cloakroom & Luggage Storage", description: "Secure luggage deposit facility inside main bus terminus.", price: 30, unit: "bag" }
+    ],
+    description: "Hosur's main government bus terminus situated at the NH 44 junction. 24/7 bus connectivity to Bengaluru, Chennai, Salem, Coimbatore, Krishnagiri, and surrounding rural villages.",
+    distance: 0.6,
+    demoCoordinates: { latitude: 12.7302, longitude: 77.8248 },
+    rating: 4.3,
+    reviews: 1250,
+    price: "Public amenity",
+    icon: "🚌",
+    color: "mint",
+    tag: "Central transit hub",
+    subscribed: true,
+    taxonomyTags: ["Transit & Stations", "Bus stations", "MGR Central Bus Stand", "Town & intercity buses", "Depot & enquiry"]
+  },
+  {
+    name: "Hosur Railway Station (HSRA) – Station Road",
+    category: "Public & Common Places",
+    subcategories: ["Transit & Stations"],
+    products: [
+      { id: "hsra-suburban", name: "Hosur to Bengaluru MEMU / Suburban Train Ticket", description: "Daily commuter trains to Bangalore City (SBC) and Baiyyappanahalli (SMVB).", price: 20, unit: "ticket" },
+      { id: "hsra-reservation", name: "PRS Reserved Express Train Booking Counter", description: "Computerized passenger reservation system for mail/express trains.", price: 0, unit: "enquiry" },
+      { id: "hsra-auto", name: "24/7 Prepaid Auto & Taxi Stand Facility", description: "Regulated auto rickshaw stand serving all Hosur industrial and residential sectors.", price: 50, unit: "base fare" }
+    ],
+    description: "South Western Railway station connecting Hosur with Bengaluru, Salem, Tiruchirappalli, and Kerala. Equipped with passenger waiting rooms, ticket counters, and auto-rickshaw stand.",
+    distance: 1.4,
+    demoCoordinates: { latitude: 12.7238, longitude: 77.8312 },
+    rating: 4.4,
+    reviews: 890,
+    price: "Public amenity",
+    icon: "🚆",
+    color: "lavender",
+    tag: "Rail gateway",
+    subscribed: true,
+    taxonomyTags: ["Transit & Stations", "Railways", "Hosur Railway Station", "Train schedules & tickets", "Station amenities"]
+  },
+  {
+    name: "Shri Chandra Choodeswarar Hill Temple (Malai Kovil)",
+    category: "Public & Common Places",
+    subcategories: ["Heritage & Temples"],
+    products: [
+      { id: "temple-darshan", name: "Temple Darshan & Archana Pooja Token", description: "Special archana pooja and divine blessings of Lord Shiva.", price: 20, unit: "token" },
+      { id: "temple-prasad", name: "Special Abhishekham & Temple Prasad", description: "Morning and evening deity abhishekham with holy sweet pongal prasad.", price: 100, unit: "seva" },
+      { id: "temple-viewpoint", name: "Hilltop Panoramic Viewpoint & Sunset Walk", description: "360-degree panoramic vantage point overlooking the entire town of Hosur.", price: 0, unit: "free access" }
+    ],
+    description: "Ancient and sacred Shiva hill temple dating back to the Chola dynasty, perched on an elevation overlooking all of Hosur. Famous for Rajagopuram, car festival, and panoramic views.",
+    distance: 2.2,
+    demoCoordinates: { latitude: 12.7160, longitude: 77.8300 },
+    rating: 4.9,
+    reviews: 2180,
+    price: "Free / ₹20",
+    icon: "🛕",
+    color: "peach",
+    tag: "Hosur heritage icon",
+    subscribed: true,
+    taxonomyTags: ["Heritage & Temples", "Hill temples", "Chandra Choodeswarar Kovil", "Malai Kovil Shiva temple", "Temple rituals"]
+  },
+  {
+    name: "Kelavarapalli Reservoir Dam & Children's Park",
+    category: "Public & Common Places",
+    subcategories: ["Parks & Nature"],
+    products: [
+      { id: "dam-entry", name: "Park Entry & Garden Walkway Access", description: "Entry ticket to public landscaped gardens along the Ponniyar reservoir.", price: 15, unit: "person" },
+      { id: "dam-kids", name: "Children's Play Zone, Swings & Slides", description: "Open lawn playground area with merry-go-round, slides and seesaws.", price: 0, unit: "included" },
+      { id: "dam-view", name: "River Promenade & Sunset Photography View", description: "Scenic embankment viewpoint watching water release and sunset.", price: 0, unit: "free" }
+    ],
+    description: "Picturesque dam and reservoir across the Ponniyar River located 10 km from Hosur. Features lush landscaped gardens, children's amusement playground, and picnic meadows.",
+    distance: 4.8,
+    demoCoordinates: { latitude: 12.7850, longitude: 77.8500 },
+    rating: 4.5,
+    reviews: 940,
+    price: "₹15 / person",
+    icon: "🌊",
+    color: "mint",
+    tag: "Popular picnic spot",
+    subscribed: true,
+    taxonomyTags: ["Parks & Nature", "Lakes & dams", "Kelavarapalli Dam", "Reservoir garden & boating", "Public parks"]
+  },
+  {
+    name: "Rajaji Memorial & Eco Park – Thorapalli / Hosur",
+    category: "Public & Common Places",
+    subcategories: ["Parks & Nature", "Heritage & Temples"],
+    products: [
+      { id: "eco-track", name: "Eco Park Walking Track & Herbal Garden Entry", description: "Paved jogging and morning walking track amidst medicinal native trees.", price: 10, unit: "person" },
+      { id: "eco-museum", name: "Bharat Ratna Rajaji Historical Memorial Tour", description: "Preserved ancestral house and museum gallery of C. Rajagopalachari.", price: 0, unit: "free" },
+      { id: "eco-lawn", name: "Children's Outdoor Lawn & Activity Ground", description: "Green carpet lawns for family picnics, yoga and outdoor relaxation.", price: 0, unit: "free" }
+    ],
+    description: "Historic memorial dedicated to C. Rajagopalachari (Rajaji) combined with a scenic eco park. Walking trails, medicinal trees, children's play equipment, and memorial gallery.",
+    distance: 3.5,
+    demoCoordinates: { latitude: 12.7050, longitude: 77.8420 },
+    rating: 4.6,
+    reviews: 410,
+    price: "₹10 / person",
+    icon: "🌳",
+    color: "butter",
+    tag: "Eco & historic park",
+    subscribed: true,
+    taxonomyTags: ["Parks & Nature", "Public parks", "Eco Park Thorapalli", "Heritage & Temples", "Historic monuments", "Rajaji Memorial"]
+  },
+  {
+    name: "Hosur City Municipal Corporation – Bagalur Road",
+    category: "Public & Common Places",
+    subcategories: ["Civic & Administration"],
+    products: [
+      { id: "corp-cert", name: "Birth & Death Certificate Verification & Issuance", description: "Official citizen vital statistics registration and digital certificates.", price: 50, unit: "copy" },
+      { id: "corp-tax", name: "Property Tax Payment & Assessment Counter", description: "Municipal corporation tax assessment, billing and receipt desk.", price: 0, unit: "service" },
+      { id: "corp-grievance", name: "Public Citizen Grievance Redressal Cell", description: "Civic complaints registration regarding roads, drainage and streetlights.", price: 0, unit: "free" }
+    ],
+    description: "Official municipal civic headquarters of Hosur on Bagalur Road. Handles town planning, sanitation, water supply, trade licenses, property tax, and public grievances.",
+    distance: 1.1,
+    demoCoordinates: { latitude: 12.7360, longitude: 77.8320 },
+    rating: 4.2,
+    reviews: 320,
+    price: "Public civic body",
+    icon: "🏛️",
+    color: "lavender",
+    tag: "Civic center",
+    subscribed: true,
+    taxonomyTags: ["Civic & Administration", "City corporation", "Hosur Municipal Corporation", "Civic services & certificates", "Public tax & billing"]
+  },
+  {
+    name: "Hosur Head Post Office (HPO) – Taluk Office Complex",
+    category: "Public & Common Places",
+    subcategories: ["Civic & Administration"],
+    products: [
+      { id: "post-speed", name: "India Post Speed Post & Domestic Parcel Booking", description: "Fast pan-India express document and parcel delivery with live tracking.", price: 40, unit: "parcel" },
+      { id: "post-aadhaar", name: "Aadhaar Card Enrollment & Biometric Update", description: "Official UIDAI biometric update, address change and photo correction.", price: 50, unit: "update" },
+      { id: "post-savings", name: "Post Office Savings Bank & Senior Citizens Scheme", description: "Government-backed savings accounts, PPF, Sukanya Samriddhi and NSC.", price: 0, unit: "account" }
+    ],
+    description: "Main postal and courier hub of Hosur located near Taluk office complex. Offers Speed Post, international EMS, registered parcel, Aadhaar services, and postal savings banking.",
+    distance: 0.8,
+    demoCoordinates: { latitude: 12.7310, longitude: 77.8280 },
+    rating: 4.3,
+    reviews: 430,
+    price: "Standard postal rates",
+    icon: "📮",
+    color: "peach",
+    subscribed: true,
+    taxonomyTags: ["Civic & Administration", "Postal services", "Hosur Head Post Office", "Speed post & parcel delivery", "Citizen identity"]
+  },
+  {
+    name: "Hosur Town Public Library – Library Street",
+    category: "Public & Common Places",
+    subcategories: ["Civic & Administration"],
+    products: [
+      { id: "lib-card", name: "Annual Public Library Membership & Book Lending", description: "Lending membership for over 20,000 Tamil and English literature books.", price: 100, unit: "year" },
+      { id: "lib-reading", name: "Daily Tamil & English Newspapers Reading Room", description: "Quiet public reading hall with 15+ regional and national daily papers.", price: 0, unit: "free access" },
+      { id: "lib-upsc", name: "UPSC & TNPSC Competitive Exam Reference Hall", description: "Dedicated reference corner with competition yearbooks and journals.", price: 0, unit: "free study" }
+    ],
+    description: "Government branch library near Taluk office, Hosur. Quiet study atmosphere with over 20,000 Tamil and English books, historical journals, and student exam preparation materials.",
+    distance: 0.9,
+    demoCoordinates: { latitude: 12.7325, longitude: 77.8275 },
+    rating: 4.7,
+    reviews: 280,
+    price: "Free / ₹100 yr",
+    icon: "📚",
+    color: "mint",
+    tag: "Study & reference",
+    subscribed: true,
+    taxonomyTags: ["Civic & Administration", "Public libraries", "Town Public Library", "Reading room & reference books"]
+  },
+  {
+    name: "Hosur Government General Hospital – Denkanikottai Road",
+    category: "Public & Common Places",
+    subcategories: ["Emergency & Healthcare"],
+    products: [
+      { id: "gh-casualty", name: "24/7 Emergency Casualty & Trauma Care", description: "Immediate round-the-clock emergency medical response and trauma doctors.", price: 0, unit: "public healthcare" },
+      { id: "gh-opd", name: "General OPD & Specialist Doctor Consultations", description: "Free out-patient department consultations across pediatrics, general medicine and surgery.", price: 0, unit: "public" },
+      { id: "gh-bloodbank", name: "Government Blood Bank & 108 Ambulance Hub", description: "24/7 emergency blood supply and state-operated 108 ambulance base.", price: 0, unit: "emergency" }
+    ],
+    description: "District government headquarters hospital on Denkanikottai Road, Hosur. 24/7 casualty, emergency trauma care, maternity & neonatal wing, public blood bank, and free medicine dispensary.",
+    distance: 1.3,
+    demoCoordinates: { latitude: 12.7270, longitude: 77.8285 },
+    rating: 4.2,
+    reviews: 580,
+    price: "Free public healthcare",
+    icon: "🏥",
+    color: "peach",
+    tag: "24/7 Government hospital",
+    subscribed: true,
+    taxonomyTags: ["Emergency & Healthcare", "Public hospital", "Government General Hospital", "24/7 Casualty & emergency", "Public health"]
+  }
 ];
 
 const emptyDemoData: DemoData = {
@@ -2384,7 +2752,30 @@ const SEARCH_SYNONYMS: Record<string, string[]> = {
   painting: ["painting", "painters", "home painting", "emulsion", "waterproofing"],
   pest: ["pest control", "cockroach", "termite", "bed bug", "balaji pest control"],
   taxi: ["taxi", "cab", "airport taxi", "outstation", "a1 call taxi", "red taxi", "car rental"],
-  hotel: ["hotel", "stay", "room booking", "grand continent", "hotel hills", "lodge", "accommodation"]
+  hotel: ["hotel", "stay", "room booking", "grand continent", "hotel hills", "lodge", "accommodation"],
+  toy: ["toy", "toys", "games", "puzzle", "lego", "teddy", "doll", "rc car", "kids", "balaji novelties", "kids zone", "remote control"],
+  toys: ["toy", "toys", "games", "puzzle", "lego", "teddy", "doll", "rc car", "kids", "balaji novelties", "kids zone", "remote control"],
+  fancy: ["fancy", "fancy store", "bangles", "cosmetics", "makeup", "gifts", "pooja fancy", "hair clips", "novelties", "jewellery", "mahalakshmi"],
+  bangles: ["bangles", "fancy", "fancy store", "jewellery", "bangle", "pooja fancy", "velvet bangles"],
+  gifts: ["gifts", "gift", "fancy", "novelties", "photo frame", "party supplies", "greeting cards", "return gifts", "pooja fancy"],
+  books: ["book", "books", "textbook", "novel", "murugan book", "higginbothams", "stationery", "guides", "school books", "reading"],
+  book: ["books", "textbook", "novel", "murugan book", "higginbothams", "stationery", "school books"],
+  stationery: ["stationery", "stationary", "notebook", "pens", "xerox", "printout", "spiral binding", "paper", "vignesh", "copier", "art supplies", "classmate"],
+  stationary: ["stationery", "stationary", "notebook", "pens", "xerox", "printout", "spiral binding", "paper", "vignesh", "copier", "classmate"],
+  xerox: ["xerox", "photocopy", "print", "printing", "spiral binding", "lamination", "vignesh stationery"],
+  notebook: ["notebook", "classmate", "stationery", "murugan book", "pens", "school"],
+  places: ["places", "common places", "bus stand", "railway station", "temple", "dam", "park", "library", "hospital", "corporation", "post office"],
+  common: ["common places", "bus stand", "railway station", "temple", "malai kovil", "park", "kelavarapalli", "library", "corporation", "hospital", "post office"],
+  temple: ["temple", "kovil", "malai kovil", "chandra choodeswarar", "darshan", "pooja", "shiva"],
+  kovil: ["temple", "kovil", "malai kovil", "chandra choodeswarar", "darshan"],
+  bus: ["bus", "bus stand", "mgr bus stand", "tnstc", "ksrtc", "transit", "depot"],
+  train: ["train", "railway", "railway station", "hsra", "tickets", "suburban"],
+  railway: ["railway", "railway station", "hsra", "train", "tickets", "suburban"],
+  park: ["park", "eco park", "dam", "kelavarapalli", "nature", "picnic", "rajaji"],
+  dam: ["dam", "kelavarapalli", "reservoir", "lake", "boating", "picnic"],
+  library: ["library", "books", "reading room", "public library", "study", "newspapers"],
+  post: ["post office", "speed post", "postal", "aadhaar", "hpo", "parcel"],
+  corporation: ["corporation", "municipal", "hosur corporation", "property tax", "birth certificate", "civic"]
 };
 
 function escapeRegex(s: string) {
@@ -2409,7 +2800,10 @@ const VOCABULARY = [
   "biryani", "restaurant", "hotel", "food", "cafe", "bakery", "sweets", "meals",
   "saree", "jewellery", "gold", "diamond", "clothing", "suit", "footwear", "shoes", "tanishq", "raymond", "bata",
   "furniture", "sofa", "bed", "wardrobe", "interior", "godrej", "royaloak", "nilkamal",
-  "plumber", "electrician", "pest control", "painting", "photography", "taxi", "cab"
+  "plumber", "electrician", "pest control", "painting", "photography", "taxi", "cab",
+  "toy", "toys", "fancy", "fancystore", "gifts", "novelties", "bangles", "cosmetics", "teddy", "carrom", "puzzle", "lego",
+  "book", "books", "textbook", "novel", "stationery", "stationary", "notebook", "classmate", "xerox", "binding", "paper", "pens",
+  "temple", "kovil", "malai", "bus", "busstand", "train", "railway", "station", "dam", "kelavarapalli", "park", "rajaji", "library", "postoffice", "corporation"
 ];
 
 function levenshtein(a: string, b: string): number {
@@ -2661,17 +3055,21 @@ export default function Home() {
         return {
           queries: [
             "Maruti Swift",
+            "Pooja Fancy & Gifts",
+            "Sri Murugan Books",
+            "MGR Bus Stand Hosur",
             "Hero Splendor",
+            "Balaji Toys & RC Cars",
             "Kauvery Hospital",
+            "Vignesh Stationery & Xerox",
+            "Chandra Choodeswarar Temple",
             "Samsung Galaxy S25",
-            "Apollo Dental Clinic",
-            "Thalappakatti Biryani",
-            "Car Wash & Detailing",
-            "Badminton Court"
+            "Kelavarapalli Dam",
+            "Thalappakatti Biryani"
           ],
           businesses: businesses.slice(0, 3),
           products: businesses.flatMap((b) => b.products.slice(0, 1).map((p) => ({ product: p, business: b }))).slice(0, 3),
-          categories: ["Automobiles", "Electronics", "Health & wellness", "Food & dining"]
+          categories: ["Automobiles", "Electronics", "Books & Stationery", "Toys & Fancy Stores", "Public & Common Places", "Health & wellness"]
         };
       }
       const matchedQueries = new Set<string>();
@@ -2857,6 +3255,27 @@ export default function Home() {
       suggestions.add("Dental check-up");
       suggestions.add("Physiotherapy");
       suggestions.add("Doctor consultation");
+    } else if (q.includes("book") || q.includes("station") || q.includes("notebook") || q.includes("xerox") || q.includes("pen")) {
+      suggestions.add("Sri Murugan Books");
+      suggestions.add("Higginbothams");
+      suggestions.add("School Textbooks");
+      suggestions.add("Classmate Notebooks");
+      suggestions.add("Vignesh Stationery & Xerox");
+      suggestions.add("Spiral Binding");
+    } else if (q.includes("toy") || q.includes("fancy") || q.includes("gift") || q.includes("bangle") || q.includes("game")) {
+      suggestions.add("Pooja Fancy & Gifts");
+      suggestions.add("Balaji Novelties & Toys");
+      suggestions.add("Glass Bangles");
+      suggestions.add("Kids Remote Control Cars");
+      suggestions.add("Board Games & Carrom");
+      suggestions.add("Birthday Return Gifts");
+    } else if (q.includes("bus") || q.includes("train") || q.includes("temple") || q.includes("kovil") || q.includes("park") || q.includes("dam") || q.includes("place")) {
+      suggestions.add("MGR Bus Stand Hosur");
+      suggestions.add("Hosur Railway Station");
+      suggestions.add("Malai Kovil Temple");
+      suggestions.add("Kelavarapalli Dam");
+      suggestions.add("Rajaji Eco Park");
+      suggestions.add("Hosur Municipal Corporation");
     }
 
     for (const b of sortedResults.slice(0, 5)) {
