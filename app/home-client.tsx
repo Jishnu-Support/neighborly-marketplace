@@ -138,7 +138,7 @@ type DemoData = {
 };
 type TaxonomyNode = { name: string; children: TaxonomyNode[] };
 
-const STORAGE_KEY = "neighborly-demo-v1";
+const STORAGE_KEY = "neighborly-demo-v2";
 const vehicleTypeOptions = ["Two wheeler", "Three wheeler", "Four wheeler", "Multi wheel / commercial"];
 const vehicleMakesByType: Record<string, string[]> = {
   "Two wheeler": ["TVS", "Hero", "Honda", "Bajaj", "Royal Enfield", "Suzuki", "Yamaha", "KTM", "Jawa", "Yezdi", "Triumph", "BMW Motorrad", "Kawasaki", "Ducati", "Aprilia", "Vespa", "Ather Energy", "Ola Electric", "Revolt Motors", "Ampere", "Ultraviolette", "Simple Energy", "Other / not listed"],
@@ -2337,6 +2337,7 @@ export default function Home() {
   const [browseMode, setBrowseMode] = useState<"sectors" | "atoz">("sectors");
   const [query, setQuery] = useState("");
   const [radius, setRadius] = useState(5);
+  const [visibleCount, setVisibleCount] = useState(24);
   const [demoData, setDemoData] = useState(emptyDemoData);
   const [storageReady, setStorageReady] = useState(false);
   const [storageError, setStorageError] = useState("");
@@ -2445,11 +2446,18 @@ export default function Home() {
 
   useEffect(() => {
     try {
+      try { window.localStorage.removeItem("neighborly-demo-v1"); } catch {}
       const saved = window.localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed: unknown = JSON.parse(saved);
-        if (!isDemoData(parsed)) throw new Error("Saved Bizearch demo data has an unsupported format.");
-        setDemoData(parsed);
+        if (isDemoData(parsed)) {
+          const initialMap = new Map(initialBusinesses.map((b) => [b.name.toLowerCase(), b]));
+          const custom = (parsed.businesses || []).filter((b) => !initialMap.has(b.name.toLowerCase()));
+          setDemoData({
+            ...parsed,
+            businesses: [...custom, ...initialBusinesses],
+          });
+        }
       }
       setStorageReady(true);
     } catch (error) {
@@ -3090,23 +3098,37 @@ export default function Home() {
               </div>
               <div className="sort-label"><span className="green-dot" /> Subscribed listings · {locationEnabled ? "device radius" : "demo distances"}</div>
             </div>
-            {results.length ? <div className="business-grid">
-              {results.slice(0, 12).map((business, index) => (
-                <article className="business-card" key={`${business.name}-${index}`}>
-                  <div className={`business-image ${business.color}`}><span className="business-emoji">{business.icon}</span>
-                    {business.tag && <span className="business-tag">{business.tag}</span>}
-                    <button className="save-button" aria-label={`${demoData.favorites.includes(business.name) ? "Remove saved" : "Save"} ${business.name}`} aria-pressed={demoData.favorites.includes(business.name)} onClick={() => toggleFavorite(business.name)}>{demoData.favorites.includes(business.name) ? "♥" : "♡"}</button>
+            {results.length ? (
+              <>
+                <div className="business-grid">
+                  {results.slice(0, visibleCount).map((business, index) => (
+                    <article className="business-card" key={`${business.name}-${index}`}>
+                      <div className={`business-image ${business.color}`}><span className="business-emoji">{business.icon}</span>
+                        {business.tag && <span className="business-tag">{business.tag}</span>}
+                        <button className="save-button" aria-label={`${demoData.favorites.includes(business.name) ? "Remove saved" : "Save"} ${business.name}`} aria-pressed={demoData.favorites.includes(business.name)} onClick={() => toggleFavorite(business.name)}>{demoData.favorites.includes(business.name) ? "♥" : "♡"}</button>
+                      </div>
+                      <div className="business-info">
+                        <div className="business-meta"><span>{business.category}</span><span className="distance">⌖ {businessDistance(business).toFixed(1)} km{locationEnabled ? "" : " sample"}</span></div>
+                        <h3>{business.name}</h3><p>{business.description}</p>
+                        <div className="business-footer"><span className="rating">★ <b>{business.rating.toFixed(1)}</b> <small>({business.reviews})</small></span>
+                          <span className="price">{business.price}</span></div>
+                        <button className="contact-button" onClick={() => { setSelectedBusiness(business); recordEvent("Business catalogue viewed"); }}>View products & services <span>↗</span></button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+                {results.length > visibleCount && (
+                  <div style={{ textAlign: "center", margin: "28px 0 16px", display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+                    <button type="button" className="outline-button" onClick={() => setVisibleCount((v) => v + 24)}>
+                      Show more ({results.length - visibleCount} remaining)
+                    </button>
+                    <button type="button" className="outline-button" onClick={() => setVisibleCount(results.length)}>
+                      Show all {results.length} businesses
+                    </button>
                   </div>
-                  <div className="business-info">
-                    <div className="business-meta"><span>{business.category}</span><span className="distance">⌖ {businessDistance(business).toFixed(1)} km{locationEnabled ? "" : " sample"}</span></div>
-                    <h3>{business.name}</h3><p>{business.description}</p>
-                    <div className="business-footer"><span className="rating">★ <b>{business.rating.toFixed(1)}</b> <small>({business.reviews})</small></span>
-                      <span className="price">{business.price}</span></div>
-                    <button className="contact-button" onClick={() => { setSelectedBusiness(business); recordEvent("Business catalogue viewed"); }}>View products & services <span>↗</span></button>
-                  </div>
-                </article>
-              ))}
-            </div> : <div className="empty-results"><span>⌕</span><strong>No matches in this radius yet</strong><p>Try a larger search radius or another category.</p><button onClick={() => { setRadius(25); setCategory("All"); setQuery(""); }}>Show more nearby</button></div>}
+                )}
+              </>
+            ) : <div className="empty-results"><span>⌕</span><strong>No matches in this radius yet</strong><p>Try a larger search radius or another category.</p><button onClick={() => { setRadius(25); setCategory("All"); setQuery(""); }}>Show more nearby</button></div>}
             <section className="video-ad-panel mobile-video-ad" aria-label="Video advertisement">
               <div className="video-ad-heading"><span>VIDEO ADVERTISEMENT</span><small>Local spotlight</small></div>
               <video key={adConfig.videoAd.sourceUrl} className="video-ad-player" controls muted loop playsInline poster={adConfig.videoAd.posterUrl || undefined} src={adConfig.videoAd.sourceUrl}>Your browser does not support embedded video.</video>
