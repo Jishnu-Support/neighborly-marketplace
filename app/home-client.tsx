@@ -535,2130 +535,6443 @@ function updateCatalogueSelections(current: CatalogueSelection[], activity: Cata
 
 const initialBusinesses: Business[] = [
   {
-    name: "Maya's Home Kitchen",
-    category: "Food & dining",
-    subcategories: ["Meal delivery", "Restaurants"],
-    products: [
-      { id: "maya-meals", name: "Homestyle lunch plate", description: "Seasonal thali with fresh sides.", price: 180, unit: "per plate" },
-      { id: "maya-breakfast", name: "Breakfast box", description: "A rotating local breakfast, made fresh.", price: 120, unit: "per box" },
-    ],
-    description: "Fresh, homestyle meals made with local ingredients.",
-    distance: 0.4,
-    demoCoordinates: { latitude: 12.973, longitude: 77.591 },
-    rating: 4.9,
-    reviews: 128,
-    price: "Meals from ₹180",
-    icon: "🥘",
-    color: "peach",
-    subscribed: true,
-    taxonomyTags: ["Meal delivery", "Lunch", "Thali", "Homestyle lunch plate", "Breakfast", "Regional specials", "Breakfast box", "Restaurants", "Indian", "South Indian"],
-    tag: "Popular nearby",
-  },
-  {
-    name: "NexGen Mobile Care",
-    category: "Electronics",
-    subcategories: ["Phone repair", "Accessories"],
-    products: [
-      { id: "nex-screen", name: "Screen replacement", description: "Device inspection and screen replacement quote.", price: 2499, unit: "from" },
-      { id: "nex-diagnostic", name: "Phone diagnostics", description: "Same-day device health and repair assessment.", price: 299, unit: "per visit" },
-    ],
-    description: "Phone repair, accessories and same-day diagnostics.",
-    distance: 1.2,
-    demoCoordinates: { latitude: 12.981, longitude: 77.601 },
-    rating: 4.8,
-    reviews: 96,
-    price: "Repairs from ₹299",
-    icon: "📱",
-    color: "lavender",
-    subscribed: true,
-    taxonomyTags: ["Phone repair", "Mobile phones", "Screen & display", "Screen replacement", "Diagnostics", "Phone diagnostics", "Accessories", "Mobile accessories", "Chargers", "Fast chargers"],
-  },
-  {
-    name: "Greenway Auto Works",
-    category: "Automobiles",
-    subcategories: ["Two-wheeler service", "Car repair"],
-    products: [
-      { id: "greenway-service", name: "Two-wheeler service", description: "Routine inspection and maintenance.", price: 499, unit: "from" },
-      { id: "greenway-puncture", name: "Puncture repair", description: "Quick tyre repair and safety check.", price: 150, unit: "from" },
-    ],
-    description: "Trusted two-wheeler and car service, right around the corner.",
-    distance: 2.1,
-    demoCoordinates: { latitude: 12.99, longitude: 77.608 },
-    rating: 4.7,
-    reviews: 83,
-    price: "Services from ₹499",
-    icon: "🛵",
-    color: "mint",
-    subscribed: true,
-    taxonomyTags: ["Two-wheeler service", "Motorcycles", "Routine service", "Oil & filter", "Scooters", "Brake & tyre care", "Brake pads", "Car repair", "Cars", "Engine & transmission", "Diagnostics", "Wheels & tyres", "Tyre replacement"],
-    tag: "Verified business",
-  },
-  {
-    name: "The Little Loom",
-    category: "Fashion",
-    subcategories: ["Clothing", "Local textiles"],
-    products: [
-      { id: "loom-kurta", name: "Everyday cotton kurta", description: "Locally made cotton clothing.", price: 899, unit: "from" },
-      { id: "loom-textiles", name: "Handwoven textiles", description: "Small-batch textiles from local makers.", price: 650, unit: "from" },
-    ],
-    description: "Thoughtful everyday wear from independent local makers.",
-    distance: 3.4,
-    demoCoordinates: { latitude: 12.945, longitude: 77.61 },
-    rating: 4.9,
-    reviews: 57,
-    price: "New arrivals in store",
-    icon: "🧵",
-    color: "butter",
-    subscribed: true,
-    taxonomyTags: ["Clothing", "Women", "Everyday wear", "Cotton kurta", "Men", "Tailoring", "Alterations", "Footwear", "Shoes", "Casual", "Everyday sneakers", "Local textiles", "Handloom", "Cotton", "Home textiles"],
-  },
-  {
-    name: "Oak & Olive Living",
-    category: "Home & furniture",
-    subcategories: ["Furniture", "Home decor"],
-    products: [
-      { id: "oak-side-table", name: "Handcrafted side table", description: "Made-to-order solid wood furniture.", price: 4200, unit: "from" },
-      { id: "oak-consult", name: "Furniture consultation", description: "Discuss a custom piece for your home.", price: 0, unit: "free enquiry" },
-    ],
-    description: "Handcrafted furniture and home finds, made to last.",
-    distance: 4.8,
-    demoCoordinates: { latitude: 12.94, longitude: 77.56 },
-    rating: 4.6,
-    reviews: 71,
-    price: "Custom orders welcome",
-    icon: "🪑",
-    color: "mint",
-    subscribed: true,
-    taxonomyTags: ["Furniture", "Living room", "Tables", "Side table", "Home decor", "Wall decor", "Handmade", "Local art", "Repairs", "Carpentry", "Furniture repair", "Wood repair", "Interior design", "Home planning", "Room makeover", "Consultation"],
-  },
-  {
-    name: "Neighbourhood Physio",
-    category: "Health & wellness",
-    subcategories: ["Physiotherapy", "Clinics"],
-    products: [
-      { id: "physio-assessment", name: "Physiotherapy assessment", description: "Initial mobility and movement consultation.", price: 400, unit: "per visit" },
-      { id: "physio-followup", name: "Follow-up session", description: "One-on-one follow-up care.", price: 350, unit: "per visit" },
-    ],
-    description: "Friendly physiotherapy and mobility care from local experts.",
-    distance: 2.7,
-    demoCoordinates: { latitude: 12.96, longitude: 77.58 },
-    rating: 4.8,
-    reviews: 64,
-    price: "Consultations from ₹400",
-    icon: "🩺",
-    color: "lavender",
-    subscribed: true,
-    taxonomyTags: ["Physiotherapy", "Mobility care", "Assessment", "Physiotherapy assessment", "Follow-up", "Follow-up session"],
-  },
-  {
-    name: "ProFix Home & Appliance Services",
-    category: "Everyday services",
-    subcategories: ["Appliance repair", "Plumbing", "Electrical", "Cleaning"],
-    products: [
-      { id: "profix-ac", name: "AC Repair & Servicing", description: "Filter clean, gas recharge and cooling coil inspection.", price: 499, unit: "from" },
-      { id: "profix-elec", name: "Electrical Wiring & Fixing", description: "Switchboard repair, fan installation and emergency fixes.", price: 249, unit: "from" },
-      { id: "profix-plumb", name: "Plumbing & Leak Repairs", description: "Tap, sink, toilet and drainage repair.", price: 299, unit: "from" },
-      { id: "profix-ro", name: "Water Purifier (RO) Service", description: "Filter replacement and membrane service.", price: 349, unit: "from" },
-    ],
-    description: "Doorstep AC repair, electrical wiring, plumbing leak fixes and home appliance maintenance.",
-    distance: 1.5,
-    demoCoordinates: { latitude: 12.975, longitude: 77.620 },
-    rating: 4.9,
-    reviews: 142,
-    price: "Services from ₹249",
-    icon: "🛠️",
-    color: "mint",
-    subscribed: true,
-    taxonomyTags: ["AC repair", "Air conditioning", "Appliance repair", "Electrical", "Wiring repair", "Plumbing", "Leak repair", "Washing machine service", "Refrigerator service", "Water purifier", "Deep cleaning", "Handyman", "Carpentry", "Pest control"],
-    tag: "Top rated nearby",
-  },
-  {
-    name: "Urban Blossom & Fitness Studio",
-    category: "Sports & fitness",
-    subcategories: ["Gyms & fitness centers", "Yoga & pilates", "Sports coaching", "Dance fitness", "Personal training"],
-    products: [
-      { id: "ub-gym", name: "Gym Membership & Weight Training", description: "Full gym floor access, cardio equipment and strength weights.", price: 1500, unit: "per month" },
-      { id: "ub-yoga", name: "Yoga Classes & Meditation", description: "Morning and evening Hatha & Vinyasa flow sessions.", price: 1000, unit: "per month" },
-      { id: "ub-zumba", name: "Zumba & Cardio Dance", description: "High-energy rhythm cardio workout with certified instructors.", price: 1200, unit: "per month" },
-      { id: "ub-turf", name: "Badminton Court & Turf Booking", description: "Hourly indoor wooden court slot with international mats.", price: 350, unit: "per hour" },
-    ],
-    description: "Community fitness center offering weight training, yoga, Zumba, badminton courts and personal training.",
-    distance: 2.3,
-    demoCoordinates: { latitude: 12.965, longitude: 77.615 },
-    rating: 4.8,
-    reviews: 110,
-    price: "Sessions from ₹350",
-    icon: "🏋️",
-    color: "peach",
-    subscribed: true,
-    taxonomyTags: ["Sports & fitness", "Gyms & fitness centers", "Gym membership", "Weight training", "CrossFit", "Yoga & pilates", "Yoga classes", "Zumba", "Dance fitness", "Sports coaching", "Badminton", "Cricket", "Personal training"],
-  },
-  {
-    name: "Apex City Travel & Logistics",
-    category: "Travel",
-    subcategories: ["Local transport", "Airport rides", "Moving help"],
-    products: [
-      { id: "apex-airport", name: "Airport Transfer Cab", description: "Prompt, sanitized airport pickup and drop.", price: 999, unit: "per ride" },
-      { id: "apex-tour", name: "Local City Sightseeing Cab", description: "Full-day sightseeing with professional driver.", price: 1499, unit: "per day" },
-      { id: "apex-movers", name: "Movers & Packers Assistance", description: "Household packing, transport and unpacking.", price: 2499, unit: "from" },
-    ],
-    description: "Reliable airport transfers, day tours, vehicle rentals and moving help across town.",
-    distance: 3.1,
-    demoCoordinates: { latitude: 12.985, longitude: 77.635 },
-    rating: 4.7,
-    reviews: 78,
-    price: "Cabs from ₹999",
-    icon: "✈️",
-    color: "butter",
-    subscribed: true,
-    taxonomyTags: ["Airport transfer", "City tour", "Local transport", "Car hire", "Car rentals", "Hotels", "Guest houses", "Moving help", "Movers & packers", "Logistics", "Tours & experiences"],
-  },
-
-  // ── Hosur Local Businesses ─────────────────────────────────────────────────
-
-  // ── Automobiles ──
-  {
-    name: "Jaya Bajaj – Hosur",
-    category: "Automobiles",
-    subcategories: ["Two-wheeler service", "Car repair"],
-    products: [
-      { id: "jb-chetak", name: "Chetak Electric Scooter (Sales)", description: "Latest Bajaj Chetak EV with full paperwork assistance.", price: 115000, unit: "onwards" },
-      { id: "jb-service", name: "Bajaj 2-Wheeler Routine Service", description: "Oil change, brake check and full vehicle inspection.", price: 599, unit: "from" },
-      { id: "jb-pulsar", name: "Pulsar 125 / NS200 (Sales)", description: "Authorized Bajaj showroom. Finance options available.", price: 75000, unit: "onwards" },
-    ],
-    description: "Authorized Bajaj dealership near Bagalur Circle, Hosur. Sales of Pulsar, Platina, Chetak EV and full after-sales service.",
-    distance: 1.8,
-    demoCoordinates: { latitude: 12.7326, longitude: 77.8281 },
-    rating: 4.6,
-    reviews: 187,
-    price: "Bikes from ₹75,000",
-    icon: "🏍️",
-    color: "mint",
-    subscribed: true,
-    taxonomyTags: ["Two wheeler", "Bajaj", "Pulsar 125", "Pulsar NS200", "Chetak", "Sales", "Service", "Two-wheeler service", "Routine service", "Oil & filter", "Brake pads"],
-    tag: "Authorized dealer",
-  },
-  {
-    name: "Sree Velan TVS – Bagalur Circle",
-    category: "Automobiles",
-    subcategories: ["Two-wheeler service", "Car repair"],
-    products: [
-      { id: "tvs-jupiter", name: "TVS Jupiter (Sales)", description: "TVS Jupiter scooter – top comfort pick for families.", price: 88000, unit: "onwards" },
-      { id: "tvs-iqube", name: "TVS iQube Electric (Sales)", description: "Authorized EV showroom with home charging support.", price: 145000, unit: "onwards" },
-      { id: "tvs-svc", name: "TVS Annual Service Package", description: "Engine oil, air filter, chain lube and brake pads.", price: 799, unit: "per service" },
-    ],
-    description: "TVS Motors authorized showroom on Bagalur Road, Hosur. Sales, service and spare parts for all TVS two-wheelers.",
-    distance: 1.2,
-    demoCoordinates: { latitude: 12.7341, longitude: 77.8293 },
-    rating: 4.7,
-    reviews: 241,
-    price: "Scooters from ₹88,000",
-    icon: "🛵",
-    color: "lavender",
-    subscribed: true,
-    taxonomyTags: ["Two wheeler", "TVS", "Jupiter", "Ntorq 125", "iQube", "Sales", "Service", "Two-wheeler service", "Routine service", "Electric 2W", "Battery & motor check"],
-    tag: "Verified business",
-  },
-  {
-    name: "Amman Motors Maruti ARENA – Hosur",
-    category: "Automobiles",
-    subcategories: ["Four-wheeler sales", "Car repair"],
-    products: [
-      { id: "mm-swift", name: "Maruti Swift (Sales)", description: "New Swift with finance from 7.9% p.a. and exchange bonus.", price: 699000, unit: "onwards" },
-      { id: "mm-brezza", name: "Maruti Brezza (Sales)", description: "Top-selling SUV — test drive available daily.", price: 1095000, unit: "onwards" },
-      { id: "mm-service", name: "Maruti Car Service (Annual)", description: "Genuine spares, full inspection and car wash.", price: 3499, unit: "from" },
-    ],
-    description: "Maruti Suzuki ARENA authorized dealership on NH-7, Hosur. Full sales, exchange, finance and after-sales service.",
-    distance: 3.4,
-    demoCoordinates: { latitude: 12.7270, longitude: 77.8350 },
-    rating: 4.5,
-    reviews: 309,
-    price: "Cars from ₹6.99 L",
-    icon: "🚗",
-    color: "butter",
-    subscribed: true,
-    taxonomyTags: ["Four wheeler", "Maruti Suzuki", "Swift", "Baleno", "Brezza", "WagonR", "Dzire", "Sales", "Service", "Car repair", "Engine & transmission", "Wheels & tyres"],
-    tag: "Authorized dealer",
-  },
-  {
-    name: "Himavasini Hyundai – Hosur",
-    category: "Automobiles",
-    subcategories: ["Four-wheeler sales", "Car repair"],
-    products: [
-      { id: "hh-creta", name: "Hyundai Creta (Sales)", description: "Hosur's most test-driven SUV — book your slot.", price: 1099000, unit: "onwards" },
-      { id: "hh-exter", name: "Hyundai Exter (Sales)", description: "Compact SUV with top safety ratings.", price: 699000, unit: "onwards" },
-      { id: "hh-svc", name: "Hyundai Periodic Service", description: "Genuine parts service with free health check.", price: 2999, unit: "from" },
-    ],
-    description: "Authorized Hyundai dealership on Krishnagiri Road, Hosur. Sales, test drives, trade-in and full workshop service.",
-    distance: 2.9,
-    demoCoordinates: { latitude: 12.7310, longitude: 77.8410 },
-    rating: 4.6,
-    reviews: 178,
-    price: "Cars from ₹6.99 L",
-    icon: "🚙",
-    color: "mint",
-    subscribed: true,
-    taxonomyTags: ["Four wheeler", "Hyundai", "Creta", "Exter", "Venue", "i20", "Verna", "Aura", "Sales", "Service", "Car repair", "Wheels & tyres", "AC cooling recharge"],
-  },
-  {
-    name: "Saraswathi Auto Engineering – Hosur",
-    category: "Automobiles",
-    subcategories: ["Car repair", "Tyres & batteries"],
-    products: [
-      { id: "sae-ac", name: "Car AC Repair & Gas Recharge", description: "Cooling system diagnosis and refrigerant refill.", price: 899, unit: "from" },
-      { id: "sae-elect", name: "Auto Electrical Repair", description: "Wiring, alternator, starter motor and ECU diagnostics.", price: 499, unit: "from" },
-      { id: "sae-battery", name: "Car Battery Replacement", description: "On-the-spot battery test and replacement service.", price: 3500, unit: "from" },
-    ],
-    description: "Multi-brand car repair and electrical workshop on Bagalur Road. Specialist in AC, wiring, battery and engine diagnostics.",
-    distance: 2.2,
-    demoCoordinates: { latitude: 12.7355, longitude: 77.8260 },
-    rating: 4.8,
-    reviews: 134,
-    price: "Repairs from ₹499",
-    icon: "🔧",
-    color: "peach",
-    subscribed: true,
-    taxonomyTags: ["Car repair", "Cars", "Engine & transmission", "Diagnostics", "Air conditioning", "AC cooling recharge", "Tyres & batteries", "Vehicle batteries", "Battery replacement", "Car & bike battery"],
-  },
-
-  // ── Electronics ──
-  {
-    name: "Croma – Hosur",
-    category: "Electronics",
-    subcategories: ["Mobile phones", "Home appliances", "Laptops & computers"],
-    products: [
-      { id: "croma-phone", name: "Mobile Phone Sales & Demo", description: "All top brands — Apple, Samsung, Xiaomi, OnePlus — demo available.", price: 8999, unit: "from" },
-      { id: "croma-laptop", name: "Laptop & Computer Sales", description: "Dell, HP, Lenovo, Apple — EMI from ₹0 down payment.", price: 34999, unit: "from" },
-      { id: "croma-appliance", name: "Home Appliance Sales", description: "Washing machines, refrigerators, ACs from LG, Samsung and more.", price: 12999, unit: "from" },
-    ],
-    description: "Tata-owned Croma electronics superstore in Hosur. Large floor with phones, laptops, TVs, appliances and extended warranty service.",
-    distance: 1.6,
-    demoCoordinates: { latitude: 12.7318, longitude: 77.8301 },
-    rating: 4.5,
-    reviews: 412,
-    price: "Electronics from ₹8,999",
-    icon: "🖥️",
-    color: "lavender",
-    subscribed: true,
-    taxonomyTags: ["Sales", "Mobile phones", "Apple", "Samsung", "Xiaomi", "Laptops & computers", "Dell", "HP", "Lenovo", "Home appliances", "LG", "Whirlpool", "Audio & video", "Sony"],
-    tag: "Popular nearby",
-  },
-  {
-    name: "Bluewave Computers – Bagalur Road",
-    category: "Electronics",
-    subcategories: ["Laptops & computers", "Mobile phones"],
-    products: [
-      { id: "bw-laptop-service", name: "Laptop Repair & Service", description: "Motherboard, screen, keyboard and hinge repairs.", price: 499, unit: "from" },
-      { id: "bw-custom-pc", name: "Custom PC Build", description: "Gaming or workstation build with warranty on all components.", price: 35000, unit: "from" },
-      { id: "bw-cctv", name: "CCTV Installation (4/8 cam)", description: "HD camera setup for homes and shops with remote viewing.", price: 8999, unit: "from" },
-    ],
-    description: "Computer hardware, custom PC builds, laptop repair and CCTV installation on Bagalur Road, Hosur.",
-    distance: 2.3,
-    demoCoordinates: { latitude: 12.7345, longitude: 77.8278 },
-    rating: 4.7,
-    reviews: 98,
-    price: "Repairs from ₹499",
-    icon: "💻",
-    color: "mint",
-    subscribed: true,
-    taxonomyTags: ["Service", "Laptops & computers", "Dell", "HP", "Lenovo", "ASUS", "Acer", "Apple", "MacBook Air", "ThinkPad", "Phone repair", "Mobile phones"],
-  },
-
-  // ── Food & dining ──
-  {
-    name: "Vasavi Cafe – Hosur",
-    category: "Food & dining",
-    subcategories: ["Restaurants", "Cafes & beverages"],
-    products: [
-      { id: "vc-dosa", name: "Crispy Masala Dosa", description: "Paper-thin ghee dosa with authentic chutneys and sambar.", price: 55, unit: "per plate" },
-      { id: "vc-rava-idli", name: "Rava Idli Platter", description: "Soft rava idlis with coconut chutney and gunpowder.", price: 60, unit: "per platter" },
-      { id: "vc-coffee", name: "Filter Coffee", description: "Traditional South Indian drip coffee — strong and creamy.", price: 25, unit: "per cup" },
-    ],
-    description: "Iconic South Indian breakfast spot in Hosur. Famous for crispy masala dosas, rava idlis and filter coffee — open from 6 AM.",
-    distance: 0.8,
-    demoCoordinates: { latitude: 12.7330, longitude: 77.8335 },
-    rating: 4.8,
-    reviews: 563,
-    price: "Breakfast from ₹25",
-    icon: "🥞",
-    color: "peach",
-    subscribed: true,
-    taxonomyTags: ["Restaurants", "Indian", "South Indian", "Dosa & idli", "Cafes & beverages", "Coffee & tea", "Hot drinks", "Coffee & tea", "Breakfast"],
-    tag: "Local favourite",
-  },
-  {
-    name: "Muneer Bakery – Hosur",
-    category: "Food & dining",
-    subcategories: ["Bakery & sweets", "Cafes & beverages"],
-    products: [
-      { id: "mb-paal-puff", name: "Paal Khova Puff", description: "Signature cream puff — viral Hosur favourite.", price: 30, unit: "per piece" },
-      { id: "mb-dilpasand", name: "Dilpasand", description: "Sweet stuffed pastry — a Hosur must-try.", price: 35, unit: "per piece" },
-      { id: "mb-cream-bun", name: "Fresh Cream Bun", description: "Soft pillowy bun with fresh whipped cream filling.", price: 28, unit: "per bun" },
-    ],
-    description: "Hosur's most-loved bakery — famous city-wide for paal khova puffs, cream buns and dilpasands. Open daily from 7 AM.",
-    distance: 1.1,
-    demoCoordinates: { latitude: 12.7322, longitude: 77.8318 },
-    rating: 4.9,
-    reviews: 871,
-    price: "Snacks from ₹25",
-    icon: "🥐",
-    color: "butter",
-    subscribed: true,
-    taxonomyTags: ["Bakery & sweets", "Baked goods", "Breads & buns", "Fresh bread", "Cakes", "Celebrations", "Indian sweets", "Fresh sweets", "Traditional sweets"],
-    tag: "Hosur favourite",
-  },
-  {
-    name: "Rayalaseema Spice – Hosur",
-    category: "Food & dining",
-    subcategories: ["Restaurants", "Meal delivery"],
-    products: [
-      { id: "rs-biryani", name: "Andhra Chicken Biryani", description: "Spicy Rayalaseema-style dum biryani with raita.", price: 180, unit: "per plate" },
-      { id: "rs-meals", name: "Andhra Meals (Unlimited)", description: "Full thali with rice, curries, pappad and dessert.", price: 130, unit: "per person" },
-      { id: "rs-mutton", name: "Mutton Curry + Rice Combo", description: "Slow-cooked mutton in authentic Andhra masala.", price: 220, unit: "per plate" },
-    ],
-    description: "Popular Andhra-style restaurant in Hosur famous for fiery biryanis and unlimited Rayalaseema meals. Perfect for non-veg lovers.",
-    distance: 1.4,
-    demoCoordinates: { latitude: 12.7315, longitude: 77.8295 },
-    rating: 4.7,
-    reviews: 428,
-    price: "Meals from ₹130",
-    icon: "🍛",
-    color: "peach",
-    subscribed: true,
-    taxonomyTags: ["Restaurants", "Indian", "Andhra", "Biryani", "Meals & thalis", "Meal delivery", "Daily meals", "Lunch", "Homestyle lunch"],
-  },
-  {
-    name: "Hotel Junior Kuppanna – Hosur",
-    category: "Food & dining",
-    subcategories: ["Restaurants", "Catering"],
-    products: [
-      { id: "hk-kongu", name: "Kongunadu Meals", description: "Traditional Kongu-style non-veg thali — rice, curries, kuzhambu.", price: 160, unit: "per person" },
-      { id: "hk-biryani", name: "Mutton / Chicken Biryani", description: "Authentic Kuppanna biryani — the Hosur crowd favourite.", price: 200, unit: "per plate" },
-      { id: "hk-catering", name: "Event Catering Package", description: "Full catering for 50–500 guests. Traditional setup included.", price: 350, unit: "per head" },
-    ],
-    description: "Famous Kongunadu-style non-veg restaurant in Hosur. Beloved for authentic mutton biryani, kuzhambu meals and event catering.",
-    distance: 1.9,
-    demoCoordinates: { latitude: 12.7302, longitude: 77.8270 },
-    rating: 4.8,
-    reviews: 692,
-    price: "Meals from ₹160",
-    icon: "🍲",
-    color: "mint",
-    subscribed: true,
-    taxonomyTags: ["Restaurants", "Indian", "South Indian", "Meals & thalis", "Catering", "Events", "Large gatherings", "Event catering", "Biryani"],
-    tag: "Local favourite",
-  },
-  {
-    name: "A2B – Adyar Ananda Bhavan, Hosur",
-    category: "Food & dining",
-    subcategories: ["Restaurants", "Bakery & sweets"],
-    products: [
-      { id: "a2b-thali", name: "Pure Veg Meals Thali", description: "Full South Indian veg thali with rice, kuzhambu and payasam.", price: 150, unit: "per person" },
-      { id: "a2b-sweets", name: "Mysore Pak & Sweets Box", description: "Traditional South Indian sweets — perfect for gifting.", price: 380, unit: "per 500g" },
-      { id: "a2b-snacks", name: "Tiffin Snacks Combo", description: "Vada, samosa, pongal and filter coffee set.", price: 120, unit: "per combo" },
-    ],
-    description: "A2B (Adyar Ananda Bhavan) Hosur branch. Pure vegetarian restaurant and sweet shop — family meals, sweets and festive orders.",
-    distance: 1.3,
-    demoCoordinates: { latitude: 12.7337, longitude: 77.8308 },
-    rating: 4.6,
-    reviews: 531,
-    price: "Thali ₹150",
-    icon: "🍮",
-    color: "butter",
-    subscribed: true,
-    taxonomyTags: ["Restaurants", "Indian", "South Indian", "Vegetarian", "Meals & thalis", "Bakery & sweets", "Indian sweets", "Traditional sweets", "Meal delivery", "Tiffin"],
-  },
-  {
-    name: "Uzhavar Santhai – Hosur Farmers Market",
-    category: "Food & dining",
-    subcategories: ["Groceries & produce"],
-    products: [
-      { id: "uz-veg", name: "Fresh Seasonal Vegetables", description: "Direct from Hosur farmers — zero middlemen.", price: 30, unit: "per kg from" },
-      { id: "uz-fruits", name: "Fresh Local Fruits", description: "Seasonal fruits — mangoes, guava, tomatoes, bananas.", price: 40, unit: "per kg from" },
-      { id: "uz-flowers", name: "Fresh Roses & Marigolds", description: "Bulk and retail flowers — Hosur is the rose capital of India.", price: 80, unit: "per bunch" },
-    ],
-    description: "Government-run Uzhavar Santhai (Farmers Market) in Hosur. Buy fresh vegetables, fruits and flowers directly from local farmers at below-market prices.",
-    distance: 0.9,
-    demoCoordinates: { latitude: 12.7335, longitude: 77.8355 },
-    rating: 4.5,
-    reviews: 631,
-    price: "Vegetables from ₹30/kg",
-    icon: "🥬",
-    color: "mint",
-    subscribed: true,
-    taxonomyTags: ["Groceries & produce", "Fresh produce", "Vegetables", "Seasonal vegetables", "Fruits", "Fresh fruits", "Pantry", "Staples"],
-    tag: "Government market",
-  },
-
-  // ── Health & wellness ──
-  {
-    name: "Apollo Pharmacy – Bagalur Road, Hosur",
-    category: "Health & wellness",
-    subcategories: ["Pharmacies"],
-    products: [
-      { id: "aph-rx", name: "Prescription Medicine Delivery", description: "Upload prescription and get medicines home-delivered same day.", price: 0, unit: "free delivery" },
-      { id: "aph-otc", name: "OTC & Healthcare Products", description: "Vitamins, first aid, sanitizers and daily health essentials.", price: 49, unit: "from" },
-      { id: "aph-bp", name: "Free BP / Sugar Screening", description: "Free BP and blood glucose check at store — no appointment needed.", price: 0, unit: "free" },
-    ],
-    description: "Apollo Pharmacy on Bagalur Road, Hosur. Extended hours, prescription refills, online ordering and free in-store health check-ups.",
-    distance: 1.0,
-    demoCoordinates: { latitude: 12.7348, longitude: 77.8285 },
-    rating: 4.7,
-    reviews: 289,
-    price: "Medicines available",
-    icon: "💊",
-    color: "lavender",
-    subscribed: true,
-    taxonomyTags: ["Pharmacies", "Medicines", "Prescription support", "Prescription medicines", "Local delivery", "Medicine delivery", "Health screening"],
-    tag: "Verified business",
-  },
-  {
-    name: "Sri Chandrasekara Hospital – Hosur",
-    category: "Health & wellness",
-    subcategories: ["Clinics", "Dental care"],
-    products: [
-      { id: "sch-consult", name: "General Doctor Consultation", description: "OPD consultation with experienced doctors. Walk-in welcome.", price: 200, unit: "per visit" },
-      { id: "sch-dental", name: "Dental Consultation & Cleaning", description: "Oral examination, scaling and fluoride treatment.", price: 350, unit: "from" },
-      { id: "sch-lab", name: "Diagnostic Lab Test Package", description: "Blood count, lipid profile, blood sugar and urine analysis.", price: 599, unit: "per package" },
-    ],
-    description: "Established multi-specialty hospital on Bagalur Road, Hosur. General medicine, dental, paediatrics, diagnostics and pharmacy under one roof.",
-    distance: 2.1,
-    demoCoordinates: { latitude: 12.7325, longitude: 77.8265 },
-    rating: 4.6,
-    reviews: 215,
-    price: "Consult from ₹200",
-    icon: "🏥",
-    color: "mint",
-    subscribed: true,
-    taxonomyTags: ["Clinics", "General care", "Appointments", "Doctor consultation", "Paediatrics", "Dental care", "Dental clinics", "Check-ups", "Pharmacies", "Lab tests"],
-  },
-  {
-    name: "Karthick Skin Hair & Laser Clinic – Hosur",
-    category: "Health & wellness",
-    subcategories: ["Clinics", "Personal care"],
-    products: [
-      { id: "ks-laser", name: "Laser Hair Removal (per session)", description: "FDA-approved diode laser for permanent hair reduction.", price: 1999, unit: "per session" },
-      { id: "ks-acne", name: "Acne & Pigmentation Treatment", description: "Customized facial treatment with medicated serums.", price: 1499, unit: "per session" },
-      { id: "ks-prp", name: "PRP Hair Loss Treatment", description: "Platelet-rich plasma therapy for hair regrowth.", price: 3999, unit: "per session" },
-    ],
-    description: "Specialist skin, hair and laser clinic on Bagalur Road, Hosur. Dermatology, laser therapy, PRP hair treatment and cosmetology.",
-    distance: 1.7,
-    demoCoordinates: { latitude: 12.7358, longitude: 77.8290 },
-    rating: 4.8,
-    reviews: 167,
-    price: "Sessions from ₹1,499",
-    icon: "🧴",
-    color: "peach",
-    subscribed: true,
-    taxonomyTags: ["Clinics", "Skin care", "Personal care", "Salon services", "Hair care", "Wellness", "Consultation", "Wellness consultation"],
-  },
-
-  // ── Fashion ──
-  {
-    name: "Santhosh Instyle – Nethaji Road, Hosur",
-    category: "Fashion",
-    subcategories: ["Clothing", "Tailoring"],
-    products: [
-      { id: "si-mens", name: "Men's Casual & Formal Wear", description: "Shirts, trousers, denim and ethnic wear for men.", price: 599, unit: "from" },
-      { id: "si-womens", name: "Women's Kurtas & Sarees", description: "Printed kurtas, cotton sarees and occasion wear.", price: 799, unit: "from" },
-      { id: "si-kids", name: "Kids Clothing Collection", description: "Everyday school wear and festive outfits for children.", price: 349, unit: "from" },
-    ],
-    description: "Popular fashion retail store on Nethaji Road, Hosur. Men's, women's and kids' clothing with latest trends and festive collections.",
-    distance: 1.5,
-    demoCoordinates: { latitude: 12.7332, longitude: 77.8327 },
-    rating: 4.5,
-    reviews: 143,
-    price: "Clothing from ₹349",
-    icon: "👗",
-    color: "butter",
-    subscribed: true,
-    taxonomyTags: ["Clothing", "Men", "Everyday wear", "Shirts & trousers", "Women", "Kurtas & kurtis", "Sarees & dresses", "Kids", "Ethnic wear", "Fashion accessories"],
-  },
-  {
-    name: "GRT Jewellers – Hosur",
-    category: "Fashion",
-    subcategories: ["Jewellery"],
-    products: [
-      { id: "grt-gold", name: "Gold Jewellery (22K & 18K)", description: "Certified hallmarked gold — rings, chains, bangles.", price: 50000, unit: "from" },
-      { id: "grt-diamond", name: "Diamond Jewellery", description: "BIS-hallmarked diamond solitaires, pendants and earrings.", price: 15000, unit: "from" },
-      { id: "grt-exchange", name: "Old Gold Exchange", description: "Exchange old gold for new jewellery at fair melt value.", price: 0, unit: "free service" },
-    ],
-    description: "Trusted GRT Jewellers showroom in Hosur. Wide range of gold, diamond and platinum jewellery with BIS hallmark and easy exchange.",
-    distance: 2.0,
-    demoCoordinates: { latitude: 12.7320, longitude: 77.8340 },
-    rating: 4.7,
-    reviews: 386,
-    price: "Gold from ₹50,000",
-    icon: "💍",
-    color: "lavender",
-    subscribed: true,
-    taxonomyTags: ["Jewellery", "Traditional jewellery", "Earrings", "Necklaces", "Handcrafted necklaces", "Gold", "Diamond", "Bangles"],
-    tag: "Trusted brand",
-  },
-
-  // ── Home & furniture ──
-  {
-    name: "Nilgiris Supermarket – Hosur",
-    category: "Home & furniture",
-    subcategories: ["Kitchen & storage", "Home decor"],
-    products: [
-      { id: "nil-grocery", name: "Daily Grocery & Pantry Staples", description: "Rice, pulses, oils, spices and packaged foods.", price: 50, unit: "from" },
-      { id: "nil-homeware", name: "Kitchenware & Home Essentials", description: "Cookware, storage boxes, cleaning supplies.", price: 199, unit: "from" },
-      { id: "nil-personal", name: "Personal Care & Hygiene", description: "Soaps, shampoos, face wash and daily care products.", price: 99, unit: "from" },
-    ],
-    description: "Nilgiris supermarket in Hosur — trusted for groceries, fresh produce, kitchenware, personal care and household daily needs.",
-    distance: 1.1,
-    demoCoordinates: { latitude: 12.7340, longitude: 77.8320 },
-    rating: 4.4,
-    reviews: 324,
-    price: "Groceries from ₹50",
-    icon: "🛒",
-    color: "mint",
-    subscribed: true,
-    taxonomyTags: ["Kitchen & storage", "Storage solutions", "Shelving", "Storage racks", "Home decor", "Soft furnishings", "Cleaning", "Home cleaning", "Pantry", "Staples"],
-  },
-
-  // ── Sports & fitness ──
-  {
-    name: "The Muscle Empire Gym – Hosur",
-    category: "Sports & fitness",
-    subcategories: ["Gyms & fitness centers", "Personal training"],
-    products: [
-      { id: "tme-monthly", name: "Monthly Gym Membership", description: "Unlimited floor access — free weights, cardio, cable machines.", price: 1200, unit: "per month" },
-      { id: "tme-pt", name: "Personal Training (1-on-1)", description: "Custom workout plan with certified personal trainer.", price: 3500, unit: "per month" },
-      { id: "tme-diet", name: "Diet & Nutrition Consultation", description: "Customized macro plan for muscle gain or fat loss.", price: 800, unit: "per session" },
-    ],
-    description: "One of Hosur's top gyms with modern strength equipment, CrossFit zone and personal training. Open 5 AM – 11 PM every day.",
-    distance: 1.6,
-    demoCoordinates: { latitude: 12.7352, longitude: 77.8310 },
-    rating: 4.7,
-    reviews: 211,
-    price: "Membership from ₹1,200",
-    icon: "🏋️",
-    color: "peach",
-    subscribed: true,
-    taxonomyTags: ["Sports & fitness", "Gyms & fitness centers", "Gym membership", "Weight training", "Strength conditioning", "CrossFit & functional", "HIIT workouts", "Personal training", "1-on-1 coaching"],
-    tag: "Top rated nearby",
-  },
-  {
-    name: "7 Eleven Badminton Academy – Hosur",
-    category: "Sports & fitness",
-    subcategories: ["Sports coaching", "Turf & facility rental"],
-    products: [
-      { id: "7e-coaching", name: "Badminton Coaching (Monthly)", description: "Beginner to advanced coaching by BWF-certified coaches.", price: 1500, unit: "per month" },
-      { id: "7e-court", name: "Court Slot Booking (1 hr)", description: "Indoor synthetic mat court — well lit and ventilated.", price: 300, unit: "per hour" },
-      { id: "7e-kids", name: "Kids Badminton Academy", description: "Structured coaching for children aged 6–15.", price: 1200, unit: "per month" },
-    ],
-    description: "Leading badminton coaching academy and court facility in Hosur. BWF-certified coaches, indoor courts and monthly training programs.",
-    distance: 2.4,
-    demoCoordinates: { latitude: 12.7298, longitude: 77.8268 },
-    rating: 4.8,
-    reviews: 176,
-    price: "Coaching from ₹1,200",
-    icon: "🏸",
-    color: "lavender",
-    subscribed: true,
-    taxonomyTags: ["Sports coaching", "Badminton", "Coaching academies", "Badminton coaching", "Turf & facility rental", "Badminton courts", "Indoor court rental", "Court booking"],
-  },
-  {
-    name: "Pranava Nature Cure & Yoga – Hosur",
-    category: "Sports & fitness",
-    subcategories: ["Yoga & pilates", "Personal training"],
-    products: [
-      { id: "pnc-yoga", name: "Yoga Classes (Monthly)", description: "Hatha and Vinyasa yoga — morning and evening batches.", price: 1000, unit: "per month" },
-      { id: "pnc-nature", name: "Nature Cure Therapy Session", description: "Holistic healing combining naturopathy and yoga therapy.", price: 1500, unit: "per session" },
-      { id: "pnc-weight", name: "Weight Management Program", description: "30-day plan with diet, yoga and lifestyle coaching.", price: 4500, unit: "per month" },
-    ],
-    description: "Pranava Nature Cure & Yoga Clinic in Hosur. Holistic wellness center offering yoga, naturopathy, weight management and rejuvenation therapies.",
-    distance: 3.1,
-    demoCoordinates: { latitude: 12.7280, longitude: 77.8350 },
-    rating: 4.9,
-    reviews: 142,
-    price: "Yoga from ₹1,000/mo",
-    icon: "🧘",
-    color: "mint",
-    subscribed: true,
-    taxonomyTags: ["Yoga & pilates", "Yoga studios", "Hatha & Vinyasa", "Yoga classes", "Personal training", "1-on-1 coaching", "Transformation"],
-  },
-  {
-    name: "GameX 360 – Hosur Turf",
-    category: "Sports & fitness",
-    subcategories: ["Turf & facility rental", "Sports coaching"],
-    products: [
-      { id: "gx-football", name: "5-A-Side Football Turf (1 hr)", description: "Full synthetic grass turf with floodlights. All-weather facility.", price: 800, unit: "per hour" },
-      { id: "gx-cricket", name: "Box Cricket Turf Booking", description: "Box cricket field with nets. Suitable for 6–12 players.", price: 600, unit: "per hour" },
-      { id: "gx-package", name: "Group Event Package (2 hrs)", description: "Two sports slots + refreshments for up to 20 players.", price: 2500, unit: "per event" },
-    ],
-    description: "Multi-sport turf facility in Hosur with 5-a-side football, box cricket and badminton courts. Floodlights, changing rooms and parking.",
-    distance: 2.8,
-    demoCoordinates: { latitude: 12.7305, longitude: 77.8387 },
-    rating: 4.6,
-    reviews: 198,
-    price: "Turf from ₹600/hr",
-    icon: "⚽",
-    color: "butter",
-    subscribed: true,
-    taxonomyTags: ["Turf & facility rental", "Box cricket turf", "Hourly rental", "Turf booking", "Sports coaching", "Cricket", "Net practice & coaching", "Badminton courts"],
-  },
-
-  // ── Travel ──
-  {
-    name: "Fortune Hosur – ITC Hotels",
-    category: "Travel",
-    subcategories: ["Stays", "Tours & experiences"],
-    products: [
-      { id: "fh-room", name: "Deluxe Room (Per Night)", description: "Air-conditioned room with breakfast and high-speed Wi-Fi.", price: 4500, unit: "per night" },
-      { id: "fh-suite", name: "Executive Suite Stay", description: "Spacious suite with lounge access, minibar and city view.", price: 8000, unit: "per night" },
-      { id: "fh-banquet", name: "Banquet Hall Booking", description: "Ideal for conferences, weddings and corporate events.", price: 50000, unit: "per day" },
-    ],
-    description: "Fortune Hosur — premium ITC Hotels property. Business and leisure hotel with spa, restaurant, conference rooms and modern amenities.",
-    distance: 3.2,
-    demoCoordinates: { latitude: 12.7275, longitude: 77.8320 },
-    rating: 4.8,
-    reviews: 522,
-    price: "Rooms from ₹4,500",
-    icon: "🏨",
-    color: "lavender",
-    subscribed: true,
-    taxonomyTags: ["Stays", "Hotels", "Family stays", "Hotel room booking", "Tours & experiences", "Local experiences", "Business hotel", "Conference"],
-    tag: "Premium stay",
-  },
-  {
-    name: "TGI Grand Fortuna – Hosur",
-    category: "Travel",
-    subcategories: ["Stays"],
-    products: [
-      { id: "tgi-std", name: "Standard Room (Per Night)", description: "Well-appointed room with TV, AC and complimentary breakfast.", price: 2800, unit: "per night" },
-      { id: "tgi-corp", name: "Corporate Room Package (Weekly)", description: "7-night stay with breakfast, laundry and airport pick-up.", price: 16000, unit: "per week" },
-    ],
-    description: "TGI Grand Fortuna — top-rated upscale hotel in Hosur. Popular with corporate and leisure travelers. Restaurant, banquet and gym on-site.",
-    distance: 2.6,
-    demoCoordinates: { latitude: 12.7292, longitude: 77.8305 },
-    rating: 4.7,
-    reviews: 298,
-    price: "Rooms from ₹2,800",
-    icon: "🛏️",
-    color: "butter",
-    subscribed: true,
-    taxonomyTags: ["Stays", "Hotels", "Family stays", "Hotel room booking", "Guest houses", "Short stays", "Corporate stay"],
-  },
-
-  // ── Everyday services ──
-  {
-    name: "Jaya Sri Electricals & Plumbing – Hosur",
-    category: "Everyday services",
-    subcategories: ["Electrical", "Plumbing"],
-    products: [
-      { id: "js-elec", name: "Electrical Wiring & Repair", description: "Fuse, switchboard, fan, light installation and emergency repair.", price: 249, unit: "from" },
-      { id: "js-plumb", name: "Plumbing Leak & Pipe Repair", description: "Tap, overhead tank, drainage and toilet repairs.", price: 299, unit: "from" },
-      { id: "js-geyser", name: "Geyser Installation & Repair", description: "Any brand geyser installation, thermostat fix and anode check.", price: 499, unit: "from" },
-    ],
-    description: "Trusted electrician and plumber in Hosur — same-day home visits. Licensed professionals covering all major residential areas.",
-    distance: 0.7,
-    demoCoordinates: { latitude: 12.7344, longitude: 77.8300 },
-    rating: 4.8,
-    reviews: 219,
-    price: "Services from ₹249",
-    icon: "⚡",
-    color: "lavender",
-    subscribed: true,
-    taxonomyTags: ["Electrical", "Home electrical", "Repairs", "Wiring repair", "Installation", "Lighting installation", "Plumbing", "Home plumbing", "Leak repair", "Bathroom plumbing", "Tap & fixture installation"],
-    tag: "Same-day service",
-  },
-  {
-    name: "Supreme Cool Tech AC Services – Hosur",
-    category: "Everyday services",
-    subcategories: ["Appliance repair", "Electrical"],
-    products: [
-      { id: "sct-service", name: "AC Service & Deep Cleaning", description: "Coil wash, filter clean and performance test.", price: 499, unit: "from" },
-      { id: "sct-gas", name: "AC Gas Recharge (R-32 / R-22)", description: "Gas top-up with leak check and cooling test.", price: 999, unit: "from" },
-      { id: "sct-install", name: "AC Installation (Split / Window)", description: "Professional 1.5 ton / 2 ton split AC fitting.", price: 1200, unit: "from" },
-    ],
-    description: "Specialist AC repair, deep cleaning, gas recharge and installation in Hosur. Covers all brands — Daikin, Voltas, LG, Samsung, Hitachi.",
-    distance: 1.3,
-    demoCoordinates: { latitude: 12.7360, longitude: 77.8265 },
-    rating: 4.7,
-    reviews: 181,
-    price: "AC service from ₹499",
-    icon: "❄️",
-    color: "mint",
-    subscribed: true,
-    taxonomyTags: ["Appliance repair", "Kitchen appliances", "Repair", "Refrigerator service", "Laundry appliances", "Air conditioning", "AC cooling recharge", "Electrical", "Home electrical"],
-  },
-  {
-    name: "AtoZ Home Services – Hosur",
-    category: "Everyday services",
-    subcategories: ["Cleaning", "Home services", "Plumbing", "Electrical"],
-    products: [
-      { id: "az-deep", name: "Full Home Deep Cleaning", description: "2–5 BHK deep clean including kitchen, bathrooms and windows.", price: 1999, unit: "from" },
-      { id: "az-pest", name: "Pest Control Treatment", description: "Cockroach, bed bugs, termite and mosquito treatment.", price: 799, unit: "from" },
-      { id: "az-sofa", name: "Sofa & Carpet Cleaning", description: "Steam-clean and shampoo for sofas, chairs and carpets.", price: 499, unit: "from" },
-      { id: "az-movers", name: "Local Moving & Packing", description: "Professional packing, transport and unpacking in Hosur.", price: 2499, unit: "from" },
-    ],
-    description: "Full-service home care in Hosur — deep cleaning, pest control, sofa shampooing, plumbing, electrical and local movers.",
-    distance: 1.8,
-    demoCoordinates: { latitude: 12.7315, longitude: 77.8330 },
-    rating: 4.6,
-    reviews: 267,
-    price: "Services from ₹499",
-    icon: "🧹",
-    color: "butter",
-    subscribed: true,
-    taxonomyTags: ["Cleaning", "Home cleaning", "Full home", "Deep cleaning", "Focused cleaning", "Kitchen cleaning", "Home services", "Pest control", "Treatment", "Home pest treatment", "Moving help", "Packing & moving", "Local move assistance"],
-  },
-
-
-  // ── AUTOMOBILES ──────────────────────────────────────────────────────────────
-  {
-    name: "Tarun Motors Hero – Mathigiri, Hosur",
-    category: "Automobiles",
-    subcategories: ["Two-wheeler service"],
-    products: [
-      { id: "tarun-hero-splendor", name: "Hero Splendor Plus (Sales)", description: "Authorized sales of Hero Splendor Plus.", price: 78000, unit: "ex-showroom" },
-      { id: "tarun-hero-xtreme", name: "Hero Xtreme 160R (Sales)", description: "Authorized sales of Hero Xtreme 160R.", price: 130000, unit: "ex-showroom" },
-      { id: "tarun-hero-service", name: "Hero Annual Service Package", description: "Full annual service for Hero two-wheelers.", price: 699, unit: "per service" },
-    ],
-    description: "Authorized Hero MotoCorp dealership near RC Church, Denkanikottai Main Road, Mathigiri. Sales of Splendor, HF Deluxe, Vida V1 EV and full service.",
-    distance: 1.2,
-    demoCoordinates: { latitude: 12.722, longitude: 77.831 },
-    rating: 4.5,
-    reviews: 203,
-    price: "from ₹699",
-    icon: "🏍️",
-    color: "butter",
-    subscribed: true,
-    tag: "Authorized dealer",
-    taxonomyTags: ["Two wheeler", "Hero", "Splendor Plus", "HF Deluxe", "Vida V1", "Xtreme 160R", "Sales", "Service", "Two-wheeler service", "Routine service", "Oil & filter"],
-  },
-  {
-    name: "Velan Honda – Denkanikotta Road, Hosur",
-    category: "Automobiles",
-    subcategories: ["Two-wheeler service"],
-    products: [
-      { id: "velan-activa", name: "Honda Activa 6G (Sales)", description: "Authorized sales of Honda Activa 6G.", price: 82000, unit: "ex-showroom" },
-      { id: "velan-cb350", name: "Honda CB350 (Sales)", description: "Authorized sales of Honda CB350.", price: 210000, unit: "ex-showroom" },
-      { id: "velan-service", name: "Honda 2W Service", description: "Routine service for Honda two-wheelers.", price: 799, unit: "per service" },
-    ],
-    description: "Authorized Honda two-wheeler dealership on Denkanikotta Road near Railway Station, Hosur. Activa, Shine, Unicorn, CB350 sales and service.",
-    distance: 0.9,
-    demoCoordinates: { latitude: 12.724, longitude: 77.832 },
-    rating: 4.6,
-    reviews: 156,
-    price: "from ₹799",
-    icon: "🛵",
-    color: "mint",
-    subscribed: true,
-    tag: "Authorized dealer",
-    taxonomyTags: ["Two wheeler", "Honda", "Activa", "Dio", "Shine 125", "Unicorn", "CB350", "Sales", "Service", "Two-wheeler service", "Routine service", "Brake & tyre care"],
-  },
-  {
-    name: "Sri Saravana Motors Royal Enfield – Hosur",
-    category: "Automobiles",
-    subcategories: ["Two-wheeler service"],
-    products: [
-      { id: "ssm-classic350", name: "Royal Enfield Classic 350 (Sales)", description: "Authorized sales of RE Classic 350.", price: 196000, unit: "ex-showroom" },
-      { id: "ssm-hunter350", name: "RE Hunter 350 (Sales)", description: "Authorized sales of RE Hunter 350.", price: 155000, unit: "ex-showroom" },
-      { id: "ssm-service", name: "RE Annual Service", description: "Complete annual service for Royal Enfield motorcycles.", price: 1299, unit: "per service" },
-    ],
-    description: "Authorized Royal Enfield dealer in Hosur. Full range — Classic 350, Hunter 350, Bullet, Meteor, Himalayan. Test rides available daily.",
-    distance: 1.5,
-    demoCoordinates: { latitude: 12.726, longitude: 77.834 },
-    rating: 4.7,
-    reviews: 312,
-    price: "from ₹1299",
-    icon: "🏍️",
-    color: "peach",
-    subscribed: true,
-    tag: "Authorized dealer",
-    taxonomyTags: ["Two wheeler", "Royal Enfield", "Classic 350", "Hunter 350", "Bullet 350", "Meteor 350", "Himalayan", "Sales", "Service", "Two-wheeler service", "Routine service"],
-  },
-  {
-    name: "KHT Motors Tata – Hosur",
-    category: "Automobiles",
-    subcategories: ["Four-wheeler sales", "Car repair"],
-    products: [
-      { id: "kht-nexon", name: "Tata Nexon (Sales)", description: "Authorized sales of Tata Nexon SUV.", price: 850000, unit: "ex-showroom" },
-      { id: "kht-punch", name: "Tata Punch (Sales)", description: "Authorized sales of Tata Punch.", price: 620000, unit: "ex-showroom" },
-      { id: "kht-service", name: "Tata Periodic Service", description: "Authorized periodic service for Tata vehicles.", price: 3999, unit: "per service" },
-    ],
-    description: "Authorized Tata Motors passenger vehicle dealer in Hosur. Nexon, Punch, Tiago, Harrier, Safari — sales, test drives and full service.",
-    distance: 2.0,
-    demoCoordinates: { latitude: 12.728, longitude: 77.820 },
-    rating: 4.4,
-    reviews: 187,
-    price: "from ₹3999",
-    icon: "🚗",
-    color: "lavender",
-    subscribed: true,
-    taxonomyTags: ["Four wheeler", "Tata Motors", "Punch", "Nexon", "Tiago", "Altroz", "Harrier", "Safari", "Sales", "Service", "Car repair", "Engine & transmission"],
-  },
-  {
-    name: "Akash Bajaj (Chetak EV) – Hosur",
-    category: "Automobiles",
-    subcategories: ["Two-wheeler service"],
-    products: [
-      { id: "akash-chetak", name: "Bajaj Chetak Electric (Sales)", description: "Authorized sales of Bajaj Chetak EV scooter.", price: 120000, unit: "ex-showroom" },
-      { id: "akash-pulsar", name: "Bajaj Pulsar NS200 (Sales)", description: "Authorized sales of Bajaj Pulsar NS200.", price: 165000, unit: "ex-showroom" },
-      { id: "akash-ev-diag", name: "Battery & Motor Diagnostics", description: "EV battery and motor health check.", price: 499, unit: "per visit" },
-    ],
-    description: "Bajaj and Chetak EV authorized dealer near Krishnagiri Main Road, Hosur. EV test rides, finance and after-sales support.",
-    distance: 1.8,
-    demoCoordinates: { latitude: 12.730, longitude: 77.824 },
-    rating: 4.5,
-    reviews: 142,
-    price: "from ₹499",
-    icon: "⚡",
-    color: "mint",
-    subscribed: true,
-    taxonomyTags: ["Two wheeler", "Bajaj", "Chetak", "Pulsar 125", "Pulsar NS200", "Sales", "Service", "Two-wheeler service", "Electric 2W", "Battery & motor check", "Routine service"],
-  },
-  {
-    name: "Hosur Tyre & Battery Hub",
-    category: "Automobiles",
-    subcategories: ["Tyres & batteries"],
-    products: [
-      { id: "htb-car-tyre", name: "MRF / Apollo Car Tyre", description: "Multi-brand car tyre supply and fitting.", price: 3500, unit: "per tyre" },
-      { id: "htb-2w-tyre", name: "Two-Wheeler Tyre", description: "Multi-brand two-wheeler tyre supply and fitting.", price: 800, unit: "per tyre" },
-      { id: "htb-battery", name: "Car Battery Replacement (Amaron/Exide)", description: "Car battery supply and replacement service.", price: 4200, unit: "per battery" },
-    ],
-    description: "Multi-brand tyre and battery shop on Bagalur Road. MRF, Apollo, CEAT tyres; Amaron, Exide, Luminous batteries. Free wheel balancing and alignment.",
-    distance: 2.3,
-    demoCoordinates: { latitude: 12.732, longitude: 77.826 },
-    rating: 4.7,
-    reviews: 198,
-    price: "from ₹800",
-    icon: "🔩",
-    color: "butter",
-    subscribed: true,
-    taxonomyTags: ["Tyres & batteries", "Tyres & wheels", "Wheel balancing", "Puncture repair", "Vehicle batteries", "Battery replacement", "Car & bike battery"],
-  },
-  {
-    name: "Chil Zone Car Wash & Detailing – Hosur",
-    category: "Automobiles",
-    subcategories: ["Car wash & detailing"],
-    products: [
-      { id: "chil-foam-wash", name: "Full Body Foam Wash", description: "Complete exterior foam wash for cars.", price: 399, unit: "per session" },
-      { id: "chil-interior", name: "Interior Deep Vacuum & Sanitize", description: "Full interior vacuum and sanitization.", price: 599, unit: "per session" },
-      { id: "chil-ppf", name: "Paint Protection Film (PPF)", description: "Full-body PPF application for paint protection.", price: 15000, unit: "per car" },
-    ],
-    description: "Professional car wash and auto detailing studio in Hosur. Foam wash, interior sanitization, ceramic coating and PPF available.",
-    distance: 1.6,
-    demoCoordinates: { latitude: 12.734, longitude: 77.828 },
-    rating: 4.8,
-    reviews: 176,
-    price: "from ₹399",
-    icon: "🚿",
-    color: "lavender",
-    subscribed: true,
-    taxonomyTags: ["Car wash & detailing", "Exterior care", "Wash packages", "Full service foam wash", "Interior care", "Deep sanitization", "Upholstery shampoo"],
-  },
-
-  // ── ELECTRONICS ──────────────────────────────────────────────────────────────
-  {
-    name: "Reliance Digital – Bagalur Road, Hosur",
-    category: "Electronics",
-    subcategories: ["Mobile phones", "Home appliances", "Audio & video"],
-    products: [
-      { id: "rd-tv", name: "Smart TV (Sales)", description: "Wide range of smart TVs from top brands.", price: 18999, unit: "from" },
-      { id: "rd-ac", name: "Air Conditioner (Sales)", description: "Energy-efficient ACs from leading brands.", price: 32999, unit: "from" },
-      { id: "rd-phone", name: "Mobile Phone (Sales)", description: "Latest smartphones across all price segments.", price: 9999, unit: "from" },
-    ],
-    description: "Reliance Digital large-format electronics store on Bagalur Road, Hosur. TVs, ACs, washing machines, phones, laptops and audio systems with EMI options.",
-    distance: 2.5,
-    demoCoordinates: { latitude: 12.736, longitude: 77.822 },
-    rating: 4.4,
-    reviews: 387,
-    price: "from ₹9999",
-    icon: "📺",
-    color: "peach",
-    subscribed: true,
-    tag: "Popular nearby",
-    taxonomyTags: ["Sales", "Mobile phones", "Samsung", "Audio & video", "Sony", "LG", "Home appliances", "Whirlpool", "Laptops & computers", "HP", "Lenovo"],
-  },
-  {
-    name: "Samsung Experience Store – Bagalur Road, Hosur",
-    category: "Electronics",
-    subcategories: ["Mobile phones", "Home appliances"],
-    products: [
-      { id: "samsung-s25", name: "Samsung Galaxy S25 (Sales)", description: "Latest Samsung flagship smartphone.", price: 79999, unit: "ex-showroom" },
-      { id: "samsung-fridge", name: "Samsung Bespoke Refrigerator", description: "Premium Bespoke series refrigerator.", price: 65000, unit: "ex-showroom" },
-      { id: "samsung-repair", name: "Samsung Service & Repair", description: "Authorized Samsung device repair and service.", price: 499, unit: "from" },
-    ],
-    description: "Authorized Samsung Experience Store on Bagalur Road, Hosur. Full range of Samsung phones, tablets, TVs, appliances and official service.",
-    distance: 2.6,
-    demoCoordinates: { latitude: 12.738, longitude: 77.823 },
-    rating: 4.6,
-    reviews: 219,
-    price: "from ₹499",
-    icon: "📱",
-    color: "mint",
-    subscribed: true,
-    tag: "Authorized store",
-    taxonomyTags: ["Sales", "Service", "Mobile phones", "Samsung", "Galaxy S25", "Galaxy A56", "Home appliances", "Samsung", "Bespoke refrigerator", "Bespoke washing machine"],
-  },
-  {
-    name: "Sri Mithuna Samsung Service – Hosur",
-    category: "Electronics",
-    subcategories: ["Mobile phones"],
-    products: [
-      { id: "mithuna-screen", name: "Samsung Screen Replacement", description: "Genuine Samsung screen replacement service.", price: 2999, unit: "from" },
-      { id: "mithuna-battery", name: "Battery Replacement", description: "Genuine battery replacement for Samsung devices.", price: 999, unit: "from" },
-      { id: "mithuna-software", name: "Software Repair & Flash", description: "Software troubleshooting and firmware flashing.", price: 499, unit: "per visit" },
-    ],
-    description: "Authorized Samsung service center in Indira Nagar, Hosur. Genuine spare parts, warranty repairs and software troubleshooting for all Samsung models.",
-    distance: 1.4,
-    demoCoordinates: { latitude: 12.727, longitude: 77.833 },
-    rating: 4.7,
-    reviews: 143,
-    price: "from ₹499",
-    icon: "🔧",
-    color: "lavender",
-    subscribed: true,
-    taxonomyTags: ["Service", "Mobile phones", "Samsung", "Galaxy S25", "Galaxy A56", "Phone repair", "Screen & display", "Screen replacement", "Diagnostics", "Phone diagnostics"],
-  },
-  {
-    name: "Zenith PC – Hosur",
-    category: "Electronics",
-    subcategories: ["Laptops & computers"],
-    products: [
-      { id: "zenith-gaming-pc", name: "Custom Gaming PC Build", description: "Custom-built gaming desktop per your specs.", price: 45000, unit: "from" },
-      { id: "zenith-laptop-repair", name: "Laptop Repair", description: "Hardware and software laptop repair service.", price: 599, unit: "from" },
-      { id: "zenith-cctv", name: "CCTV & Network Setup", description: "CCTV camera installation and LAN/WiFi networking.", price: 12000, unit: "from" },
-    ],
-    description: "Computer hardware store and service center in Hosur. Custom builds, gaming rigs, laptop repair, CCTV, networking and printer solutions.",
-    distance: 1.7,
-    demoCoordinates: { latitude: 12.729, longitude: 77.821 },
-    rating: 4.6,
-    reviews: 89,
-    price: "from ₹599",
-    icon: "🖥️",
-    color: "butter",
-    subscribed: true,
-    taxonomyTags: ["Sales", "Service", "Laptops & computers", "Dell", "HP", "Lenovo", "ASUS", "Acer", "Apple", "MacBook Air", "Pavilion", "OmniBook", "IdeaPad"],
-  },
-
-  // ── FASHION ──────────────────────────────────────────────────────────────────
-  {
-    name: "Tanishq Jewellery – By-Pass Road, Hosur",
-    category: "Fashion",
-    subcategories: ["Jewellery"],
-    products: [
-      { id: "tanishq-necklace", name: "22K Gold Necklace", description: "Certified 22K gold necklace from Tanishq.", price: 75000, unit: "from" },
-      { id: "tanishq-ring", name: "Diamond Solitaire Ring", description: "Certified diamond solitaire ring.", price: 25000, unit: "from" },
-      { id: "tanishq-exchange", name: "Old Gold Exchange", description: "Exchange old gold jewellery at fair market value.", price: 0, unit: "free service" },
-    ],
-    description: "Tanishq by Tata — India's most trusted jewellery brand. Showroom on By-Pass Road, Hosur. Certified gold, diamond and platinum jewellery.",
-    distance: 1.9,
-    demoCoordinates: { latitude: 12.731, longitude: 77.836 },
-    rating: 4.8,
-    reviews: 489,
-    price: "from ₹25000",
-    icon: "💎",
-    color: "lavender",
-    subscribed: true,
-    tag: "Trusted brand",
-    taxonomyTags: ["Jewellery", "Traditional jewellery", "Earrings", "Necklaces", "Handcrafted necklaces", "Gold", "Diamond", "Everyday earrings"],
-  },
-  {
-    name: "Raymond – The Complete Man, Hosur",
-    category: "Fashion",
-    subcategories: ["Clothing", "Tailoring"],
-    products: [
-      { id: "raymond-fabric", name: "Suit Fabric (2.5m)", description: "Premium Raymond suiting fabric.", price: 3500, unit: "per 2.5m" },
-      { id: "raymond-shirt", name: "Readymade Formal Shirt", description: "Ready-to-wear formal shirt.", price: 1299, unit: "per piece" },
-      { id: "raymond-suit", name: "Custom Suit Stitching", description: "Bespoke suit stitching service.", price: 2999, unit: "per suit" },
-    ],
-    description: "Raymond showroom in Hosur. Premium men's suiting fabric, readymade formals and custom tailoring. Corporate and ethnic wear collections.",
-    distance: 2.1,
-    demoCoordinates: { latitude: 12.733, longitude: 77.825 },
-    rating: 4.6,
-    reviews: 178,
-    price: "from ₹1299",
-    icon: "👔",
-    color: "mint",
-    subscribed: true,
-    taxonomyTags: ["Clothing", "Men", "Everyday wear", "Shirts & trousers", "Occasion wear", "Ethnic wear", "Tailoring", "Custom stitching", "Women", "Blouse stitching"],
-  },
-  {
-    name: "Planet Fashion – Hosur",
-    category: "Fashion",
-    subcategories: ["Clothing"],
-    products: [
-      { id: "planet-jeans", name: "Men's Branded Jeans", description: "Branded jeans for men from top labels.", price: 1499, unit: "from" },
-      { id: "planet-ethnic", name: "Women's Ethnic Wear Set", description: "Ethnic wear sets for women.", price: 1999, unit: "from" },
-      { id: "planet-kids", name: "Kids Festive Outfit", description: "Festive outfits for children.", price: 899, unit: "from" },
-    ],
-    description: "Planet Fashion multi-brand apparel store near Post Office Road, Hosur. Top national brands for men, women and kids — casual, formal and ethnic wear.",
-    distance: 1.3,
-    demoCoordinates: { latitude: 12.723, longitude: 77.829 },
-    rating: 4.5,
-    reviews: 231,
-    price: "from ₹899",
-    icon: "🛍️",
-    color: "peach",
-    subscribed: true,
-    taxonomyTags: ["Clothing", "Men", "Everyday wear", "Shirts & trousers", "Women", "Kurtas & kurtis", "Sarees & dresses", "Kids", "Everyday wear", "Kids clothing"],
-  },
-  {
-    name: "Bata Footwear – MG Road, Hosur",
-    category: "Fashion",
-    subcategories: ["Footwear"],
-    products: [
-      { id: "bata-formal", name: "Men's Formal Shoes", description: "Classic formal shoes for men.", price: 1499, unit: "from" },
-      { id: "bata-sandals", name: "Women's Sandals", description: "Comfortable sandals for women.", price: 999, unit: "from" },
-      { id: "bata-school", name: "School Shoes", description: "Durable school shoes for children.", price: 699, unit: "from" },
-    ],
-    description: "Bata footwear store on MG Road, Hosur. Affordable everyday shoes, formal footwear, sandals, slippers and school shoes for the whole family.",
-    distance: 1.1,
-    demoCoordinates: { latitude: 12.725, longitude: 77.830 },
-    rating: 4.4,
-    reviews: 312,
-    price: "from ₹699",
-    icon: "👟",
-    color: "butter",
-    subscribed: true,
-    taxonomyTags: ["Footwear", "Shoes", "Formal", "Formal shoes", "Casual", "Everyday sneakers", "Sandals & slippers", "Daily wear", "Sandals"],
-  },
-  {
-    name: "Saree Palace – Nethaji Road, Hosur",
-    category: "Fashion",
-    subcategories: ["Clothing", "Textiles"],
-    products: [
-      { id: "saree-cotton", name: "Cotton Saree", description: "Comfortable everyday cotton sarees.", price: 899, unit: "from" },
-      { id: "saree-silk", name: "Silk Saree", description: "Elegant silk sarees for occasions.", price: 3500, unit: "from" },
-      { id: "saree-handloom", name: "Handloom Dress Material", description: "Authentic handloom dress materials.", price: 750, unit: "from" },
-    ],
-    description: "Hosur's go-to saree store on Nethaji Road. Vast collection of cotton, silk and handloom sarees for daily wear, festivals and weddings.",
-    distance: 0.8,
-    demoCoordinates: { latitude: 12.721, longitude: 77.828 },
-    rating: 4.6,
-    reviews: 267,
-    price: "from ₹750",
-    icon: "🥻",
-    color: "lavender",
-    subscribed: true,
-    taxonomyTags: ["Clothing", "Women", "Occasion wear", "Sarees & dresses", "Textiles", "Handloom", "Cotton fabrics", "Dress materials", "Home textiles", "Bed & bath"],
-  },
-
-  // ── HOME & FURNITURE ─────────────────────────────────────────────────────────
-  {
-    name: "Godrej Interio – Bagalur Road, Hosur",
-    category: "Home & furniture",
-    subcategories: ["Furniture", "Kitchen & storage"],
-    products: [
-      { id: "godrej-kitchen", name: "Modular Kitchen Setup", description: "Complete modular kitchen design and installation.", price: 85000, unit: "from" },
-      { id: "godrej-wardrobe", name: "Sliding Wardrobe", description: "Custom sliding door wardrobe.", price: 35000, unit: "from" },
-      { id: "godrej-chair", name: "Office Chair", description: "Ergonomic office chair.", price: 8500, unit: "from" },
-    ],
-    description: "Godrej Interio showroom on Bagalur Road, Hosur. Modular kitchens, wardrobes, beds, sofas and ergonomic office furniture with installation.",
-    distance: 2.8,
-    demoCoordinates: { latitude: 12.737, longitude: 77.827 },
-    rating: 4.6,
-    reviews: 203,
-    price: "from ₹8500",
-    icon: "🪑",
-    color: "mint",
-    subscribed: true,
-    tag: "Trusted brand",
-    taxonomyTags: ["Furniture", "Bedroom", "Storage", "Wardrobes", "Kitchen & storage", "Kitchen fittings", "Modular kitchen cabinets", "Living room", "Seating", "Sofas & chairs"],
-  },
-  {
-    name: "Royaloak Furniture – Hosur",
-    category: "Home & furniture",
-    subcategories: ["Furniture", "Home decor"],
-    products: [
-      { id: "royaloak-sofa", name: "5-Seater Sofa Set", description: "Premium 5-seater fabric or leather sofa set.", price: 32000, unit: "from" },
-      { id: "royaloak-bed", name: "King Size Bed", description: "Solid wood king-size bed frame.", price: 18000, unit: "from" },
-      { id: "royaloak-dining", name: "Dining Table (6-seater)", description: "6-seater dining table with chairs.", price: 22000, unit: "from" },
-    ],
-    description: "Royaloak large-format furniture showroom near Hosur. Wide range of living room, bedroom and dining furniture with free delivery and installation.",
-    distance: 3.0,
-    demoCoordinates: { latitude: 12.739, longitude: 77.829 },
-    rating: 4.5,
-    reviews: 318,
-    price: "from ₹18000",
-    icon: "🛋️",
-    color: "peach",
-    subscribed: true,
-    taxonomyTags: ["Furniture", "Living room", "Seating", "Sofas & chairs", "Bedroom", "Beds", "Beds & headboards", "Dining", "Dining sets", "Dining tables & chairs"],
-  },
-  {
-    name: "Surya Home Decor & Interior – Hosur",
-    category: "Home & furniture",
-    subcategories: ["Home decor", "Interior design"],
-    products: [
-      { id: "surya-consult", name: "Interior Design Consultation", description: "Free home interior design consultation.", price: 0, unit: "free" },
-      { id: "surya-ceiling", name: "False Ceiling Design & Fit", description: "False ceiling design and installation.", price: 120, unit: "per sqft" },
-      { id: "surya-wall", name: "Wall Art & Decor Panels", description: "Decorative wall art and paneling.", price: 2500, unit: "from" },
-    ],
-    description: "Full-home interior design studio in Hosur. False ceilings, modular furniture, lighting, wall paneling and 3D design planning from ₹0 consultation.",
-    distance: 2.2,
-    demoCoordinates: { latitude: 12.735, longitude: 77.832 },
-    rating: 4.8,
-    reviews: 142,
-    price: "from ₹120/sqft",
-    icon: "🏠",
-    color: "lavender",
-    subscribed: true,
-    taxonomyTags: ["Interior design", "Home planning", "Room design", "Design consultation", "Room makeover", "Space planning", "Home decor", "Wall decor", "Art & hangings", "Lighting", "Indoor lighting"],
-  },
-  {
-    name: "Nilkamal Homes – Hosur",
-    category: "Home & furniture",
-    subcategories: ["Furniture", "Kitchen & storage"],
-    products: [
-      { id: "nilkamal-cabinet", name: "Plastic Storage Cabinet", description: "Durable plastic storage cabinet.", price: 3500, unit: "from" },
-      { id: "nilkamal-study", name: "Study Table", description: "Study table for kids and adults.", price: 4999, unit: "from" },
-      { id: "nilkamal-chairs", name: "Plastic Chair (set of 4)", description: "Set of 4 durable plastic chairs.", price: 2800, unit: "per set" },
-    ],
-    description: "Nilkamal Homes store near Hosur. Affordable plastic and wooden furniture, storage solutions, kids furniture and home essentials.",
-    distance: 3.2,
-    demoCoordinates: { latitude: 12.740, longitude: 77.820 },
-    rating: 4.3,
-    reviews: 187,
-    price: "from ₹2800",
-    icon: "📦",
-    color: "butter",
-    subscribed: true,
-    taxonomyTags: ["Furniture", "Living room", "Tables", "Coffee & side tables", "Kitchen & storage", "Storage solutions", "Shelving", "Storage racks", "Repairs", "Furniture assembly"],
-  },
-
-  // ── HEALTH & WELLNESS ────────────────────────────────────────────────────────
-  {
-    name: "Kauvery Hospital – Hosur",
-    category: "Health & wellness",
-    subcategories: ["Clinics", "Dental care", "Physiotherapy"],
-    products: [
-      { id: "kauvery-opd", name: "General OPD Consultation", description: "Walk-in general physician consultation.", price: 300, unit: "per visit" },
-      { id: "kauvery-dental", name: "Dental Check-up & X-ray", description: "Comprehensive dental check-up with X-ray.", price: 500, unit: "per visit" },
-      { id: "kauvery-physio", name: "Physiotherapy Session", description: "Guided physiotherapy rehabilitation session.", price: 400, unit: "per session" },
-    ],
-    description: "NABH-accredited 125-bed multi-specialty Kauvery Hospital in Shanthi Nagar, Hosur. Emergency, dental, ophthalmology, physiotherapy, orthopaedics and ICU.",
-    distance: 1.5,
-    demoCoordinates: { latitude: 12.726, longitude: 77.835 },
-    rating: 4.7,
-    reviews: 423,
-    price: "from ₹300",
-    icon: "🏥",
-    color: "peach",
-    subscribed: true,
-    tag: "NABH accredited",
-    taxonomyTags: ["Clinics", "General care", "Appointments", "Doctor consultation", "Paediatrics", "Dental care", "Dental clinics", "Treatment", "Physiotherapy", "Mobility care", "Eye care"],
-  },
-  {
-    name: "SBS Hospital – Hosur",
-    category: "Health & wellness",
-    subcategories: ["Clinics", "Physiotherapy"],
-    products: [
-      { id: "sbs-ortho", name: "Orthopaedic Consultation", description: "Specialist orthopaedic doctor consultation.", price: 350, unit: "per visit" },
-      { id: "sbs-xray", name: "Bone & Joint X-ray", description: "Digital X-ray for bone and joint assessment.", price: 400, unit: "per scan" },
-      { id: "sbs-physio", name: "Physiotherapy & Rehab Session", description: "Physical therapy and rehabilitation session.", price: 500, unit: "per session" },
-    ],
-    description: "SBS Hospital Pvt. Ltd. on Tank Street, Hosur. Multi-specialty care with orthopaedic specialization, emergency, general surgery and rehabilitation.",
-    distance: 1.0,
-    demoCoordinates: { latitude: 12.722, longitude: 77.830 },
-    rating: 4.6,
-    reviews: 287,
-    price: "from ₹350",
-    icon: "🩺",
-    color: "lavender",
-    subscribed: true,
-    taxonomyTags: ["Clinics", "General care", "Appointments", "Doctor consultation", "Physiotherapy", "Mobility care", "Assessment", "Physiotherapy assessment", "Physiotherapy session"],
-  },
-  {
-    name: "Apollo Dental Clinic – Hosur",
-    category: "Health & wellness",
-    subcategories: ["Dental care"],
-    products: [
-      { id: "apollo-implant-consult", name: "Dental Implant Consultation", description: "Specialist consultation for dental implants.", price: 500, unit: "per visit" },
-      { id: "apollo-rct", name: "Root Canal Treatment", description: "Complete root canal treatment.", price: 6000, unit: "per tooth" },
-      { id: "apollo-whitening", name: "Teeth Whitening Session", description: "Professional teeth whitening treatment.", price: 3500, unit: "per session" },
-    ],
-    description: "Apollo Dental Clinic on Krishnagiri Bypass Road, Hosur. Implants, root canals, orthodontics, whitening and complete dental care under the Apollo brand.",
-    distance: 2.4,
-    demoCoordinates: { latitude: 12.734, longitude: 77.840 },
-    rating: 4.7,
-    reviews: 198,
-    price: "from ₹500",
-    icon: "🦷",
-    color: "mint",
-    subscribed: true,
-    taxonomyTags: ["Dental care", "Dental clinics", "Check-ups", "Dental consultation", "Treatment", "Cleaning & fillings"],
-  },
-  {
-    name: "Arokyam Lungs Care Centre – Hosur",
-    category: "Health & wellness",
-    subcategories: ["Clinics"],
-    products: [
-      { id: "arokyam-consult", name: "Pulmonology Consultation", description: "Specialist consultation for respiratory conditions.", price: 400, unit: "per visit" },
-      { id: "arokyam-spirometry", name: "Spirometry Lung Function Test", description: "Lung capacity and function assessment.", price: 800, unit: "per test" },
-      { id: "arokyam-asthma", name: "Asthma Treatment Plan", description: "Personalized asthma management plan.", price: 1200, unit: "per plan" },
-    ],
-    description: "Specialized respiratory and lungs care clinic near Avalapalli Hudco, Hosur. Treating asthma, COPD, bronchitis, sleep apnoea and lung infections.",
-    distance: 1.8,
-    demoCoordinates: { latitude: 12.730, longitude: 77.837 },
-    rating: 4.8,
-    reviews: 89,
-    price: "from ₹400",
-    icon: "🫁",
-    color: "butter",
-    subscribed: true,
-    taxonomyTags: ["Clinics", "General care", "Appointments", "Doctor consultation", "Eye care", "Appointments", "Eye examination"],
-  },
-
-  // ── SPORTS & FITNESS ─────────────────────────────────────────────────────────
-  {
-    name: "Ketone Fitness – Shanthi Nagar, Hosur",
-    category: "Sports & fitness",
-    subcategories: ["Gyms & fitness centers", "Personal training"],
-    products: [
-      { id: "ketone-monthly", name: "Monthly Gym Membership", description: "Full gym access for one month.", price: 1000, unit: "per month" },
-      { id: "ketone-pt", name: "Personal Training (10 sessions)", description: "10 one-on-one personal training sessions.", price: 4000, unit: "per package" },
-      { id: "ketone-bca", name: "Body Composition Analysis", description: "Detailed body fat and muscle composition report.", price: 300, unit: "per test" },
-    ],
-    description: "Ketone Fitness gym in Shanthi Nagar, Denkanikottai Road, Hosur. Modern equipment, personal training and body transformation programs.",
-    distance: 1.4,
-    demoCoordinates: { latitude: 12.727, longitude: 77.838 },
-    rating: 4.7,
-    reviews: 198,
-    price: "from ₹1000",
-    icon: "💪",
-    color: "mint",
-    subscribed: true,
-    taxonomyTags: ["Sports & fitness", "Gyms & fitness centers", "Gym membership", "Weight training", "Strength conditioning", "Personal training", "1-on-1 coaching", "Transformation"],
-  },
-  {
-    name: "H&T Fitness – Navadhi, Hosur",
-    category: "Sports & fitness",
-    subcategories: ["Gyms & fitness centers"],
-    products: [
-      { id: "ht-monthly", name: "Monthly Unisex Membership", description: "Monthly gym access for all genders.", price: 900, unit: "per month" },
-      { id: "ht-quarterly", name: "Quarterly Membership", description: "3-month gym membership at a discount.", price: 2400, unit: "per quarter" },
-      { id: "ht-cardio", name: "Cardio & Abs Package", description: "Focused cardio and core training package.", price: 1500, unit: "per month" },
-    ],
-    description: "H&T Fitness — popular unisex gym on Denkanikottai Main Road, Navadhi, Hosur. Free weights, machines, cardio and group fitness sessions.",
-    distance: 2.0,
-    demoCoordinates: { latitude: 12.732, longitude: 77.839 },
-    rating: 4.6,
-    reviews: 154,
-    price: "from ₹900",
-    icon: "🏋️",
-    color: "lavender",
-    subscribed: true,
-    taxonomyTags: ["Sports & fitness", "Gyms & fitness centers", "Gym membership", "Weight training", "CrossFit & functional", "HIIT workouts", "Dance fitness", "Zumba studios"],
-  },
-  {
-    name: "Royal Wellfit Health Club & Pool – Hosur",
-    category: "Sports & fitness",
-    subcategories: ["Gyms & fitness centers", "Swimming & aquatics"],
-    products: [
-      { id: "rwf-gym-pool", name: "Monthly Gym + Pool Access", description: "Combined gym and swimming pool monthly membership.", price: 2500, unit: "per month" },
-      { id: "rwf-swim-lessons", name: "Swimming Lessons (monthly)", description: "Professional swimming coaching for all levels.", price: 1500, unit: "per month" },
-      { id: "rwf-annual", name: "Annual Membership", description: "Full-year all-access membership.", price: 18000, unit: "per year" },
-    ],
-    description: "Royal Wellfit Health Club near Kumudepalli, Hosur. Full-scale gym, heated swimming pool, steam room and multi-purpose sports hall.",
-    distance: 3.5,
-    demoCoordinates: { latitude: 12.741, longitude: 77.824 },
-    rating: 4.8,
-    reviews: 267,
-    price: "from ₹1500",
-    icon: "🏊",
-    color: "peach",
-    subscribed: true,
-    taxonomyTags: ["Sports & fitness", "Gyms & fitness centers", "Gym membership", "Swimming & aquatics", "Swimming pools", "Coaching", "Swimming lessons", "Personal training"],
-  },
-  {
-    name: "Eagles Sports Club – Bagalur Circle, Hosur",
-    category: "Sports & fitness",
-    subcategories: ["Sports coaching", "Turf & facility rental"],
-    products: [
-      { id: "eagles-volleyball", name: "Volleyball Coaching (monthly)", description: "Professional volleyball coaching for all ages.", price: 1200, unit: "per month" },
-      { id: "eagles-football", name: "Football Coaching (monthly)", description: "Structured football training program.", price: 1500, unit: "per month" },
-      { id: "eagles-camp", name: "Multi-sport Summer Camp", description: "Multi-sport summer camp for kids.", price: 3500, unit: "per camp" },
-    ],
-    description: "Eagles Sports Club near Bagalur Circle, Hosur. Professional volleyball, football and athletics coaching. Summer camps and inter-school tournaments.",
-    distance: 4.0,
-    demoCoordinates: { latitude: 12.743, longitude: 77.826 },
-    rating: 4.7,
-    reviews: 143,
-    price: "from ₹1200",
-    icon: "🏐",
-    color: "butter",
-    subscribed: true,
-    taxonomyTags: ["Sports coaching", "Badminton", "Coaching academies", "Cricket", "Net practice & coaching", "Turf & facility rental", "Box cricket turf", "Hourly rental"],
-  },
-  {
-    name: "Little England Badminton Academy – Hosur",
-    category: "Sports & fitness",
-    subcategories: ["Sports coaching", "Turf & facility rental"],
-    products: [
-      { id: "leba-coaching", name: "Badminton Coaching (monthly)", description: "Professional badminton coaching for all ages.", price: 1400, unit: "per month" },
-      { id: "leba-court", name: "Court Booking (1 hr)", description: "Hourly badminton court rental.", price: 280, unit: "per hour" },
-      { id: "leba-kids", name: "Kids Shuttle Program", description: "Monthly badminton program for children.", price: 1000, unit: "per month" },
-    ],
-    description: "Little England Badminton Academy — well-lit indoor courts and professional coaches for kids and adults in Hosur. Flexible batch timings.",
-    distance: 2.7,
-    demoCoordinates: { latitude: 12.738, longitude: 77.835 },
-    rating: 4.7,
-    reviews: 128,
-    price: "from ₹280",
-    icon: "🏸",
-    color: "lavender",
-    subscribed: true,
-    taxonomyTags: ["Sports coaching", "Badminton", "Coaching academies", "Badminton coaching", "Turf & facility rental", "Badminton courts", "Indoor court rental", "Court booking"],
-  },
-  {
-    name: "Prabhu's Turf 24/7 – Hosur",
-    category: "Sports & fitness",
-    subcategories: ["Turf & facility rental"],
-    products: [
-      { id: "prabhu-football", name: "Football Turf (1 hr)", description: "Synthetic football turf — hourly rental.", price: 700, unit: "per hour" },
-      { id: "prabhu-box-cricket", name: "Box Cricket (1 hr)", description: "Box cricket turf — hourly rental.", price: 550, unit: "per hour" },
-      { id: "prabhu-night", name: "Night-slot Turf (10 PM–2 AM)", description: "Floodlit turf — late night slot.", price: 900, unit: "per hour" },
-    ],
-    description: "24/7 multi-sport turf facility in Hosur. Synthetic football, box cricket and kabaddi courts available round the clock with floodlights.",
-    distance: 3.1,
-    demoCoordinates: { latitude: 12.740, longitude: 77.833 },
-    rating: 4.5,
-    reviews: 221,
-    price: "from ₹550",
-    icon: "⚽",
-    color: "mint",
-    subscribed: true,
-    taxonomyTags: ["Turf & facility rental", "Box cricket turf", "Hourly rental", "Turf booking", "Badminton courts", "Indoor court rental", "Sports coaching"],
-  },
-  {
-    name: "Orien Fitness – Muneeswara Nagar, Hosur",
-    category: "Sports & fitness",
-    subcategories: ["Gyms & fitness centers"],
-    products: [
-      { id: "orien-monthly", name: "Monthly Membership", description: "Full gym access for one month.", price: 800, unit: "per month" },
-      { id: "orien-zumba", name: "Zumba Classes (monthly)", description: "Monthly Zumba dance fitness classes.", price: 900, unit: "per month" },
-      { id: "orien-combo", name: "Yoga + Gym Combo", description: "Combined yoga and gym monthly package.", price: 1500, unit: "per month" },
-    ],
-    description: "Orien Fitness unisex gym near Muneeswara Nagar, Hosur. Strength training, Zumba, aerobics and yoga — all under one roof.",
-    distance: 1.6,
-    demoCoordinates: { latitude: 12.729, longitude: 77.836 },
-    rating: 4.5,
-    reviews: 109,
-    price: "from ₹800",
-    icon: "🧘",
-    color: "butter",
-    subscribed: true,
-    taxonomyTags: ["Sports & fitness", "Gyms & fitness centers", "Gym membership", "Dance fitness", "Zumba studios", "Cardio dance", "Yoga & pilates", "Yoga studios"],
-  },
-
-  // ── TRAVEL ───────────────────────────────────────────────────────────────────
-  {
-    name: "A1 Call Taxi – Hosur",
-    category: "Travel",
-    subcategories: ["Local transport"],
-    products: [
-      { id: "a1-airport", name: "Airport Transfer to Bengaluru", description: "Cab transfer to Bengaluru Kempegowda International Airport.", price: 1200, unit: "per trip" },
-      { id: "a1-outstation", name: "Outstation Day Trip", description: "Full-day outstation cab booking.", price: 2500, unit: "per day" },
-      { id: "a1-local", name: "Local City Ride", description: "Local city cab ride within Hosur.", price: 199, unit: "from" },
-    ],
-    description: "A1 Call Taxi — 24/7 reliable cab service in Hosur. Airport drops to Bengaluru KIA, outstation tours, corporate travel and local rides.",
-    distance: 0.7,
-    demoCoordinates: { latitude: 12.721, longitude: 77.827 },
-    rating: 4.7,
-    reviews: 398,
-    price: "from ₹199",
-    icon: "🚖",
-    color: "mint",
-    subscribed: true,
-    taxonomyTags: ["Local transport", "Airport rides", "Cars", "Airport transfer", "City rides", "Car rentals", "Self drive", "Daily rental", "Car hire", "Tours & experiences"],
-  },
-  {
-    name: "Red Taxi – Hosur",
-    category: "Travel",
-    subcategories: ["Local transport"],
-    products: [
-      { id: "red-mini", name: "Mini Car Ride (local)", description: "Affordable mini car for local Hosur rides.", price: 150, unit: "from" },
-      { id: "red-sedan", name: "Sedan Outstation", description: "Sedan car for outstation trips.", price: 3000, unit: "from" },
-      { id: "red-pink", name: "Pink Taxi (women-only)", description: "Women-only cab with women driver.", price: 200, unit: "from" },
-    ],
-    description: "Red Taxi fleet service in Hosur. Sedans, mini cars and tempo travellers. Unique Pink Taxi option with women drivers for women passengers.",
-    distance: 0.9,
-    demoCoordinates: { latitude: 12.723, longitude: 77.832 },
-    rating: 4.6,
-    reviews: 287,
-    price: "from ₹150",
-    icon: "🚕",
-    color: "peach",
-    subscribed: true,
-    taxonomyTags: ["Local transport", "Airport rides", "Cars", "Airport transfer", "City rides", "Two-wheelers", "Local bike rental", "Bus & rail services"],
-  },
-  {
-    name: "Grand Royal Tours & Travel – Hosur",
-    category: "Travel",
-    subcategories: ["Travel agents", "Tours & experiences"],
-    products: [
-      { id: "grand-ooty", name: "Ooty & Kodaikanal Package (3N/4D)", description: "3 nights 4 days Ooty & Kodaikanal holiday package.", price: 8500, unit: "per person" },
-      { id: "grand-kerala", name: "Kerala Backwaters Tour (5N/6D)", description: "5 nights 6 days Kerala backwaters tour.", price: 22000, unit: "per person" },
-      { id: "grand-visa", name: "International Visa Assistance", description: "Visa application assistance for international travel.", price: 2500, unit: "per application" },
-    ],
-    description: "Grand Royal Tours in Hosur. Domestic and international holiday packages, visa assistance, hotel bookings and corporate travel management.",
-    distance: 1.2,
-    demoCoordinates: { latitude: 12.724, longitude: 77.826 },
-    rating: 4.6,
-    reviews: 156,
-    price: "from ₹2500",
-    icon: "✈️",
-    color: "lavender",
-    subscribed: true,
-    taxonomyTags: ["Travel agents", "Holiday planning", "Domestic trips", "Custom itinerary", "International trips", "Travel planning", "Tours & experiences", "Local experiences", "Guided tours"],
-  },
-  {
-    name: "Nanban Tours & Travels – Hosur",
-    category: "Travel",
-    subcategories: ["Travel agents", "Tours & experiences"],
-    products: [
-      { id: "nanban-tirupati", name: "Tirupati Darshan Package", description: "Tirupati pilgrimage package with accommodation.", price: 2800, unit: "per person" },
-      { id: "nanban-rameswaram", name: "Rameswaram Tour (2N/3D)", description: "2 nights 3 days Rameswaram pilgrimage tour.", price: 5500, unit: "per person" },
-      { id: "nanban-bus", name: "Bus Ticket Booking", description: "Intercity bus ticket booking assistance.", price: 50, unit: "per booking" },
-    ],
-    description: "Nanban Tours and Travels in Hosur. Pilgrimage tours, family holiday packages, bus and train ticket booking and group travel coordination.",
-    distance: 1.4,
-    demoCoordinates: { latitude: 12.726, longitude: 77.833 },
-    rating: 4.5,
-    reviews: 198,
-    price: "from ₹50",
-    icon: "🗺️",
-    color: "butter",
-    subscribed: true,
-    taxonomyTags: ["Travel agents", "Holiday planning", "Domestic trips", "Custom itinerary", "Bus & rail services", "Bus tickets", "Intercity travel", "Bus booking support", "Tours & experiences"],
-  },
-  {
-    name: "Grand Continent Hosur (Sarovar Portico)",
-    category: "Travel",
-    subcategories: ["Stays"],
-    products: [
-      { id: "gc-standard", name: "Standard Room", description: "Standard hotel room with all amenities.", price: 2500, unit: "per night" },
-      { id: "gc-superior", name: "Superior Room with Breakfast", description: "Superior room with complimentary breakfast.", price: 3200, unit: "per night" },
-      { id: "gc-conference", name: "Conference Hall (full day)", description: "Full-day conference hall rental.", price: 35000, unit: "per day" },
-    ],
-    description: "Grand Continent Hosur — Sarovar Portico affiliated hotel. Centrally located, ideal for corporate and family travelers. Restaurant, conference and banquet facilities.",
-    distance: 1.7,
-    demoCoordinates: { latitude: 12.729, longitude: 77.834 },
-    rating: 4.6,
-    reviews: 341,
-    price: "from ₹2500",
-    icon: "🏨",
-    color: "mint",
-    subscribed: true,
-    taxonomyTags: ["Stays", "Hotels", "Family stays", "Hotel room booking", "Guest houses", "Short stays", "Guest house booking", "Tours & experiences"],
-  },
-  {
-    name: "Hotel Hills – Hosur",
-    category: "Travel",
-    subcategories: ["Stays"],
-    products: [
-      { id: "hills-standard", name: "Standard Room", description: "Clean and comfortable standard room.", price: 1800, unit: "per night" },
-      { id: "hills-double", name: "Double Occupancy Room", description: "Room for two with double bed.", price: 2200, unit: "per night" },
-      { id: "hills-dinner", name: "Room + Dinner Combo", description: "Room with complimentary dinner for two.", price: 2800, unit: "per night" },
-    ],
-    description: "Hotel Hills — reliable mid-range hotel near Hosur Bus Stand. Clean rooms, in-house restaurant and easy access to all major commercial areas.",
-    distance: 0.5,
-    demoCoordinates: { latitude: 12.720, longitude: 77.828 },
-    rating: 4.3,
-    reviews: 224,
-    price: "from ₹1800",
-    icon: "🛏️",
-    color: "lavender",
-    subscribed: true,
-    taxonomyTags: ["Stays", "Hotels", "Family stays", "Hotel room booking", "Guest houses", "Short stays", "Guest house booking"],
-  },
-
-  // ── ENTERTAINMENT ─────────────────────────────────────────────────────────────
-  {
-    name: "Lakshmi Cinemas – Hosur",
-    category: "Entertainment",
-    subcategories: ["Movies & cinema"],
-    products: [
-      { id: "lakshmi-regular", name: "Regular Ticket", description: "Standard cinema seat.", price: 120, unit: "per ticket" },
-      { id: "lakshmi-premium", name: "Premium Seat", description: "Premium recliner seat.", price: 180, unit: "per ticket" },
-      { id: "lakshmi-combo", name: "Movie + Popcorn Combo", description: "Ticket with large popcorn and drink.", price: 250, unit: "per combo" },
-    ],
-    description: "Lakshmi Cinemas in Hosur — Phase VII NHS. RGB Laser projection, QSC Dolby Atmos sound. Screening latest Tamil, Telugu, Hindi and English films.",
-    distance: 1.3,
-    demoCoordinates: { latitude: 12.725, longitude: 77.831 },
-    rating: 4.6,
-    reviews: 534,
-    price: "from ₹120",
-    icon: "🎬",
-    color: "peach",
-    subscribed: true,
-    tag: "Dolby Atmos",
-    taxonomyTags: ["Movies & cinema", "Cinema", "Show times", "Movie tickets", "Home viewing", "Equipment hire", "Projector rental"],
-  },
-  {
-    name: "Grand Cinemas – Thally Road, Hosur",
-    category: "Entertainment",
-    subcategories: ["Movies & cinema"],
-    products: [
-      { id: "grand-standard", name: "Standard Ticket", description: "Standard cinema seat.", price: 110, unit: "per ticket" },
-      { id: "grand-couple", name: "Couple Seat", description: "Special couple sofa seat.", price: 280, unit: "per pair" },
-      { id: "grand-3d", name: "3D Movie Ticket", description: "3D movie experience ticket.", price: 200, unit: "per ticket" },
-    ],
-    description: "Grand Cinemas near Karnur Bus Stop, Thally Road, Hosur. 4K projection, Dolby Atmos and recliner seating for a premium movie experience.",
-    distance: 2.9,
-    demoCoordinates: { latitude: 12.739, longitude: 77.831 },
-    rating: 4.7,
-    reviews: 412,
-    price: "from ₹110",
-    icon: "🎥",
-    color: "lavender",
-    subscribed: true,
-    taxonomyTags: ["Movies & cinema", "Cinema", "Show times", "Movie tickets"],
-  },
-  {
-    name: "Hosur Music & Arts Academy",
-    category: "Entertainment",
-    subcategories: ["Music", "Classes & workshops"],
-    products: [
-      { id: "hma-carnatic", name: "Carnatic Vocal Class (monthly)", description: "Monthly Carnatic music vocal training.", price: 800, unit: "per month" },
-      { id: "hma-instrument", name: "Guitar / Keyboard Lessons", description: "Monthly guitar or keyboard lessons.", price: 1000, unit: "per month" },
-      { id: "hma-art", name: "Drawing & Painting Class", description: "Monthly drawing and painting classes.", price: 700, unit: "per month" },
-    ],
-    description: "Music and arts learning center in Hosur. Carnatic vocal, keyboard, guitar, tabla, drawing and painting classes for kids and adults.",
-    distance: 1.6,
-    demoCoordinates: { latitude: 12.728, longitude: 77.840 },
-    rating: 4.8,
-    reviews: 87,
-    price: "from ₹700",
-    icon: "🎵",
-    color: "butter",
-    subscribed: true,
-    taxonomyTags: ["Music", "Music lessons", "Instruments", "Music classes", "Live music", "Local artists", "Classes & workshops", "Arts & crafts", "Creative classes", "Craft workshop"],
-  },
-  {
-    name: "Hosur Weekend Haat – Cultural Events",
-    category: "Entertainment",
-    subcategories: ["Events", "Classes & workshops"],
-    products: [
-      { id: "haat-event", name: "Event Planning (from)", description: "End-to-end event planning and coordination.", price: 5000, unit: "from" },
-      { id: "haat-photo", name: "Photography Coverage", description: "Professional event photography.", price: 8000, unit: "per event" },
-      { id: "haat-workshop", name: "Workshop Hosting (half day)", description: "Venue and coordination for half-day workshops.", price: 3000, unit: "per session" },
-    ],
-    description: "Community-run events platform in Hosur. Weekend haats, cultural workshops, local artisan expos and corporate team events coordination.",
-    distance: 2.1,
-    demoCoordinates: { latitude: 12.733, longitude: 77.827 },
-    rating: 4.6,
-    reviews: 76,
-    price: "from ₹3000",
-    icon: "🎪",
-    color: "mint",
-    subscribed: true,
-    taxonomyTags: ["Events", "Community events", "Workshops", "Weekend workshop", "Celebrations", "Private events", "Event planning", "Classes & workshops", "Dance", "Dance classes"],
-  },
-  {
-    name: "Hosur Gaming Zone – Arcade & VR",
-    category: "Entertainment",
-    subcategories: ["Gaming", "Outdoor activities"],
-    products: [
-      { id: "hgz-vr", name: "VR Gaming Session (30 min)", description: "30-minute virtual reality gaming experience.", price: 200, unit: "per session" },
-      { id: "hgz-arcade", name: "Arcade Games Pass (1 hr)", description: "1-hour unlimited arcade games pass.", price: 150, unit: "per hour" },
-      { id: "hgz-group", name: "Group Gaming Package", description: "Group gaming package for up to 5 players.", price: 500, unit: "per group" },
-    ],
-    description: "Indoor gaming and arcade zone in Hosur. VR headset games, racing simulators, arcade machines and skill games for kids and adults.",
-    distance: 2.4,
-    demoCoordinates: { latitude: 12.735, longitude: 77.836 },
-    rating: 4.5,
-    reviews: 198,
-    price: "from ₹150",
-    icon: "🎮",
-    color: "peach",
-    subscribed: true,
-    taxonomyTags: ["Gaming", "Games & recreation", "Indoor activities", "Game session", "Outdoor activities", "Family activities", "Local outings", "Activity booking"],
-  },
-
-  // ── EVERYDAY SERVICES ────────────────────────────────────────────────────────
-  {
-    name: "Hope Home Care – Hosur",
-    category: "Everyday services",
-    subcategories: ["Plumbing", "Electrical", "Cleaning"],
-    products: [
-      { id: "hope-plumbing", name: "Plumbing Emergency Call-out", description: "Emergency plumbing repair visit.", price: 299, unit: "from" },
-      { id: "hope-electrical", name: "Fan & Light Installation", description: "Ceiling fan and light fixture installation.", price: 199, unit: "per unit" },
-      { id: "hope-painting", name: "Home Painting (per room)", description: "Full room painting with emulsion paint.", price: 3500, unit: "per room" },
-    ],
-    description: "Hope Home Care — multi-skilled home service professionals in Hosur. Plumbing, electrical, painting, carpentry and general home maintenance.",
-    distance: 1.1,
-    demoCoordinates: { latitude: 12.723, longitude: 77.834 },
-    rating: 4.6,
-    reviews: 189,
-    price: "from ₹199",
-    icon: "🏠",
-    color: "mint",
-    subscribed: true,
-    taxonomyTags: ["Plumbing", "Home plumbing", "Repairs", "Leak repair", "Electrical", "Home electrical", "Installation", "Lighting installation", "Cleaning", "Home cleaning"],
-  },
-  {
-    name: "Vijay Home Services – Hosur",
-    category: "Everyday services",
-    subcategories: ["Appliance repair", "Cleaning"],
-    products: [
-      { id: "vijay-washing", name: "Washing Machine Repair", description: "Doorstep washing machine repair.", price: 399, unit: "from" },
-      { id: "vijay-fridge", name: "Refrigerator Service", description: "Refrigerator gas refill and full service.", price: 499, unit: "from" },
-      { id: "vijay-chimney", name: "Chimney & Exhaust Fan Cleaning", description: "Kitchen chimney and exhaust fan deep clean.", price: 349, unit: "per unit" },
-    ],
-    description: "Vijay Home Services — doorstep appliance repair and home cleaning in Hosur. Washing machines, fridges, chimneys, RO filters and microwave repair.",
-    distance: 1.3,
-    demoCoordinates: { latitude: 12.725, longitude: 77.836 },
-    rating: 4.7,
-    reviews: 234,
-    price: "from ₹349",
-    icon: "🔨",
-    color: "lavender",
-    subscribed: true,
-    taxonomyTags: ["Appliance repair", "Kitchen appliances", "Repair", "Refrigerator service", "Laundry appliances", "Repair", "Washing machine service", "Cleaning", "Home cleaning", "Kitchen cleaning"],
-  },
-  {
-    name: "Sri Balaji Pest Control – Hosur",
-    category: "Everyday services",
-    subcategories: ["Home services"],
-    products: [
-      { id: "balaji-cockroach", name: "Cockroach Treatment", description: "Professional cockroach eradication treatment.", price: 499, unit: "per session" },
-      { id: "balaji-termite", name: "Termite Treatment (per room)", description: "Anti-termite chemical treatment.", price: 999, unit: "per room" },
-      { id: "balaji-bedbug", name: "Bed Bug Elimination", description: "Complete bed bug treatment and follow-up.", price: 1299, unit: "per session" },
-    ],
-    description: "Professional pest control service covering all of Hosur. Government-certified chemicals, safe for children and pets. Annual AMC packages available.",
-    distance: 1.9,
-    demoCoordinates: { latitude: 12.731, longitude: 77.838 },
-    rating: 4.7,
-    reviews: 312,
-    price: "from ₹499",
-    icon: "🐛",
-    color: "butter",
-    subscribed: true,
-    taxonomyTags: ["Home services", "Pest control", "Treatment", "Home pest treatment", "Professional services", "Consulting", "Local experts"],
-  },
-  {
-    name: "Hosur Professional Painters & Carpenters",
-    category: "Everyday services",
-    subcategories: ["Home services", "Plumbing"],
-    products: [
-      { id: "hpc-painting", name: "Room Painting (2 coats emulsion)", description: "Two-coat emulsion painting for one room.", price: 3500, unit: "per room" },
-      { id: "hpc-ceiling", name: "False Ceiling (per sqft)", description: "PVC or gypsum false ceiling installation.", price: 85, unit: "per sqft" },
-      { id: "hpc-furniture", name: "Furniture Repair & Polish", description: "Wooden furniture repair and polishing.", price: 1500, unit: "from" },
-    ],
-    description: "Professional painters, carpenters and false ceiling contractors in Hosur. Home painting, furniture repair, false ceilings and waterproofing.",
-    distance: 2.3,
-    demoCoordinates: { latitude: 12.733, longitude: 77.822 },
-    rating: 4.5,
-    reviews: 143,
-    price: "from ₹85/sqft",
-    icon: "🪣",
-    color: "peach",
-    subscribed: true,
-    taxonomyTags: ["Home services", "Gardening", "Garden care", "Garden maintenance", "Professional services", "Consulting", "Local experts", "Initial consultation", "Appliance repair"],
-  },
-  {
-    name: "Hosur CA & Tax Services",
-    category: "Everyday services",
-    subcategories: ["Professional services"],
-    products: [
-      { id: "hosur-ca-itr", name: "ITR Filing (individual)", description: "Income tax return filing for individuals.", price: 999, unit: "per filing" },
-      { id: "hosur-ca-gst", name: "GST Registration", description: "GST registration and setup for businesses.", price: 1999, unit: "per registration" },
-      { id: "hosur-ca-accounting", name: "Business Accounting (monthly)", description: "Monthly bookkeeping and accounting service.", price: 3500, unit: "per month" },
-    ],
-    description: "Chartered accountants and tax consultants in Hosur. ITR filing, GST registration, business accounting, audit and company registration services.",
-    distance: 0.8,
-    demoCoordinates: { latitude: 12.721, longitude: 77.826 },
-    rating: 4.8,
-    reviews: 167,
-    price: "from ₹999",
-    icon: "📊",
-    color: "lavender",
-    subscribed: true,
-    taxonomyTags: ["Professional services", "Accounting", "Small business", "Bookkeeping support", "Consulting", "Local experts", "Initial consultation"],
-  },
-  {
-    name: "Hosur Event Photography & Videography",
-    category: "Everyday services",
-    subcategories: ["Professional services"],
-    products: [
-      { id: "hepv-wedding", name: "Wedding Photography (full day)", description: "Full-day wedding photography and editing.", price: 25000, unit: "per event" },
-      { id: "hepv-corporate", name: "Corporate Event Photography", description: "Professional corporate event photography.", price: 8000, unit: "per event" },
-      { id: "hepv-baby", name: "Baby / Birthday Shoot", description: "Studio or outdoor baby and birthday photography.", price: 5000, unit: "per session" },
-    ],
-    description: "Professional photography and videography services in Hosur. Wedding, corporate events, product shoots, baby photography and drone videography.",
-    distance: 1.5,
-    demoCoordinates: { latitude: 12.727, longitude: 77.822 },
-    rating: 4.9,
-    reviews: 198,
-    price: "from ₹5000",
-    icon: "📸",
-    color: "mint",
-    subscribed: true,
-    taxonomyTags: ["Professional services", "Photography", "Events", "Event photography", "Consulting", "Local experts"],
-  },
-
-  // ================= BOOKS & STATIONERY =================
-  {
-    name: "Sri Murugan Book Center & Stationery – Netaji Road",
-    category: "Books & Stationery",
-    subcategories: ["Books", "Stationery"],
-    products: [
-      { id: "smbc-textbooks", name: "CBSE & Samacheer Kalvi School Textbooks", description: "Standard 1 to 12 state board and CBSE curriculum textbooks.", price: 180, unit: "book" },
-      { id: "smbc-notebooks", name: "Classmate Long Notebooks (Bundle of 6)", description: "High quality ruled and unruled 192-page Classmate notebooks.", price: 290, unit: "bundle" },
-      { id: "smbc-colors", name: "Camlin Artist Water Color & Brush Set", description: "24-shade water colors with artist paint brush assortment.", price: 350, unit: "set" },
-      { id: "smbc-tnpsc", name: "TNPSC Group 4 & Banking Exam Preparation Guide", description: "Comprehensive Tamil & English general studies and aptitude guide.", price: 450, unit: "book" }
-    ],
-    description: "Hosur's landmark bookstore on Netaji Road. Complete school & college textbooks, NCERT guides, competitive exam books, Classmate notebooks, and Camlin art materials.",
-    distance: 0.9,
-    demoCoordinates: { latitude: 12.7335, longitude: 77.8288 },
-    rating: 4.8,
-    reviews: 342,
-    price: "from ₹40",
-    icon: "📚",
-    color: "mint",
-    tag: "Hosur favourite",
-    subscribed: true,
-    taxonomyTags: ["Books", "School & College", "Textbooks", "School textbooks", "Stationery", "School supplies", "Notebooks & pens", "Classmate notebooks", "Competitive Exams", "TNPSC & Bank exams"]
-  },
-  {
-    name: "Higginbothams Books – Station Road, Hosur",
-    category: "Books & Stationery",
-    subcategories: ["Books", "Libraries & Study"],
-    products: [
-      { id: "higg-novels", name: "Tamil & English Bestselling Fiction Novels", description: "Contemporary bestsellers, thrillers, classics and non-fiction.", price: 299, unit: "book" },
-      { id: "higg-ponniyin", name: "Ponniyin Selvan Full Set (Tamil - 5 Vols)", description: "Classic historical masterpiece by Kalki with box set cover.", price: 999, unit: "set" },
-      { id: "higg-kids", name: "Children's Illustrated Story Books & Comics", description: "Amar Chitra Katha, Panchatantra, Enid Blyton and fairy tales.", price: 150, unit: "book" },
-      { id: "higg-magazines", name: "National & International Magazines & Periodicals", description: "Frontline, India Today, Business Today and competitive journals.", price: 80, unit: "copy" }
-    ],
-    description: "Iconic bookstore chain near Station Road, Hosur. Bestselling English fiction, Tamil literature classics, self-help books, children's storybooks, and magazines.",
-    distance: 1.2,
-    demoCoordinates: { latitude: 12.7290, longitude: 77.8315 },
-    rating: 4.7,
-    reviews: 215,
-    price: "from ₹80",
-    icon: "📖",
-    color: "lavender",
-    tag: "Heritage bookstore",
-    subscribed: true,
-    taxonomyTags: ["Books", "Literature & Fiction", "Tamil novels", "Historical fiction", "English fiction", "Bestsellers", "Children's Books", "Story books"]
-  },
-  {
-    name: "Vignesh Stationery, Xerox & Project Mart – Bagalur Road",
-    category: "Books & Stationery",
-    subcategories: ["Stationery", "Printing & Xerox"],
-    products: [
-      { id: "vig-binding", name: "Spiral Binding & Project Report Printing", description: "Color cover sheet, high-speed duplex printing and spiral comb binding.", price: 120, unit: "report" },
-      { id: "vig-xerox", name: "Color Laser Print & Digital Photocopy", description: "High-resolution color laser printouts and crisp black-and-white xerox.", price: 10, unit: "page" },
-      { id: "vig-paper", name: "JK Copier A4 Paper Rim (75 GSM 500 Sheets)", description: "Bright white smudge-free multipurpose copier paper.", price: 320, unit: "rim" },
-      { id: "vig-files", name: "Office Box Files & Document Folders (Pack of 5)", description: "Heavy-duty lever arch files for corporate and tax filing.", price: 250, unit: "pack" }
-    ],
-    description: "Complete stationery, digital xerox and student project binding center on Bagalur Road, Hosur. Color printouts, lamination, thesis binding, and corporate office supplies.",
-    distance: 1.6,
-    demoCoordinates: { latitude: 12.7380, longitude: 77.8340 },
-    rating: 4.6,
-    reviews: 189,
-    price: "from ₹5",
-    icon: "🖨️",
-    color: "butter",
-    subscribed: true,
-    taxonomyTags: ["Stationery", "Office supplies", "Files & folders", "Printing & Xerox", "Document services", "Photocopy & print", "Color & B/W xerox", "Binding & lamination", "Spiral binding"]
-  },
-  {
-    name: "Reliance Stationery & Art Center – MG Road",
-    category: "Books & Stationery",
-    subcategories: ["Stationery"],
-    products: [
-      { id: "rel-pens", name: "Faber-Castell Connector Pens & Sketch Set", description: "Washable vibrant colors ideal for school art and coloring.", price: 199, unit: "set" },
-      { id: "rel-canvas", name: "Canvas Board & Acrylic Paints Kit", description: "Stretched 10x12 canvas board with 12 acrylic color tubes.", price: 499, unit: "kit" },
-      { id: "rel-geometry", name: "Doms Mathematical Drawing & Geometry Box", description: "Precision compass, divider, protractor and set squares.", price: 120, unit: "box" },
-      { id: "rel-parker", name: "Executive Parker Pen Gift Set", description: "Classic rollerball metal finish pen in luxury presentation box.", price: 550, unit: "piece" }
-    ],
-    description: "All-in-one stationery and fine art depot on MG Road, Hosur. Acrylics, oil paints, drawing boards, engineering drafting instruments, fountain pens, and school project accessories.",
-    distance: 0.8,
-    demoCoordinates: { latitude: 12.7312, longitude: 77.8270 },
-    rating: 4.6,
-    reviews: 164,
-    price: "from ₹30",
-    icon: "✏️",
-    color: "peach",
-    subscribed: true,
-    taxonomyTags: ["Stationery", "School supplies", "Geometry & kits", "Art & craft", "Drawing & painting", "Paints & canvases", "Craft materials"]
-  },
-
-  // ================= TOYS & FANCY STORES =================
-  {
-    name: "Pooja Fancy & Bridal Gift World – MG Road",
-    category: "Toys & Fancy Stores",
-    subcategories: ["Fancy Store", "Gifts & Novelties"],
-    products: [
-      { id: "pooja-bangles", name: "Traditional Glass & Velvet Bangles (Set of 24)", description: "Handcrafted festive glass bangles in assorted bridal shades.", price: 180, unit: "set" },
-      { id: "pooja-jewel", name: "Matte Finish 1-Gram Gold Temple Jewellery Set", description: "Antique choker necklace with matching jhumkas.", price: 1450, unit: "set" },
-      { id: "pooja-makeup", name: "Lakme & Maybelline Bridal Vanity Makeup Kit", description: "Kajal, foundation, compact powder and long-stay lipstick combo.", price: 1200, unit: "kit" },
-      { id: "pooja-gifts", name: "Custom Photo Clock & Personalized Gift Frame", description: "Personalized wooden tabletop frame with quartz clock.", price: 550, unit: "piece" }
-    ],
-    description: "Hosur's most renowned fancy and bridal gift showroom on MG Road. Premium glass bangles, imitation jewellery, branded cosmetics, hair accessories, luxury perfumes, and customized gifts.",
-    distance: 0.7,
-    demoCoordinates: { latitude: 12.7318, longitude: 77.8265 },
-    rating: 4.8,
-    reviews: 388,
-    price: "from ₹50",
-    icon: "🎁",
-    color: "peach",
-    tag: "Hosur top fancy store",
-    subscribed: true,
-    taxonomyTags: ["Fancy Store", "Bangles & jewelry", "Glass & metal bangles", "Bridal & daily bangles", "Imitation jewelry", "Beauty & cosmetics", "Makeup & vanity", "Gifts & novelties", "Gift articles"]
-  },
-  {
-    name: "Sri Balaji Novelties & Toy Kingdom – Netaji Road",
-    category: "Toys & Fancy Stores",
-    subcategories: ["Toys & Games", "Kids Essentials"],
-    products: [
-      { id: "bal-rc", name: "Rechargeable High-Speed RC Monster Truck", description: "2.4GHz remote control 4WD off-road climbing vehicle.", price: 1250, unit: "piece" },
-      { id: "bal-lego", name: "Lego-Compatible STEM Building Block Set (500 pcs)", description: "Creative architectural blocks for cognitive learning.", price: 850, unit: "set" },
-      { id: "bal-carrom", name: "Carrom Board Champion Tournament Size (32 inch)", description: "Smooth waterproof playing surface with coins and striker.", price: 1600, unit: "board" },
-      { id: "bal-doll", name: "Barbie Fashionista & Indian Doll Collection", description: "Articulated fashion doll with modern interchangeable outfits.", price: 499, unit: "doll" }
-    ],
-    description: "Largest toy showroom in Hosur on Netaji Road. Remote control cars, drones, educational STEM building blocks, board games, Hot Wheels tracks, and baby developmental toys.",
-    distance: 1.0,
-    demoCoordinates: { latitude: 12.7340, longitude: 77.8295 },
-    rating: 4.7,
-    reviews: 275,
-    price: "from ₹99",
-    icon: "🧸",
-    color: "mint",
-    tag: "Top rated toys",
-    subscribed: true,
-    taxonomyTags: ["Toys & Games", "Action & vehicles", "RC cars & drones", "Learning & STEM", "Puzzles & blocks", "Board games", "Family classics", "Kids & baby toys"]
-  },
-  {
-    name: "Kids Zone Toy World & Ride-Ons – Denkanikottai Road",
-    category: "Toys & Fancy Stores",
-    subcategories: ["Toys & Games", "Kids Essentials"],
-    products: [
-      { id: "kz-electric-jeep", name: "Kids Battery-Operated Electric Jeep (with Remote)", description: "12V dual motor rechargeable electric ride-on with headlights and music.", price: 8999, unit: "piece" },
-      { id: "kz-tricycle", name: "Kids Tricycle with Canopy & Parent Push Handle", description: "Ergonomic comfortable trike with rear storage basket.", price: 2400, unit: "piece" },
-      { id: "kz-teddy", name: "Giant 4-Foot Soft Plush Teddy Bear", description: "Ultra-soft hypo-allergenic plush cuddle bear.", price: 1200, unit: "piece" },
-      { id: "kz-backpack", name: "Insulated Cartoon School Backpack & Water Bottle", description: "Water-resistant kids school bag with leakproof thermos bottle.", price: 750, unit: "combo" }
-    ],
-    description: "Specialized kids toys and battery ride-on showroom on Denkanikottai Road, Hosur. Electric cars, bikes, tricycles, soft plush toys, baby walkers, and school accessories.",
-    distance: 1.5,
-    demoCoordinates: { latitude: 12.7260, longitude: 77.8290 },
-    rating: 4.7,
-    reviews: 198,
-    price: "from ₹150",
-    icon: "🚗",
-    color: "lavender",
-    subscribed: true,
-    taxonomyTags: ["Toys & Games", "Kids & baby toys", "Soft toys & plush", "Kids Essentials", "Ride-ons", "Battery vehicles", "Kids cycles", "School accessories"]
-  },
-  {
-    name: "Mahalakshmi Fancy Store & Party Hub – Bagalur Circle",
-    category: "Toys & Fancy Stores",
-    subcategories: ["Fancy Store", "Gifts & Novelties"],
-    products: [
-      { id: "maha-decor", name: "Birthday Party Decoration Kit (Balloons, Banner & Props)", description: "Theme foil balloons, happy birthday banner and photobooth props.", price: 450, unit: "set" },
-      { id: "maha-return-gifts", name: "Kids Birthday Return Gift Packs (Bundle of 10)", description: "Stationery kit, puzzle and novelty gift packaged packs.", price: 350, unit: "pack" },
-      { id: "maha-clips", name: "Fancy Hair Clips, Clutches & Scrunchies Collection", description: "Korean style pastel hair accessories and pearl clips.", price: 90, unit: "set" },
-      { id: "maha-showpiece", name: "Musical Snow Globe & Decorative Idols", description: "LED lighting musical showpiece for birthdays and home gifting.", price: 399, unit: "piece" }
-    ],
-    description: "Friendly neighbourhood fancy store and party decoration hub near Bagalur Circle. Helium balloons, party supplies, return gifts for kids, hair accessories, cosmetics, and seasonal decor.",
-    distance: 2.1,
-    demoCoordinates: { latitude: 12.7420, longitude: 77.8360 },
-    rating: 4.5,
-    reviews: 172,
-    price: "from ₹40",
-    icon: "🎈",
-    color: "butter",
-    subscribed: true,
-    taxonomyTags: ["Fancy Store", "Beauty & cosmetics", "Hair accessories", "Gifts & novelties", "Party supplies", "Birthday celebration", "Return gifts", "Gift articles"]
-  },
-
-  // ================= PUBLIC & COMMON PLACES =================
-  {
-    name: "Hosur MGR Central Bus Stand – NH 44 Bypass",
-    category: "Public & Common Places",
-    subcategories: ["Transit & Stations"],
-    products: [
-      { id: "mgr-bus-bengaluru", name: "TNSTC Hosur to Bengaluru City / Electronic City Bus", description: "Frequent express town and highway shuttle service every 10 minutes.", price: 45, unit: "trip" },
-      { id: "mgr-bus-intercity", name: "Intercity Superfast Express to Chennai / Salem / Madurai", description: "Long-distance government passenger buses connecting major Tamil Nadu cities.", price: 210, unit: "ticket" },
-      { id: "mgr-cloakroom", name: "24-Hour Passenger Cloakroom & Luggage Storage", description: "Secure luggage deposit facility inside main bus terminus.", price: 30, unit: "bag" }
-    ],
-    description: "Hosur's main government bus terminus situated at the NH 44 junction. 24/7 bus connectivity to Bengaluru, Chennai, Salem, Coimbatore, Krishnagiri, and surrounding rural villages.",
-    distance: 0.6,
-    demoCoordinates: { latitude: 12.7302, longitude: 77.8248 },
-    rating: 4.3,
-    reviews: 1250,
-    price: "Public amenity",
-    icon: "🚌",
-    color: "mint",
-    tag: "Central transit hub",
-    subscribed: true,
-    taxonomyTags: ["Transit & Stations", "Bus stations", "MGR Central Bus Stand", "Town & intercity buses", "Depot & enquiry"]
-  },
-  {
-    name: "Hosur Railway Station (HSRA) – Station Road",
-    category: "Public & Common Places",
-    subcategories: ["Transit & Stations"],
-    products: [
-      { id: "hsra-suburban", name: "Hosur to Bengaluru MEMU / Suburban Train Ticket", description: "Daily commuter trains to Bangalore City (SBC) and Baiyyappanahalli (SMVB).", price: 20, unit: "ticket" },
-      { id: "hsra-reservation", name: "PRS Reserved Express Train Booking Counter", description: "Computerized passenger reservation system for mail/express trains.", price: 0, unit: "enquiry" },
-      { id: "hsra-auto", name: "24/7 Prepaid Auto & Taxi Stand Facility", description: "Regulated auto rickshaw stand serving all Hosur industrial and residential sectors.", price: 50, unit: "base fare" }
-    ],
-    description: "South Western Railway station connecting Hosur with Bengaluru, Salem, Tiruchirappalli, and Kerala. Equipped with passenger waiting rooms, ticket counters, and auto-rickshaw stand.",
-    distance: 1.4,
-    demoCoordinates: { latitude: 12.7238, longitude: 77.8312 },
-    rating: 4.4,
-    reviews: 890,
-    price: "Public amenity",
-    icon: "🚆",
-    color: "lavender",
-    tag: "Rail gateway",
-    subscribed: true,
-    taxonomyTags: ["Transit & Stations", "Railways", "Hosur Railway Station", "Train schedules & tickets", "Station amenities"]
-  },
-  {
-    name: "Shri Chandra Choodeswarar Hill Temple (Malai Kovil)",
-    category: "Public & Common Places",
-    subcategories: ["Heritage & Temples"],
-    products: [
-      { id: "temple-darshan", name: "Temple Darshan & Archana Pooja Token", description: "Special archana pooja and divine blessings of Lord Shiva.", price: 20, unit: "token" },
-      { id: "temple-prasad", name: "Special Abhishekham & Temple Prasad", description: "Morning and evening deity abhishekham with holy sweet pongal prasad.", price: 100, unit: "seva" },
-      { id: "temple-viewpoint", name: "Hilltop Panoramic Viewpoint & Sunset Walk", description: "360-degree panoramic vantage point overlooking the entire town of Hosur.", price: 0, unit: "free access" }
-    ],
-    description: "Ancient and sacred Shiva hill temple dating back to the Chola dynasty, perched on an elevation overlooking all of Hosur. Famous for Rajagopuram, car festival, and panoramic views.",
-    distance: 2.2,
-    demoCoordinates: { latitude: 12.7160, longitude: 77.8300 },
-    rating: 4.9,
-    reviews: 2180,
-    price: "Free / ₹20",
-    icon: "🛕",
-    color: "peach",
-    tag: "Hosur heritage icon",
-    subscribed: true,
-    taxonomyTags: ["Heritage & Temples", "Hill temples", "Chandra Choodeswarar Kovil", "Malai Kovil Shiva temple", "Temple rituals"]
-  },
-  {
-    name: "Kelavarapalli Reservoir Dam & Children's Park",
-    category: "Public & Common Places",
-    subcategories: ["Parks & Nature"],
-    products: [
-      { id: "dam-entry", name: "Park Entry & Garden Walkway Access", description: "Entry ticket to public landscaped gardens along the Ponniyar reservoir.", price: 15, unit: "person" },
-      { id: "dam-kids", name: "Children's Play Zone, Swings & Slides", description: "Open lawn playground area with merry-go-round, slides and seesaws.", price: 0, unit: "included" },
-      { id: "dam-view", name: "River Promenade & Sunset Photography View", description: "Scenic embankment viewpoint watching water release and sunset.", price: 0, unit: "free" }
-    ],
-    description: "Picturesque dam and reservoir across the Ponniyar River located 10 km from Hosur. Features lush landscaped gardens, children's amusement playground, and picnic meadows.",
-    distance: 4.8,
-    demoCoordinates: { latitude: 12.7850, longitude: 77.8500 },
-    rating: 4.5,
-    reviews: 940,
-    price: "₹15 / person",
-    icon: "🌊",
-    color: "mint",
-    tag: "Popular picnic spot",
-    subscribed: true,
-    taxonomyTags: ["Parks & Nature", "Lakes & dams", "Kelavarapalli Dam", "Reservoir garden & boating", "Public parks"]
-  },
-  {
-    name: "Rajaji Memorial & Eco Park – Thorapalli / Hosur",
-    category: "Public & Common Places",
-    subcategories: ["Parks & Nature", "Heritage & Temples"],
-    products: [
-      { id: "eco-track", name: "Eco Park Walking Track & Herbal Garden Entry", description: "Paved jogging and morning walking track amidst medicinal native trees.", price: 10, unit: "person" },
-      { id: "eco-museum", name: "Bharat Ratna Rajaji Historical Memorial Tour", description: "Preserved ancestral house and museum gallery of C. Rajagopalachari.", price: 0, unit: "free" },
-      { id: "eco-lawn", name: "Children's Outdoor Lawn & Activity Ground", description: "Green carpet lawns for family picnics, yoga and outdoor relaxation.", price: 0, unit: "free" }
-    ],
-    description: "Historic memorial dedicated to C. Rajagopalachari (Rajaji) combined with a scenic eco park. Walking trails, medicinal trees, children's play equipment, and memorial gallery.",
-    distance: 3.5,
-    demoCoordinates: { latitude: 12.7050, longitude: 77.8420 },
-    rating: 4.6,
-    reviews: 410,
-    price: "₹10 / person",
-    icon: "🌳",
-    color: "butter",
-    tag: "Eco & historic park",
-    subscribed: true,
-    taxonomyTags: ["Parks & Nature", "Public parks", "Eco Park Thorapalli", "Heritage & Temples", "Historic monuments", "Rajaji Memorial"]
-  },
-  {
-    name: "Hosur City Municipal Corporation – Bagalur Road",
-    category: "Public & Common Places",
-    subcategories: ["Civic & Administration"],
-    products: [
-      { id: "corp-cert", name: "Birth & Death Certificate Verification & Issuance", description: "Official citizen vital statistics registration and digital certificates.", price: 50, unit: "copy" },
-      { id: "corp-tax", name: "Property Tax Payment & Assessment Counter", description: "Municipal corporation tax assessment, billing and receipt desk.", price: 0, unit: "service" },
-      { id: "corp-grievance", name: "Public Citizen Grievance Redressal Cell", description: "Civic complaints registration regarding roads, drainage and streetlights.", price: 0, unit: "free" }
-    ],
-    description: "Official municipal civic headquarters of Hosur on Bagalur Road. Handles town planning, sanitation, water supply, trade licenses, property tax, and public grievances.",
-    distance: 1.1,
-    demoCoordinates: { latitude: 12.7360, longitude: 77.8320 },
-    rating: 4.2,
-    reviews: 320,
-    price: "Public civic body",
-    icon: "🏛️",
-    color: "lavender",
-    tag: "Civic center",
-    subscribed: true,
-    taxonomyTags: ["Civic & Administration", "City corporation", "Hosur Municipal Corporation", "Civic services & certificates", "Public tax & billing"]
-  },
-  {
-    name: "Hosur Head Post Office (HPO) – Taluk Office Complex",
-    category: "Public & Common Places",
-    subcategories: ["Civic & Administration"],
-    products: [
-      { id: "post-speed", name: "India Post Speed Post & Domestic Parcel Booking", description: "Fast pan-India express document and parcel delivery with live tracking.", price: 40, unit: "parcel" },
-      { id: "post-aadhaar", name: "Aadhaar Card Enrollment & Biometric Update", description: "Official UIDAI biometric update, address change and photo correction.", price: 50, unit: "update" },
-      { id: "post-savings", name: "Post Office Savings Bank & Senior Citizens Scheme", description: "Government-backed savings accounts, PPF, Sukanya Samriddhi and NSC.", price: 0, unit: "account" }
-    ],
-    description: "Main postal and courier hub of Hosur located near Taluk office complex. Offers Speed Post, international EMS, registered parcel, Aadhaar services, and postal savings banking.",
-    distance: 0.8,
-    demoCoordinates: { latitude: 12.7310, longitude: 77.8280 },
-    rating: 4.3,
-    reviews: 430,
-    price: "Standard postal rates",
-    icon: "📮",
-    color: "peach",
-    subscribed: true,
-    taxonomyTags: ["Civic & Administration", "Postal services", "Hosur Head Post Office", "Speed post & parcel delivery", "Citizen identity"]
-  },
-  {
-    name: "Hosur Town Public Library – Library Street",
-    category: "Public & Common Places",
-    subcategories: ["Civic & Administration"],
-    products: [
-      { id: "lib-card", name: "Annual Public Library Membership & Book Lending", description: "Lending membership for over 20,000 Tamil and English literature books.", price: 100, unit: "year" },
-      { id: "lib-reading", name: "Daily Tamil & English Newspapers Reading Room", description: "Quiet public reading hall with 15+ regional and national daily papers.", price: 0, unit: "free access" },
-      { id: "lib-upsc", name: "UPSC & TNPSC Competitive Exam Reference Hall", description: "Dedicated reference corner with competition yearbooks and journals.", price: 0, unit: "free study" }
-    ],
-    description: "Government branch library near Taluk office, Hosur. Quiet study atmosphere with over 20,000 Tamil and English books, historical journals, and student exam preparation materials.",
-    distance: 0.9,
-    demoCoordinates: { latitude: 12.7325, longitude: 77.8275 },
-    rating: 4.7,
-    reviews: 280,
-    price: "Free / ₹100 yr",
-    icon: "📚",
-    color: "mint",
-    tag: "Study & reference",
-    subscribed: true,
-    taxonomyTags: ["Civic & Administration", "Public libraries", "Town Public Library", "Reading room & reference books"]
-  },
-  {
-    name: "Hosur Government General Hospital – Denkanikottai Road",
-    category: "Public & Common Places",
-    subcategories: ["Emergency & Healthcare"],
-    products: [
-      { id: "gh-casualty", name: "24/7 Emergency Casualty & Trauma Care", description: "Immediate round-the-clock emergency medical response and trauma doctors.", price: 0, unit: "public healthcare" },
-      { id: "gh-opd", name: "General OPD & Specialist Doctor Consultations", description: "Free out-patient department consultations across pediatrics, general medicine and surgery.", price: 0, unit: "public" },
-      { id: "gh-bloodbank", name: "Government Blood Bank & 108 Ambulance Hub", description: "24/7 emergency blood supply and state-operated 108 ambulance base.", price: 0, unit: "emergency" }
-    ],
-    description: "District government headquarters hospital on Denkanikottai Road, Hosur. 24/7 casualty, emergency trauma care, maternity & neonatal wing, public blood bank, and free medicine dispensary.",
-    distance: 1.3,
-    demoCoordinates: { latitude: 12.7270, longitude: 77.8285 },
-    rating: 4.2,
-    reviews: 580,
-    price: "Free public healthcare",
-    icon: "🏥",
-    color: "peach",
-    tag: "24/7 Government hospital",
-    subscribed: true,
-    taxonomyTags: ["Emergency & Healthcare", "Public hospital", "Government General Hospital", "24/7 Casualty & emergency", "Public health"]
+    "name": "Maya's Home Kitchen",
+    "category": "Food & dining",
+    "subcategories": [
+      "Meal delivery",
+      "Restaurants"
+    ],
+    "products": [
+      {
+        "id": "maya-meals",
+        "name": "Homestyle lunch plate",
+        "description": "Seasonal thali with fresh sides.",
+        "price": 180,
+        "unit": "per plate"
+      },
+      {
+        "id": "maya-breakfast",
+        "name": "Breakfast box",
+        "description": "A rotating local breakfast, made fresh.",
+        "price": 120,
+        "unit": "per box"
+      },
+      {
+        "id": "dosa-south-indian-meals",
+        "name": "Dosa, Idli & South Indian Meals",
+        "description": "Crispy ghee roast dosas, steamed idlis, vada, chutneys and traditional tiffin items.",
+        "price": 70,
+        "unit": "unit"
+      },
+      {
+        "id": "meal-delivery-tiffin",
+        "name": "Meal Delivery & Homestyle Tiffins",
+        "description": "Daily subscription tiffin boxes with balanced roti, dal, sabzi, curd and steamed rice.",
+        "price": 150,
+        "unit": "unit"
+      },
+      {
+        "id": "north-indian-thali",
+        "name": "North Indian Meals & Thalis",
+        "description": "Paneer butter masala, dal makhani, butter naan, jeera rice and tandoori rotis.",
+        "price": 199,
+        "unit": "unit"
+      },
+      {
+        "id": "restaurant-dine-in",
+        "name": "Restaurant Dining & Regional Food",
+        "description": "Family dining tables, regional delicacies, coastal seafood, tandoor specials and chef curations.",
+        "price": 300,
+        "unit": "unit"
+      }
+    ],
+    "description": "Fresh, homestyle meals made with local ingredients.",
+    "distance": 0.4,
+    "demoCoordinates": {
+      "latitude": 12.973,
+      "longitude": 77.591
+    },
+    "rating": 4.9,
+    "reviews": 128,
+    "price": "Meals from ₹180",
+    "icon": "🥘",
+    "color": "peach",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Meal delivery",
+      "Lunch",
+      "Thali",
+      "Homestyle lunch plate",
+      "Breakfast",
+      "Regional specials",
+      "Breakfast box",
+      "Restaurants",
+      "Indian",
+      "South Indian",
+      "Dosa & idli",
+      "North Indian"
+    ],
+    "tag": "Popular nearby"
+  },
+  {
+    "name": "NexGen Mobile Care",
+    "category": "Electronics",
+    "subcategories": [
+      "Phone repair",
+      "Accessories",
+      "Mobile phones"
+    ],
+    "products": [
+      {
+        "id": "nex-screen",
+        "name": "Screen replacement",
+        "description": "Device inspection and screen replacement quote.",
+        "price": 2499,
+        "unit": "from"
+      },
+      {
+        "id": "nex-diagnostic",
+        "name": "Phone diagnostics",
+        "description": "Same-day device health and repair assessment.",
+        "price": 299,
+        "unit": "per visit"
+      },
+      {
+        "id": "electronics-sales-phones",
+        "name": "Electronics & Smartphone Sales",
+        "description": "Latest 5G smartphones, tablets, genuine fast chargers, tempered glass and protective cases.",
+        "price": 799,
+        "unit": "unit"
+      },
+      {
+        "id": "mobile-screen-replacement",
+        "name": "Mobile Screen & Battery Repair",
+        "description": "Glass & AMOLED screen replacements, charging port fixes, camera lens care and speaker repairs.",
+        "price": 699,
+        "unit": "service"
+      },
+      {
+        "id": "xiaomi-service-support",
+        "name": "Xiaomi & Android Smartphone Care",
+        "description": "Genuine battery replacement, motherboard diagnostics, software flashing and camera module fixes.",
+        "price": 399,
+        "unit": "service"
+      }
+    ],
+    "description": "Phone repair, accessories and same-day diagnostics.",
+    "distance": 1.2,
+    "demoCoordinates": {
+      "latitude": 12.981,
+      "longitude": 77.601
+    },
+    "rating": 4.8,
+    "reviews": 96,
+    "price": "Repairs from ₹299",
+    "icon": "📱",
+    "color": "lavender",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Phone repair",
+      "Mobile phones",
+      "Screen & display",
+      "Screen replacement",
+      "Diagnostics",
+      "Phone diagnostics",
+      "Accessories",
+      "Mobile accessories",
+      "Chargers",
+      "Fast chargers",
+      "Xiaomi"
+    ]
+  },
+  {
+    "name": "Greenway Auto Works",
+    "category": "Automobiles",
+    "subcategories": [
+      "Two-wheeler service",
+      "Car repair"
+    ],
+    "products": [
+      {
+        "id": "greenway-service",
+        "name": "Two-wheeler service",
+        "description": "Routine inspection and maintenance.",
+        "price": 499,
+        "unit": "from"
+      },
+      {
+        "id": "greenway-puncture",
+        "name": "Puncture repair",
+        "description": "Quick tyre repair and safety check.",
+        "price": 150,
+        "unit": "from"
+      },
+      {
+        "id": "automobile-diagnostics",
+        "name": "Automobile Engine Diagnostics",
+        "description": "Computerized OBD-II engine scan, transmission diagnostics, brake checks and electronic fault tracing.",
+        "price": 599,
+        "unit": "service"
+      },
+      {
+        "id": "bicycle-service-rentals",
+        "name": "Bicycle Sales & Servicing",
+        "description": "Gear tuning, chain overhaul, hydraulic disc brake servicing and city bike rentals.",
+        "price": 250,
+        "unit": "service"
+      },
+      {
+        "id": "brake-pad-replacement",
+        "name": "Brake Pad & Disc Care",
+        "description": "Inspection, rotor skimming, fluid top-up and ceramic or semi-metallic brake pad replacement.",
+        "price": 450,
+        "unit": "service"
+      },
+      {
+        "id": "oil-filter-service",
+        "name": "Oil Change & Filter Replacement",
+        "description": "Synthetic engine oil change, oil filter renewal, air filter cleaning and 24-point car health inspection.",
+        "price": 799,
+        "unit": "service"
+      },
+      {
+        "id": "scooter-two-wheeler-tuning",
+        "name": "Scooter & Motorcycle Servicing",
+        "description": "Complete general maintenance, carburetor/FI cleaning, belt check and brake overhaul for all 2Ws.",
+        "price": 499,
+        "unit": "service"
+      },
+      {
+        "id": "yezdi-bullet-servicing",
+        "name": "Yezdi & Vintage Motorcycle Care",
+        "description": "Clutch cable tuning, spoke truing, vintage carburetor restoration and heavy two-wheeler service.",
+        "price": 699,
+        "unit": "service"
+      }
+    ],
+    "description": "Trusted two-wheeler and car service, right around the corner.",
+    "distance": 2.1,
+    "demoCoordinates": {
+      "latitude": 12.99,
+      "longitude": 77.608
+    },
+    "rating": 4.7,
+    "reviews": 83,
+    "price": "Services from ₹499",
+    "icon": "🛵",
+    "color": "mint",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Two-wheeler service",
+      "Motorcycles",
+      "Routine service",
+      "Oil & filter",
+      "Scooters",
+      "Brake & tyre care",
+      "Brake pads",
+      "Car repair",
+      "Cars",
+      "Engine & transmission",
+      "Diagnostics",
+      "Wheels & tyres",
+      "Tyre replacement"
+    ],
+    "tag": "Verified business"
+  },
+  {
+    "name": "The Little Loom",
+    "category": "Fashion",
+    "subcategories": [
+      "Clothing",
+      "Local textiles",
+      "Tailoring",
+      "Footwear"
+    ],
+    "products": [
+      {
+        "id": "loom-kurta",
+        "name": "Everyday cotton kurta",
+        "description": "Locally made cotton clothing.",
+        "price": 899,
+        "unit": "from"
+      },
+      {
+        "id": "loom-textiles",
+        "name": "Handwoven textiles",
+        "description": "Small-batch textiles from local makers.",
+        "price": 650,
+        "unit": "from"
+      },
+      {
+        "id": "alterations-tailoring",
+        "name": "Alterations & Tailoring",
+        "description": "Suit, shirt, trouser and ethnic dress alterations, zip replacements and custom fitting.",
+        "price": 150,
+        "unit": "service"
+      },
+      {
+        "id": "fashion-apparel-wear",
+        "name": "Fashion & Everyday Clothing",
+        "description": "Kurtis, ethnic sets, casual linen shirts, trousers, nightwear and sustainable cotton apparel.",
+        "price": 599,
+        "unit": "unit"
+      },
+      {
+        "id": "footwear-shoes-sandals",
+        "name": "Footwear, Shoes & Casuals",
+        "description": "Everyday sneakers, formal leather oxfords, comfort walking sandals and ethnic juttis.",
+        "price": 799,
+        "unit": "unit"
+      },
+      {
+        "id": "kurta-kurtis-apparel",
+        "name": "Kurtas, Kurtis & Ethnic Sets",
+        "description": "Hand-block printed cotton kurtis, festive silk kurtas, palazzo sets and dupatta combinations.",
+        "price": 749,
+        "unit": "unit"
+      },
+      {
+        "id": "saree-draping-festive-wear",
+        "name": "Sarees, Drapes & Occasion Wear",
+        "description": "Handloom Kanjivaram, Banarasi, Chanderi, soft linen sarees and festive lehengas.",
+        "price": 1299,
+        "unit": "unit"
+      },
+      {
+        "id": "tailoring-custom-stitching",
+        "name": "Tailoring & Custom Blouse Stitching",
+        "description": "Designer blouse stitching, customized salwar suits, fall-pico edging and bespoke trousers.",
+        "price": 450,
+        "unit": "service"
+      }
+    ],
+    "description": "Thoughtful everyday wear from independent local makers.",
+    "distance": 3.4,
+    "demoCoordinates": {
+      "latitude": 12.945,
+      "longitude": 77.61
+    },
+    "rating": 4.9,
+    "reviews": 57,
+    "price": "New arrivals in store",
+    "icon": "🧵",
+    "color": "butter",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Clothing",
+      "Women",
+      "Everyday wear",
+      "Cotton kurta",
+      "Men",
+      "Tailoring",
+      "Alterations",
+      "Footwear",
+      "Shoes",
+      "Casual",
+      "Everyday sneakers",
+      "Local textiles",
+      "Handloom",
+      "Cotton",
+      "Home textiles",
+      "Kurtas & kurtis",
+      "Sarees & dresses",
+      "Blouse stitching"
+    ]
+  },
+  {
+    "name": "Oak & Olive Living",
+    "category": "Home & furniture",
+    "subcategories": [
+      "Furniture",
+      "Home decor",
+      "Interior design",
+      "Repairs"
+    ],
+    "products": [
+      {
+        "id": "oak-side-table",
+        "name": "Handcrafted side table",
+        "description": "Made-to-order solid wood furniture.",
+        "price": 4200,
+        "unit": "from"
+      },
+      {
+        "id": "oak-consult",
+        "name": "Furniture consultation",
+        "description": "Discuss a custom piece for your home.",
+        "price": 0,
+        "unit": "free enquiry"
+      },
+      {
+        "id": "bed-bedroom-furniture",
+        "name": "Bed & Bedroom Furniture",
+        "description": "Solid wood beds, storage cots, orthopedic mattresses and bedside nightstands.",
+        "price": 5999,
+        "unit": "unit"
+      },
+      {
+        "id": "furniture-assembly-fitting",
+        "name": "Furniture Assembly & Fitting",
+        "description": "Professional assembly of flat-pack furniture, TV units, study tables, beds and modular wardrobes.",
+        "price": 399,
+        "unit": "service"
+      },
+      {
+        "id": "home-decor-lighting",
+        "name": "Home Decor & Ambient Lighting",
+        "description": "Minimalist ceramic vases, warm LED pendant lamps, canvas art frames and handmade wall hangings.",
+        "price": 350,
+        "unit": "unit"
+      },
+      {
+        "id": "indoor-plants-nursery",
+        "name": "Indoor Plants & Ceramic Pots",
+        "description": "Air-purifying snake plants, monstera, succulents, terra-cotta planters and balcony stands.",
+        "price": 120,
+        "unit": "unit"
+      },
+      {
+        "id": "nursery-flowering-plants",
+        "name": "Nursery Plants & Floral Bouquets",
+        "description": "Fresh rose bouquets, jasmine garlands, flowering shrubs, potting soils and fertilizer mixes.",
+        "price": 150,
+        "unit": "unit"
+      },
+      {
+        "id": "room-makeover-planning",
+        "name": "Room Makeover & Space Planning",
+        "description": "Wall color consultations, furniture rearrangement, lighting upgrades and modern modular aesthetics.",
+        "price": 2499,
+        "unit": "service"
+      },
+      {
+        "id": "upholstery-furniture-repair",
+        "name": "Upholstery & Furniture Restoration",
+        "description": "Re-cushioning dining chairs, high-density foam replacement, leather re-stitching and fabric upgrades.",
+        "price": 850,
+        "unit": "service"
+      },
+      {
+        "id": "urban-gardening-supplies",
+        "name": "Urban Gardening & Terrace Balcony Kits",
+        "description": "Coco-peat blocks, organic neem fertilizers, seed packs, vertical hanging planters and drip pipes.",
+        "price": 199,
+        "unit": "unit"
+      },
+      {
+        "id": "wall-art-decor-prints",
+        "name": "Wall Art & Handmade Hangings",
+        "description": "Framed canvas prints, modern abstract murals, macramé wall hangings and brass wall sculptures.",
+        "price": 450,
+        "unit": "unit"
+      },
+      {
+        "id": "wardrobes-modular-storage",
+        "name": "Wardrobes & Modular Storage Racks",
+        "description": "Sliding-door modular wardrobes, walk-in closets, study desks and engineered wood armoires.",
+        "price": 8999,
+        "unit": "unit"
+      },
+      {
+        "id": "zen-garden-landscaping",
+        "name": "Zen Garden & Water Fountain Setup",
+        "description": "Japanese zen pebble landscaping, indoor water fountains, bamboo screens and tranquility corners.",
+        "price": 3499,
+        "unit": "service"
+      }
+    ],
+    "description": "Handcrafted furniture and home finds, made to last.",
+    "distance": 4.8,
+    "demoCoordinates": {
+      "latitude": 12.94,
+      "longitude": 77.56
+    },
+    "rating": 4.6,
+    "reviews": 71,
+    "price": "Custom orders welcome",
+    "icon": "🪑",
+    "color": "mint",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Furniture",
+      "Living room",
+      "Tables",
+      "Side table",
+      "Home decor",
+      "Wall decor",
+      "Handmade",
+      "Local art",
+      "Repairs",
+      "Carpentry",
+      "Furniture repair",
+      "Wood repair",
+      "Interior design",
+      "Home planning",
+      "Room makeover",
+      "Consultation",
+      "Beds",
+      "Furniture assembly",
+      "Garden care",
+      "Home & garden",
+      "Wall art",
+      "Wardrobes"
+    ]
+  },
+  {
+    "name": "Neighbourhood Physio",
+    "category": "Health & wellness",
+    "subcategories": [
+      "Physiotherapy",
+      "Clinics"
+    ],
+    "products": [
+      {
+        "id": "physio-assessment",
+        "name": "Physiotherapy assessment",
+        "description": "Initial mobility and movement consultation.",
+        "price": 400,
+        "unit": "per visit"
+      },
+      {
+        "id": "physio-followup",
+        "name": "Follow-up session",
+        "description": "One-on-one follow-up care.",
+        "price": 350,
+        "unit": "per visit"
+      },
+      {
+        "id": "doctor-general-consultation",
+        "name": "Doctor Consultation (General & Child)",
+        "description": "In-clinic and teleconsultations with certified general physicians and paediatricians.",
+        "price": 400,
+        "unit": "service"
+      },
+      {
+        "id": "eye-examination-opticals",
+        "name": "Eye Care & Prescription Glasses",
+        "description": "Comprehensive eye testing, prescription lenses, designer frames and blue-light spectacles.",
+        "price": 499,
+        "unit": "unit"
+      },
+      {
+        "id": "optical-frames-spectacles",
+        "name": "Optical Eyewear & Sunglasses",
+        "description": "Lightweight titanium and acetate frames, UV-protected sunglasses and anti-reflective reading glasses.",
+        "price": 899,
+        "unit": "unit"
+      },
+      {
+        "id": "physiotherapy-mobility",
+        "name": "Physiotherapy & Mobility Care",
+        "description": "Post-surgery rehabilitation, spinal decompression, back & neck pain relief and posture correction.",
+        "price": 400,
+        "unit": "service"
+      },
+      {
+        "id": "xray-diagnostic-appointments",
+        "name": "X-Ray & Diagnostic Appointments",
+        "description": "Digital radiography, bone density scans, ultrasound appointments and prompt digital report access.",
+        "price": 450,
+        "unit": "service"
+      }
+    ],
+    "description": "Friendly physiotherapy and mobility care from local experts.",
+    "distance": 2.7,
+    "demoCoordinates": {
+      "latitude": 12.96,
+      "longitude": 77.58
+    },
+    "rating": 4.8,
+    "reviews": 64,
+    "price": "Consultations from ₹400",
+    "icon": "🩺",
+    "color": "lavender",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Physiotherapy",
+      "Mobility care",
+      "Assessment",
+      "Physiotherapy assessment",
+      "Follow-up",
+      "Follow-up session",
+      "Clinics",
+      "Eye examination",
+      "Eye care"
+    ]
+  },
+  {
+    "name": "ProFix Home & Appliance Services",
+    "category": "Everyday services",
+    "subcategories": [
+      "Appliance repair",
+      "Plumbing",
+      "Electrical",
+      "Cleaning"
+    ],
+    "products": [
+      {
+        "id": "profix-ac",
+        "name": "AC Repair & Servicing",
+        "description": "Filter clean, gas recharge and cooling coil inspection.",
+        "price": 499,
+        "unit": "from"
+      },
+      {
+        "id": "profix-elec",
+        "name": "Electrical Wiring & Fixing",
+        "description": "Switchboard repair, fan installation and emergency fixes.",
+        "price": 249,
+        "unit": "from"
+      },
+      {
+        "id": "profix-plumb",
+        "name": "Plumbing & Leak Repairs",
+        "description": "Tap, sink, toilet and drainage repair.",
+        "price": 299,
+        "unit": "from"
+      },
+      {
+        "id": "profix-ro",
+        "name": "Water Purifier (RO) Service",
+        "description": "Filter replacement and membrane service.",
+        "price": 349,
+        "unit": "from"
+      },
+      {
+        "id": "appliance-repair",
+        "name": "Appliance Repair",
+        "description": "Same-day doorstep repair for washing machines, microwaves, refrigerators and dishwashers.",
+        "price": 299,
+        "unit": "service"
+      },
+      {
+        "id": "cleaning-deep-home",
+        "name": "Cleaning & Housekeeping (Deep Clean)",
+        "description": "Full home sanitization, kitchen chimney degreasing, bathroom descaling and sofa shampooing.",
+        "price": 1299,
+        "unit": "service"
+      },
+      {
+        "id": "electrical-repairs-wiring",
+        "name": "Electrical Repairs & Wiring",
+        "description": "Short circuit troubleshooting, MCB switchboard fixing, chandelier setup and whole-home rewiring.",
+        "price": 249,
+        "unit": "service"
+      },
+      {
+        "id": "electrician-doorstep",
+        "name": "Electrician On-Demand",
+        "description": "Verified certified electricians for quick emergency fixes, fan installations and appliance plugs.",
+        "price": 199,
+        "unit": "service"
+      },
+      {
+        "id": "inverter-ups-repair",
+        "name": "Inverter & UPS Maintenance",
+        "description": "Home backup power check-up, tubular battery acid top-up, wiring safety and inverter board repairs.",
+        "price": 349,
+        "unit": "service"
+      },
+      {
+        "id": "kitchen-appliances-repair",
+        "name": "Kitchen Appliances Service",
+        "description": "Mixer grinder, induction cooktop, electric oven and water heater doorstep servicing.",
+        "price": 249,
+        "unit": "service"
+      },
+      {
+        "id": "kitchen-cleaning-degreasing",
+        "name": "Kitchen Deep Cleaning & Degreasing",
+        "description": "Heavy oil and carbon stain removal from tiles, granite counters, exhaust fans and modular cabinets.",
+        "price": 899,
+        "unit": "service"
+      },
+      {
+        "id": "laundry-dry-cleaning",
+        "name": "Laundry & Eco Dry Cleaning",
+        "description": "Steam press, silk saree dry cleaning, suit sanitization, quilt washing and doorstep pickup & drop.",
+        "price": 120,
+        "unit": "service"
+      },
+      {
+        "id": "leak-detection-plumbing",
+        "name": "Leak Repair & Pipe Plumbing",
+        "description": "Overhead tank float valve fix, concealed wall seepage tracing, tap washer and flush tank repairs.",
+        "price": 299,
+        "unit": "service"
+      },
+      {
+        "id": "plumbing-pipe-repairs",
+        "name": "Plumbing & Fixture Installation",
+        "description": "Mixer tap replacement, washbasin setup, clogged drain clearance, pipe repairs and geyser inlet valves.",
+        "price": 249,
+        "unit": "service"
+      },
+      {
+        "id": "quilt-blanket-dry-clean",
+        "name": "Quilt, Blanket & Curtain Cleaning",
+        "description": "Deep steam cleaning for heavy winter quilts, comforters, blackout curtains and decorative rugs.",
+        "price": 350,
+        "unit": "service"
+      },
+      {
+        "id": "refrigerator-gas-repair",
+        "name": "Refrigerator Repair & Gas Refill",
+        "description": "Compressor troubleshooting, frost build-up resolution, thermostat calibration and gas charge.",
+        "price": 449,
+        "unit": "service"
+      },
+      {
+        "id": "sofa-carpet-cleaning",
+        "name": "Sofa & Upholstery Deep Shampooing",
+        "description": "Fabric and leather couch steam cleaning, allergen extraction and stain spot removal.",
+        "price": 699,
+        "unit": "service"
+      },
+      {
+        "id": "tap-pipe-installation",
+        "name": "Tap & Sanitary Fixture Installation",
+        "description": "Overhead rain showers, quarter-turn taps, health faucets and bathroom fittings installed cleanly.",
+        "price": 199,
+        "unit": "service"
+      },
+      {
+        "id": "washing-machine-service",
+        "name": "Washing Machine Repair & Care",
+        "description": "Front load & top load motor checks, drum bearing repair, water inlet valve and drainage pump fixes.",
+        "price": 399,
+        "unit": "service"
+      },
+      {
+        "id": "water-purifier-ro-service",
+        "name": "Water Purifier (RO) Filter Service",
+        "description": "Sediment filter replacement, carbon block changes, RO membrane descaling and TDS water balancing.",
+        "price": 349,
+        "unit": "service"
+      }
+    ],
+    "description": "Doorstep AC repair, electrical wiring, plumbing leak fixes and home appliance maintenance.",
+    "distance": 1.5,
+    "demoCoordinates": {
+      "latitude": 12.975,
+      "longitude": 77.62
+    },
+    "rating": 4.9,
+    "reviews": 142,
+    "price": "Services from ₹249",
+    "icon": "🛠️",
+    "color": "mint",
+    "subscribed": true,
+    "taxonomyTags": [
+      "AC repair",
+      "Air conditioning",
+      "Appliance repair",
+      "Electrical",
+      "Wiring repair",
+      "Plumbing",
+      "Leak repair",
+      "Washing machine service",
+      "Refrigerator service",
+      "Water purifier",
+      "Deep cleaning",
+      "Handyman",
+      "Carpentry",
+      "Pest control",
+      "Cleaning",
+      "Kitchen cleaning",
+      "Tap & fixture installation"
+    ],
+    "tag": "Top rated nearby"
+  },
+  {
+    "name": "Urban Blossom & Fitness Studio",
+    "category": "Sports & fitness",
+    "subcategories": [
+      "Gyms & fitness centers",
+      "Yoga & pilates",
+      "Sports coaching",
+      "Dance fitness",
+      "Personal training"
+    ],
+    "products": [
+      {
+        "id": "ub-gym",
+        "name": "Gym Membership & Weight Training",
+        "description": "Full gym floor access, cardio equipment and strength weights.",
+        "price": 1500,
+        "unit": "per month"
+      },
+      {
+        "id": "ub-yoga",
+        "name": "Yoga Classes & Meditation",
+        "description": "Morning and evening Hatha & Vinyasa flow sessions.",
+        "price": 1000,
+        "unit": "per month"
+      },
+      {
+        "id": "ub-zumba",
+        "name": "Zumba & Cardio Dance",
+        "description": "High-energy rhythm cardio workout with certified instructors.",
+        "price": 1200,
+        "unit": "per month"
+      },
+      {
+        "id": "ub-turf",
+        "name": "Badminton Court & Turf Booking",
+        "description": "Hourly indoor wooden court slot with international mats.",
+        "price": 350,
+        "unit": "per hour"
+      },
+      {
+        "id": "fitness-coaching-gym",
+        "name": "Fitness Coaching & Personal Training",
+        "description": "One-on-one strength workouts, cross-training, muscle conditioning and cardio coaching.",
+        "price": 2000,
+        "unit": "mo"
+      },
+      {
+        "id": "sports-coaching-classes",
+        "name": "Sports Coaching (Badminton, Cricket)",
+        "description": "Professional coaching academies for kids and adults across badminton, cricket, tennis and swimming.",
+        "price": 1800,
+        "unit": "mo"
+      },
+      {
+        "id": "yoga-wellness-classes",
+        "name": "Yoga Classes & Pranayama Sessions",
+        "description": "Hatha, Vinyasa flow, morning meditation, breathing exercises, prenatal yoga and posture alignment.",
+        "price": 1000,
+        "unit": "mo"
+      },
+      {
+        "id": "zumba-fitness-dance",
+        "name": "Zumba & Cardio Dance Sessions",
+        "description": "High-energy Latin dance cardio workouts, rhythm fitness classes and weekend stress-buster sessions.",
+        "price": 1200,
+        "unit": "mo"
+      }
+    ],
+    "description": "Community fitness center offering weight training, yoga, Zumba, badminton courts and personal training.",
+    "distance": 2.3,
+    "demoCoordinates": {
+      "latitude": 12.965,
+      "longitude": 77.615
+    },
+    "rating": 4.8,
+    "reviews": 110,
+    "price": "Sessions from ₹350",
+    "icon": "🏋️",
+    "color": "peach",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Sports & fitness",
+      "Gyms & fitness centers",
+      "Gym membership",
+      "Weight training",
+      "CrossFit",
+      "Yoga & pilates",
+      "Yoga classes",
+      "Zumba",
+      "Dance fitness",
+      "Sports coaching",
+      "Badminton",
+      "Cricket",
+      "Personal training",
+      "Fitness",
+      "Group exercise"
+    ]
+  },
+  {
+    "name": "Apex City Travel & Logistics",
+    "category": "Travel",
+    "subcategories": [
+      "Local transport",
+      "Airport rides",
+      "Moving help",
+      "Tours & experiences"
+    ],
+    "products": [
+      {
+        "id": "apex-airport",
+        "name": "Airport Transfer Cab",
+        "description": "Prompt, sanitized airport pickup and drop.",
+        "price": 999,
+        "unit": "per ride"
+      },
+      {
+        "id": "apex-tour",
+        "name": "Local City Sightseeing Cab",
+        "description": "Full-day sightseeing with professional driver.",
+        "price": 1499,
+        "unit": "per day"
+      },
+      {
+        "id": "apex-movers",
+        "name": "Movers & Packers Assistance",
+        "description": "Household packing, transport and unpacking.",
+        "price": 2499,
+        "unit": "from"
+      },
+      {
+        "id": "outdoor-tours-experiences",
+        "name": "Outdoor Tours & City Experiences",
+        "description": "Heritage walks, bird-watching nature trails, cycling breakfasts and vineyard tours.",
+        "price": 599,
+        "unit": "service"
+      },
+      {
+        "id": "tours-local-experiences",
+        "name": "Tours & Local City Sightseeing",
+        "description": "Full-day city heritage cabs, temple circuits, botanical garden trips and guided city excursions.",
+        "price": 1499,
+        "unit": "service"
+      }
+    ],
+    "description": "Reliable airport transfers, day tours, vehicle rentals and moving help across town.",
+    "distance": 3.1,
+    "demoCoordinates": {
+      "latitude": 12.985,
+      "longitude": 77.635
+    },
+    "rating": 4.7,
+    "reviews": 78,
+    "price": "Cabs from ₹999",
+    "icon": "✈️",
+    "color": "butter",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Airport transfer",
+      "City tour",
+      "Local transport",
+      "Car hire",
+      "Car rentals",
+      "Hotels",
+      "Guest houses",
+      "Moving help",
+      "Movers & packers",
+      "Logistics",
+      "Tours & experiences"
+    ]
+  },
+  {
+    "name": "Jaya Bajaj – Hosur",
+    "category": "Automobiles",
+    "subcategories": [
+      "Two-wheeler service",
+      "Car repair"
+    ],
+    "products": [
+      {
+        "id": "jb-chetak",
+        "name": "Chetak Electric Scooter (Sales)",
+        "description": "Latest Bajaj Chetak EV with full paperwork assistance.",
+        "price": 115000,
+        "unit": "onwards"
+      },
+      {
+        "id": "jb-service",
+        "name": "Bajaj 2-Wheeler Routine Service",
+        "description": "Oil change, brake check and full vehicle inspection.",
+        "price": 599,
+        "unit": "from"
+      },
+      {
+        "id": "jb-pulsar",
+        "name": "Pulsar 125 / NS200 (Sales)",
+        "description": "Authorized Bajaj showroom. Finance options available.",
+        "price": 75000,
+        "unit": "onwards"
+      }
+    ],
+    "description": "Authorized Bajaj dealership near Bagalur Circle, Hosur. Sales of Pulsar, Platina, Chetak EV and full after-sales service.",
+    "distance": 1.8,
+    "demoCoordinates": {
+      "latitude": 12.7326,
+      "longitude": 77.8281
+    },
+    "rating": 4.6,
+    "reviews": 187,
+    "price": "Bikes from ₹75,000",
+    "icon": "🏍️",
+    "color": "mint",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Two wheeler",
+      "Bajaj",
+      "Pulsar 125",
+      "Pulsar NS200",
+      "Chetak",
+      "Sales",
+      "Service",
+      "Two-wheeler service",
+      "Routine service",
+      "Oil & filter",
+      "Brake pads"
+    ],
+    "tag": "Authorized dealer"
+  },
+  {
+    "name": "Sree Velan TVS – Bagalur Circle",
+    "category": "Automobiles",
+    "subcategories": [
+      "Two-wheeler service",
+      "Car repair"
+    ],
+    "products": [
+      {
+        "id": "tvs-jupiter",
+        "name": "TVS Jupiter (Sales)",
+        "description": "TVS Jupiter scooter – top comfort pick for families.",
+        "price": 88000,
+        "unit": "onwards"
+      },
+      {
+        "id": "tvs-iqube",
+        "name": "TVS iQube Electric (Sales)",
+        "description": "Authorized EV showroom with home charging support.",
+        "price": 145000,
+        "unit": "onwards"
+      },
+      {
+        "id": "tvs-svc",
+        "name": "TVS Annual Service Package",
+        "description": "Engine oil, air filter, chain lube and brake pads.",
+        "price": 799,
+        "unit": "per service"
+      }
+    ],
+    "description": "TVS Motors authorized showroom on Bagalur Road, Hosur. Sales, service and spare parts for all TVS two-wheelers.",
+    "distance": 1.2,
+    "demoCoordinates": {
+      "latitude": 12.7341,
+      "longitude": 77.8293
+    },
+    "rating": 4.7,
+    "reviews": 241,
+    "price": "Scooters from ₹88,000",
+    "icon": "🛵",
+    "color": "lavender",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Two wheeler",
+      "TVS",
+      "Jupiter",
+      "Ntorq 125",
+      "iQube",
+      "Sales",
+      "Service",
+      "Two-wheeler service",
+      "Routine service",
+      "Electric 2W",
+      "Battery & motor check"
+    ],
+    "tag": "Verified business"
+  },
+  {
+    "name": "Amman Motors Maruti ARENA – Hosur",
+    "category": "Automobiles",
+    "subcategories": [
+      "Four-wheeler sales",
+      "Car repair"
+    ],
+    "products": [
+      {
+        "id": "mm-swift",
+        "name": "Maruti Swift (Sales)",
+        "description": "New Swift with finance from 7.9% p.a. and exchange bonus.",
+        "price": 699000,
+        "unit": "onwards"
+      },
+      {
+        "id": "mm-brezza",
+        "name": "Maruti Brezza (Sales)",
+        "description": "Top-selling SUV — test drive available daily.",
+        "price": 1095000,
+        "unit": "onwards"
+      },
+      {
+        "id": "mm-service",
+        "name": "Maruti Car Service (Annual)",
+        "description": "Genuine spares, full inspection and car wash.",
+        "price": 3499,
+        "unit": "from"
+      }
+    ],
+    "description": "Maruti Suzuki ARENA authorized dealership on NH-7, Hosur. Full sales, exchange, finance and after-sales service.",
+    "distance": 3.4,
+    "demoCoordinates": {
+      "latitude": 12.727,
+      "longitude": 77.835
+    },
+    "rating": 4.5,
+    "reviews": 309,
+    "price": "Cars from ₹6.99 L",
+    "icon": "🚗",
+    "color": "butter",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Four wheeler",
+      "Maruti Suzuki",
+      "Swift",
+      "Baleno",
+      "Brezza",
+      "WagonR",
+      "Dzire",
+      "Sales",
+      "Service",
+      "Car repair",
+      "Engine & transmission",
+      "Wheels & tyres"
+    ],
+    "tag": "Authorized dealer"
+  },
+  {
+    "name": "Himavasini Hyundai – Hosur",
+    "category": "Automobiles",
+    "subcategories": [
+      "Four-wheeler sales",
+      "Car repair"
+    ],
+    "products": [
+      {
+        "id": "hh-creta",
+        "name": "Hyundai Creta (Sales)",
+        "description": "Hosur's most test-driven SUV — book your slot.",
+        "price": 1099000,
+        "unit": "onwards"
+      },
+      {
+        "id": "hh-exter",
+        "name": "Hyundai Exter (Sales)",
+        "description": "Compact SUV with top safety ratings.",
+        "price": 699000,
+        "unit": "onwards"
+      },
+      {
+        "id": "hh-svc",
+        "name": "Hyundai Periodic Service",
+        "description": "Genuine parts service with free health check.",
+        "price": 2999,
+        "unit": "from"
+      }
+    ],
+    "description": "Authorized Hyundai dealership on Krishnagiri Road, Hosur. Sales, test drives, trade-in and full workshop service.",
+    "distance": 2.9,
+    "demoCoordinates": {
+      "latitude": 12.731,
+      "longitude": 77.841
+    },
+    "rating": 4.6,
+    "reviews": 178,
+    "price": "Cars from ₹6.99 L",
+    "icon": "🚙",
+    "color": "mint",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Four wheeler",
+      "Hyundai",
+      "Creta",
+      "Exter",
+      "Venue",
+      "i20",
+      "Verna",
+      "Aura",
+      "Sales",
+      "Service",
+      "Car repair",
+      "Wheels & tyres",
+      "AC cooling recharge"
+    ]
+  },
+  {
+    "name": "Saraswathi Auto Engineering – Hosur",
+    "category": "Automobiles",
+    "subcategories": [
+      "Car repair",
+      "Tyres & batteries"
+    ],
+    "products": [
+      {
+        "id": "sae-ac",
+        "name": "Car AC Repair & Gas Recharge",
+        "description": "Cooling system diagnosis and refrigerant refill.",
+        "price": 899,
+        "unit": "from"
+      },
+      {
+        "id": "sae-elect",
+        "name": "Auto Electrical Repair",
+        "description": "Wiring, alternator, starter motor and ECU diagnostics.",
+        "price": 499,
+        "unit": "from"
+      },
+      {
+        "id": "sae-battery",
+        "name": "Car Battery Replacement",
+        "description": "On-the-spot battery test and replacement service.",
+        "price": 3500,
+        "unit": "from"
+      },
+      {
+        "id": "battery-replacement",
+        "name": "Battery Replacement (Car & Bike)",
+        "description": "Doorstep jumpstart and multi-brand battery replacement for cars, bikes and inverters.",
+        "price": 350,
+        "unit": "service"
+      },
+      {
+        "id": "quick-puncture-repair",
+        "name": "Quick Puncture & Tyre Safety Check",
+        "description": "Tubeless tyre puncture repair, nitrogen air filling, rim inspection and tyre pressure monitoring.",
+        "price": 150,
+        "unit": "service"
+      },
+      {
+        "id": "tyre-replacement-balancing",
+        "name": "Tyre Replacement & Wheel Balancing",
+        "description": "New car & bike tyres from top brands, computerized 3D laser alignment and alloy balancing.",
+        "price": 350,
+        "unit": "service"
+      }
+    ],
+    "description": "Multi-brand car repair and electrical workshop on Bagalur Road. Specialist in AC, wiring, battery and engine diagnostics.",
+    "distance": 2.2,
+    "demoCoordinates": {
+      "latitude": 12.7355,
+      "longitude": 77.826
+    },
+    "rating": 4.8,
+    "reviews": 134,
+    "price": "Repairs from ₹499",
+    "icon": "🔧",
+    "color": "peach",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Car repair",
+      "Cars",
+      "Engine & transmission",
+      "Diagnostics",
+      "Air conditioning",
+      "AC cooling recharge",
+      "Tyres & batteries",
+      "Vehicle batteries",
+      "Battery replacement",
+      "Car & bike battery",
+      "Puncture repair",
+      "Tyre replacement"
+    ]
+  },
+  {
+    "name": "Croma – Hosur",
+    "category": "Electronics",
+    "subcategories": [
+      "Mobile phones",
+      "Home appliances",
+      "Laptops & computers",
+      "Audio & video"
+    ],
+    "products": [
+      {
+        "id": "croma-phone",
+        "name": "Mobile Phone Sales & Demo",
+        "description": "All top brands — Apple, Samsung, Xiaomi, OnePlus — demo available.",
+        "price": 8999,
+        "unit": "from"
+      },
+      {
+        "id": "croma-laptop",
+        "name": "Laptop & Computer Sales",
+        "description": "Dell, HP, Lenovo, Apple — EMI from ₹0 down payment.",
+        "price": 34999,
+        "unit": "from"
+      },
+      {
+        "id": "croma-appliance",
+        "name": "Home Appliance Sales",
+        "description": "Washing machines, refrigerators, ACs from LG, Samsung and more.",
+        "price": 12999,
+        "unit": "from"
+      },
+      {
+        "id": "laptop-computer-repair",
+        "name": "Laptop & PC Repair",
+        "description": "SSD upgrades, broken hinge fixes, RAM expansion, OS reinstallations, thermal paste and battery repair.",
+        "price": 499,
+        "unit": "service"
+      },
+      {
+        "id": "macbook-apple-service",
+        "name": "MacBook & iPad Specialist",
+        "description": "Retina display replacements, keyboard key fixes, logic board repair and battery health service.",
+        "price": 999,
+        "unit": "service"
+      },
+      {
+        "id": "television-audio-service",
+        "name": "Television Mounting & Audio Setup",
+        "description": "Wall mounting of 43″–75″ LED/OLED smart TVs, hidden cable channeling and Dolby soundbar sync.",
+        "price": 499,
+        "unit": "service"
+      },
+      {
+        "id": "xps-laptop-diagnostics",
+        "name": "XPS & High-Performance Laptop Repair",
+        "description": "Cooling fan thermal overhaul, motherboard chip-level repair, SSD upgrades and keyboard fixes.",
+        "price": 699,
+        "unit": "service"
+      }
+    ],
+    "description": "Tata-owned Croma electronics superstore in Hosur. Large floor with phones, laptops, TVs, appliances and extended warranty service.",
+    "distance": 1.6,
+    "demoCoordinates": {
+      "latitude": 12.7318,
+      "longitude": 77.8301
+    },
+    "rating": 4.5,
+    "reviews": 412,
+    "price": "Electronics from ₹8,999",
+    "icon": "🖥️",
+    "color": "lavender",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Sales",
+      "Mobile phones",
+      "Apple",
+      "Samsung",
+      "Xiaomi",
+      "Laptops & computers",
+      "Dell",
+      "HP",
+      "Lenovo",
+      "Home appliances",
+      "LG",
+      "Whirlpool",
+      "Audio & video",
+      "Sony",
+      "MacBook Pro"
+    ],
+    "tag": "Popular nearby"
+  },
+  {
+    "name": "Bluewave Computers – Bagalur Road",
+    "category": "Electronics",
+    "subcategories": [
+      "Laptops & computers",
+      "Mobile phones"
+    ],
+    "products": [
+      {
+        "id": "bw-laptop-service",
+        "name": "Laptop Repair & Service",
+        "description": "Motherboard, screen, keyboard and hinge repairs.",
+        "price": 499,
+        "unit": "from"
+      },
+      {
+        "id": "bw-custom-pc",
+        "name": "Custom PC Build",
+        "description": "Gaming or workstation build with warranty on all components.",
+        "price": 35000,
+        "unit": "from"
+      },
+      {
+        "id": "bw-cctv",
+        "name": "CCTV Installation (4/8 cam)",
+        "description": "HD camera setup for homes and shops with remote viewing.",
+        "price": 8999,
+        "unit": "from"
+      }
+    ],
+    "description": "Computer hardware, custom PC builds, laptop repair and CCTV installation on Bagalur Road, Hosur.",
+    "distance": 2.3,
+    "demoCoordinates": {
+      "latitude": 12.7345,
+      "longitude": 77.8278
+    },
+    "rating": 4.7,
+    "reviews": 98,
+    "price": "Repairs from ₹499",
+    "icon": "💻",
+    "color": "mint",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Service",
+      "Laptops & computers",
+      "Dell",
+      "HP",
+      "Lenovo",
+      "ASUS",
+      "Acer",
+      "Apple",
+      "MacBook Air",
+      "ThinkPad",
+      "Phone repair",
+      "Mobile phones"
+    ]
+  },
+  {
+    "name": "Vasavi Cafe – Hosur",
+    "category": "Food & dining",
+    "subcategories": [
+      "Restaurants",
+      "Cafes & beverages"
+    ],
+    "products": [
+      {
+        "id": "vc-dosa",
+        "name": "Crispy Masala Dosa",
+        "description": "Paper-thin ghee dosa with authentic chutneys and sambar.",
+        "price": 55,
+        "unit": "per plate"
+      },
+      {
+        "id": "vc-rava-idli",
+        "name": "Rava Idli Platter",
+        "description": "Soft rava idlis with coconut chutney and gunpowder.",
+        "price": 60,
+        "unit": "per platter"
+      },
+      {
+        "id": "vc-coffee",
+        "name": "Filter Coffee",
+        "description": "Traditional South Indian drip coffee — strong and creamy.",
+        "price": 25,
+        "unit": "per cup"
+      },
+      {
+        "id": "coffee-cafe-beverages",
+        "name": "Coffee, Tea & Cafe Dining",
+        "description": "Specialty filter coffee, roasted espresso beans, artisan teas and healthy smoothies.",
+        "price": 60,
+        "unit": "unit"
+      },
+      {
+        "id": "juice-smoothie-bar",
+        "name": "Juice Bars & Healthy Smoothies",
+        "description": "Cold-pressed detox greens, sugarcane coolers, protein smoothies and sugar-free fruit bowls.",
+        "price": 80,
+        "unit": "unit"
+      }
+    ],
+    "description": "Iconic South Indian breakfast spot in Hosur. Famous for crispy masala dosas, rava idlis and filter coffee — open from 6 AM.",
+    "distance": 0.8,
+    "demoCoordinates": {
+      "latitude": 12.733,
+      "longitude": 77.8335
+    },
+    "rating": 4.8,
+    "reviews": 563,
+    "price": "Breakfast from ₹25",
+    "icon": "🥞",
+    "color": "peach",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Restaurants",
+      "Indian",
+      "South Indian",
+      "Dosa & idli",
+      "Cafes & beverages",
+      "Coffee & tea",
+      "Hot drinks",
+      "Coffee & tea",
+      "Breakfast",
+      "Cold drinks"
+    ],
+    "tag": "Local favourite"
+  },
+  {
+    "name": "Muneer Bakery – Hosur",
+    "category": "Food & dining",
+    "subcategories": [
+      "Bakery & sweets",
+      "Cafes & beverages"
+    ],
+    "products": [
+      {
+        "id": "mb-paal-puff",
+        "name": "Paal Khova Puff",
+        "description": "Signature cream puff — viral Hosur favourite.",
+        "price": 30,
+        "unit": "per piece"
+      },
+      {
+        "id": "mb-dilpasand",
+        "name": "Dilpasand",
+        "description": "Sweet stuffed pastry — a Hosur must-try.",
+        "price": 35,
+        "unit": "per piece"
+      },
+      {
+        "id": "mb-cream-bun",
+        "name": "Fresh Cream Bun",
+        "description": "Soft pillowy bun with fresh whipped cream filling.",
+        "price": 28,
+        "unit": "per bun"
+      },
+      {
+        "id": "bakery-artisan",
+        "name": "Bakery & Artisan Breads",
+        "description": "Sourdough loaves, fresh garlic buns, croissants, whole wheat breads and tea cakes baked daily.",
+        "price": 80,
+        "unit": "unit"
+      },
+      {
+        "id": "cake-delivery",
+        "name": "Cakes & Celebration Bakery",
+        "description": "Customized designer birthday cakes, cheesecakes, cupcakes and eggless celebration treats.",
+        "price": 450,
+        "unit": "unit"
+      }
+    ],
+    "description": "Hosur's most-loved bakery — famous city-wide for paal khova puffs, cream buns and dilpasands. Open daily from 7 AM.",
+    "distance": 1.1,
+    "demoCoordinates": {
+      "latitude": 12.7322,
+      "longitude": 77.8318
+    },
+    "rating": 4.9,
+    "reviews": 871,
+    "price": "Snacks from ₹25",
+    "icon": "🥐",
+    "color": "butter",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Bakery & sweets",
+      "Baked goods",
+      "Breads & buns",
+      "Fresh bread",
+      "Cakes",
+      "Celebrations",
+      "Indian sweets",
+      "Fresh sweets",
+      "Traditional sweets",
+      "Bakery"
+    ],
+    "tag": "Hosur favourite"
+  },
+  {
+    "name": "Rayalaseema Spice – Hosur",
+    "category": "Food & dining",
+    "subcategories": [
+      "Restaurants",
+      "Meal delivery"
+    ],
+    "products": [
+      {
+        "id": "rs-biryani",
+        "name": "Andhra Chicken Biryani",
+        "description": "Spicy Rayalaseema-style dum biryani with raita.",
+        "price": 180,
+        "unit": "per plate"
+      },
+      {
+        "id": "rs-meals",
+        "name": "Andhra Meals (Unlimited)",
+        "description": "Full thali with rice, curries, pappad and dessert.",
+        "price": 130,
+        "unit": "per person"
+      },
+      {
+        "id": "rs-mutton",
+        "name": "Mutton Curry + Rice Combo",
+        "description": "Slow-cooked mutton in authentic Andhra masala.",
+        "price": 220,
+        "unit": "per plate"
+      }
+    ],
+    "description": "Popular Andhra-style restaurant in Hosur famous for fiery biryanis and unlimited Rayalaseema meals. Perfect for non-veg lovers.",
+    "distance": 1.4,
+    "demoCoordinates": {
+      "latitude": 12.7315,
+      "longitude": 77.8295
+    },
+    "rating": 4.7,
+    "reviews": 428,
+    "price": "Meals from ₹130",
+    "icon": "🍛",
+    "color": "peach",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Restaurants",
+      "Indian",
+      "Andhra",
+      "Biryani",
+      "Meals & thalis",
+      "Meal delivery",
+      "Daily meals",
+      "Lunch",
+      "Homestyle lunch"
+    ]
+  },
+  {
+    "name": "Hotel Junior Kuppanna – Hosur",
+    "category": "Food & dining",
+    "subcategories": [
+      "Restaurants",
+      "Catering"
+    ],
+    "products": [
+      {
+        "id": "hk-kongu",
+        "name": "Kongunadu Meals",
+        "description": "Traditional Kongu-style non-veg thali — rice, curries, kuzhambu.",
+        "price": 160,
+        "unit": "per person"
+      },
+      {
+        "id": "hk-biryani",
+        "name": "Mutton / Chicken Biryani",
+        "description": "Authentic Kuppanna biryani — the Hosur crowd favourite.",
+        "price": 200,
+        "unit": "per plate"
+      },
+      {
+        "id": "hk-catering",
+        "name": "Event Catering Package",
+        "description": "Full catering for 50–500 guests. Traditional setup included.",
+        "price": 350,
+        "unit": "per head"
+      },
+      {
+        "id": "catering-event-meals",
+        "name": "Catering & Event Meals",
+        "description": "Party platters, corporate lunch buffets, wedding catering and regional feast menus.",
+        "price": 250,
+        "unit": "service"
+      }
+    ],
+    "description": "Famous Kongunadu-style non-veg restaurant in Hosur. Beloved for authentic mutton biryani, kuzhambu meals and event catering.",
+    "distance": 1.9,
+    "demoCoordinates": {
+      "latitude": 12.7302,
+      "longitude": 77.827
+    },
+    "rating": 4.8,
+    "reviews": 692,
+    "price": "Meals from ₹160",
+    "icon": "🍲",
+    "color": "mint",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Restaurants",
+      "Indian",
+      "South Indian",
+      "Meals & thalis",
+      "Catering",
+      "Events",
+      "Large gatherings",
+      "Event catering",
+      "Biryani"
+    ],
+    "tag": "Local favourite"
+  },
+  {
+    "name": "A2B – Adyar Ananda Bhavan, Hosur",
+    "category": "Food & dining",
+    "subcategories": [
+      "Restaurants",
+      "Bakery & sweets"
+    ],
+    "products": [
+      {
+        "id": "a2b-thali",
+        "name": "Pure Veg Meals Thali",
+        "description": "Full South Indian veg thali with rice, kuzhambu and payasam.",
+        "price": 150,
+        "unit": "per person"
+      },
+      {
+        "id": "a2b-sweets",
+        "name": "Mysore Pak & Sweets Box",
+        "description": "Traditional South Indian sweets — perfect for gifting.",
+        "price": 380,
+        "unit": "per 500g"
+      },
+      {
+        "id": "a2b-snacks",
+        "name": "Tiffin Snacks Combo",
+        "description": "Vada, samosa, pongal and filter coffee set.",
+        "price": 120,
+        "unit": "per combo"
+      }
+    ],
+    "description": "A2B (Adyar Ananda Bhavan) Hosur branch. Pure vegetarian restaurant and sweet shop — family meals, sweets and festive orders.",
+    "distance": 1.3,
+    "demoCoordinates": {
+      "latitude": 12.7337,
+      "longitude": 77.8308
+    },
+    "rating": 4.6,
+    "reviews": 531,
+    "price": "Thali ₹150",
+    "icon": "🍮",
+    "color": "butter",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Restaurants",
+      "Indian",
+      "South Indian",
+      "Vegetarian",
+      "Meals & thalis",
+      "Bakery & sweets",
+      "Indian sweets",
+      "Traditional sweets",
+      "Meal delivery",
+      "Tiffin"
+    ]
+  },
+  {
+    "name": "Uzhavar Santhai – Hosur Farmers Market",
+    "category": "Food & dining",
+    "subcategories": [
+      "Groceries & produce"
+    ],
+    "products": [
+      {
+        "id": "uz-veg",
+        "name": "Fresh Seasonal Vegetables",
+        "description": "Direct from Hosur farmers — zero middlemen.",
+        "price": 30,
+        "unit": "per kg from"
+      },
+      {
+        "id": "uz-fruits",
+        "name": "Fresh Local Fruits",
+        "description": "Seasonal fruits — mangoes, guava, tomatoes, bananas.",
+        "price": 40,
+        "unit": "per kg from"
+      },
+      {
+        "id": "uz-flowers",
+        "name": "Fresh Roses & Marigolds",
+        "description": "Bulk and retail flowers — Hosur is the rose capital of India.",
+        "price": 80,
+        "unit": "per bunch"
+      },
+      {
+        "id": "fruits-fresh-produce",
+        "name": "Fruits & Fresh Farm Produce",
+        "description": "Locally sourced seasonal fruits, organic apples, bananas, berries and cold-pressed citrus baskets.",
+        "price": 60,
+        "unit": "unit"
+      },
+      {
+        "id": "groceries-pantry-staples",
+        "name": "Groceries & Daily Pantry Staples",
+        "description": "Aromatics, cold-pressed oils, rice, whole pulses, unrefined sugar, spices and flour delivered locally.",
+        "price": 45,
+        "unit": "unit"
+      },
+      {
+        "id": "vegetable-fresh-produce",
+        "name": "Vegetables & Farm Fresh Greens",
+        "description": "Daily harvested tomatoes, spinach, bell peppers, root vegetables and crisp farm greens.",
+        "price": 40,
+        "unit": "unit"
+      }
+    ],
+    "description": "Government-run Uzhavar Santhai (Farmers Market) in Hosur. Buy fresh vegetables, fruits and flowers directly from local farmers at below-market prices.",
+    "distance": 0.9,
+    "demoCoordinates": {
+      "latitude": 12.7335,
+      "longitude": 77.8355
+    },
+    "rating": 4.5,
+    "reviews": 631,
+    "price": "Vegetables from ₹30/kg",
+    "icon": "🥬",
+    "color": "mint",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Groceries & produce",
+      "Fresh produce",
+      "Vegetables",
+      "Seasonal vegetables",
+      "Fruits",
+      "Fresh fruits",
+      "Pantry",
+      "Staples"
+    ],
+    "tag": "Government market"
+  },
+  {
+    "name": "Apollo Pharmacy – Bagalur Road, Hosur",
+    "category": "Health & wellness",
+    "subcategories": [
+      "Pharmacies"
+    ],
+    "products": [
+      {
+        "id": "aph-rx",
+        "name": "Prescription Medicine Delivery",
+        "description": "Upload prescription and get medicines home-delivered same day.",
+        "price": 0,
+        "unit": "free delivery"
+      },
+      {
+        "id": "aph-otc",
+        "name": "OTC & Healthcare Products",
+        "description": "Vitamins, first aid, sanitizers and daily health essentials.",
+        "price": 49,
+        "unit": "from"
+      },
+      {
+        "id": "aph-bp",
+        "name": "Free BP / Sugar Screening",
+        "description": "Free BP and blood glucose check at store — no appointment needed.",
+        "price": 0,
+        "unit": "free"
+      },
+      {
+        "id": "pharmacy-medicine-delivery",
+        "name": "Pharmacies & Medicine Delivery",
+        "description": "Prescription medicines, first-aid kits, surgical supports, multivitamins and rapid delivery.",
+        "price": 50,
+        "unit": "unit"
+      }
+    ],
+    "description": "Apollo Pharmacy on Bagalur Road, Hosur. Extended hours, prescription refills, online ordering and free in-store health check-ups.",
+    "distance": 1,
+    "demoCoordinates": {
+      "latitude": 12.7348,
+      "longitude": 77.8285
+    },
+    "rating": 4.7,
+    "reviews": 289,
+    "price": "Medicines available",
+    "icon": "💊",
+    "color": "lavender",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Pharmacies",
+      "Medicines",
+      "Prescription support",
+      "Prescription medicines",
+      "Local delivery",
+      "Medicine delivery",
+      "Health screening"
+    ],
+    "tag": "Verified business"
+  },
+  {
+    "name": "Sri Chandrasekara Hospital – Hosur",
+    "category": "Health & wellness",
+    "subcategories": [
+      "Clinics",
+      "Dental care"
+    ],
+    "products": [
+      {
+        "id": "sch-consult",
+        "name": "General Doctor Consultation",
+        "description": "OPD consultation with experienced doctors. Walk-in welcome.",
+        "price": 200,
+        "unit": "per visit"
+      },
+      {
+        "id": "sch-dental",
+        "name": "Dental Consultation & Cleaning",
+        "description": "Oral examination, scaling and fluoride treatment.",
+        "price": 350,
+        "unit": "from"
+      },
+      {
+        "id": "sch-lab",
+        "name": "Diagnostic Lab Test Package",
+        "description": "Blood count, lipid profile, blood sugar and urine analysis.",
+        "price": 599,
+        "unit": "per package"
+      },
+      {
+        "id": "dental-clinic-consultation",
+        "name": "Dental Care & Check-up",
+        "description": "Dental check-up, ultrasonic teeth scaling, root canal treatment, braces and aligner consultations.",
+        "price": 399,
+        "unit": "service"
+      }
+    ],
+    "description": "Established multi-specialty hospital on Bagalur Road, Hosur. General medicine, dental, paediatrics, diagnostics and pharmacy under one roof.",
+    "distance": 2.1,
+    "demoCoordinates": {
+      "latitude": 12.7325,
+      "longitude": 77.8265
+    },
+    "rating": 4.6,
+    "reviews": 215,
+    "price": "Consult from ₹200",
+    "icon": "🏥",
+    "color": "mint",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Clinics",
+      "General care",
+      "Appointments",
+      "Doctor consultation",
+      "Paediatrics",
+      "Dental care",
+      "Dental clinics",
+      "Check-ups",
+      "Pharmacies",
+      "Lab tests"
+    ]
+  },
+  {
+    "name": "Karthick Skin Hair & Laser Clinic – Hosur",
+    "category": "Health & wellness",
+    "subcategories": [
+      "Clinics",
+      "Personal care"
+    ],
+    "products": [
+      {
+        "id": "ks-laser",
+        "name": "Laser Hair Removal (per session)",
+        "description": "FDA-approved diode laser for permanent hair reduction.",
+        "price": 1999,
+        "unit": "per session"
+      },
+      {
+        "id": "ks-acne",
+        "name": "Acne & Pigmentation Treatment",
+        "description": "Customized facial treatment with medicated serums.",
+        "price": 1499,
+        "unit": "per session"
+      },
+      {
+        "id": "ks-prp",
+        "name": "PRP Hair Loss Treatment",
+        "description": "Platelet-rich plasma therapy for hair regrowth.",
+        "price": 3999,
+        "unit": "per session"
+      },
+      {
+        "id": "ayurvedic-consultation",
+        "name": "Ayurvedic Wellness & Herbs",
+        "description": "Traditional holistic pulse evaluation, herbal remedies, lifestyle guidance and herbal supplements.",
+        "price": 500,
+        "unit": "service"
+      },
+      {
+        "id": "beauty-salon-haircare",
+        "name": "Beauty Salon & Hair Care",
+        "description": "Hair styling, keratin treatments, facials, waxing, manicure, pedicure and bridal grooming.",
+        "price": 399,
+        "unit": "service"
+      },
+      {
+        "id": "diet-nutrition-consultation",
+        "name": "Diet & Nutrition Counseling",
+        "description": "Custom meal plans for fitness, diabetes management, weight loss and sports nutrition.",
+        "price": 799,
+        "unit": "service"
+      },
+      {
+        "id": "haircut-salon-grooming",
+        "name": "Haircut & Men's Grooming",
+        "description": "Precision fade cuts, beard shaping, head massage, hair coloring and tan removal treatments.",
+        "price": 199,
+        "unit": "service"
+      }
+    ],
+    "description": "Specialist skin, hair and laser clinic on Bagalur Road, Hosur. Dermatology, laser therapy, PRP hair treatment and cosmetology.",
+    "distance": 1.7,
+    "demoCoordinates": {
+      "latitude": 12.7358,
+      "longitude": 77.829
+    },
+    "rating": 4.8,
+    "reviews": 167,
+    "price": "Sessions from ₹1,499",
+    "icon": "🧴",
+    "color": "peach",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Clinics",
+      "Skin care",
+      "Personal care",
+      "Salon services",
+      "Hair care",
+      "Wellness",
+      "Consultation",
+      "Wellness consultation",
+      "Haircut"
+    ]
+  },
+  {
+    "name": "Santhosh Instyle – Nethaji Road, Hosur",
+    "category": "Fashion",
+    "subcategories": [
+      "Clothing",
+      "Tailoring"
+    ],
+    "products": [
+      {
+        "id": "si-mens",
+        "name": "Men's Casual & Formal Wear",
+        "description": "Shirts, trousers, denim and ethnic wear for men.",
+        "price": 599,
+        "unit": "from"
+      },
+      {
+        "id": "si-womens",
+        "name": "Women's Kurtas & Sarees",
+        "description": "Printed kurtas, cotton sarees and occasion wear.",
+        "price": 799,
+        "unit": "from"
+      },
+      {
+        "id": "si-kids",
+        "name": "Kids Clothing Collection",
+        "description": "Everyday school wear and festive outfits for children.",
+        "price": 349,
+        "unit": "from"
+      }
+    ],
+    "description": "Popular fashion retail store on Nethaji Road, Hosur. Men's, women's and kids' clothing with latest trends and festive collections.",
+    "distance": 1.5,
+    "demoCoordinates": {
+      "latitude": 12.7332,
+      "longitude": 77.8327
+    },
+    "rating": 4.5,
+    "reviews": 143,
+    "price": "Clothing from ₹349",
+    "icon": "👗",
+    "color": "butter",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Clothing",
+      "Men",
+      "Everyday wear",
+      "Shirts & trousers",
+      "Women",
+      "Kurtas & kurtis",
+      "Sarees & dresses",
+      "Kids",
+      "Ethnic wear",
+      "Fashion accessories"
+    ]
+  },
+  {
+    "name": "GRT Jewellers – Hosur",
+    "category": "Fashion",
+    "subcategories": [
+      "Jewellery"
+    ],
+    "products": [
+      {
+        "id": "grt-gold",
+        "name": "Gold Jewellery (22K & 18K)",
+        "description": "Certified hallmarked gold — rings, chains, bangles.",
+        "price": 50000,
+        "unit": "from"
+      },
+      {
+        "id": "grt-diamond",
+        "name": "Diamond Jewellery",
+        "description": "BIS-hallmarked diamond solitaires, pendants and earrings.",
+        "price": 15000,
+        "unit": "from"
+      },
+      {
+        "id": "grt-exchange",
+        "name": "Old Gold Exchange",
+        "description": "Exchange old gold for new jewellery at fair melt value.",
+        "price": 0,
+        "unit": "free service"
+      },
+      {
+        "id": "jewellery-handcrafted",
+        "name": "Jewellery & Silver Handcrafts",
+        "description": "925 hallmarked sterling silver earrings, oxidised necklaces, anklets and artisan temple jewellery.",
+        "price": 399,
+        "unit": "unit"
+      },
+      {
+        "id": "necklaces-fashion-jewellery",
+        "name": "Necklaces & Fashion Jewellery",
+        "description": "Choker necklaces, layered chains, freshwater pearl pendants, Kundan chokers and bohemian tassels.",
+        "price": 299,
+        "unit": "unit"
+      }
+    ],
+    "description": "Trusted GRT Jewellers showroom in Hosur. Wide range of gold, diamond and platinum jewellery with BIS hallmark and easy exchange.",
+    "distance": 2,
+    "demoCoordinates": {
+      "latitude": 12.732,
+      "longitude": 77.834
+    },
+    "rating": 4.7,
+    "reviews": 386,
+    "price": "Gold from ₹50,000",
+    "icon": "💍",
+    "color": "lavender",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Jewellery",
+      "Traditional jewellery",
+      "Earrings",
+      "Necklaces",
+      "Handcrafted necklaces",
+      "Gold",
+      "Diamond",
+      "Bangles"
+    ],
+    "tag": "Trusted brand"
+  },
+  {
+    "name": "Nilgiris Supermarket – Hosur",
+    "category": "Home & furniture",
+    "subcategories": [
+      "Kitchen & storage",
+      "Home decor"
+    ],
+    "products": [
+      {
+        "id": "nil-grocery",
+        "name": "Daily Grocery & Pantry Staples",
+        "description": "Rice, pulses, oils, spices and packaged foods.",
+        "price": 50,
+        "unit": "from"
+      },
+      {
+        "id": "nil-homeware",
+        "name": "Kitchenware & Home Essentials",
+        "description": "Cookware, storage boxes, cleaning supplies.",
+        "price": 199,
+        "unit": "from"
+      },
+      {
+        "id": "nil-personal",
+        "name": "Personal Care & Hygiene",
+        "description": "Soaps, shampoos, face wash and daily care products.",
+        "price": 99,
+        "unit": "from"
+      },
+      {
+        "id": "storage-racks-cabinets",
+        "name": "Storage Solutions & Modular Racks",
+        "description": "Steel heavy-duty utility shelves, shoe cabinets, bathroom organizers and wardrobe wire baskets.",
+        "price": 899,
+        "unit": "unit"
+      }
+    ],
+    "description": "Nilgiris supermarket in Hosur — trusted for groceries, fresh produce, kitchenware, personal care and household daily needs.",
+    "distance": 1.1,
+    "demoCoordinates": {
+      "latitude": 12.734,
+      "longitude": 77.832
+    },
+    "rating": 4.4,
+    "reviews": 324,
+    "price": "Groceries from ₹50",
+    "icon": "🛒",
+    "color": "mint",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Kitchen & storage",
+      "Storage solutions",
+      "Shelving",
+      "Storage racks",
+      "Home decor",
+      "Soft furnishings",
+      "Cleaning",
+      "Home cleaning",
+      "Pantry",
+      "Staples"
+    ]
+  },
+  {
+    "name": "The Muscle Empire Gym – Hosur",
+    "category": "Sports & fitness",
+    "subcategories": [
+      "Gyms & fitness centers",
+      "Personal training"
+    ],
+    "products": [
+      {
+        "id": "tme-monthly",
+        "name": "Monthly Gym Membership",
+        "description": "Unlimited floor access — free weights, cardio, cable machines.",
+        "price": 1200,
+        "unit": "per month"
+      },
+      {
+        "id": "tme-pt",
+        "name": "Personal Training (1-on-1)",
+        "description": "Custom workout plan with certified personal trainer.",
+        "price": 3500,
+        "unit": "per month"
+      },
+      {
+        "id": "tme-diet",
+        "name": "Diet & Nutrition Consultation",
+        "description": "Customized macro plan for muscle gain or fat loss.",
+        "price": 800,
+        "unit": "per session"
+      }
+    ],
+    "description": "One of Hosur's top gyms with modern strength equipment, CrossFit zone and personal training. Open 5 AM – 11 PM every day.",
+    "distance": 1.6,
+    "demoCoordinates": {
+      "latitude": 12.7352,
+      "longitude": 77.831
+    },
+    "rating": 4.7,
+    "reviews": 211,
+    "price": "Membership from ₹1,200",
+    "icon": "🏋️",
+    "color": "peach",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Sports & fitness",
+      "Gyms & fitness centers",
+      "Gym membership",
+      "Weight training",
+      "Strength conditioning",
+      "CrossFit & functional",
+      "HIIT workouts",
+      "Personal training",
+      "1-on-1 coaching"
+    ],
+    "tag": "Top rated nearby"
+  },
+  {
+    "name": "7 Eleven Badminton Academy – Hosur",
+    "category": "Sports & fitness",
+    "subcategories": [
+      "Sports coaching",
+      "Turf & facility rental"
+    ],
+    "products": [
+      {
+        "id": "7e-coaching",
+        "name": "Badminton Coaching (Monthly)",
+        "description": "Beginner to advanced coaching by BWF-certified coaches.",
+        "price": 1500,
+        "unit": "per month"
+      },
+      {
+        "id": "7e-court",
+        "name": "Court Slot Booking (1 hr)",
+        "description": "Indoor synthetic mat court — well lit and ventilated.",
+        "price": 300,
+        "unit": "per hour"
+      },
+      {
+        "id": "7e-kids",
+        "name": "Kids Badminton Academy",
+        "description": "Structured coaching for children aged 6–15.",
+        "price": 1200,
+        "unit": "per month"
+      }
+    ],
+    "description": "Leading badminton coaching academy and court facility in Hosur. BWF-certified coaches, indoor courts and monthly training programs.",
+    "distance": 2.4,
+    "demoCoordinates": {
+      "latitude": 12.7298,
+      "longitude": 77.8268
+    },
+    "rating": 4.8,
+    "reviews": 176,
+    "price": "Coaching from ₹1,200",
+    "icon": "🏸",
+    "color": "lavender",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Sports coaching",
+      "Badminton",
+      "Coaching academies",
+      "Badminton coaching",
+      "Turf & facility rental",
+      "Badminton courts",
+      "Indoor court rental",
+      "Court booking"
+    ]
+  },
+  {
+    "name": "Pranava Nature Cure & Yoga – Hosur",
+    "category": "Sports & fitness",
+    "subcategories": [
+      "Yoga & pilates",
+      "Personal training"
+    ],
+    "products": [
+      {
+        "id": "pnc-yoga",
+        "name": "Yoga Classes (Monthly)",
+        "description": "Hatha and Vinyasa yoga — morning and evening batches.",
+        "price": 1000,
+        "unit": "per month"
+      },
+      {
+        "id": "pnc-nature",
+        "name": "Nature Cure Therapy Session",
+        "description": "Holistic healing combining naturopathy and yoga therapy.",
+        "price": 1500,
+        "unit": "per session"
+      },
+      {
+        "id": "pnc-weight",
+        "name": "Weight Management Program",
+        "description": "30-day plan with diet, yoga and lifestyle coaching.",
+        "price": 4500,
+        "unit": "per month"
+      }
+    ],
+    "description": "Pranava Nature Cure & Yoga Clinic in Hosur. Holistic wellness center offering yoga, naturopathy, weight management and rejuvenation therapies.",
+    "distance": 3.1,
+    "demoCoordinates": {
+      "latitude": 12.728,
+      "longitude": 77.835
+    },
+    "rating": 4.9,
+    "reviews": 142,
+    "price": "Yoga from ₹1,000/mo",
+    "icon": "🧘",
+    "color": "mint",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Yoga & pilates",
+      "Yoga studios",
+      "Hatha & Vinyasa",
+      "Yoga classes",
+      "Personal training",
+      "1-on-1 coaching",
+      "Transformation"
+    ]
+  },
+  {
+    "name": "GameX 360 – Hosur Turf",
+    "category": "Sports & fitness",
+    "subcategories": [
+      "Turf & facility rental",
+      "Sports coaching"
+    ],
+    "products": [
+      {
+        "id": "gx-football",
+        "name": "5-A-Side Football Turf (1 hr)",
+        "description": "Full synthetic grass turf with floodlights. All-weather facility.",
+        "price": 800,
+        "unit": "per hour"
+      },
+      {
+        "id": "gx-cricket",
+        "name": "Box Cricket Turf Booking",
+        "description": "Box cricket field with nets. Suitable for 6–12 players.",
+        "price": 600,
+        "unit": "per hour"
+      },
+      {
+        "id": "gx-package",
+        "name": "Group Event Package (2 hrs)",
+        "description": "Two sports slots + refreshments for up to 20 players.",
+        "price": 2500,
+        "unit": "per event"
+      }
+    ],
+    "description": "Multi-sport turf facility in Hosur with 5-a-side football, box cricket and badminton courts. Floodlights, changing rooms and parking.",
+    "distance": 2.8,
+    "demoCoordinates": {
+      "latitude": 12.7305,
+      "longitude": 77.8387
+    },
+    "rating": 4.6,
+    "reviews": 198,
+    "price": "Turf from ₹600/hr",
+    "icon": "⚽",
+    "color": "butter",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Turf & facility rental",
+      "Box cricket turf",
+      "Hourly rental",
+      "Turf booking",
+      "Sports coaching",
+      "Cricket",
+      "Net practice & coaching",
+      "Badminton courts"
+    ]
+  },
+  {
+    "name": "Fortune Hosur – ITC Hotels",
+    "category": "Travel",
+    "subcategories": [
+      "Stays",
+      "Tours & experiences"
+    ],
+    "products": [
+      {
+        "id": "fh-room",
+        "name": "Deluxe Room (Per Night)",
+        "description": "Air-conditioned room with breakfast and high-speed Wi-Fi.",
+        "price": 4500,
+        "unit": "per night"
+      },
+      {
+        "id": "fh-suite",
+        "name": "Executive Suite Stay",
+        "description": "Spacious suite with lounge access, minibar and city view.",
+        "price": 8000,
+        "unit": "per night"
+      },
+      {
+        "id": "fh-banquet",
+        "name": "Banquet Hall Booking",
+        "description": "Ideal for conferences, weddings and corporate events.",
+        "price": 50000,
+        "unit": "per day"
+      },
+      {
+        "id": "guest-house-stays",
+        "name": "Guest Houses & Homestays",
+        "description": "Curated heritage guest houses, weekend family stays and serviced studio apartments.",
+        "price": 1200,
+        "unit": "service"
+      },
+      {
+        "id": "hotel-family-stays",
+        "name": "Hotels & Vacation Stays",
+        "description": "Comfortable boutique business hotels, airport transit stays and family vacation suites.",
+        "price": 1800,
+        "unit": "service"
+      }
+    ],
+    "description": "Fortune Hosur — premium ITC Hotels property. Business and leisure hotel with spa, restaurant, conference rooms and modern amenities.",
+    "distance": 3.2,
+    "demoCoordinates": {
+      "latitude": 12.7275,
+      "longitude": 77.832
+    },
+    "rating": 4.8,
+    "reviews": 522,
+    "price": "Rooms from ₹4,500",
+    "icon": "🏨",
+    "color": "lavender",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Stays",
+      "Hotels",
+      "Family stays",
+      "Hotel room booking",
+      "Tours & experiences",
+      "Local experiences",
+      "Business hotel",
+      "Conference",
+      "Guest houses"
+    ],
+    "tag": "Premium stay"
+  },
+  {
+    "name": "TGI Grand Fortuna – Hosur",
+    "category": "Travel",
+    "subcategories": [
+      "Stays"
+    ],
+    "products": [
+      {
+        "id": "tgi-std",
+        "name": "Standard Room (Per Night)",
+        "description": "Well-appointed room with TV, AC and complimentary breakfast.",
+        "price": 2800,
+        "unit": "per night"
+      },
+      {
+        "id": "tgi-corp",
+        "name": "Corporate Room Package (Weekly)",
+        "description": "7-night stay with breakfast, laundry and airport pick-up.",
+        "price": 16000,
+        "unit": "per week"
+      }
+    ],
+    "description": "TGI Grand Fortuna — top-rated upscale hotel in Hosur. Popular with corporate and leisure travelers. Restaurant, banquet and gym on-site.",
+    "distance": 2.6,
+    "demoCoordinates": {
+      "latitude": 12.7292,
+      "longitude": 77.8305
+    },
+    "rating": 4.7,
+    "reviews": 298,
+    "price": "Rooms from ₹2,800",
+    "icon": "🛏️",
+    "color": "butter",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Stays",
+      "Hotels",
+      "Family stays",
+      "Hotel room booking",
+      "Guest houses",
+      "Short stays",
+      "Corporate stay"
+    ]
+  },
+  {
+    "name": "Jaya Sri Electricals & Plumbing – Hosur",
+    "category": "Everyday services",
+    "subcategories": [
+      "Electrical",
+      "Plumbing"
+    ],
+    "products": [
+      {
+        "id": "js-elec",
+        "name": "Electrical Wiring & Repair",
+        "description": "Fuse, switchboard, fan, light installation and emergency repair.",
+        "price": 249,
+        "unit": "from"
+      },
+      {
+        "id": "js-plumb",
+        "name": "Plumbing Leak & Pipe Repair",
+        "description": "Tap, overhead tank, drainage and toilet repairs.",
+        "price": 299,
+        "unit": "from"
+      },
+      {
+        "id": "js-geyser",
+        "name": "Geyser Installation & Repair",
+        "description": "Any brand geyser installation, thermostat fix and anode check.",
+        "price": 499,
+        "unit": "from"
+      }
+    ],
+    "description": "Trusted electrician and plumber in Hosur — same-day home visits. Licensed professionals covering all major residential areas.",
+    "distance": 0.7,
+    "demoCoordinates": {
+      "latitude": 12.7344,
+      "longitude": 77.83
+    },
+    "rating": 4.8,
+    "reviews": 219,
+    "price": "Services from ₹249",
+    "icon": "⚡",
+    "color": "lavender",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Electrical",
+      "Home electrical",
+      "Repairs",
+      "Wiring repair",
+      "Installation",
+      "Lighting installation",
+      "Plumbing",
+      "Home plumbing",
+      "Leak repair",
+      "Bathroom plumbing",
+      "Tap & fixture installation"
+    ],
+    "tag": "Same-day service"
+  },
+  {
+    "name": "Supreme Cool Tech AC Services – Hosur",
+    "category": "Everyday services",
+    "subcategories": [
+      "Appliance repair",
+      "Electrical"
+    ],
+    "products": [
+      {
+        "id": "sct-service",
+        "name": "AC Service & Deep Cleaning",
+        "description": "Coil wash, filter clean and performance test.",
+        "price": 499,
+        "unit": "from"
+      },
+      {
+        "id": "sct-gas",
+        "name": "AC Gas Recharge (R-32 / R-22)",
+        "description": "Gas top-up with leak check and cooling test.",
+        "price": 999,
+        "unit": "from"
+      },
+      {
+        "id": "sct-install",
+        "name": "AC Installation (Split / Window)",
+        "description": "Professional 1.5 ton / 2 ton split AC fitting.",
+        "price": 1200,
+        "unit": "from"
+      }
+    ],
+    "description": "Specialist AC repair, deep cleaning, gas recharge and installation in Hosur. Covers all brands — Daikin, Voltas, LG, Samsung, Hitachi.",
+    "distance": 1.3,
+    "demoCoordinates": {
+      "latitude": 12.736,
+      "longitude": 77.8265
+    },
+    "rating": 4.7,
+    "reviews": 181,
+    "price": "AC service from ₹499",
+    "icon": "❄️",
+    "color": "mint",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Appliance repair",
+      "Kitchen appliances",
+      "Repair",
+      "Refrigerator service",
+      "Laundry appliances",
+      "Air conditioning",
+      "AC cooling recharge",
+      "Electrical",
+      "Home electrical"
+    ]
+  },
+  {
+    "name": "AtoZ Home Services – Hosur",
+    "category": "Everyday services",
+    "subcategories": [
+      "Cleaning",
+      "Home services",
+      "Plumbing",
+      "Electrical"
+    ],
+    "products": [
+      {
+        "id": "az-deep",
+        "name": "Full Home Deep Cleaning",
+        "description": "2–5 BHK deep clean including kitchen, bathrooms and windows.",
+        "price": 1999,
+        "unit": "from"
+      },
+      {
+        "id": "az-pest",
+        "name": "Pest Control Treatment",
+        "description": "Cockroach, bed bugs, termite and mosquito treatment.",
+        "price": 799,
+        "unit": "from"
+      },
+      {
+        "id": "az-sofa",
+        "name": "Sofa & Carpet Cleaning",
+        "description": "Steam-clean and shampoo for sofas, chairs and carpets.",
+        "price": 499,
+        "unit": "from"
+      },
+      {
+        "id": "az-movers",
+        "name": "Local Moving & Packing",
+        "description": "Professional packing, transport and unpacking in Hosur.",
+        "price": 2499,
+        "unit": "from"
+      },
+      {
+        "id": "carpentry-furniture-repair",
+        "name": "Carpentry & Wood Repair",
+        "description": "Custom shelving, door latch repairs, wardrobe hinges, furniture polish and wooden alterations.",
+        "price": 350,
+        "unit": "service"
+      },
+      {
+        "id": "gardening-maintenance",
+        "name": "Garden Maintenance & Landscaping",
+        "description": "Lawn mowing, balcony planter setups, shrub pruning, organic compost and plant repotting.",
+        "price": 399,
+        "unit": "service"
+      },
+      {
+        "id": "junk-removal-moving",
+        "name": "Junk Removal & Clearance",
+        "description": "Old furniture carting, electronic waste disposal, renovation debris clearance and garage cleanouts.",
+        "price": 699,
+        "unit": "service"
+      },
+      {
+        "id": "moving-packing-assistance",
+        "name": "Movers & Packers Assistance",
+        "description": "Bubble-wrap packing, household shifting, mini-truck logistics, furniture moving and unloading.",
+        "price": 2499,
+        "unit": "service"
+      },
+      {
+        "id": "painting-wall-decor",
+        "name": "Painting & Waterproofing",
+        "description": "Interior wall emulsion, texture finishes, exterior weather-guard coatings and damp wall sealing.",
+        "price": 12,
+        "unit": "sq.ft"
+      },
+      {
+        "id": "pest-control-treatment",
+        "name": "Pest Control & Termite Defense",
+        "description": "Odorless herbal cockroach gel, anti-termite wood treatment, bed bug fumigation and rodent control.",
+        "price": 799,
+        "unit": "service"
+      },
+      {
+        "id": "yard-garden-cleanup",
+        "name": "Yard Clearance & Garden Cleanup",
+        "description": "Fallen foliage clearance, tree branch trimming, weed weeding, dry leaf compost and garden beautification.",
+        "price": 499,
+        "unit": "service"
+      },
+      {
+        "id": "zero-waste-composting",
+        "name": "Zero-Waste Home Composting Kits",
+        "description": "Aero-bins, microbial composting powders, kitchen waste shredders and home eco-sustainability starter sets.",
+        "price": 599,
+        "unit": "unit"
+      }
+    ],
+    "description": "Full-service home care in Hosur — deep cleaning, pest control, sofa shampooing, plumbing, electrical and local movers.",
+    "distance": 1.8,
+    "demoCoordinates": {
+      "latitude": 12.7315,
+      "longitude": 77.833
+    },
+    "rating": 4.6,
+    "reviews": 267,
+    "price": "Services from ₹499",
+    "icon": "🧹",
+    "color": "butter",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Cleaning",
+      "Home cleaning",
+      "Full home",
+      "Deep cleaning",
+      "Focused cleaning",
+      "Kitchen cleaning",
+      "Home services",
+      "Pest control",
+      "Treatment",
+      "Home pest treatment",
+      "Moving help",
+      "Packing & moving",
+      "Local move assistance",
+      "Carpentry",
+      "Garden care",
+      "Home planning"
+    ]
+  },
+  {
+    "name": "Tarun Motors Hero – Mathigiri, Hosur",
+    "category": "Automobiles",
+    "subcategories": [
+      "Two-wheeler service"
+    ],
+    "products": [
+      {
+        "id": "tarun-hero-splendor",
+        "name": "Hero Splendor Plus (Sales)",
+        "description": "Authorized sales of Hero Splendor Plus.",
+        "price": 78000,
+        "unit": "ex-showroom"
+      },
+      {
+        "id": "tarun-hero-xtreme",
+        "name": "Hero Xtreme 160R (Sales)",
+        "description": "Authorized sales of Hero Xtreme 160R.",
+        "price": 130000,
+        "unit": "ex-showroom"
+      },
+      {
+        "id": "tarun-hero-service",
+        "name": "Hero Annual Service Package",
+        "description": "Full annual service for Hero two-wheelers.",
+        "price": 699,
+        "unit": "per service"
+      }
+    ],
+    "description": "Authorized Hero MotoCorp dealership near RC Church, Denkanikottai Main Road, Mathigiri. Sales of Splendor, HF Deluxe, Vida V1 EV and full service.",
+    "distance": 1.2,
+    "demoCoordinates": {
+      "latitude": 12.722,
+      "longitude": 77.831
+    },
+    "rating": 4.5,
+    "reviews": 203,
+    "price": "from ₹699",
+    "icon": "🏍️",
+    "color": "butter",
+    "subscribed": true,
+    "tag": "Authorized dealer",
+    "taxonomyTags": [
+      "Two wheeler",
+      "Hero",
+      "Splendor Plus",
+      "HF Deluxe",
+      "Vida V1",
+      "Xtreme 160R",
+      "Sales",
+      "Service",
+      "Two-wheeler service",
+      "Routine service",
+      "Oil & filter"
+    ]
+  },
+  {
+    "name": "Velan Honda – Denkanikotta Road, Hosur",
+    "category": "Automobiles",
+    "subcategories": [
+      "Two-wheeler service"
+    ],
+    "products": [
+      {
+        "id": "velan-activa",
+        "name": "Honda Activa 6G (Sales)",
+        "description": "Authorized sales of Honda Activa 6G.",
+        "price": 82000,
+        "unit": "ex-showroom"
+      },
+      {
+        "id": "velan-cb350",
+        "name": "Honda CB350 (Sales)",
+        "description": "Authorized sales of Honda CB350.",
+        "price": 210000,
+        "unit": "ex-showroom"
+      },
+      {
+        "id": "velan-service",
+        "name": "Honda 2W Service",
+        "description": "Routine service for Honda two-wheelers.",
+        "price": 799,
+        "unit": "per service"
+      }
+    ],
+    "description": "Authorized Honda two-wheeler dealership on Denkanikotta Road near Railway Station, Hosur. Activa, Shine, Unicorn, CB350 sales and service.",
+    "distance": 0.9,
+    "demoCoordinates": {
+      "latitude": 12.724,
+      "longitude": 77.832
+    },
+    "rating": 4.6,
+    "reviews": 156,
+    "price": "from ₹799",
+    "icon": "🛵",
+    "color": "mint",
+    "subscribed": true,
+    "tag": "Authorized dealer",
+    "taxonomyTags": [
+      "Two wheeler",
+      "Honda",
+      "Activa",
+      "Dio",
+      "Shine 125",
+      "Unicorn",
+      "CB350",
+      "Sales",
+      "Service",
+      "Two-wheeler service",
+      "Routine service",
+      "Brake & tyre care"
+    ]
+  },
+  {
+    "name": "Sri Saravana Motors Royal Enfield – Hosur",
+    "category": "Automobiles",
+    "subcategories": [
+      "Two-wheeler service"
+    ],
+    "products": [
+      {
+        "id": "ssm-classic350",
+        "name": "Royal Enfield Classic 350 (Sales)",
+        "description": "Authorized sales of RE Classic 350.",
+        "price": 196000,
+        "unit": "ex-showroom"
+      },
+      {
+        "id": "ssm-hunter350",
+        "name": "RE Hunter 350 (Sales)",
+        "description": "Authorized sales of RE Hunter 350.",
+        "price": 155000,
+        "unit": "ex-showroom"
+      },
+      {
+        "id": "ssm-service",
+        "name": "RE Annual Service",
+        "description": "Complete annual service for Royal Enfield motorcycles.",
+        "price": 1299,
+        "unit": "per service"
+      }
+    ],
+    "description": "Authorized Royal Enfield dealer in Hosur. Full range — Classic 350, Hunter 350, Bullet, Meteor, Himalayan. Test rides available daily.",
+    "distance": 1.5,
+    "demoCoordinates": {
+      "latitude": 12.726,
+      "longitude": 77.834
+    },
+    "rating": 4.7,
+    "reviews": 312,
+    "price": "from ₹1299",
+    "icon": "🏍️",
+    "color": "peach",
+    "subscribed": true,
+    "tag": "Authorized dealer",
+    "taxonomyTags": [
+      "Two wheeler",
+      "Royal Enfield",
+      "Classic 350",
+      "Hunter 350",
+      "Bullet 350",
+      "Meteor 350",
+      "Himalayan",
+      "Sales",
+      "Service",
+      "Two-wheeler service",
+      "Routine service"
+    ]
+  },
+  {
+    "name": "KHT Motors Tata – Hosur",
+    "category": "Automobiles",
+    "subcategories": [
+      "Four-wheeler sales",
+      "Car repair"
+    ],
+    "products": [
+      {
+        "id": "kht-nexon",
+        "name": "Tata Nexon (Sales)",
+        "description": "Authorized sales of Tata Nexon SUV.",
+        "price": 850000,
+        "unit": "ex-showroom"
+      },
+      {
+        "id": "kht-punch",
+        "name": "Tata Punch (Sales)",
+        "description": "Authorized sales of Tata Punch.",
+        "price": 620000,
+        "unit": "ex-showroom"
+      },
+      {
+        "id": "kht-service",
+        "name": "Tata Periodic Service",
+        "description": "Authorized periodic service for Tata vehicles.",
+        "price": 3999,
+        "unit": "per service"
+      }
+    ],
+    "description": "Authorized Tata Motors passenger vehicle dealer in Hosur. Nexon, Punch, Tiago, Harrier, Safari — sales, test drives and full service.",
+    "distance": 2,
+    "demoCoordinates": {
+      "latitude": 12.728,
+      "longitude": 77.82
+    },
+    "rating": 4.4,
+    "reviews": 187,
+    "price": "from ₹3999",
+    "icon": "🚗",
+    "color": "lavender",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Four wheeler",
+      "Tata Motors",
+      "Punch",
+      "Nexon",
+      "Tiago",
+      "Altroz",
+      "Harrier",
+      "Safari",
+      "Sales",
+      "Service",
+      "Car repair",
+      "Engine & transmission"
+    ]
+  },
+  {
+    "name": "Akash Bajaj (Chetak EV) – Hosur",
+    "category": "Automobiles",
+    "subcategories": [
+      "Two-wheeler service"
+    ],
+    "products": [
+      {
+        "id": "akash-chetak",
+        "name": "Bajaj Chetak Electric (Sales)",
+        "description": "Authorized sales of Bajaj Chetak EV scooter.",
+        "price": 120000,
+        "unit": "ex-showroom"
+      },
+      {
+        "id": "akash-pulsar",
+        "name": "Bajaj Pulsar NS200 (Sales)",
+        "description": "Authorized sales of Bajaj Pulsar NS200.",
+        "price": 165000,
+        "unit": "ex-showroom"
+      },
+      {
+        "id": "akash-ev-diag",
+        "name": "Battery & Motor Diagnostics",
+        "description": "EV battery and motor health check.",
+        "price": 499,
+        "unit": "per visit"
+      }
+    ],
+    "description": "Bajaj and Chetak EV authorized dealer near Krishnagiri Main Road, Hosur. EV test rides, finance and after-sales support.",
+    "distance": 1.8,
+    "demoCoordinates": {
+      "latitude": 12.73,
+      "longitude": 77.824
+    },
+    "rating": 4.5,
+    "reviews": 142,
+    "price": "from ₹499",
+    "icon": "⚡",
+    "color": "mint",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Two wheeler",
+      "Bajaj",
+      "Chetak",
+      "Pulsar 125",
+      "Pulsar NS200",
+      "Sales",
+      "Service",
+      "Two-wheeler service",
+      "Electric 2W",
+      "Battery & motor check",
+      "Routine service"
+    ]
+  },
+  {
+    "name": "Hosur Tyre & Battery Hub",
+    "category": "Automobiles",
+    "subcategories": [
+      "Tyres & batteries"
+    ],
+    "products": [
+      {
+        "id": "htb-car-tyre",
+        "name": "MRF / Apollo Car Tyre",
+        "description": "Multi-brand car tyre supply and fitting.",
+        "price": 3500,
+        "unit": "per tyre"
+      },
+      {
+        "id": "htb-2w-tyre",
+        "name": "Two-Wheeler Tyre",
+        "description": "Multi-brand two-wheeler tyre supply and fitting.",
+        "price": 800,
+        "unit": "per tyre"
+      },
+      {
+        "id": "htb-battery",
+        "name": "Car Battery Replacement (Amaron/Exide)",
+        "description": "Car battery supply and replacement service.",
+        "price": 4200,
+        "unit": "per battery"
+      }
+    ],
+    "description": "Multi-brand tyre and battery shop on Bagalur Road. MRF, Apollo, CEAT tyres; Amaron, Exide, Luminous batteries. Free wheel balancing and alignment.",
+    "distance": 2.3,
+    "demoCoordinates": {
+      "latitude": 12.732,
+      "longitude": 77.826
+    },
+    "rating": 4.7,
+    "reviews": 198,
+    "price": "from ₹800",
+    "icon": "🔩",
+    "color": "butter",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Tyres & batteries",
+      "Tyres & wheels",
+      "Wheel balancing",
+      "Puncture repair",
+      "Vehicle batteries",
+      "Battery replacement",
+      "Car & bike battery"
+    ]
+  },
+  {
+    "name": "Chil Zone Car Wash & Detailing – Hosur",
+    "category": "Automobiles",
+    "subcategories": [
+      "Car wash & detailing"
+    ],
+    "products": [
+      {
+        "id": "chil-foam-wash",
+        "name": "Full Body Foam Wash",
+        "description": "Complete exterior foam wash for cars.",
+        "price": 399,
+        "unit": "per session"
+      },
+      {
+        "id": "chil-interior",
+        "name": "Interior Deep Vacuum & Sanitize",
+        "description": "Full interior vacuum and sanitization.",
+        "price": 599,
+        "unit": "per session"
+      },
+      {
+        "id": "chil-ppf",
+        "name": "Paint Protection Film (PPF)",
+        "description": "Full-body PPF application for paint protection.",
+        "price": 15000,
+        "unit": "per car"
+      },
+      {
+        "id": "car-wash-detailing",
+        "name": "Car Wash & Detailing",
+        "description": "Foam exterior wash, interior vacuuming, ceramic coating and headlight restoration.",
+        "price": 499,
+        "unit": "service"
+      },
+      {
+        "id": "vehicle-detailing-polish",
+        "name": "Vehicle Detailing & Ceramic Polish",
+        "description": "Multi-stage machine paint correction, swirl mark removal, interior dry cleaning and 9H ceramic coating.",
+        "price": 1999,
+        "unit": "service"
+      }
+    ],
+    "description": "Professional car wash and auto detailing studio in Hosur. Foam wash, interior sanitization, ceramic coating and PPF available.",
+    "distance": 1.6,
+    "demoCoordinates": {
+      "latitude": 12.734,
+      "longitude": 77.828
+    },
+    "rating": 4.8,
+    "reviews": 176,
+    "price": "from ₹399",
+    "icon": "🚿",
+    "color": "lavender",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Car wash & detailing",
+      "Exterior care",
+      "Wash packages",
+      "Full service foam wash",
+      "Interior care",
+      "Deep sanitization",
+      "Upholstery shampoo",
+      "Car wash",
+      "Car repair"
+    ]
+  },
+  {
+    "name": "Reliance Digital – Bagalur Road, Hosur",
+    "category": "Electronics",
+    "subcategories": [
+      "Mobile phones",
+      "Home appliances",
+      "Audio & video"
+    ],
+    "products": [
+      {
+        "id": "rd-tv",
+        "name": "Smart TV (Sales)",
+        "description": "Wide range of smart TVs from top brands.",
+        "price": 18999,
+        "unit": "from"
+      },
+      {
+        "id": "rd-ac",
+        "name": "Air Conditioner (Sales)",
+        "description": "Energy-efficient ACs from leading brands.",
+        "price": 32999,
+        "unit": "from"
+      },
+      {
+        "id": "rd-phone",
+        "name": "Mobile Phone (Sales)",
+        "description": "Latest smartphones across all price segments.",
+        "price": 9999,
+        "unit": "from"
+      }
+    ],
+    "description": "Reliance Digital large-format electronics store on Bagalur Road, Hosur. TVs, ACs, washing machines, phones, laptops and audio systems with EMI options.",
+    "distance": 2.5,
+    "demoCoordinates": {
+      "latitude": 12.736,
+      "longitude": 77.822
+    },
+    "rating": 4.4,
+    "reviews": 387,
+    "price": "from ₹9999",
+    "icon": "📺",
+    "color": "peach",
+    "subscribed": true,
+    "tag": "Popular nearby",
+    "taxonomyTags": [
+      "Sales",
+      "Mobile phones",
+      "Samsung",
+      "Audio & video",
+      "Sony",
+      "LG",
+      "Home appliances",
+      "Whirlpool",
+      "Laptops & computers",
+      "HP",
+      "Lenovo"
+    ]
+  },
+  {
+    "name": "Samsung Experience Store – Bagalur Road, Hosur",
+    "category": "Electronics",
+    "subcategories": [
+      "Mobile phones",
+      "Home appliances"
+    ],
+    "products": [
+      {
+        "id": "samsung-s25",
+        "name": "Samsung Galaxy S25 (Sales)",
+        "description": "Latest Samsung flagship smartphone.",
+        "price": 79999,
+        "unit": "ex-showroom"
+      },
+      {
+        "id": "samsung-fridge",
+        "name": "Samsung Bespoke Refrigerator",
+        "description": "Premium Bespoke series refrigerator.",
+        "price": 65000,
+        "unit": "ex-showroom"
+      },
+      {
+        "id": "samsung-repair",
+        "name": "Samsung Service & Repair",
+        "description": "Authorized Samsung device repair and service.",
+        "price": 499,
+        "unit": "from"
+      }
+    ],
+    "description": "Authorized Samsung Experience Store on Bagalur Road, Hosur. Full range of Samsung phones, tablets, TVs, appliances and official service.",
+    "distance": 2.6,
+    "demoCoordinates": {
+      "latitude": 12.738,
+      "longitude": 77.823
+    },
+    "rating": 4.6,
+    "reviews": 219,
+    "price": "from ₹499",
+    "icon": "📱",
+    "color": "mint",
+    "subscribed": true,
+    "tag": "Authorized store",
+    "taxonomyTags": [
+      "Sales",
+      "Service",
+      "Mobile phones",
+      "Samsung",
+      "Galaxy S25",
+      "Galaxy A56",
+      "Home appliances",
+      "Samsung",
+      "Bespoke refrigerator",
+      "Bespoke washing machine"
+    ]
+  },
+  {
+    "name": "Sri Mithuna Samsung Service – Hosur",
+    "category": "Electronics",
+    "subcategories": [
+      "Mobile phones"
+    ],
+    "products": [
+      {
+        "id": "mithuna-screen",
+        "name": "Samsung Screen Replacement",
+        "description": "Genuine Samsung screen replacement service.",
+        "price": 2999,
+        "unit": "from"
+      },
+      {
+        "id": "mithuna-battery",
+        "name": "Battery Replacement",
+        "description": "Genuine battery replacement for Samsung devices.",
+        "price": 999,
+        "unit": "from"
+      },
+      {
+        "id": "mithuna-software",
+        "name": "Software Repair & Flash",
+        "description": "Software troubleshooting and firmware flashing.",
+        "price": 499,
+        "unit": "per visit"
+      }
+    ],
+    "description": "Authorized Samsung service center in Indira Nagar, Hosur. Genuine spare parts, warranty repairs and software troubleshooting for all Samsung models.",
+    "distance": 1.4,
+    "demoCoordinates": {
+      "latitude": 12.727,
+      "longitude": 77.833
+    },
+    "rating": 4.7,
+    "reviews": 143,
+    "price": "from ₹499",
+    "icon": "🔧",
+    "color": "lavender",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Service",
+      "Mobile phones",
+      "Samsung",
+      "Galaxy S25",
+      "Galaxy A56",
+      "Phone repair",
+      "Screen & display",
+      "Screen replacement",
+      "Diagnostics",
+      "Phone diagnostics"
+    ]
+  },
+  {
+    "name": "Zenith PC – Hosur",
+    "category": "Electronics",
+    "subcategories": [
+      "Laptops & computers"
+    ],
+    "products": [
+      {
+        "id": "zenith-gaming-pc",
+        "name": "Custom Gaming PC Build",
+        "description": "Custom-built gaming desktop per your specs.",
+        "price": 45000,
+        "unit": "from"
+      },
+      {
+        "id": "zenith-laptop-repair",
+        "name": "Laptop Repair",
+        "description": "Hardware and software laptop repair service.",
+        "price": 599,
+        "unit": "from"
+      },
+      {
+        "id": "zenith-cctv",
+        "name": "CCTV & Network Setup",
+        "description": "CCTV camera installation and LAN/WiFi networking.",
+        "price": 12000,
+        "unit": "from"
+      }
+    ],
+    "description": "Computer hardware store and service center in Hosur. Custom builds, gaming rigs, laptop repair, CCTV, networking and printer solutions.",
+    "distance": 1.7,
+    "demoCoordinates": {
+      "latitude": 12.729,
+      "longitude": 77.821
+    },
+    "rating": 4.6,
+    "reviews": 89,
+    "price": "from ₹599",
+    "icon": "🖥️",
+    "color": "butter",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Sales",
+      "Service",
+      "Laptops & computers",
+      "Dell",
+      "HP",
+      "Lenovo",
+      "ASUS",
+      "Acer",
+      "Apple",
+      "MacBook Air",
+      "Pavilion",
+      "OmniBook",
+      "IdeaPad"
+    ]
+  },
+  {
+    "name": "Tanishq Jewellery – By-Pass Road, Hosur",
+    "category": "Fashion",
+    "subcategories": [
+      "Jewellery"
+    ],
+    "products": [
+      {
+        "id": "tanishq-necklace",
+        "name": "22K Gold Necklace",
+        "description": "Certified 22K gold necklace from Tanishq.",
+        "price": 75000,
+        "unit": "from"
+      },
+      {
+        "id": "tanishq-ring",
+        "name": "Diamond Solitaire Ring",
+        "description": "Certified diamond solitaire ring.",
+        "price": 25000,
+        "unit": "from"
+      },
+      {
+        "id": "tanishq-exchange",
+        "name": "Old Gold Exchange",
+        "description": "Exchange old gold jewellery at fair market value.",
+        "price": 0,
+        "unit": "free service"
+      }
+    ],
+    "description": "Tanishq by Tata — India's most trusted jewellery brand. Showroom on By-Pass Road, Hosur. Certified gold, diamond and platinum jewellery.",
+    "distance": 1.9,
+    "demoCoordinates": {
+      "latitude": 12.731,
+      "longitude": 77.836
+    },
+    "rating": 4.8,
+    "reviews": 489,
+    "price": "from ₹25000",
+    "icon": "💎",
+    "color": "lavender",
+    "subscribed": true,
+    "tag": "Trusted brand",
+    "taxonomyTags": [
+      "Jewellery",
+      "Traditional jewellery",
+      "Earrings",
+      "Necklaces",
+      "Handcrafted necklaces",
+      "Gold",
+      "Diamond",
+      "Everyday earrings"
+    ]
+  },
+  {
+    "name": "Raymond – The Complete Man, Hosur",
+    "category": "Fashion",
+    "subcategories": [
+      "Clothing",
+      "Tailoring"
+    ],
+    "products": [
+      {
+        "id": "raymond-fabric",
+        "name": "Suit Fabric (2.5m)",
+        "description": "Premium Raymond suiting fabric.",
+        "price": 3500,
+        "unit": "per 2.5m"
+      },
+      {
+        "id": "raymond-shirt",
+        "name": "Readymade Formal Shirt",
+        "description": "Ready-to-wear formal shirt.",
+        "price": 1299,
+        "unit": "per piece"
+      },
+      {
+        "id": "raymond-suit",
+        "name": "Custom Suit Stitching",
+        "description": "Bespoke suit stitching service.",
+        "price": 2999,
+        "unit": "per suit"
+      }
+    ],
+    "description": "Raymond showroom in Hosur. Premium men's suiting fabric, readymade formals and custom tailoring. Corporate and ethnic wear collections.",
+    "distance": 2.1,
+    "demoCoordinates": {
+      "latitude": 12.733,
+      "longitude": 77.825
+    },
+    "rating": 4.6,
+    "reviews": 178,
+    "price": "from ₹1299",
+    "icon": "👔",
+    "color": "mint",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Clothing",
+      "Men",
+      "Everyday wear",
+      "Shirts & trousers",
+      "Occasion wear",
+      "Ethnic wear",
+      "Tailoring",
+      "Custom stitching",
+      "Women",
+      "Blouse stitching"
+    ]
+  },
+  {
+    "name": "Planet Fashion – Hosur",
+    "category": "Fashion",
+    "subcategories": [
+      "Clothing"
+    ],
+    "products": [
+      {
+        "id": "planet-jeans",
+        "name": "Men's Branded Jeans",
+        "description": "Branded jeans for men from top labels.",
+        "price": 1499,
+        "unit": "from"
+      },
+      {
+        "id": "planet-ethnic",
+        "name": "Women's Ethnic Wear Set",
+        "description": "Ethnic wear sets for women.",
+        "price": 1999,
+        "unit": "from"
+      },
+      {
+        "id": "planet-kids",
+        "name": "Kids Festive Outfit",
+        "description": "Festive outfits for children.",
+        "price": 899,
+        "unit": "from"
+      }
+    ],
+    "description": "Planet Fashion multi-brand apparel store near Post Office Road, Hosur. Top national brands for men, women and kids — casual, formal and ethnic wear.",
+    "distance": 1.3,
+    "demoCoordinates": {
+      "latitude": 12.723,
+      "longitude": 77.829
+    },
+    "rating": 4.5,
+    "reviews": 231,
+    "price": "from ₹899",
+    "icon": "🛍️",
+    "color": "peach",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Clothing",
+      "Men",
+      "Everyday wear",
+      "Shirts & trousers",
+      "Women",
+      "Kurtas & kurtis",
+      "Sarees & dresses",
+      "Kids",
+      "Everyday wear",
+      "Kids clothing"
+    ]
+  },
+  {
+    "name": "Bata Footwear – MG Road, Hosur",
+    "category": "Fashion",
+    "subcategories": [
+      "Footwear"
+    ],
+    "products": [
+      {
+        "id": "bata-formal",
+        "name": "Men's Formal Shoes",
+        "description": "Classic formal shoes for men.",
+        "price": 1499,
+        "unit": "from"
+      },
+      {
+        "id": "bata-sandals",
+        "name": "Women's Sandals",
+        "description": "Comfortable sandals for women.",
+        "price": 999,
+        "unit": "from"
+      },
+      {
+        "id": "bata-school",
+        "name": "School Shoes",
+        "description": "Durable school shoes for children.",
+        "price": 699,
+        "unit": "from"
+      }
+    ],
+    "description": "Bata footwear store on MG Road, Hosur. Affordable everyday shoes, formal footwear, sandals, slippers and school shoes for the whole family.",
+    "distance": 1.1,
+    "demoCoordinates": {
+      "latitude": 12.725,
+      "longitude": 77.83
+    },
+    "rating": 4.4,
+    "reviews": 312,
+    "price": "from ₹699",
+    "icon": "👟",
+    "color": "butter",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Footwear",
+      "Shoes",
+      "Formal",
+      "Formal shoes",
+      "Casual",
+      "Everyday sneakers",
+      "Sandals & slippers",
+      "Daily wear",
+      "Sandals"
+    ]
+  },
+  {
+    "name": "Saree Palace – Nethaji Road, Hosur",
+    "category": "Fashion",
+    "subcategories": [
+      "Clothing",
+      "Textiles"
+    ],
+    "products": [
+      {
+        "id": "saree-cotton",
+        "name": "Cotton Saree",
+        "description": "Comfortable everyday cotton sarees.",
+        "price": 899,
+        "unit": "from"
+      },
+      {
+        "id": "saree-silk",
+        "name": "Silk Saree",
+        "description": "Elegant silk sarees for occasions.",
+        "price": 3500,
+        "unit": "from"
+      },
+      {
+        "id": "saree-handloom",
+        "name": "Handloom Dress Material",
+        "description": "Authentic handloom dress materials.",
+        "price": 750,
+        "unit": "from"
+      }
+    ],
+    "description": "Hosur's go-to saree store on Nethaji Road. Vast collection of cotton, silk and handloom sarees for daily wear, festivals and weddings.",
+    "distance": 0.8,
+    "demoCoordinates": {
+      "latitude": 12.721,
+      "longitude": 77.828
+    },
+    "rating": 4.6,
+    "reviews": 267,
+    "price": "from ₹750",
+    "icon": "🥻",
+    "color": "lavender",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Clothing",
+      "Women",
+      "Occasion wear",
+      "Sarees & dresses",
+      "Textiles",
+      "Handloom",
+      "Cotton fabrics",
+      "Dress materials",
+      "Home textiles",
+      "Bed & bath"
+    ]
+  },
+  {
+    "name": "Godrej Interio – Bagalur Road, Hosur",
+    "category": "Home & furniture",
+    "subcategories": [
+      "Furniture",
+      "Kitchen & storage"
+    ],
+    "products": [
+      {
+        "id": "godrej-kitchen",
+        "name": "Modular Kitchen Setup",
+        "description": "Complete modular kitchen design and installation.",
+        "price": 85000,
+        "unit": "from"
+      },
+      {
+        "id": "godrej-wardrobe",
+        "name": "Sliding Wardrobe",
+        "description": "Custom sliding door wardrobe.",
+        "price": 35000,
+        "unit": "from"
+      },
+      {
+        "id": "godrej-chair",
+        "name": "Office Chair",
+        "description": "Ergonomic office chair.",
+        "price": 8500,
+        "unit": "from"
+      }
+    ],
+    "description": "Godrej Interio showroom on Bagalur Road, Hosur. Modular kitchens, wardrobes, beds, sofas and ergonomic office furniture with installation.",
+    "distance": 2.8,
+    "demoCoordinates": {
+      "latitude": 12.737,
+      "longitude": 77.827
+    },
+    "rating": 4.6,
+    "reviews": 203,
+    "price": "from ₹8500",
+    "icon": "🪑",
+    "color": "mint",
+    "subscribed": true,
+    "tag": "Trusted brand",
+    "taxonomyTags": [
+      "Furniture",
+      "Bedroom",
+      "Storage",
+      "Wardrobes",
+      "Kitchen & storage",
+      "Kitchen fittings",
+      "Modular kitchen cabinets",
+      "Living room",
+      "Seating",
+      "Sofas & chairs"
+    ]
+  },
+  {
+    "name": "Royaloak Furniture – Hosur",
+    "category": "Home & furniture",
+    "subcategories": [
+      "Furniture",
+      "Home decor"
+    ],
+    "products": [
+      {
+        "id": "royaloak-sofa",
+        "name": "5-Seater Sofa Set",
+        "description": "Premium 5-seater fabric or leather sofa set.",
+        "price": 32000,
+        "unit": "from"
+      },
+      {
+        "id": "royaloak-bed",
+        "name": "King Size Bed",
+        "description": "Solid wood king-size bed frame.",
+        "price": 18000,
+        "unit": "from"
+      },
+      {
+        "id": "royaloak-dining",
+        "name": "Dining Table (6-seater)",
+        "description": "6-seater dining table with chairs.",
+        "price": 22000,
+        "unit": "from"
+      }
+    ],
+    "description": "Royaloak large-format furniture showroom near Hosur. Wide range of living room, bedroom and dining furniture with free delivery and installation.",
+    "distance": 3,
+    "demoCoordinates": {
+      "latitude": 12.739,
+      "longitude": 77.829
+    },
+    "rating": 4.5,
+    "reviews": 318,
+    "price": "from ₹18000",
+    "icon": "🛋️",
+    "color": "peach",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Furniture",
+      "Living room",
+      "Seating",
+      "Sofas & chairs",
+      "Bedroom",
+      "Beds",
+      "Beds & headboards",
+      "Dining",
+      "Dining sets",
+      "Dining tables & chairs"
+    ]
+  },
+  {
+    "name": "Surya Home Decor & Interior – Hosur",
+    "category": "Home & furniture",
+    "subcategories": [
+      "Home decor",
+      "Interior design"
+    ],
+    "products": [
+      {
+        "id": "surya-consult",
+        "name": "Interior Design Consultation",
+        "description": "Free home interior design consultation.",
+        "price": 0,
+        "unit": "free"
+      },
+      {
+        "id": "surya-ceiling",
+        "name": "False Ceiling Design & Fit",
+        "description": "False ceiling design and installation.",
+        "price": 120,
+        "unit": "per sqft"
+      },
+      {
+        "id": "surya-wall",
+        "name": "Wall Art & Decor Panels",
+        "description": "Decorative wall art and paneling.",
+        "price": 2500,
+        "unit": "from"
+      }
+    ],
+    "description": "Full-home interior design studio in Hosur. False ceilings, modular furniture, lighting, wall paneling and 3D design planning from ₹0 consultation.",
+    "distance": 2.2,
+    "demoCoordinates": {
+      "latitude": 12.735,
+      "longitude": 77.832
+    },
+    "rating": 4.8,
+    "reviews": 142,
+    "price": "from ₹120/sqft",
+    "icon": "🏠",
+    "color": "lavender",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Interior design",
+      "Home planning",
+      "Room design",
+      "Design consultation",
+      "Room makeover",
+      "Space planning",
+      "Home decor",
+      "Wall decor",
+      "Art & hangings",
+      "Lighting",
+      "Indoor lighting"
+    ]
+  },
+  {
+    "name": "Nilkamal Homes – Hosur",
+    "category": "Home & furniture",
+    "subcategories": [
+      "Furniture",
+      "Kitchen & storage"
+    ],
+    "products": [
+      {
+        "id": "nilkamal-cabinet",
+        "name": "Plastic Storage Cabinet",
+        "description": "Durable plastic storage cabinet.",
+        "price": 3500,
+        "unit": "from"
+      },
+      {
+        "id": "nilkamal-study",
+        "name": "Study Table",
+        "description": "Study table for kids and adults.",
+        "price": 4999,
+        "unit": "from"
+      },
+      {
+        "id": "nilkamal-chairs",
+        "name": "Plastic Chair (set of 4)",
+        "description": "Set of 4 durable plastic chairs.",
+        "price": 2800,
+        "unit": "per set"
+      }
+    ],
+    "description": "Nilkamal Homes store near Hosur. Affordable plastic and wooden furniture, storage solutions, kids furniture and home essentials.",
+    "distance": 3.2,
+    "demoCoordinates": {
+      "latitude": 12.74,
+      "longitude": 77.82
+    },
+    "rating": 4.3,
+    "reviews": 187,
+    "price": "from ₹2800",
+    "icon": "📦",
+    "color": "butter",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Furniture",
+      "Living room",
+      "Tables",
+      "Coffee & side tables",
+      "Kitchen & storage",
+      "Storage solutions",
+      "Shelving",
+      "Storage racks",
+      "Repairs",
+      "Furniture assembly"
+    ]
+  },
+  {
+    "name": "Kauvery Hospital – Hosur",
+    "category": "Health & wellness",
+    "subcategories": [
+      "Clinics",
+      "Dental care",
+      "Physiotherapy"
+    ],
+    "products": [
+      {
+        "id": "kauvery-opd",
+        "name": "General OPD Consultation",
+        "description": "Walk-in general physician consultation.",
+        "price": 300,
+        "unit": "per visit"
+      },
+      {
+        "id": "kauvery-dental",
+        "name": "Dental Check-up & X-ray",
+        "description": "Comprehensive dental check-up with X-ray.",
+        "price": 500,
+        "unit": "per visit"
+      },
+      {
+        "id": "kauvery-physio",
+        "name": "Physiotherapy Session",
+        "description": "Guided physiotherapy rehabilitation session.",
+        "price": 400,
+        "unit": "per session"
+      }
+    ],
+    "description": "NABH-accredited 125-bed multi-specialty Kauvery Hospital in Shanthi Nagar, Hosur. Emergency, dental, ophthalmology, physiotherapy, orthopaedics and ICU.",
+    "distance": 1.5,
+    "demoCoordinates": {
+      "latitude": 12.726,
+      "longitude": 77.835
+    },
+    "rating": 4.7,
+    "reviews": 423,
+    "price": "from ₹300",
+    "icon": "🏥",
+    "color": "peach",
+    "subscribed": true,
+    "tag": "NABH accredited",
+    "taxonomyTags": [
+      "Clinics",
+      "General care",
+      "Appointments",
+      "Doctor consultation",
+      "Paediatrics",
+      "Dental care",
+      "Dental clinics",
+      "Treatment",
+      "Physiotherapy",
+      "Mobility care",
+      "Eye care"
+    ]
+  },
+  {
+    "name": "SBS Hospital – Hosur",
+    "category": "Health & wellness",
+    "subcategories": [
+      "Clinics",
+      "Physiotherapy"
+    ],
+    "products": [
+      {
+        "id": "sbs-ortho",
+        "name": "Orthopaedic Consultation",
+        "description": "Specialist orthopaedic doctor consultation.",
+        "price": 350,
+        "unit": "per visit"
+      },
+      {
+        "id": "sbs-xray",
+        "name": "Bone & Joint X-ray",
+        "description": "Digital X-ray for bone and joint assessment.",
+        "price": 400,
+        "unit": "per scan"
+      },
+      {
+        "id": "sbs-physio",
+        "name": "Physiotherapy & Rehab Session",
+        "description": "Physical therapy and rehabilitation session.",
+        "price": 500,
+        "unit": "per session"
+      }
+    ],
+    "description": "SBS Hospital Pvt. Ltd. on Tank Street, Hosur. Multi-specialty care with orthopaedic specialization, emergency, general surgery and rehabilitation.",
+    "distance": 1,
+    "demoCoordinates": {
+      "latitude": 12.722,
+      "longitude": 77.83
+    },
+    "rating": 4.6,
+    "reviews": 287,
+    "price": "from ₹350",
+    "icon": "🩺",
+    "color": "lavender",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Clinics",
+      "General care",
+      "Appointments",
+      "Doctor consultation",
+      "Physiotherapy",
+      "Mobility care",
+      "Assessment",
+      "Physiotherapy assessment",
+      "Physiotherapy session"
+    ]
+  },
+  {
+    "name": "Apollo Dental Clinic – Hosur",
+    "category": "Health & wellness",
+    "subcategories": [
+      "Dental care"
+    ],
+    "products": [
+      {
+        "id": "apollo-implant-consult",
+        "name": "Dental Implant Consultation",
+        "description": "Specialist consultation for dental implants.",
+        "price": 500,
+        "unit": "per visit"
+      },
+      {
+        "id": "apollo-rct",
+        "name": "Root Canal Treatment",
+        "description": "Complete root canal treatment.",
+        "price": 6000,
+        "unit": "per tooth"
+      },
+      {
+        "id": "apollo-whitening",
+        "name": "Teeth Whitening Session",
+        "description": "Professional teeth whitening treatment.",
+        "price": 3500,
+        "unit": "per session"
+      }
+    ],
+    "description": "Apollo Dental Clinic on Krishnagiri Bypass Road, Hosur. Implants, root canals, orthodontics, whitening and complete dental care under the Apollo brand.",
+    "distance": 2.4,
+    "demoCoordinates": {
+      "latitude": 12.734,
+      "longitude": 77.84
+    },
+    "rating": 4.7,
+    "reviews": 198,
+    "price": "from ₹500",
+    "icon": "🦷",
+    "color": "mint",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Dental care",
+      "Dental clinics",
+      "Check-ups",
+      "Dental consultation",
+      "Treatment",
+      "Cleaning & fillings"
+    ]
+  },
+  {
+    "name": "Arokyam Lungs Care Centre – Hosur",
+    "category": "Health & wellness",
+    "subcategories": [
+      "Clinics"
+    ],
+    "products": [
+      {
+        "id": "arokyam-consult",
+        "name": "Pulmonology Consultation",
+        "description": "Specialist consultation for respiratory conditions.",
+        "price": 400,
+        "unit": "per visit"
+      },
+      {
+        "id": "arokyam-spirometry",
+        "name": "Spirometry Lung Function Test",
+        "description": "Lung capacity and function assessment.",
+        "price": 800,
+        "unit": "per test"
+      },
+      {
+        "id": "arokyam-asthma",
+        "name": "Asthma Treatment Plan",
+        "description": "Personalized asthma management plan.",
+        "price": 1200,
+        "unit": "per plan"
+      }
+    ],
+    "description": "Specialized respiratory and lungs care clinic near Avalapalli Hudco, Hosur. Treating asthma, COPD, bronchitis, sleep apnoea and lung infections.",
+    "distance": 1.8,
+    "demoCoordinates": {
+      "latitude": 12.73,
+      "longitude": 77.837
+    },
+    "rating": 4.8,
+    "reviews": 89,
+    "price": "from ₹400",
+    "icon": "🫁",
+    "color": "butter",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Clinics",
+      "General care",
+      "Appointments",
+      "Doctor consultation",
+      "Eye care",
+      "Appointments",
+      "Eye examination"
+    ]
+  },
+  {
+    "name": "Ketone Fitness – Shanthi Nagar, Hosur",
+    "category": "Sports & fitness",
+    "subcategories": [
+      "Gyms & fitness centers",
+      "Personal training"
+    ],
+    "products": [
+      {
+        "id": "ketone-monthly",
+        "name": "Monthly Gym Membership",
+        "description": "Full gym access for one month.",
+        "price": 1000,
+        "unit": "per month"
+      },
+      {
+        "id": "ketone-pt",
+        "name": "Personal Training (10 sessions)",
+        "description": "10 one-on-one personal training sessions.",
+        "price": 4000,
+        "unit": "per package"
+      },
+      {
+        "id": "ketone-bca",
+        "name": "Body Composition Analysis",
+        "description": "Detailed body fat and muscle composition report.",
+        "price": 300,
+        "unit": "per test"
+      }
+    ],
+    "description": "Ketone Fitness gym in Shanthi Nagar, Denkanikottai Road, Hosur. Modern equipment, personal training and body transformation programs.",
+    "distance": 1.4,
+    "demoCoordinates": {
+      "latitude": 12.727,
+      "longitude": 77.838
+    },
+    "rating": 4.7,
+    "reviews": 198,
+    "price": "from ₹1000",
+    "icon": "💪",
+    "color": "mint",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Sports & fitness",
+      "Gyms & fitness centers",
+      "Gym membership",
+      "Weight training",
+      "Strength conditioning",
+      "Personal training",
+      "1-on-1 coaching",
+      "Transformation"
+    ]
+  },
+  {
+    "name": "H&T Fitness – Navadhi, Hosur",
+    "category": "Sports & fitness",
+    "subcategories": [
+      "Gyms & fitness centers"
+    ],
+    "products": [
+      {
+        "id": "ht-monthly",
+        "name": "Monthly Unisex Membership",
+        "description": "Monthly gym access for all genders.",
+        "price": 900,
+        "unit": "per month"
+      },
+      {
+        "id": "ht-quarterly",
+        "name": "Quarterly Membership",
+        "description": "3-month gym membership at a discount.",
+        "price": 2400,
+        "unit": "per quarter"
+      },
+      {
+        "id": "ht-cardio",
+        "name": "Cardio & Abs Package",
+        "description": "Focused cardio and core training package.",
+        "price": 1500,
+        "unit": "per month"
+      }
+    ],
+    "description": "H&T Fitness — popular unisex gym on Denkanikottai Main Road, Navadhi, Hosur. Free weights, machines, cardio and group fitness sessions.",
+    "distance": 2,
+    "demoCoordinates": {
+      "latitude": 12.732,
+      "longitude": 77.839
+    },
+    "rating": 4.6,
+    "reviews": 154,
+    "price": "from ₹900",
+    "icon": "🏋️",
+    "color": "lavender",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Sports & fitness",
+      "Gyms & fitness centers",
+      "Gym membership",
+      "Weight training",
+      "CrossFit & functional",
+      "HIIT workouts",
+      "Dance fitness",
+      "Zumba studios"
+    ]
+  },
+  {
+    "name": "Royal Wellfit Health Club & Pool – Hosur",
+    "category": "Sports & fitness",
+    "subcategories": [
+      "Gyms & fitness centers",
+      "Swimming & aquatics"
+    ],
+    "products": [
+      {
+        "id": "rwf-gym-pool",
+        "name": "Monthly Gym + Pool Access",
+        "description": "Combined gym and swimming pool monthly membership.",
+        "price": 2500,
+        "unit": "per month"
+      },
+      {
+        "id": "rwf-swim-lessons",
+        "name": "Swimming Lessons (monthly)",
+        "description": "Professional swimming coaching for all levels.",
+        "price": 1500,
+        "unit": "per month"
+      },
+      {
+        "id": "rwf-annual",
+        "name": "Annual Membership",
+        "description": "Full-year all-access membership.",
+        "price": 18000,
+        "unit": "per year"
+      }
+    ],
+    "description": "Royal Wellfit Health Club near Kumudepalli, Hosur. Full-scale gym, heated swimming pool, steam room and multi-purpose sports hall.",
+    "distance": 3.5,
+    "demoCoordinates": {
+      "latitude": 12.741,
+      "longitude": 77.824
+    },
+    "rating": 4.8,
+    "reviews": 267,
+    "price": "from ₹1500",
+    "icon": "🏊",
+    "color": "peach",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Sports & fitness",
+      "Gyms & fitness centers",
+      "Gym membership",
+      "Swimming & aquatics",
+      "Swimming pools",
+      "Coaching",
+      "Swimming lessons",
+      "Personal training"
+    ]
+  },
+  {
+    "name": "Eagles Sports Club – Bagalur Circle, Hosur",
+    "category": "Sports & fitness",
+    "subcategories": [
+      "Sports coaching",
+      "Turf & facility rental"
+    ],
+    "products": [
+      {
+        "id": "eagles-volleyball",
+        "name": "Volleyball Coaching (monthly)",
+        "description": "Professional volleyball coaching for all ages.",
+        "price": 1200,
+        "unit": "per month"
+      },
+      {
+        "id": "eagles-football",
+        "name": "Football Coaching (monthly)",
+        "description": "Structured football training program.",
+        "price": 1500,
+        "unit": "per month"
+      },
+      {
+        "id": "eagles-camp",
+        "name": "Multi-sport Summer Camp",
+        "description": "Multi-sport summer camp for kids.",
+        "price": 3500,
+        "unit": "per camp"
+      }
+    ],
+    "description": "Eagles Sports Club near Bagalur Circle, Hosur. Professional volleyball, football and athletics coaching. Summer camps and inter-school tournaments.",
+    "distance": 4,
+    "demoCoordinates": {
+      "latitude": 12.743,
+      "longitude": 77.826
+    },
+    "rating": 4.7,
+    "reviews": 143,
+    "price": "from ₹1200",
+    "icon": "🏐",
+    "color": "butter",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Sports coaching",
+      "Badminton",
+      "Coaching academies",
+      "Cricket",
+      "Net practice & coaching",
+      "Turf & facility rental",
+      "Box cricket turf",
+      "Hourly rental"
+    ]
+  },
+  {
+    "name": "Little England Badminton Academy – Hosur",
+    "category": "Sports & fitness",
+    "subcategories": [
+      "Sports coaching",
+      "Turf & facility rental"
+    ],
+    "products": [
+      {
+        "id": "leba-coaching",
+        "name": "Badminton Coaching (monthly)",
+        "description": "Professional badminton coaching for all ages.",
+        "price": 1400,
+        "unit": "per month"
+      },
+      {
+        "id": "leba-court",
+        "name": "Court Booking (1 hr)",
+        "description": "Hourly badminton court rental.",
+        "price": 280,
+        "unit": "per hour"
+      },
+      {
+        "id": "leba-kids",
+        "name": "Kids Shuttle Program",
+        "description": "Monthly badminton program for children.",
+        "price": 1000,
+        "unit": "per month"
+      }
+    ],
+    "description": "Little England Badminton Academy — well-lit indoor courts and professional coaches for kids and adults in Hosur. Flexible batch timings.",
+    "distance": 2.7,
+    "demoCoordinates": {
+      "latitude": 12.738,
+      "longitude": 77.835
+    },
+    "rating": 4.7,
+    "reviews": 128,
+    "price": "from ₹280",
+    "icon": "🏸",
+    "color": "lavender",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Sports coaching",
+      "Badminton",
+      "Coaching academies",
+      "Badminton coaching",
+      "Turf & facility rental",
+      "Badminton courts",
+      "Indoor court rental",
+      "Court booking"
+    ]
+  },
+  {
+    "name": "Prabhu's Turf 24/7 – Hosur",
+    "category": "Sports & fitness",
+    "subcategories": [
+      "Turf & facility rental"
+    ],
+    "products": [
+      {
+        "id": "prabhu-football",
+        "name": "Football Turf (1 hr)",
+        "description": "Synthetic football turf — hourly rental.",
+        "price": 700,
+        "unit": "per hour"
+      },
+      {
+        "id": "prabhu-box-cricket",
+        "name": "Box Cricket (1 hr)",
+        "description": "Box cricket turf — hourly rental.",
+        "price": 550,
+        "unit": "per hour"
+      },
+      {
+        "id": "prabhu-night",
+        "name": "Night-slot Turf (10 PM–2 AM)",
+        "description": "Floodlit turf — late night slot.",
+        "price": 900,
+        "unit": "per hour"
+      }
+    ],
+    "description": "24/7 multi-sport turf facility in Hosur. Synthetic football, box cricket and kabaddi courts available round the clock with floodlights.",
+    "distance": 3.1,
+    "demoCoordinates": {
+      "latitude": 12.74,
+      "longitude": 77.833
+    },
+    "rating": 4.5,
+    "reviews": 221,
+    "price": "from ₹550",
+    "icon": "⚽",
+    "color": "mint",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Turf & facility rental",
+      "Box cricket turf",
+      "Hourly rental",
+      "Turf booking",
+      "Badminton courts",
+      "Indoor court rental",
+      "Sports coaching"
+    ]
+  },
+  {
+    "name": "Orien Fitness – Muneeswara Nagar, Hosur",
+    "category": "Sports & fitness",
+    "subcategories": [
+      "Gyms & fitness centers"
+    ],
+    "products": [
+      {
+        "id": "orien-monthly",
+        "name": "Monthly Membership",
+        "description": "Full gym access for one month.",
+        "price": 800,
+        "unit": "per month"
+      },
+      {
+        "id": "orien-zumba",
+        "name": "Zumba Classes (monthly)",
+        "description": "Monthly Zumba dance fitness classes.",
+        "price": 900,
+        "unit": "per month"
+      },
+      {
+        "id": "orien-combo",
+        "name": "Yoga + Gym Combo",
+        "description": "Combined yoga and gym monthly package.",
+        "price": 1500,
+        "unit": "per month"
+      }
+    ],
+    "description": "Orien Fitness unisex gym near Muneeswara Nagar, Hosur. Strength training, Zumba, aerobics and yoga — all under one roof.",
+    "distance": 1.6,
+    "demoCoordinates": {
+      "latitude": 12.729,
+      "longitude": 77.836
+    },
+    "rating": 4.5,
+    "reviews": 109,
+    "price": "from ₹800",
+    "icon": "🧘",
+    "color": "butter",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Sports & fitness",
+      "Gyms & fitness centers",
+      "Gym membership",
+      "Dance fitness",
+      "Zumba studios",
+      "Cardio dance",
+      "Yoga & pilates",
+      "Yoga studios"
+    ]
+  },
+  {
+    "name": "A1 Call Taxi – Hosur",
+    "category": "Travel",
+    "subcategories": [
+      "Local transport"
+    ],
+    "products": [
+      {
+        "id": "a1-airport",
+        "name": "Airport Transfer to Bengaluru",
+        "description": "Cab transfer to Bengaluru Kempegowda International Airport.",
+        "price": 1200,
+        "unit": "per trip"
+      },
+      {
+        "id": "a1-outstation",
+        "name": "Outstation Day Trip",
+        "description": "Full-day outstation cab booking.",
+        "price": 2500,
+        "unit": "per day"
+      },
+      {
+        "id": "a1-local",
+        "name": "Local City Ride",
+        "description": "Local city cab ride within Hosur.",
+        "price": 199,
+        "unit": "from"
+      }
+    ],
+    "description": "A1 Call Taxi — 24/7 reliable cab service in Hosur. Airport drops to Bengaluru KIA, outstation tours, corporate travel and local rides.",
+    "distance": 0.7,
+    "demoCoordinates": {
+      "latitude": 12.721,
+      "longitude": 77.827
+    },
+    "rating": 4.7,
+    "reviews": 398,
+    "price": "from ₹199",
+    "icon": "🚖",
+    "color": "mint",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Local transport",
+      "Airport rides",
+      "Cars",
+      "Airport transfer",
+      "City rides",
+      "Car rentals",
+      "Self drive",
+      "Daily rental",
+      "Car hire",
+      "Tours & experiences"
+    ]
+  },
+  {
+    "name": "Red Taxi – Hosur",
+    "category": "Travel",
+    "subcategories": [
+      "Local transport"
+    ],
+    "products": [
+      {
+        "id": "red-mini",
+        "name": "Mini Car Ride (local)",
+        "description": "Affordable mini car for local Hosur rides.",
+        "price": 150,
+        "unit": "from"
+      },
+      {
+        "id": "red-sedan",
+        "name": "Sedan Outstation",
+        "description": "Sedan car for outstation trips.",
+        "price": 3000,
+        "unit": "from"
+      },
+      {
+        "id": "red-pink",
+        "name": "Pink Taxi (women-only)",
+        "description": "Women-only cab with women driver.",
+        "price": 200,
+        "unit": "from"
+      }
+    ],
+    "description": "Red Taxi fleet service in Hosur. Sedans, mini cars and tempo travellers. Unique Pink Taxi option with women drivers for women passengers.",
+    "distance": 0.9,
+    "demoCoordinates": {
+      "latitude": 12.723,
+      "longitude": 77.832
+    },
+    "rating": 4.6,
+    "reviews": 287,
+    "price": "from ₹150",
+    "icon": "🚕",
+    "color": "peach",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Local transport",
+      "Airport rides",
+      "Cars",
+      "Airport transfer",
+      "City rides",
+      "Two-wheelers",
+      "Local bike rental",
+      "Bus & rail services"
+    ]
+  },
+  {
+    "name": "Grand Royal Tours & Travel – Hosur",
+    "category": "Travel",
+    "subcategories": [
+      "Travel agents",
+      "Tours & experiences"
+    ],
+    "products": [
+      {
+        "id": "grand-ooty",
+        "name": "Ooty & Kodaikanal Package (3N/4D)",
+        "description": "3 nights 4 days Ooty & Kodaikanal holiday package.",
+        "price": 8500,
+        "unit": "per person"
+      },
+      {
+        "id": "grand-kerala",
+        "name": "Kerala Backwaters Tour (5N/6D)",
+        "description": "5 nights 6 days Kerala backwaters tour.",
+        "price": 22000,
+        "unit": "per person"
+      },
+      {
+        "id": "grand-visa",
+        "name": "International Visa Assistance",
+        "description": "Visa application assistance for international travel.",
+        "price": 2500,
+        "unit": "per application"
+      },
+      {
+        "id": "itinerary-travel-planning",
+        "name": "Itinerary & Holiday Planning",
+        "description": "Custom domestic and international vacation itineraries, flight bookings and curated road trips.",
+        "price": 999,
+        "unit": "service"
+      },
+      {
+        "id": "travel-tickets-bus-cab",
+        "name": "Travel Agents & Airport Transfer Cabs",
+        "description": "Doorstep sanitized airport drop/pickup, intercity outstation cabs and tour packages.",
+        "price": 999,
+        "unit": "service"
+      }
+    ],
+    "description": "Grand Royal Tours in Hosur. Domestic and international holiday packages, visa assistance, hotel bookings and corporate travel management.",
+    "distance": 1.2,
+    "demoCoordinates": {
+      "latitude": 12.724,
+      "longitude": 77.826
+    },
+    "rating": 4.6,
+    "reviews": 156,
+    "price": "from ₹2500",
+    "icon": "✈️",
+    "color": "lavender",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Travel agents",
+      "Holiday planning",
+      "Domestic trips",
+      "Custom itinerary",
+      "International trips",
+      "Travel planning",
+      "Tours & experiences",
+      "Local experiences",
+      "Guided tours",
+      "Airport transfer"
+    ]
+  },
+  {
+    "name": "Nanban Tours & Travels – Hosur",
+    "category": "Travel",
+    "subcategories": [
+      "Travel agents",
+      "Tours & experiences"
+    ],
+    "products": [
+      {
+        "id": "nanban-tirupati",
+        "name": "Tirupati Darshan Package",
+        "description": "Tirupati pilgrimage package with accommodation.",
+        "price": 2800,
+        "unit": "per person"
+      },
+      {
+        "id": "nanban-rameswaram",
+        "name": "Rameswaram Tour (2N/3D)",
+        "description": "2 nights 3 days Rameswaram pilgrimage tour.",
+        "price": 5500,
+        "unit": "per person"
+      },
+      {
+        "id": "nanban-bus",
+        "name": "Bus Ticket Booking",
+        "description": "Intercity bus ticket booking assistance.",
+        "price": 50,
+        "unit": "per booking"
+      }
+    ],
+    "description": "Nanban Tours and Travels in Hosur. Pilgrimage tours, family holiday packages, bus and train ticket booking and group travel coordination.",
+    "distance": 1.4,
+    "demoCoordinates": {
+      "latitude": 12.726,
+      "longitude": 77.833
+    },
+    "rating": 4.5,
+    "reviews": 198,
+    "price": "from ₹50",
+    "icon": "🗺️",
+    "color": "butter",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Travel agents",
+      "Holiday planning",
+      "Domestic trips",
+      "Custom itinerary",
+      "Bus & rail services",
+      "Bus tickets",
+      "Intercity travel",
+      "Bus booking support",
+      "Tours & experiences"
+    ]
+  },
+  {
+    "name": "Grand Continent Hosur (Sarovar Portico)",
+    "category": "Travel",
+    "subcategories": [
+      "Stays"
+    ],
+    "products": [
+      {
+        "id": "gc-standard",
+        "name": "Standard Room",
+        "description": "Standard hotel room with all amenities.",
+        "price": 2500,
+        "unit": "per night"
+      },
+      {
+        "id": "gc-superior",
+        "name": "Superior Room with Breakfast",
+        "description": "Superior room with complimentary breakfast.",
+        "price": 3200,
+        "unit": "per night"
+      },
+      {
+        "id": "gc-conference",
+        "name": "Conference Hall (full day)",
+        "description": "Full-day conference hall rental.",
+        "price": 35000,
+        "unit": "per day"
+      }
+    ],
+    "description": "Grand Continent Hosur — Sarovar Portico affiliated hotel. Centrally located, ideal for corporate and family travelers. Restaurant, conference and banquet facilities.",
+    "distance": 1.7,
+    "demoCoordinates": {
+      "latitude": 12.729,
+      "longitude": 77.834
+    },
+    "rating": 4.6,
+    "reviews": 341,
+    "price": "from ₹2500",
+    "icon": "🏨",
+    "color": "mint",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Stays",
+      "Hotels",
+      "Family stays",
+      "Hotel room booking",
+      "Guest houses",
+      "Short stays",
+      "Guest house booking",
+      "Tours & experiences"
+    ]
+  },
+  {
+    "name": "Hotel Hills – Hosur",
+    "category": "Travel",
+    "subcategories": [
+      "Stays"
+    ],
+    "products": [
+      {
+        "id": "hills-standard",
+        "name": "Standard Room",
+        "description": "Clean and comfortable standard room.",
+        "price": 1800,
+        "unit": "per night"
+      },
+      {
+        "id": "hills-double",
+        "name": "Double Occupancy Room",
+        "description": "Room for two with double bed.",
+        "price": 2200,
+        "unit": "per night"
+      },
+      {
+        "id": "hills-dinner",
+        "name": "Room + Dinner Combo",
+        "description": "Room with complimentary dinner for two.",
+        "price": 2800,
+        "unit": "per night"
+      }
+    ],
+    "description": "Hotel Hills — reliable mid-range hotel near Hosur Bus Stand. Clean rooms, in-house restaurant and easy access to all major commercial areas.",
+    "distance": 0.5,
+    "demoCoordinates": {
+      "latitude": 12.72,
+      "longitude": 77.828
+    },
+    "rating": 4.3,
+    "reviews": 224,
+    "price": "from ₹1800",
+    "icon": "🛏️",
+    "color": "lavender",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Stays",
+      "Hotels",
+      "Family stays",
+      "Hotel room booking",
+      "Guest houses",
+      "Short stays",
+      "Guest house booking"
+    ]
+  },
+  {
+    "name": "Lakshmi Cinemas – Hosur",
+    "category": "Entertainment",
+    "subcategories": [
+      "Movies & cinema"
+    ],
+    "products": [
+      {
+        "id": "lakshmi-regular",
+        "name": "Regular Ticket",
+        "description": "Standard cinema seat.",
+        "price": 120,
+        "unit": "per ticket"
+      },
+      {
+        "id": "lakshmi-premium",
+        "name": "Premium Seat",
+        "description": "Premium recliner seat.",
+        "price": 180,
+        "unit": "per ticket"
+      },
+      {
+        "id": "lakshmi-combo",
+        "name": "Movie + Popcorn Combo",
+        "description": "Ticket with large popcorn and drink.",
+        "price": 250,
+        "unit": "per combo"
+      }
+    ],
+    "description": "Lakshmi Cinemas in Hosur — Phase VII NHS. RGB Laser projection, QSC Dolby Atmos sound. Screening latest Tamil, Telugu, Hindi and English films.",
+    "distance": 1.3,
+    "demoCoordinates": {
+      "latitude": 12.725,
+      "longitude": 77.831
+    },
+    "rating": 4.6,
+    "reviews": 534,
+    "price": "from ₹120",
+    "icon": "🎬",
+    "color": "peach",
+    "subscribed": true,
+    "tag": "Dolby Atmos",
+    "taxonomyTags": [
+      "Movies & cinema",
+      "Cinema",
+      "Show times",
+      "Movie tickets",
+      "Home viewing",
+      "Equipment hire",
+      "Projector rental"
+    ]
+  },
+  {
+    "name": "Grand Cinemas – Thally Road, Hosur",
+    "category": "Entertainment",
+    "subcategories": [
+      "Movies & cinema"
+    ],
+    "products": [
+      {
+        "id": "grand-standard",
+        "name": "Standard Ticket",
+        "description": "Standard cinema seat.",
+        "price": 110,
+        "unit": "per ticket"
+      },
+      {
+        "id": "grand-couple",
+        "name": "Couple Seat",
+        "description": "Special couple sofa seat.",
+        "price": 280,
+        "unit": "per pair"
+      },
+      {
+        "id": "grand-3d",
+        "name": "3D Movie Ticket",
+        "description": "3D movie experience ticket.",
+        "price": 200,
+        "unit": "per ticket"
+      }
+    ],
+    "description": "Grand Cinemas near Karnur Bus Stop, Thally Road, Hosur. 4K projection, Dolby Atmos and recliner seating for a premium movie experience.",
+    "distance": 2.9,
+    "demoCoordinates": {
+      "latitude": 12.739,
+      "longitude": 77.831
+    },
+    "rating": 4.7,
+    "reviews": 412,
+    "price": "from ₹110",
+    "icon": "🎥",
+    "color": "lavender",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Movies & cinema",
+      "Cinema",
+      "Show times",
+      "Movie tickets"
+    ]
+  },
+  {
+    "name": "Hosur Music & Arts Academy",
+    "category": "Entertainment",
+    "subcategories": [
+      "Music",
+      "Classes & workshops"
+    ],
+    "products": [
+      {
+        "id": "hma-carnatic",
+        "name": "Carnatic Vocal Class (monthly)",
+        "description": "Monthly Carnatic music vocal training.",
+        "price": 800,
+        "unit": "per month"
+      },
+      {
+        "id": "hma-instrument",
+        "name": "Guitar / Keyboard Lessons",
+        "description": "Monthly guitar or keyboard lessons.",
+        "price": 1000,
+        "unit": "per month"
+      },
+      {
+        "id": "hma-art",
+        "name": "Drawing & Painting Class",
+        "description": "Monthly drawing and painting classes.",
+        "price": 700,
+        "unit": "per month"
+      },
+      {
+        "id": "dance-classes",
+        "name": "Dance & Performing Arts Classes",
+        "description": "Classical Bharatanatyam, contemporary, hip-hop, salsa and wedding choreography sessions.",
+        "price": 1500,
+        "unit": "mo"
+      },
+      {
+        "id": "live-music-performances",
+        "name": "Live Music & Band Bookings",
+        "description": "Acoustic soloists, instrumental fusion duos, indie singers and sound systems for gatherings.",
+        "price": 6000,
+        "unit": "service"
+      },
+      {
+        "id": "music-classes-instruments",
+        "name": "Music Classes & Instrument Training",
+        "description": "Beginner and advanced training for acoustic guitar, keyboard, drums, flute and Hindustani/Carnatic vocal.",
+        "price": 1200,
+        "unit": "mo"
+      },
+      {
+        "id": "workshops-crafts-classes",
+        "name": "Workshops & Creative Craft Classes",
+        "description": "Weekend pottery throwing, resin art, candle crafting, baking workshops and watercolor painting.",
+        "price": 699,
+        "unit": "service"
+      }
+    ],
+    "description": "Music and arts learning center in Hosur. Carnatic vocal, keyboard, guitar, tabla, drawing and painting classes for kids and adults.",
+    "distance": 1.6,
+    "demoCoordinates": {
+      "latitude": 12.728,
+      "longitude": 77.84
+    },
+    "rating": 4.8,
+    "reviews": 87,
+    "price": "from ₹700",
+    "icon": "🎵",
+    "color": "butter",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Music",
+      "Music lessons",
+      "Instruments",
+      "Music classes",
+      "Live music",
+      "Local artists",
+      "Classes & workshops",
+      "Arts & crafts",
+      "Creative classes",
+      "Craft workshop",
+      "Dance classes"
+    ]
+  },
+  {
+    "name": "Hosur Weekend Haat – Cultural Events",
+    "category": "Entertainment",
+    "subcategories": [
+      "Events",
+      "Classes & workshops"
+    ],
+    "products": [
+      {
+        "id": "haat-event",
+        "name": "Event Planning (from)",
+        "description": "End-to-end event planning and coordination.",
+        "price": 5000,
+        "unit": "from"
+      },
+      {
+        "id": "haat-photo",
+        "name": "Photography Coverage",
+        "description": "Professional event photography.",
+        "price": 8000,
+        "unit": "per event"
+      },
+      {
+        "id": "haat-workshop",
+        "name": "Workshop Hosting (half day)",
+        "description": "Venue and coordination for half-day workshops.",
+        "price": 3000,
+        "unit": "per session"
+      },
+      {
+        "id": "event-photography",
+        "name": "Event Photography & Videography",
+        "description": "Candid wedding coverage, birthday shoots, corporate gatherings and drone videography.",
+        "price": 4999,
+        "unit": "service"
+      },
+      {
+        "id": "photography-portraits",
+        "name": "Photography & Studio Portraits",
+        "description": "Maternity shoots, infant portraits, corporate headshots, product photography and model portfolios.",
+        "price": 2499,
+        "unit": "service"
+      },
+      {
+        "id": "video-production-drone",
+        "name": "Video Shoot & Production Services",
+        "description": "4K commercial video production, social media reels editing, corporate interviews and drone shoots.",
+        "price": 5999,
+        "unit": "service"
+      }
+    ],
+    "description": "Community-run events platform in Hosur. Weekend haats, cultural workshops, local artisan expos and corporate team events coordination.",
+    "distance": 2.1,
+    "demoCoordinates": {
+      "latitude": 12.733,
+      "longitude": 77.827
+    },
+    "rating": 4.6,
+    "reviews": 76,
+    "price": "from ₹3000",
+    "icon": "🎪",
+    "color": "mint",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Events",
+      "Community events",
+      "Workshops",
+      "Weekend workshop",
+      "Celebrations",
+      "Private events",
+      "Event planning",
+      "Classes & workshops",
+      "Dance",
+      "Dance classes",
+      "Event photography",
+      "Photography"
+    ]
+  },
+  {
+    "name": "Hosur Gaming Zone – Arcade & VR",
+    "category": "Entertainment",
+    "subcategories": [
+      "Gaming",
+      "Outdoor activities"
+    ],
+    "products": [
+      {
+        "id": "hgz-vr",
+        "name": "VR Gaming Session (30 min)",
+        "description": "30-minute virtual reality gaming experience.",
+        "price": 200,
+        "unit": "per session"
+      },
+      {
+        "id": "hgz-arcade",
+        "name": "Arcade Games Pass (1 hr)",
+        "description": "1-hour unlimited arcade games pass.",
+        "price": 150,
+        "unit": "per hour"
+      },
+      {
+        "id": "hgz-group",
+        "name": "Group Gaming Package",
+        "description": "Group gaming package for up to 5 players.",
+        "price": 500,
+        "unit": "per group"
+      },
+      {
+        "id": "gaming-pc-consoles",
+        "name": "Gaming Zones, Consoles & PC",
+        "description": "PlayStation & Xbox gaming lounges, VR experience booths and gaming PC diagnostics & upgrades.",
+        "price": 150,
+        "unit": "service"
+      }
+    ],
+    "description": "Indoor gaming and arcade zone in Hosur. VR headset games, racing simulators, arcade machines and skill games for kids and adults.",
+    "distance": 2.4,
+    "demoCoordinates": {
+      "latitude": 12.735,
+      "longitude": 77.836
+    },
+    "rating": 4.5,
+    "reviews": 198,
+    "price": "from ₹150",
+    "icon": "🎮",
+    "color": "peach",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Gaming",
+      "Games & recreation",
+      "Indoor activities",
+      "Game session",
+      "Outdoor activities",
+      "Family activities",
+      "Local outings",
+      "Activity booking"
+    ]
+  },
+  {
+    "name": "Hope Home Care – Hosur",
+    "category": "Everyday services",
+    "subcategories": [
+      "Plumbing",
+      "Electrical",
+      "Cleaning"
+    ],
+    "products": [
+      {
+        "id": "hope-plumbing",
+        "name": "Plumbing Emergency Call-out",
+        "description": "Emergency plumbing repair visit.",
+        "price": 299,
+        "unit": "from"
+      },
+      {
+        "id": "hope-electrical",
+        "name": "Fan & Light Installation",
+        "description": "Ceiling fan and light fixture installation.",
+        "price": 199,
+        "unit": "per unit"
+      },
+      {
+        "id": "hope-painting",
+        "name": "Home Painting (per room)",
+        "description": "Full room painting with emulsion paint.",
+        "price": 3500,
+        "unit": "per room"
+      }
+    ],
+    "description": "Hope Home Care — multi-skilled home service professionals in Hosur. Plumbing, electrical, painting, carpentry and general home maintenance.",
+    "distance": 1.1,
+    "demoCoordinates": {
+      "latitude": 12.723,
+      "longitude": 77.834
+    },
+    "rating": 4.6,
+    "reviews": 189,
+    "price": "from ₹199",
+    "icon": "🏠",
+    "color": "mint",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Plumbing",
+      "Home plumbing",
+      "Repairs",
+      "Leak repair",
+      "Electrical",
+      "Home electrical",
+      "Installation",
+      "Lighting installation",
+      "Cleaning",
+      "Home cleaning"
+    ]
+  },
+  {
+    "name": "Vijay Home Services – Hosur",
+    "category": "Everyday services",
+    "subcategories": [
+      "Appliance repair",
+      "Cleaning"
+    ],
+    "products": [
+      {
+        "id": "vijay-washing",
+        "name": "Washing Machine Repair",
+        "description": "Doorstep washing machine repair.",
+        "price": 399,
+        "unit": "from"
+      },
+      {
+        "id": "vijay-fridge",
+        "name": "Refrigerator Service",
+        "description": "Refrigerator gas refill and full service.",
+        "price": 499,
+        "unit": "from"
+      },
+      {
+        "id": "vijay-chimney",
+        "name": "Chimney & Exhaust Fan Cleaning",
+        "description": "Kitchen chimney and exhaust fan deep clean.",
+        "price": 349,
+        "unit": "per unit"
+      }
+    ],
+    "description": "Vijay Home Services — doorstep appliance repair and home cleaning in Hosur. Washing machines, fridges, chimneys, RO filters and microwave repair.",
+    "distance": 1.3,
+    "demoCoordinates": {
+      "latitude": 12.725,
+      "longitude": 77.836
+    },
+    "rating": 4.7,
+    "reviews": 234,
+    "price": "from ₹349",
+    "icon": "🔨",
+    "color": "lavender",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Appliance repair",
+      "Kitchen appliances",
+      "Repair",
+      "Refrigerator service",
+      "Laundry appliances",
+      "Repair",
+      "Washing machine service",
+      "Cleaning",
+      "Home cleaning",
+      "Kitchen cleaning"
+    ]
+  },
+  {
+    "name": "Sri Balaji Pest Control – Hosur",
+    "category": "Everyday services",
+    "subcategories": [
+      "Home services",
+      "Professional services"
+    ],
+    "products": [
+      {
+        "id": "balaji-cockroach",
+        "name": "Cockroach Treatment",
+        "description": "Professional cockroach eradication treatment.",
+        "price": 499,
+        "unit": "per session"
+      },
+      {
+        "id": "balaji-termite",
+        "name": "Termite Treatment (per room)",
+        "description": "Anti-termite chemical treatment.",
+        "price": 999,
+        "unit": "per room"
+      },
+      {
+        "id": "balaji-bedbug",
+        "name": "Bed Bug Elimination",
+        "description": "Complete bed bug treatment and follow-up.",
+        "price": 1299,
+        "unit": "per session"
+      },
+      {
+        "id": "accounting-services",
+        "name": "Accounting & Tax Services",
+        "description": "GST filing, income tax returns, monthly bookkeeping and small business financial advisory.",
+        "price": 1499,
+        "unit": "service"
+      },
+      {
+        "id": "xerox-printing-scanning",
+        "name": "Xerox, Printing & Document Binding",
+        "description": "Color and B&W high-speed photocopying, architectural plan plotting, spiral binding and lamination.",
+        "price": 2,
+        "unit": "service"
+      }
+    ],
+    "description": "Professional pest control service covering all of Hosur. Government-certified chemicals, safe for children and pets. Annual AMC packages available.",
+    "distance": 1.9,
+    "demoCoordinates": {
+      "latitude": 12.731,
+      "longitude": 77.838
+    },
+    "rating": 4.7,
+    "reviews": 312,
+    "price": "from ₹499",
+    "icon": "🐛",
+    "color": "butter",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Home services",
+      "Pest control",
+      "Treatment",
+      "Home pest treatment",
+      "Professional services",
+      "Consulting",
+      "Local experts",
+      "Accounting"
+    ]
+  },
+  {
+    "name": "Hosur Professional Painters & Carpenters",
+    "category": "Everyday services",
+    "subcategories": [
+      "Home services",
+      "Plumbing"
+    ],
+    "products": [
+      {
+        "id": "hpc-painting",
+        "name": "Room Painting (2 coats emulsion)",
+        "description": "Two-coat emulsion painting for one room.",
+        "price": 3500,
+        "unit": "per room"
+      },
+      {
+        "id": "hpc-ceiling",
+        "name": "False Ceiling (per sqft)",
+        "description": "PVC or gypsum false ceiling installation.",
+        "price": 85,
+        "unit": "per sqft"
+      },
+      {
+        "id": "hpc-furniture",
+        "name": "Furniture Repair & Polish",
+        "description": "Wooden furniture repair and polishing.",
+        "price": 1500,
+        "unit": "from"
+      }
+    ],
+    "description": "Professional painters, carpenters and false ceiling contractors in Hosur. Home painting, furniture repair, false ceilings and waterproofing.",
+    "distance": 2.3,
+    "demoCoordinates": {
+      "latitude": 12.733,
+      "longitude": 77.822
+    },
+    "rating": 4.5,
+    "reviews": 143,
+    "price": "from ₹85/sqft",
+    "icon": "🪣",
+    "color": "peach",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Home services",
+      "Gardening",
+      "Garden care",
+      "Garden maintenance",
+      "Professional services",
+      "Consulting",
+      "Local experts",
+      "Initial consultation",
+      "Appliance repair"
+    ]
+  },
+  {
+    "name": "Hosur CA & Tax Services",
+    "category": "Everyday services",
+    "subcategories": [
+      "Professional services"
+    ],
+    "products": [
+      {
+        "id": "hosur-ca-itr",
+        "name": "ITR Filing (individual)",
+        "description": "Income tax return filing for individuals.",
+        "price": 999,
+        "unit": "per filing"
+      },
+      {
+        "id": "hosur-ca-gst",
+        "name": "GST Registration",
+        "description": "GST registration and setup for businesses.",
+        "price": 1999,
+        "unit": "per registration"
+      },
+      {
+        "id": "hosur-ca-accounting",
+        "name": "Business Accounting (monthly)",
+        "description": "Monthly bookkeeping and accounting service.",
+        "price": 3500,
+        "unit": "per month"
+      }
+    ],
+    "description": "Chartered accountants and tax consultants in Hosur. ITR filing, GST registration, business accounting, audit and company registration services.",
+    "distance": 0.8,
+    "demoCoordinates": {
+      "latitude": 12.721,
+      "longitude": 77.826
+    },
+    "rating": 4.8,
+    "reviews": 167,
+    "price": "from ₹999",
+    "icon": "📊",
+    "color": "lavender",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Professional services",
+      "Accounting",
+      "Small business",
+      "Bookkeeping support",
+      "Consulting",
+      "Local experts",
+      "Initial consultation"
+    ]
+  },
+  {
+    "name": "Hosur Event Photography & Videography",
+    "category": "Everyday services",
+    "subcategories": [
+      "Professional services"
+    ],
+    "products": [
+      {
+        "id": "hepv-wedding",
+        "name": "Wedding Photography (full day)",
+        "description": "Full-day wedding photography and editing.",
+        "price": 25000,
+        "unit": "per event"
+      },
+      {
+        "id": "hepv-corporate",
+        "name": "Corporate Event Photography",
+        "description": "Professional corporate event photography.",
+        "price": 8000,
+        "unit": "per event"
+      },
+      {
+        "id": "hepv-baby",
+        "name": "Baby / Birthday Shoot",
+        "description": "Studio or outdoor baby and birthday photography.",
+        "price": 5000,
+        "unit": "per session"
+      }
+    ],
+    "description": "Professional photography and videography services in Hosur. Wedding, corporate events, product shoots, baby photography and drone videography.",
+    "distance": 1.5,
+    "demoCoordinates": {
+      "latitude": 12.727,
+      "longitude": 77.822
+    },
+    "rating": 4.9,
+    "reviews": 198,
+    "price": "from ₹5000",
+    "icon": "📸",
+    "color": "mint",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Professional services",
+      "Photography",
+      "Events",
+      "Event photography",
+      "Consulting",
+      "Local experts"
+    ]
+  },
+  {
+    "name": "Sri Murugan Book Center & Stationery – Netaji Road",
+    "category": "Books & Stationery",
+    "subcategories": [
+      "Books",
+      "Stationery"
+    ],
+    "products": [
+      {
+        "id": "smbc-textbooks",
+        "name": "CBSE & Samacheer Kalvi School Textbooks",
+        "description": "Standard 1 to 12 state board and CBSE curriculum textbooks.",
+        "price": 180,
+        "unit": "book"
+      },
+      {
+        "id": "smbc-notebooks",
+        "name": "Classmate Long Notebooks (Bundle of 6)",
+        "description": "High quality ruled and unruled 192-page Classmate notebooks.",
+        "price": 290,
+        "unit": "bundle"
+      },
+      {
+        "id": "smbc-colors",
+        "name": "Camlin Artist Water Color & Brush Set",
+        "description": "24-shade water colors with artist paint brush assortment.",
+        "price": 350,
+        "unit": "set"
+      },
+      {
+        "id": "smbc-tnpsc",
+        "name": "TNPSC Group 4 & Banking Exam Preparation Guide",
+        "description": "Comprehensive Tamil & English general studies and aptitude guide.",
+        "price": 450,
+        "unit": "book"
+      },
+      {
+        "id": "books-textbooks-novels",
+        "name": "Books, School Textbooks & Novels",
+        "description": "CBSE, Samacheer Kalvi school textbooks, college guides, Tamil literature novels and competitive exam books.",
+        "price": 80,
+        "unit": "unit"
+      },
+      {
+        "id": "stationery-school-office-supplies",
+        "name": "Stationery & School Supplies",
+        "description": "Classmate notebooks, pens, Faber-Castell art materials, box files, geometry kits and drawing boards.",
+        "price": 20,
+        "unit": "unit"
+      }
+    ],
+    "description": "Hosur's landmark bookstore on Netaji Road. Complete school & college textbooks, NCERT guides, competitive exam books, Classmate notebooks, and Camlin art materials.",
+    "distance": 0.9,
+    "demoCoordinates": {
+      "latitude": 12.7335,
+      "longitude": 77.8288
+    },
+    "rating": 4.8,
+    "reviews": 342,
+    "price": "from ₹40",
+    "icon": "📚",
+    "color": "mint",
+    "tag": "Hosur favourite",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Books",
+      "School & College",
+      "Textbooks",
+      "School textbooks",
+      "Stationery",
+      "School supplies",
+      "Notebooks & pens",
+      "Classmate notebooks",
+      "Competitive Exams",
+      "TNPSC & Bank exams"
+    ]
+  },
+  {
+    "name": "Higginbothams Books – Station Road, Hosur",
+    "category": "Books & Stationery",
+    "subcategories": [
+      "Books",
+      "Libraries & Study"
+    ],
+    "products": [
+      {
+        "id": "higg-novels",
+        "name": "Tamil & English Bestselling Fiction Novels",
+        "description": "Contemporary bestsellers, thrillers, classics and non-fiction.",
+        "price": 299,
+        "unit": "book"
+      },
+      {
+        "id": "higg-ponniyin",
+        "name": "Ponniyin Selvan Full Set (Tamil - 5 Vols)",
+        "description": "Classic historical masterpiece by Kalki with box set cover.",
+        "price": 999,
+        "unit": "set"
+      },
+      {
+        "id": "higg-kids",
+        "name": "Children's Illustrated Story Books & Comics",
+        "description": "Amar Chitra Katha, Panchatantra, Enid Blyton and fairy tales.",
+        "price": 150,
+        "unit": "book"
+      },
+      {
+        "id": "higg-magazines",
+        "name": "National & International Magazines & Periodicals",
+        "description": "Frontline, India Today, Business Today and competitive journals.",
+        "price": 80,
+        "unit": "copy"
+      }
+    ],
+    "description": "Iconic bookstore chain near Station Road, Hosur. Bestselling English fiction, Tamil literature classics, self-help books, children's storybooks, and magazines.",
+    "distance": 1.2,
+    "demoCoordinates": {
+      "latitude": 12.729,
+      "longitude": 77.8315
+    },
+    "rating": 4.7,
+    "reviews": 215,
+    "price": "from ₹80",
+    "icon": "📖",
+    "color": "lavender",
+    "tag": "Heritage bookstore",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Books",
+      "Literature & Fiction",
+      "Tamil novels",
+      "Historical fiction",
+      "English fiction",
+      "Bestsellers",
+      "Children's Books",
+      "Story books"
+    ]
+  },
+  {
+    "name": "Vignesh Stationery, Xerox & Project Mart – Bagalur Road",
+    "category": "Books & Stationery",
+    "subcategories": [
+      "Stationery",
+      "Printing & Xerox"
+    ],
+    "products": [
+      {
+        "id": "vig-binding",
+        "name": "Spiral Binding & Project Report Printing",
+        "description": "Color cover sheet, high-speed duplex printing and spiral comb binding.",
+        "price": 120,
+        "unit": "report"
+      },
+      {
+        "id": "vig-xerox",
+        "name": "Color Laser Print & Digital Photocopy",
+        "description": "High-resolution color laser printouts and crisp black-and-white xerox.",
+        "price": 10,
+        "unit": "page"
+      },
+      {
+        "id": "vig-paper",
+        "name": "JK Copier A4 Paper Rim (75 GSM 500 Sheets)",
+        "description": "Bright white smudge-free multipurpose copier paper.",
+        "price": 320,
+        "unit": "rim"
+      },
+      {
+        "id": "vig-files",
+        "name": "Office Box Files & Document Folders (Pack of 5)",
+        "description": "Heavy-duty lever arch files for corporate and tax filing.",
+        "price": 250,
+        "unit": "pack"
+      },
+      {
+        "id": "xerox-printing-binding",
+        "name": "Xerox, Digital Printing & Binding",
+        "description": "Color digital xerox, student project spiral binding, thesis printing, lamination and copier paper.",
+        "price": 5,
+        "unit": "service"
+      }
+    ],
+    "description": "Complete stationery, digital xerox and student project binding center on Bagalur Road, Hosur. Color printouts, lamination, thesis binding, and corporate office supplies.",
+    "distance": 1.6,
+    "demoCoordinates": {
+      "latitude": 12.738,
+      "longitude": 77.834
+    },
+    "rating": 4.6,
+    "reviews": 189,
+    "price": "from ₹5",
+    "icon": "🖨️",
+    "color": "butter",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Stationery",
+      "Office supplies",
+      "Files & folders",
+      "Printing & Xerox",
+      "Document services",
+      "Photocopy & print",
+      "Color & B/W xerox",
+      "Binding & lamination",
+      "Spiral binding"
+    ]
+  },
+  {
+    "name": "Reliance Stationery & Art Center – MG Road",
+    "category": "Books & Stationery",
+    "subcategories": [
+      "Stationery"
+    ],
+    "products": [
+      {
+        "id": "rel-pens",
+        "name": "Faber-Castell Connector Pens & Sketch Set",
+        "description": "Washable vibrant colors ideal for school art and coloring.",
+        "price": 199,
+        "unit": "set"
+      },
+      {
+        "id": "rel-canvas",
+        "name": "Canvas Board & Acrylic Paints Kit",
+        "description": "Stretched 10x12 canvas board with 12 acrylic color tubes.",
+        "price": 499,
+        "unit": "kit"
+      },
+      {
+        "id": "rel-geometry",
+        "name": "Doms Mathematical Drawing & Geometry Box",
+        "description": "Precision compass, divider, protractor and set squares.",
+        "price": 120,
+        "unit": "box"
+      },
+      {
+        "id": "rel-parker",
+        "name": "Executive Parker Pen Gift Set",
+        "description": "Classic rollerball metal finish pen in luxury presentation box.",
+        "price": 550,
+        "unit": "piece"
+      }
+    ],
+    "description": "All-in-one stationery and fine art depot on MG Road, Hosur. Acrylics, oil paints, drawing boards, engineering drafting instruments, fountain pens, and school project accessories.",
+    "distance": 0.8,
+    "demoCoordinates": {
+      "latitude": 12.7312,
+      "longitude": 77.827
+    },
+    "rating": 4.6,
+    "reviews": 164,
+    "price": "from ₹30",
+    "icon": "✏️",
+    "color": "peach",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Stationery",
+      "School supplies",
+      "Geometry & kits",
+      "Art & craft",
+      "Drawing & painting",
+      "Paints & canvases",
+      "Craft materials"
+    ]
+  },
+  {
+    "name": "Pooja Fancy & Bridal Gift World – MG Road",
+    "category": "Toys & Fancy Stores",
+    "subcategories": [
+      "Fancy Store",
+      "Gifts & Novelties"
+    ],
+    "products": [
+      {
+        "id": "pooja-bangles",
+        "name": "Traditional Glass & Velvet Bangles (Set of 24)",
+        "description": "Handcrafted festive glass bangles in assorted bridal shades.",
+        "price": 180,
+        "unit": "set"
+      },
+      {
+        "id": "pooja-jewel",
+        "name": "Matte Finish 1-Gram Gold Temple Jewellery Set",
+        "description": "Antique choker necklace with matching jhumkas.",
+        "price": 1450,
+        "unit": "set"
+      },
+      {
+        "id": "pooja-makeup",
+        "name": "Lakme & Maybelline Bridal Vanity Makeup Kit",
+        "description": "Kajal, foundation, compact powder and long-stay lipstick combo.",
+        "price": 1200,
+        "unit": "kit"
+      },
+      {
+        "id": "pooja-gifts",
+        "name": "Custom Photo Clock & Personalized Gift Frame",
+        "description": "Personalized wooden tabletop frame with quartz clock.",
+        "price": 550,
+        "unit": "piece"
+      },
+      {
+        "id": "bangles-fancy-jewellery",
+        "name": "Bangles & Fashion Jewellery",
+        "description": "Traditional glass bangles, velvet bangles, matte finish 1-gram gold temple jewellery and accessories.",
+        "price": 50,
+        "unit": "unit"
+      },
+      {
+        "id": "fancy-store-gifts",
+        "name": "Fancy Store, Gifts & Cosmetics",
+        "description": "Party celebration items, return gifts, vanity makeup cosmetics, hair accessories, perfumes and gifts.",
+        "price": 40,
+        "unit": "unit"
+      }
+    ],
+    "description": "Hosur's most renowned fancy and bridal gift showroom on MG Road. Premium glass bangles, imitation jewellery, branded cosmetics, hair accessories, luxury perfumes, and customized gifts.",
+    "distance": 0.7,
+    "demoCoordinates": {
+      "latitude": 12.7318,
+      "longitude": 77.8265
+    },
+    "rating": 4.8,
+    "reviews": 388,
+    "price": "from ₹50",
+    "icon": "🎁",
+    "color": "peach",
+    "tag": "Hosur top fancy store",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Fancy Store",
+      "Bangles & jewelry",
+      "Glass & metal bangles",
+      "Bridal & daily bangles",
+      "Imitation jewelry",
+      "Beauty & cosmetics",
+      "Makeup & vanity",
+      "Gifts & novelties",
+      "Gift articles",
+      "Bangles"
+    ]
+  },
+  {
+    "name": "Sri Balaji Novelties & Toy Kingdom – Netaji Road",
+    "category": "Toys & Fancy Stores",
+    "subcategories": [
+      "Toys & Games",
+      "Kids Essentials"
+    ],
+    "products": [
+      {
+        "id": "bal-rc",
+        "name": "Rechargeable High-Speed RC Monster Truck",
+        "description": "2.4GHz remote control 4WD off-road climbing vehicle.",
+        "price": 1250,
+        "unit": "piece"
+      },
+      {
+        "id": "bal-lego",
+        "name": "Lego-Compatible STEM Building Block Set (500 pcs)",
+        "description": "Creative architectural blocks for cognitive learning.",
+        "price": 850,
+        "unit": "set"
+      },
+      {
+        "id": "bal-carrom",
+        "name": "Carrom Board Champion Tournament Size (32 inch)",
+        "description": "Smooth waterproof playing surface with coins and striker.",
+        "price": 1600,
+        "unit": "board"
+      },
+      {
+        "id": "bal-doll",
+        "name": "Barbie Fashionista & Indian Doll Collection",
+        "description": "Articulated fashion doll with modern interchangeable outfits.",
+        "price": 499,
+        "unit": "doll"
+      },
+      {
+        "id": "toys-games-rc-cars",
+        "name": "Toys, Board Games & RC Cars",
+        "description": "Remote control cars, STEM building blocks, Barbie dolls, soft teddy bears, carrom and board games.",
+        "price": 99,
+        "unit": "unit"
+      }
+    ],
+    "description": "Largest toy showroom in Hosur on Netaji Road. Remote control cars, drones, educational STEM building blocks, board games, Hot Wheels tracks, and baby developmental toys.",
+    "distance": 1,
+    "demoCoordinates": {
+      "latitude": 12.734,
+      "longitude": 77.8295
+    },
+    "rating": 4.7,
+    "reviews": 275,
+    "price": "from ₹99",
+    "icon": "🧸",
+    "color": "mint",
+    "tag": "Top rated toys",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Toys & Games",
+      "Action & vehicles",
+      "RC cars & drones",
+      "Learning & STEM",
+      "Puzzles & blocks",
+      "Board games",
+      "Family classics",
+      "Kids & baby toys"
+    ]
+  },
+  {
+    "name": "Kids Zone Toy World & Ride-Ons – Denkanikottai Road",
+    "category": "Toys & Fancy Stores",
+    "subcategories": [
+      "Toys & Games",
+      "Kids Essentials"
+    ],
+    "products": [
+      {
+        "id": "kz-electric-jeep",
+        "name": "Kids Battery-Operated Electric Jeep (with Remote)",
+        "description": "12V dual motor rechargeable electric ride-on with headlights and music.",
+        "price": 8999,
+        "unit": "piece"
+      },
+      {
+        "id": "kz-tricycle",
+        "name": "Kids Tricycle with Canopy & Parent Push Handle",
+        "description": "Ergonomic comfortable trike with rear storage basket.",
+        "price": 2400,
+        "unit": "piece"
+      },
+      {
+        "id": "kz-teddy",
+        "name": "Giant 4-Foot Soft Plush Teddy Bear",
+        "description": "Ultra-soft hypo-allergenic plush cuddle bear.",
+        "price": 1200,
+        "unit": "piece"
+      },
+      {
+        "id": "kz-backpack",
+        "name": "Insulated Cartoon School Backpack & Water Bottle",
+        "description": "Water-resistant kids school bag with leakproof thermos bottle.",
+        "price": 750,
+        "unit": "combo"
+      }
+    ],
+    "description": "Specialized kids toys and battery ride-on showroom on Denkanikottai Road, Hosur. Electric cars, bikes, tricycles, soft plush toys, baby walkers, and school accessories.",
+    "distance": 1.5,
+    "demoCoordinates": {
+      "latitude": 12.726,
+      "longitude": 77.829
+    },
+    "rating": 4.7,
+    "reviews": 198,
+    "price": "from ₹150",
+    "icon": "🚗",
+    "color": "lavender",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Toys & Games",
+      "Kids & baby toys",
+      "Soft toys & plush",
+      "Kids Essentials",
+      "Ride-ons",
+      "Battery vehicles",
+      "Kids cycles",
+      "School accessories"
+    ]
+  },
+  {
+    "name": "Mahalakshmi Fancy Store & Party Hub – Bagalur Circle",
+    "category": "Toys & Fancy Stores",
+    "subcategories": [
+      "Fancy Store",
+      "Gifts & Novelties"
+    ],
+    "products": [
+      {
+        "id": "maha-decor",
+        "name": "Birthday Party Decoration Kit (Balloons, Banner & Props)",
+        "description": "Theme foil balloons, happy birthday banner and photobooth props.",
+        "price": 450,
+        "unit": "set"
+      },
+      {
+        "id": "maha-return-gifts",
+        "name": "Kids Birthday Return Gift Packs (Bundle of 10)",
+        "description": "Stationery kit, puzzle and novelty gift packaged packs.",
+        "price": 350,
+        "unit": "pack"
+      },
+      {
+        "id": "maha-clips",
+        "name": "Fancy Hair Clips, Clutches & Scrunchies Collection",
+        "description": "Korean style pastel hair accessories and pearl clips.",
+        "price": 90,
+        "unit": "set"
+      },
+      {
+        "id": "maha-showpiece",
+        "name": "Musical Snow Globe & Decorative Idols",
+        "description": "LED lighting musical showpiece for birthdays and home gifting.",
+        "price": 399,
+        "unit": "piece"
+      }
+    ],
+    "description": "Friendly neighbourhood fancy store and party decoration hub near Bagalur Circle. Helium balloons, party supplies, return gifts for kids, hair accessories, cosmetics, and seasonal decor.",
+    "distance": 2.1,
+    "demoCoordinates": {
+      "latitude": 12.742,
+      "longitude": 77.836
+    },
+    "rating": 4.5,
+    "reviews": 172,
+    "price": "from ₹40",
+    "icon": "🎈",
+    "color": "butter",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Fancy Store",
+      "Beauty & cosmetics",
+      "Hair accessories",
+      "Gifts & novelties",
+      "Party supplies",
+      "Birthday celebration",
+      "Return gifts",
+      "Gift articles"
+    ]
+  },
+  {
+    "name": "Hosur MGR Central Bus Stand – NH 44 Bypass",
+    "category": "Public & Common Places",
+    "subcategories": [
+      "Transit & Stations"
+    ],
+    "products": [
+      {
+        "id": "mgr-bus-bengaluru",
+        "name": "TNSTC Hosur to Bengaluru City / Electronic City Bus",
+        "description": "Frequent express town and highway shuttle service every 10 minutes.",
+        "price": 45,
+        "unit": "trip"
+      },
+      {
+        "id": "mgr-bus-intercity",
+        "name": "Intercity Superfast Express to Chennai / Salem / Madurai",
+        "description": "Long-distance government passenger buses connecting major Tamil Nadu cities.",
+        "price": 210,
+        "unit": "ticket"
+      },
+      {
+        "id": "mgr-cloakroom",
+        "name": "24-Hour Passenger Cloakroom & Luggage Storage",
+        "description": "Secure luggage deposit facility inside main bus terminus.",
+        "price": 30,
+        "unit": "bag"
+      },
+      {
+        "id": "bus-stand-intercity-transit",
+        "name": "Bus Stand & Intercity Transit Services",
+        "description": "TNSTC and KSRTC bus services to Bengaluru, Chennai, Salem, cloakroom facility and town departures.",
+        "price": 499,
+        "unit": "service"
+      }
+    ],
+    "description": "Hosur's main government bus terminus situated at the NH 44 junction. 24/7 bus connectivity to Bengaluru, Chennai, Salem, Coimbatore, Krishnagiri, and surrounding rural villages.",
+    "distance": 0.6,
+    "demoCoordinates": {
+      "latitude": 12.7302,
+      "longitude": 77.8248
+    },
+    "rating": 4.3,
+    "reviews": 1250,
+    "price": "Public amenity",
+    "icon": "🚌",
+    "color": "mint",
+    "tag": "Central transit hub",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Transit & Stations",
+      "Bus stations",
+      "MGR Central Bus Stand",
+      "Town & intercity buses",
+      "Depot & enquiry",
+      "MGR Bus Stand"
+    ]
+  },
+  {
+    "name": "Hosur Railway Station (HSRA) – Station Road",
+    "category": "Public & Common Places",
+    "subcategories": [
+      "Transit & Stations"
+    ],
+    "products": [
+      {
+        "id": "hsra-suburban",
+        "name": "Hosur to Bengaluru MEMU / Suburban Train Ticket",
+        "description": "Daily commuter trains to Bangalore City (SBC) and Baiyyappanahalli (SMVB).",
+        "price": 20,
+        "unit": "ticket"
+      },
+      {
+        "id": "hsra-reservation",
+        "name": "PRS Reserved Express Train Booking Counter",
+        "description": "Computerized passenger reservation system for mail/express trains.",
+        "price": 0,
+        "unit": "enquiry"
+      },
+      {
+        "id": "hsra-auto",
+        "name": "24/7 Prepaid Auto & Taxi Stand Facility",
+        "description": "Regulated auto rickshaw stand serving all Hosur industrial and residential sectors.",
+        "price": 50,
+        "unit": "base fare"
+      }
+    ],
+    "description": "South Western Railway station connecting Hosur with Bengaluru, Salem, Tiruchirappalli, and Kerala. Equipped with passenger waiting rooms, ticket counters, and auto-rickshaw stand.",
+    "distance": 1.4,
+    "demoCoordinates": {
+      "latitude": 12.7238,
+      "longitude": 77.8312
+    },
+    "rating": 4.4,
+    "reviews": 890,
+    "price": "Public amenity",
+    "icon": "🚆",
+    "color": "lavender",
+    "tag": "Rail gateway",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Transit & Stations",
+      "Railways",
+      "Hosur Railway Station",
+      "Train schedules & tickets",
+      "Station amenities"
+    ]
+  },
+  {
+    "name": "Shri Chandra Choodeswarar Hill Temple (Malai Kovil)",
+    "category": "Public & Common Places",
+    "subcategories": [
+      "Heritage & Temples"
+    ],
+    "products": [
+      {
+        "id": "temple-darshan",
+        "name": "Temple Darshan & Archana Pooja Token",
+        "description": "Special archana pooja and divine blessings of Lord Shiva.",
+        "price": 20,
+        "unit": "token"
+      },
+      {
+        "id": "temple-prasad",
+        "name": "Special Abhishekham & Temple Prasad",
+        "description": "Morning and evening deity abhishekham with holy sweet pongal prasad.",
+        "price": 100,
+        "unit": "seva"
+      },
+      {
+        "id": "temple-viewpoint",
+        "name": "Hilltop Panoramic Viewpoint & Sunset Walk",
+        "description": "360-degree panoramic vantage point overlooking the entire town of Hosur.",
+        "price": 0,
+        "unit": "free access"
+      },
+      {
+        "id": "public-common-places-heritage",
+        "name": "Public Places, Parks & Heritage Sites",
+        "description": "Malai Kovil temple, Kelavarapalli Dam, Rajaji Eco Park, Municipal Corporation, HPO and Town Library.",
+        "price": 499,
+        "unit": "service"
+      }
+    ],
+    "description": "Ancient and sacred Shiva hill temple dating back to the Chola dynasty, perched on an elevation overlooking all of Hosur. Famous for Rajagopuram, car festival, and panoramic views.",
+    "distance": 2.2,
+    "demoCoordinates": {
+      "latitude": 12.716,
+      "longitude": 77.83
+    },
+    "rating": 4.9,
+    "reviews": 2180,
+    "price": "Free / ₹20",
+    "icon": "🛕",
+    "color": "peach",
+    "tag": "Hosur heritage icon",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Heritage & Temples",
+      "Hill temples",
+      "Chandra Choodeswarar Kovil",
+      "Malai Kovil Shiva temple",
+      "Temple rituals",
+      "Public & Common Places"
+    ]
+  },
+  {
+    "name": "Kelavarapalli Reservoir Dam & Children's Park",
+    "category": "Public & Common Places",
+    "subcategories": [
+      "Parks & Nature"
+    ],
+    "products": [
+      {
+        "id": "dam-entry",
+        "name": "Park Entry & Garden Walkway Access",
+        "description": "Entry ticket to public landscaped gardens along the Ponniyar reservoir.",
+        "price": 15,
+        "unit": "person"
+      },
+      {
+        "id": "dam-kids",
+        "name": "Children's Play Zone, Swings & Slides",
+        "description": "Open lawn playground area with merry-go-round, slides and seesaws.",
+        "price": 0,
+        "unit": "included"
+      },
+      {
+        "id": "dam-view",
+        "name": "River Promenade & Sunset Photography View",
+        "description": "Scenic embankment viewpoint watching water release and sunset.",
+        "price": 0,
+        "unit": "free"
+      }
+    ],
+    "description": "Picturesque dam and reservoir across the Ponniyar River located 10 km from Hosur. Features lush landscaped gardens, children's amusement playground, and picnic meadows.",
+    "distance": 4.8,
+    "demoCoordinates": {
+      "latitude": 12.785,
+      "longitude": 77.85
+    },
+    "rating": 4.5,
+    "reviews": 940,
+    "price": "₹15 / person",
+    "icon": "🌊",
+    "color": "mint",
+    "tag": "Popular picnic spot",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Parks & Nature",
+      "Lakes & dams",
+      "Kelavarapalli Dam",
+      "Reservoir garden & boating",
+      "Public parks"
+    ]
+  },
+  {
+    "name": "Rajaji Memorial & Eco Park – Thorapalli / Hosur",
+    "category": "Public & Common Places",
+    "subcategories": [
+      "Parks & Nature",
+      "Heritage & Temples"
+    ],
+    "products": [
+      {
+        "id": "eco-track",
+        "name": "Eco Park Walking Track & Herbal Garden Entry",
+        "description": "Paved jogging and morning walking track amidst medicinal native trees.",
+        "price": 10,
+        "unit": "person"
+      },
+      {
+        "id": "eco-museum",
+        "name": "Bharat Ratna Rajaji Historical Memorial Tour",
+        "description": "Preserved ancestral house and museum gallery of C. Rajagopalachari.",
+        "price": 0,
+        "unit": "free"
+      },
+      {
+        "id": "eco-lawn",
+        "name": "Children's Outdoor Lawn & Activity Ground",
+        "description": "Green carpet lawns for family picnics, yoga and outdoor relaxation.",
+        "price": 0,
+        "unit": "free"
+      }
+    ],
+    "description": "Historic memorial dedicated to C. Rajagopalachari (Rajaji) combined with a scenic eco park. Walking trails, medicinal trees, children's play equipment, and memorial gallery.",
+    "distance": 3.5,
+    "demoCoordinates": {
+      "latitude": 12.705,
+      "longitude": 77.842
+    },
+    "rating": 4.6,
+    "reviews": 410,
+    "price": "₹10 / person",
+    "icon": "🌳",
+    "color": "butter",
+    "tag": "Eco & historic park",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Parks & Nature",
+      "Public parks",
+      "Eco Park Thorapalli",
+      "Heritage & Temples",
+      "Historic monuments",
+      "Rajaji Memorial"
+    ]
+  },
+  {
+    "name": "Hosur City Municipal Corporation – Bagalur Road",
+    "category": "Public & Common Places",
+    "subcategories": [
+      "Civic & Administration"
+    ],
+    "products": [
+      {
+        "id": "corp-cert",
+        "name": "Birth & Death Certificate Verification & Issuance",
+        "description": "Official citizen vital statistics registration and digital certificates.",
+        "price": 50,
+        "unit": "copy"
+      },
+      {
+        "id": "corp-tax",
+        "name": "Property Tax Payment & Assessment Counter",
+        "description": "Municipal corporation tax assessment, billing and receipt desk.",
+        "price": 0,
+        "unit": "service"
+      },
+      {
+        "id": "corp-grievance",
+        "name": "Public Citizen Grievance Redressal Cell",
+        "description": "Civic complaints registration regarding roads, drainage and streetlights.",
+        "price": 0,
+        "unit": "free"
+      }
+    ],
+    "description": "Official municipal civic headquarters of Hosur on Bagalur Road. Handles town planning, sanitation, water supply, trade licenses, property tax, and public grievances.",
+    "distance": 1.1,
+    "demoCoordinates": {
+      "latitude": 12.736,
+      "longitude": 77.832
+    },
+    "rating": 4.2,
+    "reviews": 320,
+    "price": "Public civic body",
+    "icon": "🏛️",
+    "color": "lavender",
+    "tag": "Civic center",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Civic & Administration",
+      "City corporation",
+      "Hosur Municipal Corporation",
+      "Civic services & certificates",
+      "Public tax & billing"
+    ]
+  },
+  {
+    "name": "Hosur Head Post Office (HPO) – Taluk Office Complex",
+    "category": "Public & Common Places",
+    "subcategories": [
+      "Civic & Administration"
+    ],
+    "products": [
+      {
+        "id": "post-speed",
+        "name": "India Post Speed Post & Domestic Parcel Booking",
+        "description": "Fast pan-India express document and parcel delivery with live tracking.",
+        "price": 40,
+        "unit": "parcel"
+      },
+      {
+        "id": "post-aadhaar",
+        "name": "Aadhaar Card Enrollment & Biometric Update",
+        "description": "Official UIDAI biometric update, address change and photo correction.",
+        "price": 50,
+        "unit": "update"
+      },
+      {
+        "id": "post-savings",
+        "name": "Post Office Savings Bank & Senior Citizens Scheme",
+        "description": "Government-backed savings accounts, PPF, Sukanya Samriddhi and NSC.",
+        "price": 0,
+        "unit": "account"
+      }
+    ],
+    "description": "Main postal and courier hub of Hosur located near Taluk office complex. Offers Speed Post, international EMS, registered parcel, Aadhaar services, and postal savings banking.",
+    "distance": 0.8,
+    "demoCoordinates": {
+      "latitude": 12.731,
+      "longitude": 77.828
+    },
+    "rating": 4.3,
+    "reviews": 430,
+    "price": "Standard postal rates",
+    "icon": "📮",
+    "color": "peach",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Civic & Administration",
+      "Postal services",
+      "Hosur Head Post Office",
+      "Speed post & parcel delivery",
+      "Citizen identity"
+    ]
+  },
+  {
+    "name": "Hosur Town Public Library – Library Street",
+    "category": "Public & Common Places",
+    "subcategories": [
+      "Civic & Administration"
+    ],
+    "products": [
+      {
+        "id": "lib-card",
+        "name": "Annual Public Library Membership & Book Lending",
+        "description": "Lending membership for over 20,000 Tamil and English literature books.",
+        "price": 100,
+        "unit": "year"
+      },
+      {
+        "id": "lib-reading",
+        "name": "Daily Tamil & English Newspapers Reading Room",
+        "description": "Quiet public reading hall with 15+ regional and national daily papers.",
+        "price": 0,
+        "unit": "free access"
+      },
+      {
+        "id": "lib-upsc",
+        "name": "UPSC & TNPSC Competitive Exam Reference Hall",
+        "description": "Dedicated reference corner with competition yearbooks and journals.",
+        "price": 0,
+        "unit": "free study"
+      }
+    ],
+    "description": "Government branch library near Taluk office, Hosur. Quiet study atmosphere with over 20,000 Tamil and English books, historical journals, and student exam preparation materials.",
+    "distance": 0.9,
+    "demoCoordinates": {
+      "latitude": 12.7325,
+      "longitude": 77.8275
+    },
+    "rating": 4.7,
+    "reviews": 280,
+    "price": "Free / ₹100 yr",
+    "icon": "📚",
+    "color": "mint",
+    "tag": "Study & reference",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Civic & Administration",
+      "Public libraries",
+      "Town Public Library",
+      "Reading room & reference books"
+    ]
+  },
+  {
+    "name": "Hosur Government General Hospital – Denkanikottai Road",
+    "category": "Public & Common Places",
+    "subcategories": [
+      "Emergency & Healthcare"
+    ],
+    "products": [
+      {
+        "id": "gh-casualty",
+        "name": "24/7 Emergency Casualty & Trauma Care",
+        "description": "Immediate round-the-clock emergency medical response and trauma doctors.",
+        "price": 0,
+        "unit": "public healthcare"
+      },
+      {
+        "id": "gh-opd",
+        "name": "General OPD & Specialist Doctor Consultations",
+        "description": "Free out-patient department consultations across pediatrics, general medicine and surgery.",
+        "price": 0,
+        "unit": "public"
+      },
+      {
+        "id": "gh-bloodbank",
+        "name": "Government Blood Bank & 108 Ambulance Hub",
+        "description": "24/7 emergency blood supply and state-operated 108 ambulance base.",
+        "price": 0,
+        "unit": "emergency"
+      }
+    ],
+    "description": "District government headquarters hospital on Denkanikottai Road, Hosur. 24/7 casualty, emergency trauma care, maternity & neonatal wing, public blood bank, and free medicine dispensary.",
+    "distance": 1.3,
+    "demoCoordinates": {
+      "latitude": 12.727,
+      "longitude": 77.8285
+    },
+    "rating": 4.2,
+    "reviews": 580,
+    "price": "Free public healthcare",
+    "icon": "🏥",
+    "color": "peach",
+    "tag": "24/7 Government hospital",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Emergency & Healthcare",
+      "Public hospital",
+      "Government General Hospital",
+      "24/7 Casualty & emergency",
+      "Public health"
+    ]
+  },
+  {
+    "name": "Hosur Leather & Luggage World ? MG Road",
+    "category": "Fashion",
+    "subcategories": [
+      "Bags & accessories"
+    ],
+    "products": [
+      {
+        "id": "handbags-daily-accessories",
+        "name": "Handbags & Daily Accessories",
+        "description": "Leather tote bags, college backpacks, formal laptop sleeves and travel slings.",
+        "price": 799,
+        "unit": "piece"
+      },
+      {
+        "id": "zip-repair-bag-restoration",
+        "name": "Zip Repair & Bag Restoration",
+        "description": "Heavy-duty luggage zippers, handbag slider replacement and strap re-stitching.",
+        "price": 150,
+        "unit": "service"
+      },
+      {
+        "id": "hllw-luggage",
+        "name": "Trolley Suitcases & Travel Duffles",
+        "description": "Hard-shell polycarbonate cabin and check-in luggage with TSA lock.",
+        "price": 2499,
+        "unit": "piece"
+      }
+    ],
+    "description": "Premier leather goods, luggage and handbag showroom on MG Road, Hosur. Handbags, backpacks, laptop bags, wallets, belts, luggage repair and zip restoration.",
+    "distance": 0.9,
+    "demoCoordinates": {
+      "latitude": 12.7315,
+      "longitude": 77.8275
+    },
+    "rating": 4.7,
+    "reviews": 185,
+    "price": "from ?150",
+    "icon": "??",
+    "color": "peach",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Bags & accessories",
+      "Bags",
+      "Daily use",
+      "Handbags & backpacks",
+      "Accessories",
+      "Fashion accessories",
+      "Belts & wallets"
+    ]
   }
 ];
 
