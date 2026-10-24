@@ -4277,6 +4277,13 @@ const initialBusinesses: Business[] = [
         "description": "Decorative wall art and paneling.",
         "price": 2500,
         "unit": "from"
+      },
+      {
+        "id": "interior-design-makeover",
+        "name": "Interior Design Consultation",
+        "description": "3D space planning, modular kitchen design, false ceiling layouts and material selection.",
+        "price": 1500,
+        "unit": "service"
       }
     ],
     "description": "Full-home interior design studio in Hosur. False ceilings, modular furniture, lighting, wall paneling and 3D design planning from ₹0 consultation.",
@@ -5623,6 +5630,13 @@ const initialBusinesses: Business[] = [
         "description": "Full room painting with emulsion paint.",
         "price": 3500,
         "unit": "per room"
+      },
+      {
+        "id": "ac-repair",
+        "name": "AC Repair & Servicing",
+        "description": "Gas refilling, deep cleaning, filter sanitization, cooling coil repair and compressor checks.",
+        "price": 499,
+        "unit": "service"
       }
     ],
     "description": "Hope Home Care — multi-skilled home service professionals in Hosur. Plumbing, electrical, painting, carpentry and general home maintenance.",
@@ -6949,6 +6963,13 @@ const initialBusinesses: Business[] = [
         "description": "Hard-shell polycarbonate cabin and check-in luggage with TSA lock.",
         "price": 2499,
         "unit": "piece"
+      },
+      {
+        "id": "handbags-leather-goods",
+        "name": "Handbags & Daily Accessories",
+        "description": "Eco-friendly tote bags, pure leather wallets, laptop backpacks and travel duffle bags.",
+        "price": 499,
+        "unit": "service"
       }
     ],
     "description": "Premier leather goods, luggage and handbag showroom on MG Road, Hosur. Handbags, backpacks, laptop bags, wallets, belts, luggage repair and zip restoration.",
