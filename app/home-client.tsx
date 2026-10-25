@@ -149,6 +149,77 @@ type DemoData = {
 };
 type TaxonomyNode = { name: string; children: TaxonomyNode[] };
 
+export type NotificationType = "sos" | "enquiry" | "offer" | "business" | "favorite" | "system";
+
+export type MarketplaceNotification = {
+  id: string;
+  title: string;
+  message: string;
+  timestamp: string;
+  type: NotificationType;
+  read: boolean;
+  linkText?: string;
+  action?: {
+    type: "search" | "business" | "role" | "category" | "sos";
+    payload: string;
+  };
+};
+
+const initialNotifications: MarketplaceNotification[] = [
+  {
+    id: "notif-welcome",
+    title: "Welcome to Bizearch Hosur!",
+    message: "Explore 21 sectors across retail, services, industry and agriculture in Hosur.",
+    timestamp: "10 mins ago",
+    type: "system",
+    read: false,
+    linkText: "Explore sectors",
+    action: { type: "role", payload: "Discover" }
+  },
+  {
+    id: "notif-rose",
+    title: "🌹 Hosur Rose & Flora City Nursery",
+    message: "New export-quality red rose saplings and indoor bonsai available on Bagalur Road.",
+    timestamp: "1 hour ago",
+    type: "offer",
+    read: false,
+    linkText: "View nursery",
+    action: { type: "business", payload: "Hosur Rose & Flora City Nurseries" }
+  },
+  {
+    id: "notif-sipcot",
+    title: "🏭 SIPCOT Industrial Factory Sheds",
+    message: "Heavy PEB manufacturing sheds with 50 HP power now listed for lease.",
+    timestamp: "3 hours ago",
+    type: "business",
+    read: false,
+    linkText: "View listings",
+    action: { type: "business", payload: "SIPCOT Industrial Sheds & Godowns" }
+  },
+  {
+    id: "notif-safety",
+    title: "🛡️ 24/7 SOS Emergency Ready",
+    message: "Hosur emergency hotlines and GPS broadcast are active on this device.",
+    timestamp: "Yesterday",
+    type: "sos",
+    read: true,
+    linkText: "Emergency help",
+    action: { type: "sos", payload: "sos" }
+  },
+  {
+    id: "notif-college",
+    title: "🎓 Adhiyamaan College Admissions",
+    message: "2026 admissions open for B.E., B.Tech, MBA, and MCA degree programs.",
+    timestamp: "2 days ago",
+    type: "offer",
+    read: true,
+    linkText: "View college",
+    action: { type: "business", payload: "Adhiyamaan College of Engineering (ACE)" }
+  }
+];
+
+const NOTIF_STORAGE_KEY = "neighborly-notifications-v2";
+
 const STORAGE_KEY = "neighborly-demo-v2";
 const vehicleTypeOptions = ["Two wheeler", "Three wheeler", "Four wheeler", "Multi wheel / commercial"];
 const vehicleMakesByType: Record<string, string[]> = {
@@ -8603,6 +8674,102 @@ export default function Home() {
   const businessDistance = (business: Business) =>
     locationCoordinates ? distanceBetween(locationCoordinates, business.coordinates || business.demoCoordinates) : business.distance;
 
+  const [notifications, setNotifications] = useState<MarketplaceNotification[]>(initialNotifications);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [notificationFilter, setNotificationFilter] = useState<"all" | "unread">("all");
+  const notificationsRef = useRef<HTMLDivElement>(null);
+  const unreadCount = useMemo(() => notifications.filter((n) => !n.read).length, [notifications]);
+  const displayedNotifications = useMemo(
+    () => (notificationFilter === "unread" ? notifications.filter((n) => !n.read) : notifications),
+    [notifications, notificationFilter]
+  );
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(NOTIF_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setNotifications(parsed);
+        }
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(notifications));
+    } catch {}
+  }, [notifications]);
+
+  function addNotification(notif: Omit<MarketplaceNotification, "id" | "timestamp" | "read"> & { id?: string; read?: boolean; timestamp?: string }) {
+    const newNotif: MarketplaceNotification = {
+      id: notif.id || `notif-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      title: notif.title,
+      message: notif.message,
+      timestamp: notif.timestamp || "Just now",
+      type: notif.type,
+      read: notif.read ?? false,
+      linkText: notif.linkText,
+      action: notif.action,
+    };
+    setNotifications((prev) => [newNotif, ...prev]);
+  }
+
+  function markNotificationRead(id: string) {
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+  }
+
+  function markAllNotificationsRead() {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    showNotice("All notifications marked as read.");
+  }
+
+  function deleteNotification(id: string) {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  }
+
+  function clearAllNotifications() {
+    setNotifications([]);
+    showNotice("All notifications cleared.");
+  }
+
+  function handleNotificationAction(notif: MarketplaceNotification) {
+    markNotificationRead(notif.id);
+    setNotificationsOpen(false);
+    if (!notif.action) return;
+    if (notif.action.type === "business") {
+      const biz = businesses.find((b) => b.name.toLowerCase() === notif.action?.payload.toLowerCase());
+      if (biz) {
+        setSelectedBusiness(biz);
+        setRole("Discover");
+      } else {
+        setQuery(notif.action.payload);
+        setRole("Discover");
+      }
+    } else if (notif.action.type === "search") {
+      setQuery(notif.action.payload);
+      setCategory("All");
+      setCategoryPath([]);
+      setRole("Discover");
+    } else if (notif.action.type === "role") {
+      setRole(notif.action.payload as Role);
+    } else if (notif.action.type === "sos") {
+      setDialog("sos");
+    }
+  }
+
+  useEffect(() => {
+    const onAddNotification = (event: Event) => {
+      const notif = (event as CustomEvent).detail;
+      if (notif?.title && notif?.message) {
+        addNotification(notif);
+      }
+    };
+    window.addEventListener("neighborly-add-notification", onAddNotification);
+    return () => window.removeEventListener("neighborly-add-notification", onAddNotification);
+  }, []);
+
   useEffect(() => {
     const timer = window.setInterval(() => setActiveAd((current) => (current + 1) % adConfig.imageAds.length), 5000);
     return () => window.clearInterval(timer);
@@ -8627,6 +8794,9 @@ export default function Home() {
     function handleClickOutside(event: MouseEvent) {
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
         setSearchDropdownOpen(false);
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+        setNotificationsOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -9114,6 +9284,15 @@ export default function Home() {
     }));
     recordEvent(alreadySaved ? "Business removed from saved list" : "Business saved to favorites");
     showNotice(alreadySaved ? "Removed from saved businesses." : "Saved to your favorites on this device.");
+    if (!alreadySaved) {
+      addNotification({
+        title: "Saved to Shortlist",
+        message: `${businessName} has been added to your favorites.`,
+        type: "favorite",
+        linkText: "View shortlist",
+        action: { type: "role", payload: "Account" },
+      });
+    }
   }
 
   function requestDeviceLocation() {
@@ -9127,6 +9306,13 @@ export default function Home() {
         setLocationEnabled(true);
         recordEvent("Device location permission granted");
         showNotice("Your device location is being used in memory to filter the sample directory. It is not saved or sent to a server.");
+        addNotification({
+          title: "📍 Live GPS Enabled",
+          message: "Nearby businesses are now filtered using your precise coordinates in Hosur.",
+          type: "system",
+          linkText: "Search nearby",
+          action: { type: "role", payload: "Discover" },
+        });
       },
       () => showNotice("Location was not shared. Nearby search will continue with sample distances."),
       { enableHighAccuracy: false, timeout: 10000 },
@@ -9157,6 +9343,13 @@ export default function Home() {
     recordEvent("Customer enquiry submitted");
     setEnquiryProduct(null);
     showNotice("Enquiry saved in this browser. It has not been sent to the business.");
+    addNotification({
+      title: `Enquiry Sent: ${business.name}`,
+      message: `Your enquiry for ${product.name} was successfully submitted.`,
+      type: "enquiry",
+      linkText: "View store",
+      action: { type: "business", payload: business.name },
+    });
   }
 
   function addProduct(businessName: string, product: Omit<Product, "id">) {
@@ -9183,6 +9376,13 @@ export default function Home() {
     recordEvent("Subscription checkout previewed");
     setDialog(null);
     showNotice("Checkout preview saved. No payment was initiated or collected.");
+    addNotification({
+      title: "Subscription Checkout Recorded",
+      message: `${plan} membership for "${businessName}" saved on this device.`,
+      type: "business",
+      linkText: "View Business Portal",
+      action: { type: "role", payload: "Business" },
+    });
   }
 
   async function submitBusiness(event: React.FormEvent<HTMLFormElement>) {
@@ -9276,6 +9476,13 @@ export default function Home() {
     setDialog(null);
     openPortal("Business");
     showNotice("Business profile saved. Choose a plan and complete verification to appear in search.");
+    addNotification({
+      title: `Business Profile Created: ${name}`,
+      message: `Your business has been added to local listings under ${selectedCategory}.`,
+      type: "business",
+      linkText: "View in Discover",
+      action: { type: "search", payload: name },
+    });
   }
 
   function verifyBusinessLocation() {
@@ -9665,9 +9872,129 @@ export default function Home() {
           <div className="topbar-partner" aria-label="Powered by Jishnu Infotech"><span>Powered by</span><img src="/jishnu-infotech-logo.png" alt="Jishnu Infotech" /></div>
           <div className="topbar-actions">
             <button className="location-chip" onClick={toggleDeviceLocation}>
-              <span className="location-pin">📍</span> {locationEnabled ? "Stop using device location" : "Bengaluru demo area"} <span className="chevron">⌄</span>
+              <span className="location-pin">📍</span> {locationEnabled ? "Stop using device location" : "Hosur, Tamil Nadu"} <span className="chevron">⌄</span>
             </button>
-            <button className="icon-button notification-button" aria-label="Notifications" onClick={() => showNotice("You're all caught up.")}>🔔<i /></button>
+            <div className="notification-wrapper" ref={notificationsRef}>
+              <button
+                className="icon-button notification-button"
+                aria-label={`Notifications (${unreadCount} unread)`}
+                onClick={() => setNotificationsOpen((prev) => !prev)}
+              >
+                🔔
+                {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
+              </button>
+              {notificationsOpen && (
+                <div className="notification-popover" role="dialog" aria-label="Notifications panel">
+                  <div className="notification-header">
+                    <div className="notification-header-title">
+                      <span>Notifications</span>
+                      {unreadCount > 0 && <span className="notification-count-pill">{unreadCount} new</span>}
+                    </div>
+                    <div className="notification-actions-top">
+                      {unreadCount > 0 && (
+                        <button
+                          type="button"
+                          className="notification-mark-all"
+                          onClick={markAllNotificationsRead}
+                        >
+                          Mark all read
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className="notification-close-btn"
+                        onClick={() => setNotificationsOpen(false)}
+                        aria-label="Close notifications"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="notification-tabs">
+                    <button
+                      type="button"
+                      className={`notification-tab-btn ${notificationFilter === "all" ? "active" : ""}`}
+                      onClick={() => setNotificationFilter("all")}
+                    >
+                      All ({notifications.length})
+                    </button>
+                    <button
+                      type="button"
+                      className={`notification-tab-btn ${notificationFilter === "unread" ? "active" : ""}`}
+                      onClick={() => setNotificationFilter("unread")}
+                    >
+                      Unread ({unreadCount})
+                    </button>
+                  </div>
+
+                  <div className="notification-list">
+                    {displayedNotifications.length === 0 ? (
+                      <div className="notification-empty">
+                        <span className="notification-empty-icon">🎉</span>
+                        <strong>You&apos;re all caught up!</strong>
+                        <p>{notificationFilter === "unread" ? "No unread alerts at the moment." : "No notifications right now."}</p>
+                      </div>
+                    ) : (
+                      displayedNotifications.map((notif) => (
+                        <div
+                          key={notif.id}
+                          className={`notification-item ${!notif.read ? "unread" : ""}`}
+                          onClick={() => { if (!notif.read) markNotificationRead(notif.id); }}
+                        >
+                          <span className={`notification-item-icon ${notif.type}`}>
+                            {notif.type === "sos" ? "🚨" : notif.type === "enquiry" ? "💬" : notif.type === "offer" ? "🎁" : notif.type === "business" ? "🏢" : notif.type === "favorite" ? "⭐" : "🔔"}
+                          </span>
+                          <div className="notification-item-content">
+                            <div className="notification-item-head">
+                              <span className="notification-item-title">{notif.title}</span>
+                              <span className="notification-item-time">{notif.timestamp}</span>
+                            </div>
+                            <p className="notification-item-msg">{notif.message}</p>
+                            {notif.action && (
+                              <button
+                                type="button"
+                                className="notification-item-action"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleNotificationAction(notif);
+                                }}
+                              >
+                                {notif.linkText || "View"} ↗
+                              </button>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            className="notification-item-dismiss"
+                            aria-label="Delete notification"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteNotification(notif.id);
+                            }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {notifications.length > 0 && (
+                    <div className="notification-footer">
+                      <button
+                        type="button"
+                        className="notification-clear-btn"
+                        onClick={clearAllNotifications}
+                      >
+                        Clear all
+                      </button>
+                      <span>Hosur Community Alerts</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
             {authenticatedPortals.length > 0 && (role === "Discover" || authenticatedPortals.includes(role)) ?
               <button className="sign-in-button" onClick={() => void logOut()}>Sign out</button> :
               <button className="sign-in-button" onClick={() => openPortal("Account")}>Sign in <span>&rarr;</span></button>}
@@ -10279,7 +10606,7 @@ export default function Home() {
           </div>
         )}
 
-        {role === "Account" && <CustomerPortal data={demoData} onRemoveFavorite={toggleFavorite} onSearch={(term) => { setQuery(term); setCategory("All"); setCategoryPath([]); setRole("Discover"); }} onFindBusiness={(name) => { const business = businesses.find((item) => item.name === name); if (business) setSelectedBusiness(business); }} onOpenAccount={() => showNotice("You are viewing this account in demo mode.")} showNotice={showNotice} />}
+        {role === "Account" && <CustomerPortal data={demoData} onRemoveFavorite={toggleFavorite} onSearch={(term) => { setQuery(term); setCategory("All"); setCategoryPath([]); setRole("Discover"); }} onFindBusiness={(name) => { const business = businesses.find((item) => item.name === name); if (business) setSelectedBusiness(business); }} onOpenAccount={() => setDialog("login")} showNotice={showNotice} />}
         {role === "Business" && <BusinessPortal businesses={businessAccountBusinesses} categoryConfig={categoryConfig} enquiries={demoData.enquiries} checkouts={demoData.checkouts} openBusinessProfile={() => window.dispatchEvent(new Event("neighborly-open-business-profile"))} openPlans={() => setDialog("plans")} verifyLocation={verifyBusinessLocation} onAddProduct={addProduct} showNotice={showNotice} />}
         {role === "Agent" && <AgentPortal showNotice={showNotice} />}
         {role === "Company" && <CompanyPortal accessLevel={companyAccessLevel} identity={sessionIdentity} businesses={businesses} enquiries={demoData.enquiries} events={demoData.events} checkouts={demoData.checkouts} locationEnabled={locationEnabled} showNotice={showNotice} />}
@@ -10456,12 +10783,34 @@ function AgentPortal({ showNotice }: { showNotice: (message: string) => void }) 
   const [copied, setCopied] = useState(false);
   const [tab, setTab] = useState("Overview");
   useEffect(() => { const openProfile = () => setTab("Profile"); window.addEventListener("neighborly-open-profile", openProfile); return () => window.removeEventListener("neighborly-open-profile", openProfile); }, []);
+
+  function downloadReferralReport() {
+    const rows = [
+      ["Business Name", "Category", "Joined Date", "Status", "Estimated Commission"],
+      ["Bloom & Bean Café", "Food & dining", "Oct 14, 2026", "Subscribed", "₹1,200"],
+      ["Kaveri Cycle Works", "Automobiles", "Oct 12, 2026", "Pending plan", "₹0"],
+      ["Pixel Fix Studio", "Electronics", "Oct 09, 2026", "Subscribed", "₹1,200"],
+      ["Sunday Loom", "Fashion", "Oct 06, 2026", "Reviewing", "₹0"],
+      ["Hosur Properties Hub", "Real Estate & Construction", "Oct 20, 2026", "Subscribed", "₹1,200"],
+      ["Sri Balaji Laser Works", "Industrial & B2B Manufacturing", "Oct 22, 2026", "Subscribed", "₹1,200"]
+    ];
+    const csvContent = "data:text/csv;charset=utf-8," + rows.map((e) => e.join(",")).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `hosur_agent_referrals_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showNotice("Agent referral report downloaded as CSV.");
+  }
+
   return <div className="page-content portal-content"><div className="portal-header"><div><div className="eyebrow"><span /> NEIGHBORHOOD PARTNERS</div><h1>Good connections,<br /><em>good things.</em></h1><p>Help great local businesses meet the neighbors who need them.</p></div><div className="agent-avatar">✳</div></div>
     <div className="portal-tabs">{["Overview", "Profile"].map((item) => <button key={item} className={tab === item ? "current" : ""} onClick={() => setTab(item)}>{item}</button>)}</div>
     {tab === "Overview" && <>
     <section className="referral-card"><div className="referral-copy"><div className="eyebrow">YOUR REFERRAL CODE</div><h2>Share the local love.</h2><p>Businesses that use your code will be linked to your agent account when they register.</p></div><div className="code-box"><code>NEIGHBOR-4821</code><button onClick={() => { navigator.clipboard?.writeText("NEIGHBOR-4821"); setCopied(true); showNotice("Referral code copied."); }}>{copied ? "Copied ✓" : "Copy code ↗"}</button></div></section>
     <div className="metric-grid"><Metric label="Businesses referred" value="24" delta="Across 6 categories" icon="♧" /><Metric label="Awaiting signup" value="5" delta="Share your referral code" icon="◷" /><Metric label="This month's reward" value="₹4,800" delta="Demo estimate" icon="↗" /></div>
-    <section className="panel agent-table"><div className="panel-heading"><div><div className="eyebrow">YOUR NETWORK</div><h2>Recent referrals</h2></div><button className="text-link" onClick={() => showNotice("Referral export requires an agent account.")}>Download report ↗</button></div>
+    <section className="panel agent-table"><div className="panel-heading"><div><div className="eyebrow">YOUR NETWORK</div><h2>Recent referrals</h2></div><button className="text-link" onClick={downloadReferralReport}>Download report ↗</button></div>
       <div className="table-head"><span>BUSINESS</span><span>CATEGORY</span><span>JOINED</span><span>STATUS</span></div>
       {[["Bloom & Bean Café", "Food & dining", "Oct 14, 2026", "Subscribed"], ["Kaveri Cycle Works", "Automobiles", "Oct 12, 2026", "Pending plan"], ["Pixel Fix Studio", "Electronics", "Oct 09, 2026", "Subscribed"], ["Sunday Loom", "Fashion", "Oct 06, 2026", "Reviewing"]].map((row) => <div className="table-row" key={row[0]}>{row.map((cell, index) => <span key={cell} className={index === 3 ? `status-pill ${cell === "Subscribed" ? "verified" : "pending"}` : ""}>{index === 3 && <i>● </i>}{cell}</span>)}</div>)}
     </section><div className="form-note"><strong>Agent data</strong><span>Referral records, commission rules, and payouts need authenticated server-side services before launch.</span></div>
@@ -10719,7 +11068,7 @@ function CompanyPortal({
     {activeTab === "Advertisements" && <CompanyAdManager />}
     {activeTab === "Overview" && <><div className="metric-grid"><Metric label="Registered businesses" value={String(businesses.length)} delta="Sample directory" icon="▧" /><Metric label="Active subscriptions" value={String(businesses.filter((business) => business.subscribed).length)} delta="Subscribed demo listings" icon="◉" /><Metric label="Customer enquiries" value={String(enquiries.length)} delta="Browser-local demo records" icon="⌕" /><Metric label="Agent partners" value="42" delta="Sample metric" icon="♧" /></div>
       <div className="portal-columns"><section className="panel"><div className="panel-heading"><div><div className="eyebrow">RECENT SIGNUPS</div><h2>Business registrations</h2></div><button className="text-link" onClick={() => setActiveTab("Businesses")}>View all →</button></div>{businesses.slice(0, 4).map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category}</small></span><span className={`status-pill ${business.subscribed ? "verified" : "pending"}`}>● {business.subscribed ? "Subscribed" : "Pending"}</span></div>)}</section>
-      <section className="panel admin-privacy"><div className="privacy-icon">⌖</div><div className="eyebrow">PRIVACY BY DESIGN</div><h2>Activity is opt-in.</h2><p>Precise location and sign-in activity should be collected only with explicit user consent, retained securely and visible only to authorized administrators.</p><button className="outline-button" onClick={() => showNotice("Review the Customer locations tab for registration locations shared with Company Admins.")}>Review privacy controls ↗</button></section></div>
+      <section className="panel admin-privacy"><div className="privacy-icon">⌖</div><div className="eyebrow">PRIVACY BY DESIGN</div><h2>Activity is opt-in.</h2><p>Precise location and sign-in activity should be collected only with explicit user consent, retained securely and visible only to authorized administrators.</p><button className="outline-button" onClick={() => setActiveTab("Customer locations")}>Review privacy controls ↗</button></section></div>
       <div className="verification-banner"><span className="verify-icon">⌖</span><div><strong>Device location permission</strong><p>{locationEnabled ? "Granted for this browser session. Coordinates were not stored or transmitted." : "Not granted. No location data is available in this demo."}</p></div><button onClick={downloadReport}>Download CSV ↗</button></div>
       <div className="form-note"><strong>Demo only</strong><span>Administrative metrics and audit entries are sample/browser-local data, not company-wide records. This view has no server-side authorization.</span></div>
     </>}
@@ -11248,6 +11597,17 @@ function Dialog({
       sosRequestKey.current = crypto.randomUUID();
       setSosError("");
       showNotice(result.alert.locationStatus === "shared" ? "SOS alert and coordinates were recorded for the Super Admin. Open a call or message only if you choose to." : "SOS alert was recorded, but this device could not share its location. Use your phone to call emergency services if needed.");
+      window.dispatchEvent(
+        new CustomEvent("neighborly-add-notification", {
+          detail: {
+            title: `🚨 SOS Emergency Alert: ${result.alert.emergencyType.toUpperCase()}`,
+            message: `SOS alert recorded with ${result.alert.locationStatus === "shared" ? "GPS coordinates" : "approximate location"}. Emergency contacts notified.`,
+            type: "sos",
+            linkText: "View Emergency",
+            action: { type: "sos", payload: "sos" },
+          },
+        })
+      );
     } catch (reason) {
       setSosError(`${reason instanceof Error ? reason.message : "Could not send the SOS alert."} If you may be in immediate danger, call your local emergency number now.`);
     }
