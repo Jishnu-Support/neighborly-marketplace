@@ -6,6 +6,9 @@ const categories = [
   { name: "All", icon: "✳" },
   { name: "Automobiles", icon: "\u{1F697}" },
   { name: "Electronics", icon: "▣" },
+  { name: "Electricals", icon: "⚡" },
+  { name: "Hardware", icon: "🔧" },
+  { name: "Home Appliances", icon: "🧊" },
   { name: "Fashion", icon: "◇" },
   { name: "Home & furniture", icon: "⌂" },
   { name: "Food & dining", icon: "♨" },
@@ -22,9 +25,16 @@ const categories = [
 const electronicsDeviceGroups: [string, [string, string[]][]][] = [
   ["Mobile phones", [["Apple", ["iPhone 17", "iPhone 16"]], ["Samsung", ["Galaxy S25", "Galaxy A56"]], ["Google", ["Pixel 10", "Pixel 10 Pro"]], ["Motorola", ["Edge 60", "Moto G86"]], ["Xiaomi", ["Redmi Note 14", "Xiaomi 15"]], ["OnePlus", ["OnePlus 13", "OnePlus 13R"]]]],
   ["Laptops & computers", [["Apple", ["MacBook Air", "MacBook Pro"]], ["Dell", ["Inspiron", "XPS"]], ["HP", ["Pavilion", "OmniBook"]], ["Lenovo", ["ThinkPad", "IdeaPad"]], ["ASUS", ["Vivobook", "Zenbook"]], ["Acer", ["Aspire", "Swift"]]]],
-  ["Home appliances", [["LG", ["InstaView refrigerator", "AI DD washing machine"]], ["Samsung", ["Bespoke refrigerator", "Bespoke washing machine"]], ["Whirlpool", ["IntelliFresh refrigerator", "Stainwash washing machine"]], ["Bosch", ["Series 6 washing machine", "Series 6 dishwasher"]], ["IFB", ["Senator washing machine", "Neptune dishwasher"]], ["Godrej", ["Edge refrigerator", "Eon washing machine"]]]],
   ["Audio & video", [["Sony", ["BRAVIA television", "WH-1000XM6 headphones"]], ["Samsung", ["Crystal UHD television", "Q-series soundbar"]], ["LG", ["OLED evo television", "XBOOM speaker"]], ["JBL", ["Flip portable speaker", "Tune headphones"]], ["Bose", ["QuietComfort headphones", "SoundLink speaker"]], ["Philips", ["TAB soundbar", "TAT earbuds"]]]],
   ["Cameras", [["Canon", ["EOS R50", "EOS R6 Mark III"]], ["Sony", ["Alpha a6400", "Alpha a7 IV"]], ["Nikon", ["Z50II", "Z6III"]], ["Fujifilm", ["X-S20", "X-T5"]], ["Panasonic", ["LUMIX G97", "LUMIX S5II"]], ["GoPro", ["HERO13 Black", "MAX2"]]]],
+];
+
+const homeAppliancesGroups: [string, [string, string[]][]][] = [
+  ["Refrigerators", [["LG", ["InstaView Door-in-Door", "Double Door Frost Free"]], ["Samsung", ["Bespoke AI Refrigerator", "Curd Maestro Refrigerator"]], ["Whirlpool", ["IntelliFresh Inverter", "Proton Triple Door"]], ["Godrej", ["Edge Pro Single Door", "Eon Vibe Double Door"]], ["Haier", ["Bottom Mounted Refrigerator", "Side by Side 4-Door"]], ["Bosch", ["Series 4 Frost Free", "MaxFlex Multi-Door"]]]],
+  ["Washing machines", [["LG", ["AI Direct Drive Front Load", "Smart Inverter Top Load"]], ["Samsung", ["EcoBubble AI Front Load", "Wobble Technology Top Load"]], ["Bosch", ["Series 6 Anti-Tangle", "Serie 8 Home Connect"]], ["IFB", ["Senator Smart Front Load", "Aqua Inverter Top Load"]], ["Whirlpool", ["360 BloomWash Pro", "Stainwash Ultra"]], ["Panasonic", ["Econavi Stain Master", "Smart Wi-Fi Front Load"]]]],
+  ["Air conditioners", [["Daikin", ["Triple Display Inverter AC", "Dual Flap 1.5 Ton"]], ["Voltas", ["Maha Adjustable Inverter AC", "Vectra 4-in-1 Split AC"]], ["LG", ["AI Dual Inverter Super Convertible", "Split Dual Inverter AC"]], ["Blue Star", ["Heavy Duty Smart Split AC", "5-Star Inverter AC"]], ["Carrier", ["Ester Pro Inverter AC", "Flexicool Convertible"]], ["Hitachi", ["Takeshi Dual Gold Inverter", "Yoshi Smart Inverter"]]]],
+  ["Kitchen appliances", [["Prestige", ["Iris Mixer Grinder 750W", "Svachh Pressure Cooker"]], ["Philips", ["Digital Air Fryer XL", "Daily Collection Mixer Grinder"]], ["Faber", ["Primus Auto-Clean Chimney", "3-Burner Glass Hob"]], ["Bajaj", ["GX-1 Mixer Grinder", "Immersion Water Heater"]], ["Glen", ["Auto-Ignition Gas Stove", "Designer Kitchen Chimney"]], ["Morphy Richards", ["Oven Toaster Griller OTG", "Digital Microwave Oven"]]]],
+  ["Water purifiers & geysers", [["Aquaguard", ["Active Copper RO+UV", "Geneus Water Purifier"]], ["Kent", ["Grand Plus RO Water Filter", "Prime Alkaline Purifier"]], ["A.O. Smith", ["Z9 Green RO Water Purifier", "HSE-SHS Storage Water Geyser"]], ["Havells", ["Adonia Storage Water Heater", "Digitouch Alkaline RO"]], ["Crompton", ["Arno Neo 5-Star Geyser", "Amica High Pressure Geyser"]], ["Racold", ["Omnis Lux Smart Geyser", "Pronto Neo Instant Geyser"]]]],
 ];
 
 const taxonomyPaths: Record<string, string[][]> = {
@@ -32,6 +42,41 @@ const taxonomyPaths: Record<string, string[][]> = {
   Electronics: [
     ...["Sales", "Service"].flatMap((activity) =>
       electronicsDeviceGroups.flatMap(([productType, companies]) =>
+        companies.flatMap(([company, models]) => models.map((model) => [activity, productType, company, model]))
+      )
+    ),
+  ],
+  Electricals: [
+    ["Wiring & Cables", "House wiring", "FR & FRLS cables", "Havells & Polycab wires"],
+    ["Wiring & Cables", "Industrial cables", "Armoured & flexible", "Submersible cables"],
+    ["Switches & Sockets", "Modular switches", "Plates & switches", "Legrand & Anchor Roma"],
+    ["Switches & Sockets", "Switchgear & MCB", "Distribution boxes", "Schneider & L&T MCBs"],
+    ["LED Lighting", "Indoor lights", "Ceiling panels & spots", "Philips & Crompton LED"],
+    ["LED Lighting", "Outdoor & decorative", "Floodlights & strip lights", "Decorative warm lights"],
+    ["Fans & Ventilation", "Ceiling fans", "BLDC energy saving", "Atomberg & Orient fans"],
+    ["Fans & Ventilation", "Exhaust & wall", "Kitchen & bathroom", "High-speed exhaust fans"],
+    ["Inverters & Power", "Inverters & batteries", "Pure sine wave inverters", "Luminous & Exide inverters"],
+    ["Inverters & Power", "Solar electricals", "Rooftop panels & inverters", "Solar hybrid systems"],
+    ["Electrical Services", "Home electrical", "Repairs & wiring", "Emergency electrician visit"],
+    ["Electrical Services", "Installation", "Fan & light installation", "Switchboard fitting"],
+  ],
+  Hardware: [
+    ["Power Tools & Machinery", "Drills & drivers", "Cordless & impact drills", "Bosch & Makita drills"],
+    ["Power Tools & Machinery", "Grinders & cutters", "Angle grinders & saws", "Metal & marble cutters"],
+    ["Hand Tools & Fasteners", "Hand tools", "Spanners & pliers", "Toolkits & wrenches"],
+    ["Hand Tools & Fasteners", "Fasteners", "Screws, nuts & bolts", "Anchor bolts & fasteners"],
+    ["Plumbing Hardware", "Pipes & fittings", "CPVC & PVC pipes", "Ashirvad & Supreme pipes"],
+    ["Plumbing Hardware", "Pumps & motors", "Water pumps & motors", "CRI & Texmo pumps"],
+    ["Paints & Hardware", "Paints & primers", "Emulsions & wall primer", "Asian Paints & Berger"],
+    ["Paints & Hardware", "Waterproofing", "Chemicals & sealants", "Dr. Fixit waterproofing"],
+    ["Locks & Architectural", "Door locks", "Mortise & main door locks", "Godrej & Yale locks"],
+    ["Locks & Architectural", "Handles & hinges", "Cabinet & door hardware", "Stainless steel hinges"],
+    ["Sanitaryware & Bath", "Bath fittings", "Taps, showers & valves", "Jaquar & Hindware fittings"],
+    ["Sanitaryware & Bath", "Water storage", "Overhead water tanks", "Sintex & Supreme tanks"],
+  ],
+  "Home Appliances": [
+    ...["Sales", "Service"].flatMap((activity) =>
+      homeAppliancesGroups.flatMap(([productType, companies]) =>
         companies.flatMap(([company, models]) => models.map((model) => [activity, productType, company, model]))
       )
     ),

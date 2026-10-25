@@ -11,15 +11,18 @@ import { atozCatalog, type AtoZItem } from "./lib/atoz-catalog";
 
 const subcategoriesSummary: Record<string, string> = {
   Automobiles: "Sales · Service → Two wheelers · Three wheelers · Four wheelers · Heavy vehicles",
-  Electronics: "Sales · Service → Mobiles · Laptops · Appliances · Cameras",
-  Fashion: "Clothing · Footwear · Jewellery · Tailoring",
+  Electronics: "Sales · Service → Mobiles · Laptops · Audio & video · Cameras",
+  Electricals: "Wiring & cables · Modular switches · LED lighting · Fans · Inverters · Solar",
+  Hardware: "Power tools · Hand tools · Pipes & plumbing · Paints · Locks & sanitaryware",
+  "Home Appliances": "Refrigerators · Washing machines · ACs · Chimneys · Purifiers & geysers",
+  Fashion: "Clothing · Footwear · Jewellery · Tailoring · Bags & accessories",
   "Home & furniture": "Furniture · Decor · Kitchen · Repairs",
   "Food & dining": "Restaurants · Meal delivery · Bakery · Cafes",
   "Health & wellness": "Clinics · Dental · Pharmacies · Physio",
   "Sports & fitness": "Gyms · Yoga · Sports coaching · Swimming · Turf",
   Travel: "Travel agents · Stays · Airport cabs · Tours",
   Entertainment: "Events · Music · Workshops · Gaming",
-  "Everyday services": "Plumbing · Electrical · Cleaning · Repairs",
+  "Everyday services": "Plumbing · Cleaning · Carpentry · Pest control · Repairs",
   "Books & Stationery": "Books · School textbooks · Notebooks · Printing & Xerox",
   "Toys & Fancy Stores": "Toys & Games · Fancy store · Bangles & Gifts · Cosmetics",
   "Public & Common Places": "Bus stand · Railway station · Temples · Parks & Civic hubs",
@@ -3009,10 +3012,13 @@ const initialBusinesses: Business[] = [
   },
   {
     "name": "Jaya Sri Electricals & Plumbing – Hosur",
-    "category": "Everyday services",
+    "category": "Electricals",
     "subcategories": [
-      "Electrical",
-      "Plumbing"
+      "Wiring & Cables",
+      "Switches & Sockets",
+      "LED Lighting",
+      "Fans & Ventilation",
+      "Electrical Services"
     ],
     "products": [
       {
@@ -3035,6 +3041,34 @@ const initialBusinesses: Business[] = [
         "description": "Any brand geyser installation, thermostat fix and anode check.",
         "price": 499,
         "unit": "from"
+      },
+      {
+        "id": "electrical-repairs-wiring",
+        "name": "Electrical Repairs & Wiring",
+        "description": "Short circuit troubleshooting, MCB switchboard fixing, chandelier setup and whole-home rewiring.",
+        "price": 249,
+        "unit": "service"
+      },
+      {
+        "id": "electrician-doorstep",
+        "name": "Electrician On-Demand",
+        "description": "Verified certified electricians for quick emergency fixes, fan installations and appliance plugs.",
+        "price": 199,
+        "unit": "service"
+      },
+      {
+        "id": "led-lighting-fixtures",
+        "name": "LED Lighting, Panels & Decorative Lights",
+        "description": "Ceiling slim LED panels, surface downlights, warm track lights, floodlights and Philips/Crompton bulbs.",
+        "price": 120,
+        "unit": "unit"
+      },
+      {
+        "id": "switches-modular-fittings",
+        "name": "Switches, Modular Plates & MCB Switchgear",
+        "description": "Legrand and Anchor Roma modular switches, cover plates, Schneider MCBs, distribution boxes and sockets.",
+        "price": 45,
+        "unit": "unit"
       }
     ],
     "description": "Trusted electrician and plumber in Hosur — same-day home visits. Licensed professionals covering all major residential areas.",
@@ -3060,16 +3094,21 @@ const initialBusinesses: Business[] = [
       "Home plumbing",
       "Leak repair",
       "Bathroom plumbing",
-      "Tap & fixture installation"
+      "Tap & fixture installation",
+      "Electrical Services",
+      "LED Lighting",
+      "Switches & Sockets"
     ],
     "tag": "Same-day service"
   },
   {
     "name": "Supreme Cool Tech AC Services – Hosur",
-    "category": "Everyday services",
+    "category": "Home Appliances",
     "subcategories": [
-      "Appliance repair",
-      "Electrical"
+      "Air conditioners",
+      "Refrigerators",
+      "Washing machines",
+      "Kitchen appliances"
     ],
     "products": [
       {
@@ -3092,6 +3131,41 @@ const initialBusinesses: Business[] = [
         "description": "Professional 1.5 ton / 2 ton split AC fitting.",
         "price": 1200,
         "unit": "from"
+      },
+      {
+        "id": "ac-repair",
+        "name": "AC Repair & Servicing",
+        "description": "Gas refilling, deep cleaning, filter sanitization, cooling coil repair and compressor checks.",
+        "price": 499,
+        "unit": "service"
+      },
+      {
+        "id": "appliance-repair",
+        "name": "Appliance Repair & Installation",
+        "description": "Same-day doorstep repair for washing machines, microwaves, refrigerators and dishwashers.",
+        "price": 299,
+        "unit": "service"
+      },
+      {
+        "id": "kitchen-appliances-repair",
+        "name": "Kitchen Appliances Service",
+        "description": "Mixer grinder, induction cooktop, electric oven and water heater doorstep servicing.",
+        "price": 249,
+        "unit": "service"
+      },
+      {
+        "id": "refrigerator-gas-repair",
+        "name": "Refrigerator Repair & Gas Refill",
+        "description": "Compressor troubleshooting, frost build-up resolution, thermostat calibration and gas charge.",
+        "price": 449,
+        "unit": "service"
+      },
+      {
+        "id": "washing-machine-service",
+        "name": "Washing Machine Repair & Care",
+        "description": "Front load & top load motor checks, drum bearing repair, water inlet valve and drainage pump fixes.",
+        "price": 399,
+        "unit": "service"
       }
     ],
     "description": "Specialist AC repair, deep cleaning, gas recharge and installation in Hosur. Covers all brands — Daikin, Voltas, LG, Samsung, Hitachi.",
@@ -3115,7 +3189,12 @@ const initialBusinesses: Business[] = [
       "Air conditioning",
       "AC cooling recharge",
       "Electrical",
-      "Home electrical"
+      "Home electrical",
+      "Air conditioners",
+      "AC repair",
+      "Refrigerators",
+      "Washing machines",
+      "Washing machine service"
     ]
   },
   {
@@ -6993,6 +7072,470 @@ const initialBusinesses: Business[] = [
       "Fashion accessories",
       "Belts & wallets"
     ]
+  },
+  {
+    "name": "Vasanth & Co ? Bagalur Road, Hosur",
+    "category": "Home Appliances",
+    "subcategories": [
+      "Refrigerators",
+      "Washing machines",
+      "Air conditioners",
+      "Kitchen appliances",
+      "Water purifiers & geysers"
+    ],
+    "products": [
+      {
+        "id": "lg-double-door-fridge",
+        "name": "LG 242L Frost-Free Double Door Refrigerator",
+        "description": "Smart Inverter compressor with door cooling and multi air flow.",
+        "price": 26990,
+        "unit": "unit"
+      },
+      {
+        "id": "samsung-ecobubble-washer",
+        "name": "Samsung 8kg AI EcoBubble Front Load Washing Machine",
+        "description": "Hygiene steam with digital inverter motor and diamond drum.",
+        "price": 34500,
+        "unit": "unit"
+      },
+      {
+        "id": "daikin-inverter-split-ac",
+        "name": "Daikin 1.5 Ton 5-Star Inverter Split AC",
+        "description": "Triple display with PM2.5 filter and copper condenser coil.",
+        "price": 43900,
+        "unit": "unit"
+      },
+      {
+        "id": "prestige-iris-mixer-grinder",
+        "name": "Prestige Iris 750W Mixer Grinder with 4 Jars",
+        "description": "Heavy-duty copper motor with 3 stainless steel jars and juicer jar.",
+        "price": 3299,
+        "unit": "unit"
+      },
+      {
+        "id": "faber-autoclean-chimney",
+        "name": "Faber Auto-Clean Touch Control Chimney 60cm",
+        "description": "Filterless baffle chimney with 1200 m3/h suction and LED lamps.",
+        "price": 12490,
+        "unit": "unit"
+      },
+      {
+        "id": "aquaguard-copper-ro",
+        "name": "Aquaguard Active Copper RO+UV Water Purifier",
+        "description": "Mineral guard technology with 7-stage active copper purification.",
+        "price": 14999,
+        "unit": "unit"
+      },
+      {
+        "id": "water-purifier-ro-service",
+        "name": "Water Purifier (RO) Filter Service",
+        "description": "Sediment filter replacement, carbon block changes, RO membrane descaling and TDS water balancing.",
+        "price": 349,
+        "unit": "service"
+      }
+    ],
+    "description": "Tamil Nadu's trusted home appliances showroom on Bagalur Road, Hosur. Refrigerators, front/top load washing machines, inverter air conditioners, kitchen chimneys, water purifiers, and microwave ovens.",
+    "distance": 1.1,
+    "demoCoordinates": {
+      "latitude": 12.735,
+      "longitude": 77.831
+    },
+    "rating": 4.8,
+    "reviews": 420,
+    "price": "from ?3,299",
+    "icon": "??",
+    "color": "mint",
+    "tag": "Hosur favourite",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Home Appliances",
+      "Refrigerators",
+      "Washing machines",
+      "Air conditioners",
+      "Kitchen appliances",
+      "Water purifiers & geysers",
+      "Appliance repair"
+    ]
+  },
+  {
+    "name": "Sathya Agencies ? Netaji Road, Hosur",
+    "category": "Home Appliances",
+    "subcategories": [
+      "Refrigerators",
+      "Washing machines",
+      "Air conditioners"
+    ],
+    "products": [
+      {
+        "id": "voltas-inverter-ac-3star",
+        "name": "Voltas 1.5 Ton 3-Star Adjustable Inverter AC",
+        "description": "4-in-1 adjustable cooling with high ambient cooling up to 52 deg C.",
+        "price": 33990,
+        "unit": "unit"
+      },
+      {
+        "id": "whirlpool-intellifresh-fridge",
+        "name": "Whirlpool 265L 3-Star Inverter Double Door Refrigerator",
+        "description": "IntelliSense inverter technology with microblock antibacterial protection.",
+        "price": 25490,
+        "unit": "unit"
+      },
+      {
+        "id": "ifb-senator-smart-washer",
+        "name": "IFB 7kg 5-Star Front Load Washing Machine",
+        "description": "Aqua Energie water softener with 3D wash system and steam wash.",
+        "price": 29990,
+        "unit": "unit"
+      },
+      {
+        "id": "havells-storage-geyser",
+        "name": "Havells 15L 5-Star Storage Water Geyser",
+        "description": "Feroglas coated inner tank with incoloy heating element.",
+        "price": 7890,
+        "unit": "unit"
+      }
+    ],
+    "description": "Leading consumer electronics and home appliances destination on Netaji Road, Hosur. Top brands including Daikin, Voltas, Samsung, LG, IFB, and Whirlpool with warranty and EMI.",
+    "distance": 0.8,
+    "demoCoordinates": {
+      "latitude": 12.732,
+      "longitude": 77.828
+    },
+    "rating": 4.7,
+    "reviews": 360,
+    "price": "from ?7,890",
+    "icon": "??",
+    "color": "lavender",
+    "tag": "Top retail chain",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Home Appliances",
+      "Air conditioners",
+      "Refrigerators",
+      "Washing machines"
+    ]
+  },
+  {
+    "name": "Sri Balaji Electricals & Lighting ? Bagalur Road",
+    "category": "Electricals",
+    "subcategories": [
+      "Wiring & Cables",
+      "Switches & Sockets",
+      "LED Lighting",
+      "Fans & Ventilation"
+    ],
+    "products": [
+      {
+        "id": "polycab-optima-wire",
+        "name": "Polycab Optima Plus 1.5 sq mm House Wire (90m)",
+        "description": "Flame retardant electrolytic grade multi-strand copper wire.",
+        "price": 1850,
+        "unit": "coil"
+      },
+      {
+        "id": "anchor-roma-switches",
+        "name": "Anchor Roma Classic Modular Switches & Plates (Pack of 10)",
+        "description": "Silver cadmium oxide contacts with spark-shield technology.",
+        "price": 650,
+        "unit": "pack"
+      },
+      {
+        "id": "crompton-exhaust-fan",
+        "name": "Crompton Brisk Air 6-Inch High Speed Kitchen Exhaust Fan",
+        "description": "Rust-proof body with copper motor and lightweight aerodynamic blades.",
+        "price": 1250,
+        "unit": "piece"
+      },
+      {
+        "id": "philips-led-spotlights",
+        "name": "Philips 7W COB LED Warm White Ceiling Spotlight",
+        "description": "Focus spotlight for living room architectural wall washing.",
+        "price": 420,
+        "unit": "piece"
+      }
+    ],
+    "description": "Authorized distributor of Havells, Polycab, Anchor, Legrand and Crompton electrical goods on Bagalur Road, Hosur. Complete residential and commercial electrification solutions.",
+    "distance": 1.4,
+    "demoCoordinates": {
+      "latitude": 12.737,
+      "longitude": 77.833
+    },
+    "rating": 4.8,
+    "reviews": 310,
+    "price": "from ?45",
+    "icon": "?",
+    "color": "butter",
+    "tag": "Authorized distributor",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Electricals",
+      "Wiring & Cables",
+      "Switches & Sockets",
+      "LED Lighting",
+      "Fans & Ventilation"
+    ]
+  },
+  {
+    "name": "Hosur Inverter, Solar & Battery Hub ? Station Road",
+    "category": "Electricals",
+    "subcategories": [
+      "Inverters & Power",
+      "Electrical Services"
+    ],
+    "products": [
+      {
+        "id": "luminous-zelio-inverter",
+        "name": "Luminous Zelio 1100 Pure Sine Wave Home Inverter",
+        "description": "Intelligent 32-bit DSP processor with digital display showing backup time.",
+        "price": 6800,
+        "unit": "unit"
+      },
+      {
+        "id": "exide-invatubular-battery",
+        "name": "Exide InvaTubular 150Ah Tall Tubular Inverter Battery",
+        "description": "Heavy duty spines cast at high pressure for long reliable backup.",
+        "price": 13500,
+        "unit": "unit"
+      },
+      {
+        "id": "solar-rooftop-hybrid",
+        "name": "Microtek 1kW Hybrid Solar Power System with Panels",
+        "description": "Monocrystalline solar PV panels with hybrid MPPT solar inverter.",
+        "price": 48000,
+        "unit": "system"
+      },
+      {
+        "id": "inverter-battery-service",
+        "name": "Inverter Battery Maintenance & Distilled Water Top-Up",
+        "description": "Doorstep specific gravity testing, terminal cleaning and acid balance check.",
+        "price": 199,
+        "unit": "service"
+      },
+      {
+        "id": "inverter-ups-repair",
+        "name": "Inverter & UPS Maintenance",
+        "description": "Home backup power check-up, tubular battery acid top-up, wiring safety and inverter board repairs.",
+        "price": 349,
+        "unit": "service"
+      }
+    ],
+    "description": "Complete power backup and rooftop solar installation center on Station Road, Hosur. Luminous, Exide, Microtek inverters, tubular batteries, and solar hybrid UPS solutions.",
+    "distance": 1.3,
+    "demoCoordinates": {
+      "latitude": 12.728,
+      "longitude": 77.832
+    },
+    "rating": 4.7,
+    "reviews": 215,
+    "price": "from ?199",
+    "icon": "??",
+    "color": "lavender",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Electricals",
+      "Inverters & Power",
+      "Electrical Services",
+      "Electrical"
+    ]
+  },
+  {
+    "name": "Hosur Hardware, Tools & Power Mart ? Bagalur Road",
+    "category": "Hardware",
+    "subcategories": [
+      "Power Tools & Machinery",
+      "Hand Tools & Fasteners",
+      "Paints & Hardware"
+    ],
+    "products": [
+      {
+        "id": "bosch-impact-drill-kit",
+        "name": "Bosch GSB 500W Professional Impact Drill Kit (100 pcs)",
+        "description": "Forward/reverse variable speed drill with masonry, wood bits and screws.",
+        "price": 3850,
+        "unit": "kit"
+      },
+      {
+        "id": "makita-angle-grinder",
+        "name": "Makita 4-Inch 840W Heavy Duty Angle Grinder",
+        "description": "High-temperature resistance motor for metal cutting and masonry grinding.",
+        "price": 2690,
+        "unit": "unit"
+      },
+      {
+        "id": "stanley-hand-toolkit",
+        "name": "Stanley 38-Piece Hand Tool & Socket Wrench Set",
+        "description": "Chrome vanadium steel spanners, ratchet handle, pliers and screwdrivers.",
+        "price": 1450,
+        "unit": "set"
+      },
+      {
+        "id": "ss-anchor-bolts-fasteners",
+        "name": "Stainless Steel SS 304 High-Tensile Anchor Bolts (Box of 50)",
+        "description": "Heavy-duty expansion anchor fasteners for concrete and brickwork.",
+        "price": 420,
+        "unit": "box"
+      },
+      {
+        "id": "power-tools-drills",
+        "name": "Power Tools, Drills & Angle Grinders",
+        "description": "Bosch and Makita cordless impact drills, angle grinders, circular saws, marble cutters and toolkits.",
+        "price": 1850,
+        "unit": "unit"
+      }
+    ],
+    "description": "Hosur's leading industrial and construction hardware depot on Bagalur Road. Bosch, Makita power tools, hand tools, drill machines, welding rods, safety equipment, and fasteners.",
+    "distance": 1.6,
+    "demoCoordinates": {
+      "latitude": 12.738,
+      "longitude": 77.834
+    },
+    "rating": 4.8,
+    "reviews": 310,
+    "price": "from ?50",
+    "icon": "??",
+    "color": "butter",
+    "tag": "Power tools depot",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Hardware",
+      "Power Tools & Machinery",
+      "Hand Tools & Fasteners",
+      "Paints & Hardware"
+    ]
+  },
+  {
+    "name": "Sri Krishna Hardware & Sanitary Mart ? MG Road",
+    "category": "Hardware",
+    "subcategories": [
+      "Plumbing Hardware",
+      "Sanitaryware & Bath",
+      "Locks & Architectural"
+    ],
+    "products": [
+      {
+        "id": "ashirvad-cpvc-pipe",
+        "name": "Ashirvad FlowGuard Plus CPVC 1-Inch Pipe (3m)",
+        "description": "Lead-free hot and cold water potable piping system with solvent cement.",
+        "price": 340,
+        "unit": "pipe"
+      },
+      {
+        "id": "texmo-domestic-water-pump",
+        "name": "Texmo 1HP Self-Priming Monobloc Domestic Water Pump",
+        "description": "Cast iron body with high head capacity for overhead tank filling.",
+        "price": 6490,
+        "unit": "unit"
+      },
+      {
+        "id": "jaquar-brass-pillar-tap",
+        "name": "Jaquar Continental Brass Pillar Tap Chrome Finish",
+        "description": "Foam flow aerator with solid brass construction and 10-year warranty.",
+        "price": 1250,
+        "unit": "piece"
+      },
+      {
+        "id": "sintex-triple-layer-tank",
+        "name": "Sintex 1000L Triple Layer Anti-Bacterial Water Tank",
+        "description": "UV-stabilized FDA-approved virgin plastic overhead water storage tank.",
+        "price": 6800,
+        "unit": "tank"
+      },
+      {
+        "id": "godrej-mortise-door-lock",
+        "name": "Godrej Classic Mortise Door Lock with Brass Handles",
+        "description": "Double throw deadbolt locking mechanism with 3 computer keys.",
+        "price": 1650,
+        "unit": "set"
+      },
+      {
+        "id": "door-locks-hardware",
+        "name": "Door Locks, Hinges & Architectural Hardware",
+        "description": "Godrej mortise door locks, digital keypad security locks, stainless steel hinges and designer door handles.",
+        "price": 250,
+        "unit": "unit"
+      },
+      {
+        "id": "plumbing-hardware-pipes",
+        "name": "Pipes, Water Pumps & Plumbing Hardware",
+        "description": "Ashirvad CPVC pipes, Supreme PVC drainage fittings, Texmo/CRI water pumps and brass ball valves.",
+        "price": 65,
+        "unit": "unit"
+      }
+    ],
+    "description": "One-stop destination for plumbing hardware, sanitaryware, water tanks, pumps and architectural locks on MG Road, Hosur. Ashirvad, Supreme, Texmo, Jaquar and Godrej products.",
+    "distance": 0.8,
+    "demoCoordinates": {
+      "latitude": 12.731,
+      "longitude": 77.826
+    },
+    "rating": 4.7,
+    "reviews": 275,
+    "price": "from ?65",
+    "icon": "??",
+    "color": "mint",
+    "tag": "Plumbing & sanitary",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Hardware",
+      "Plumbing Hardware",
+      "Sanitaryware & Bath",
+      "Locks & Architectural"
+    ]
+  },
+  {
+    "name": "Asian Paints & Hosur Hardware Depot ? Denkanikottai Road",
+    "category": "Hardware",
+    "subcategories": [
+      "Paints & Hardware",
+      "Locks & Architectural"
+    ],
+    "products": [
+      {
+        "id": "asian-paints-apex-20l",
+        "name": "Asian Paints Apex Weatherproof Exterior Emulsion (20L)",
+        "description": "Advanced one-pack exterior emulsion with silicon additives for fungus protection.",
+        "price": 4850,
+        "unit": "bucket"
+      },
+      {
+        "id": "dr-fixit-waterproofing-5l",
+        "name": "Dr. Fixit 101 LW+ Waterproofing Liquid Additive (5L)",
+        "description": "Integral liquid waterproofing compound for concrete plaster and mortar.",
+        "price": 720,
+        "unit": "can"
+      },
+      {
+        "id": "godrej-navtal-brass-padlock",
+        "name": "Godrej High Security 7-Lever Nav-Tal Brass Padlock",
+        "description": "Rust-resistant solid brass padlock with hardened electroplated steel shackle.",
+        "price": 550,
+        "unit": "piece"
+      },
+      {
+        "id": "ss-door-hinges-ball-bearing",
+        "name": "Stainless Steel Ball Bearing Door Hinges 5x3 (Pack of 4)",
+        "description": "Smooth silent operation heavy duty architectural door hinges.",
+        "price": 380,
+        "unit": "pack"
+      }
+    ],
+    "description": "Authorized Asian Paints dealer and construction hardware supply store on Denkanikottai Road, Hosur. Waterproofing solutions, exterior/interior paints, Godrej locks, and builder hardware.",
+    "distance": 1.4,
+    "demoCoordinates": {
+      "latitude": 12.726,
+      "longitude": 77.828
+    },
+    "rating": 4.6,
+    "reviews": 195,
+    "price": "from ?120",
+    "icon": "???",
+    "color": "peach",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Hardware",
+      "Paints & Hardware",
+      "Locks & Architectural"
+    ]
   }
 ];
 
@@ -7109,7 +7652,24 @@ const SEARCH_SYNONYMS: Record<string, string[]> = {
   dam: ["dam", "kelavarapalli", "reservoir", "lake", "boating", "picnic"],
   library: ["library", "books", "reading room", "public library", "study", "newspapers"],
   post: ["post office", "speed post", "postal", "aadhaar", "hpo", "parcel"],
-  corporation: ["corporation", "municipal", "hosur corporation", "property tax", "birth certificate", "civic"]
+  corporation: ["corporation", "municipal", "hosur corporation", "property tax", "birth certificate", "civic"],
+  electrical: ["electrical", "electricals", "electrician", "wiring", "switches", "legrand", "anchor", "polycab", "havells", "led", "lights", "fans", "inverter", "bldc", "mcb"],
+  electricals: ["electrical", "electricals", "electrician", "wiring", "switches", "legrand", "anchor", "polycab", "havells", "led", "lights", "fans", "inverter", "bldc"],
+  wires: ["wires", "cables", "wiring", "polycab", "havells", "house wiring", "electrical"],
+  switches: ["switches", "switch", "sockets", "legrand", "anchor roma", "modular switches", "mcb"],
+  fans: ["fan", "fans", "ceiling fan", "bldc", "atomberg", "orient", "crompton", "exhaust fan"],
+  inverter: ["inverter", "battery", "luminous", "exide", "ups", "solar", "power backup"],
+  hardware: ["hardware", "tools", "power tools", "drill", "fasteners", "pipes", "pumps", "asian paints", "locks", "godrej locks", "hindware", "jaquar"],
+  tools: ["tools", "power tools", "drill", "bosch", "makita", "grinder", "cutter", "spanners", "tool kit"],
+  pipes: ["pipes", "plumbing", "pvc", "cpvc", "ashirvad", "supreme", "water tank", "sintex"],
+  pumps: ["pumps", "motor", "water pump", "texmo", "cri", "submersible", "borewell pump"],
+  locks: ["locks", "lock", "door lock", "mortise", "godrej", "yale", "padlock", "hinges", "handles"],
+  appliances: ["home appliances", "appliances", "refrigerator", "fridge", "washing machine", "ac", "air conditioner", "chimney", "microwave", "water purifier", "geyser", "vasanth", "sathya"],
+  refrigerator: ["refrigerator", "fridge", "lg", "samsung", "whirlpool", "double door", "cooling", "appliances"],
+  washing: ["washing machine", "front load", "top load", "ifb", "bosch", "lg", "samsung", "appliances"],
+  chimney: ["chimney", "kitchen chimney", "faber", "prestige", "hob", "gas stove", "kitchen appliances"],
+  purifier: ["water purifier", "ro", "aquaguard", "kent", "geyser", "water heater", "ao smith"],
+  geyser: ["geyser", "water heater", "water geyser", "instant geyser", "racold", "crompton", "havells", "ao smith"]
 };
 
 function escapeRegex(s: string) {
@@ -7137,7 +7697,10 @@ const VOCABULARY = [
   "plumber", "electrician", "pest control", "painting", "photography", "taxi", "cab",
   "toy", "toys", "fancy", "fancystore", "gifts", "novelties", "bangles", "cosmetics", "teddy", "carrom", "puzzle", "lego",
   "book", "books", "textbook", "novel", "stationery", "stationary", "notebook", "classmate", "xerox", "binding", "paper", "pens",
-  "temple", "kovil", "malai", "bus", "busstand", "train", "railway", "station", "dam", "kelavarapalli", "park", "rajaji", "library", "postoffice", "corporation"
+  "temple", "kovil", "malai", "bus", "busstand", "train", "railway", "station", "dam", "kelavarapalli", "park", "rajaji", "library", "postoffice", "corporation",
+  "electrical", "electricals", "wiring", "cables", "switches", "polycab", "havells", "legrand", "anchor", "inverter", "luminous",
+  "hardware", "tools", "drill", "bosch", "makita", "ashirvad", "pipes", "texmo", "pumps", "locks", "hinges", "sanitaryware",
+  "appliances", "refrigerator", "fridge", "washing", "chimney", "geyser", "purifier", "daikin", "voltas", "vasanth", "sathya"
 ];
 
 function levenshtein(a: string, b: string): number {
@@ -7389,6 +7952,9 @@ export default function Home() {
         return {
           queries: [
             "Maruti Swift",
+            "Vasanth & Co Home Appliances",
+            "Jaya Sri Electricals Hosur",
+            "Hosur Hardware & Tools",
             "Pooja Fancy & Gifts",
             "Sri Murugan Books",
             "MGR Bus Stand Hosur",
@@ -7403,7 +7969,7 @@ export default function Home() {
           ],
           businesses: businesses.slice(0, 3),
           products: businesses.flatMap((b) => b.products.slice(0, 1).map((p) => ({ product: p, business: b }))).slice(0, 3),
-          categories: ["Automobiles", "Electronics", "Books & Stationery", "Toys & Fancy Stores", "Public & Common Places", "Health & wellness"]
+          categories: ["Automobiles", "Electronics", "Electricals", "Hardware", "Home Appliances", "Books & Stationery", "Toys & Fancy Stores", "Public & Common Places", "Health & wellness"]
         };
       }
       const matchedQueries = new Set<string>();
@@ -7610,6 +8176,27 @@ export default function Home() {
       suggestions.add("Kelavarapalli Dam");
       suggestions.add("Rajaji Eco Park");
       suggestions.add("Hosur Municipal Corporation");
+    } else if (q.includes("electric") || q.includes("wiring") || q.includes("switch") || q.includes("inverter") || q.includes("fan")) {
+      suggestions.add("Jaya Sri Electricals");
+      suggestions.add("Havells & Polycab Wires");
+      suggestions.add("Modular Switches");
+      suggestions.add("BLDC Ceiling Fans");
+      suggestions.add("Inverters & Batteries");
+      suggestions.add("Emergency Electrician");
+    } else if (q.includes("hardware") || q.includes("tool") || q.includes("drill") || q.includes("pipe") || q.includes("lock") || q.includes("pump")) {
+      suggestions.add("Hosur Hardware & Tools");
+      suggestions.add("Bosch Power Tools");
+      suggestions.add("CPVC & PVC Pipes");
+      suggestions.add("Water Pumps & Motors");
+      suggestions.add("Godrej Door Locks");
+      suggestions.add("Asian Paints & Primers");
+    } else if (q.includes("appliance") || q.includes("fridge") || q.includes("refrigerat") || q.includes("washing") || q.includes("chimney") || q.includes("geyser") || q.includes("purifier")) {
+      suggestions.add("Vasanth & Co Home Appliances");
+      suggestions.add("Sathya Agencies");
+      suggestions.add("Inverter Refrigerators");
+      suggestions.add("Front Load Washing Machines");
+      suggestions.add("Split Air Conditioners");
+      suggestions.add("Kitchen Chimneys & Hobs");
     }
 
     for (const b of sortedResults.slice(0, 5)) {
