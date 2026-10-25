@@ -26,6 +26,11 @@ const subcategoriesSummary: Record<string, string> = {
   "Books & Stationery": "Books · School textbooks · Notebooks · Printing & Xerox",
   "Toys & Fancy Stores": "Toys & Games · Fancy store · Bangles & Gifts · Cosmetics",
   "Public & Common Places": "Bus stand · Railway station · Temples · Parks & Civic hubs",
+  "Real Estate & Construction": "Rentals · Plots · Industrial sheds · Civil contractors · Architects",
+  "Industrial & B2B Manufacturing": "CNC machining · Sheet metal · Powder coating · Packaging · PPE safety",
+  "Education & Coaching": "CBSE schools · Engineering colleges · NEET/TNPSC coaching · Driving schools",
+  "Events & Weddings": "Kalyana mandapams · Catering · Stage decor · Sound & DJ · Photography",
+  "Agriculture, Nurseries & Pets": "Hosur rose nurseries · Farm seeds · Pet shops · Vet clinics · Cattle feed",
 };
 
 type Role = "Discover" | "Account" | "Business" | "Agent" | "Company";
@@ -7536,6 +7541,772 @@ const initialBusinesses: Business[] = [
       "Paints & Hardware",
       "Locks & Architectural"
     ]
+  },
+  {
+    "name": "Hosur Properties & Rental Hub",
+    "category": "Real Estate & Construction",
+    "subcategories": [
+      "Properties for Sale",
+      "Rental & Lease",
+      "Residential plots",
+      "House rentals",
+      "Commercial rentals"
+    ],
+    "products": [
+      {
+        "id": "prop-rent-2bhk",
+        "name": "2 BHK Family Rental House (Near Railway Station)",
+        "description": "Spacious 2 BHK house with car parking, 24/7 Cauvery water, near Hosur Railway Station.",
+        "price": 12000,
+        "unit": "month"
+      },
+      {
+        "id": "prop-dtcp-plot",
+        "name": "DTCP Approved Villa Plot (Rayakottai Road)",
+        "description": "Gated layout with tar roads, street lights, EB connection, immediate registration.",
+        "price": 1850,
+        "unit": "sq.ft"
+      },
+      {
+        "id": "prop-comm-office",
+        "name": "Main Road Commercial Office Space (1,200 sq.ft)",
+        "description": "First floor commercial space suitable for IT office, clinic or corporate branch on Denkanikottai Road.",
+        "price": 35000,
+        "unit": "month"
+      }
+    ],
+    "description": "Trusted property consultancy and house rental portal in Hosur. Verified residential plots, family rental houses, apartments and commercial showroom spaces.",
+    "distance": 1.2,
+    "demoCoordinates": {
+      "latitude": 12.729,
+      "longitude": 77.825
+    },
+    "rating": 4.8,
+    "reviews": 142,
+    "price": "from ₹8,500/mo",
+    "icon": "🏢",
+    "color": "amber",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Real Estate & Construction",
+      "Properties for Sale",
+      "Rental & Lease"
+    ]
+  },
+  {
+    "name": "SIPCOT Industrial Sheds & Godowns",
+    "category": "Real Estate & Construction",
+    "subcategories": [
+      "Rental & Lease",
+      "Properties for Sale",
+      "Industrial sheds",
+      "Storage & godown",
+      "Industrial land"
+    ],
+    "products": [
+      {
+        "id": "ind-shed-5000",
+        "name": "5,000 sq.ft Industrial Factory Shed with 50 HP Power",
+        "description": "Heavy duty industrial PEB shed, crane gantry provision, 50 HP sanctioned power, wide container truck access.",
+        "price": 110000,
+        "unit": "month"
+      },
+      {
+        "id": "ind-godown-10000",
+        "name": "10,000 sq.ft Logistics Warehouse Godown",
+        "description": "Dock levelers, 30 ft ceiling clearance, fire safety NOC, CCTV coverage, ideal for 3PL and auto ancillary storage.",
+        "price": 220000,
+        "unit": "month"
+      },
+      {
+        "id": "ind-land-sipcot",
+        "name": "1 Acre Industrial Land for Long Lease / Sale",
+        "description": "Approved industrial plot inside SIPCOT Phase 2 with dual road frontage and industrial water supply.",
+        "price": 4200,
+        "unit": "sq.ft"
+      }
+    ],
+    "description": "Industrial real estate specialists for SIPCOT Phase 1 & 2, Hosur. Manufacturing sheds, heavy logistics warehouses, factory land and cold storage godowns.",
+    "distance": 3.8,
+    "demoCoordinates": {
+      "latitude": 12.756,
+      "longitude": 77.801
+    },
+    "rating": 4.7,
+    "reviews": 88,
+    "price": "from ₹22/sq.ft",
+    "icon": "🏭",
+    "color": "steel",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Real Estate & Construction",
+      "Rental & Lease",
+      "Properties for Sale"
+    ]
+  },
+  {
+    "name": "Sri Vigneshwara Civil Builders & Architects",
+    "category": "Real Estate & Construction",
+    "subcategories": [
+      "Building Materials",
+      "Civil & Construction",
+      "Architects & Surveyors",
+      "General contractors",
+      "Cement & steel",
+      "Plan approval"
+    ],
+    "products": [
+      {
+        "id": "bld-turnkey-house",
+        "name": "Turnkey Residential Villa Construction",
+        "description": "Complete end-to-end building construction with branded cement, steel, premium teak wood and warranty.",
+        "price": 1950,
+        "unit": "sq.ft"
+      },
+      {
+        "id": "bld-hntda-approval",
+        "name": "HNTDA & Hosur Corporation Plan Approval Service",
+        "description": "Digital survey, 2D floor plans, structural drawings and official municipal building permit sanctioning.",
+        "price": 18000,
+        "unit": "project"
+      },
+      {
+        "id": "bld-tata-tmt",
+        "name": "Tata Tiscon 550D TMT Steel Bars (Per Ton)",
+        "description": "Authorized supply of Fe-550D earthquake resistant TMT rods in 8mm, 10mm, 12mm, 16mm with test certificates.",
+        "price": 64500,
+        "unit": "ton"
+      }
+    ],
+    "description": "Premier building construction contractor and architectural planning studio on Netaji Road, Hosur. HNTDA approvals, turnkey home building, and building material supplies.",
+    "distance": 0.9,
+    "demoCoordinates": {
+      "latitude": 12.736,
+      "longitude": 77.832
+    },
+    "rating": 4.9,
+    "reviews": 164,
+    "price": "from ₹1,750/sq.ft",
+    "icon": "🏗️",
+    "color": "peach",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Real Estate & Construction",
+      "Civil & Construction",
+      "Architects & Surveyors",
+      "Building Materials"
+    ]
+  },
+  {
+    "name": "Hosur Precision CNC & VMC Machining",
+    "category": "Industrial & B2B Manufacturing",
+    "subcategories": [
+      "Machining & Tooling",
+      "CNC & VMC machining",
+      "Press tools & dies",
+      "Cutting tools & inserts"
+    ],
+    "products": [
+      {
+        "id": "cnc-auto-turned",
+        "name": "Precision Turned Automotive CNC Components",
+        "description": "Micron tolerance precision shafts, bushings and flange pins for TVS, Ashok Leyland and Tier-1 vendors.",
+        "price": 85,
+        "unit": "piece"
+      },
+      {
+        "id": "vmc-milling-work",
+        "name": "4-Axis Heavy VMC Milling Machining Service",
+        "description": "High precision 4-axis VMC machining for cast iron, SG iron, aluminium and forging components.",
+        "price": 750,
+        "unit": "machine hr"
+      },
+      {
+        "id": "carbide-inserts",
+        "name": "CNC Tungsten Carbide Milling & Turning Inserts",
+        "description": "Premium carbide cutting inserts (CNMG, WNMG, APKT) with nano PVD coating for high speed machining.",
+        "price": 3200,
+        "unit": "pack of 10"
+      }
+    ],
+    "description": "ISO 9001 certified CNC and VMC precision machining unit in SIDCO Industrial Estate, Hosur. Specialized in automotive turning, milling fixtures and carbide tooling.",
+    "distance": 3.4,
+    "demoCoordinates": {
+      "latitude": 12.751,
+      "longitude": 77.808
+    },
+    "rating": 4.9,
+    "reviews": 115,
+    "price": "from ₹45/component",
+    "icon": "⚙️",
+    "color": "steel",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Industrial & B2B Manufacturing",
+      "Machining & Tooling"
+    ]
+  },
+  {
+    "name": "Sri Balaji Sheet Metal & Laser Cutting",
+    "category": "Industrial & B2B Manufacturing",
+    "subcategories": [
+      "Fabrication & Metalworks",
+      "Industrial Coatings",
+      "Sheet metal fabrication",
+      "Laser cutting & bending",
+      "Powder coating"
+    ],
+    "products": [
+      {
+        "id": "laser-fiber-cutting",
+        "name": "6kW CNC Fiber Laser Cutting (MS & SS Sheet)",
+        "description": "Clean burr-free cutting up to 20mm Mild Steel and 12mm Stainless Steel with high repeatability.",
+        "price": 35,
+        "unit": "minute"
+      },
+      {
+        "id": "sheet-metal-enclosure",
+        "name": "Custom Electrical Control Panel Enclosure Box",
+        "description": "IP65 rated powder coated sheet metal electrical junction and PLC control panel boxes with rubber gasket.",
+        "price": 4800,
+        "unit": "unit"
+      },
+      {
+        "id": "powder-coating-service",
+        "name": "Industrial Epoxy Powder Coating (Custom RAL Colors)",
+        "description": "7-tank pre-treatment automated conveyorized powder coating with salt spray corrosion resistance.",
+        "price": 28,
+        "unit": "sq.ft"
+      }
+    ],
+    "description": "Complete sheet metal fabrication and CNC fiber laser cutting facility in Moranapalli, Hosur. CNC press brake bending, robotic welding and conveyorized powder coating.",
+    "distance": 4.2,
+    "demoCoordinates": {
+      "latitude": 12.768,
+      "longitude": 77.795
+    },
+    "rating": 4.8,
+    "reviews": 96,
+    "price": "from ₹18/meter",
+    "icon": "🔥",
+    "color": "crimson",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Industrial & B2B Manufacturing",
+      "Fabrication & Metalworks",
+      "Industrial Coatings"
+    ]
+  },
+  {
+    "name": "Hosur Industrial Packaging & Safety Hub",
+    "category": "Industrial & B2B Manufacturing",
+    "subcategories": [
+      "Packaging & Safety PPE",
+      "Industrial Supplies",
+      "Industrial packaging",
+      "Safety equipment & PPE",
+      "Bearings & power transmission"
+    ],
+    "products": [
+      {
+        "id": "pkg-corrugated-7ply",
+        "name": "Heavy Duty 7-Ply Export Corrugated Box",
+        "description": "Reinforced heavy duty export carton boxes with moisture barrier for auto parts and industrial machinery shipment.",
+        "price": 145,
+        "unit": "box"
+      },
+      {
+        "id": "ppe-safety-shoes",
+        "name": "ISI Steel Toe Industrial Safety Shoes (Karam)",
+        "description": "Oil and chemical resistant anti-skid PU sole safety footwear with 200J steel toe impact protection.",
+        "price": 1450,
+        "unit": "pair"
+      },
+      {
+        "id": "ind-skf-bearings",
+        "name": "SKF Deep Groove Ball Bearings (Assorted Series)",
+        "description": "Genuine SKF industrial ball and roller bearings with long operational life and high load tolerance.",
+        "price": 480,
+        "unit": "unit"
+      }
+    ],
+    "description": "Leading B2B supplier of industrial export packaging, wooden pallets, safety PPE gear, and genuine SKF industrial bearings near Sipcot Ring Road, Hosur.",
+    "distance": 2.8,
+    "demoCoordinates": {
+      "latitude": 12.744,
+      "longitude": 77.815
+    },
+    "rating": 4.7,
+    "reviews": 138,
+    "price": "from ₹65/box",
+    "icon": "📦",
+    "color": "emerald",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Industrial & B2B Manufacturing",
+      "Packaging & Safety PPE",
+      "Industrial Supplies"
+    ]
+  },
+  {
+    "name": "Adhiyamaan College of Engineering (ACE)",
+    "category": "Education & Coaching",
+    "subcategories": [
+      "Colleges & Universities",
+      "Engineering colleges",
+      "Arts & science",
+      "B.E. & B.Tech degree",
+      "Undergraduate degrees"
+    ],
+    "products": [
+      {
+        "id": "edu-be-cse",
+        "name": "B.E. Computer Science & Engineering (Admissions)",
+        "description": "NBA accredited 4-year degree program with modern AI/ML labs, industry internships and campus placement.",
+        "price": 85000,
+        "unit": "year"
+      },
+      {
+        "id": "edu-btech-mech",
+        "name": "B.Tech Mechanical Engineering (Automotive Specialization)",
+        "description": "Robotics and CNC laboratory training in close association with Hosur industrial manufacturing corridor.",
+        "price": 75000,
+        "unit": "year"
+      },
+      {
+        "id": "edu-mca-mba",
+        "name": "MBA & MCA Postgraduate Management Program",
+        "description": "AICTE approved postgraduate master degree with corporate finance, analytics and HR leadership curriculum.",
+        "price": 60000,
+        "unit": "year"
+      }
+    ],
+    "description": "Premier engineering institution in Hosur established in 1987. Autonomous college accredited by NAAC and NBA, offering B.E., B.Tech, MBA, and MCA programs with top placements.",
+    "distance": 5.1,
+    "demoCoordinates": {
+      "latitude": 12.712,
+      "longitude": 77.868
+    },
+    "rating": 4.6,
+    "reviews": 380,
+    "price": "from ₹65,000/yr",
+    "icon": "🎓",
+    "color": "royal",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Education & Coaching",
+      "Colleges & Universities"
+    ]
+  },
+  {
+    "name": "Sri Chaitanya NEET & IIT-JEE Academy",
+    "category": "Education & Coaching",
+    "subcategories": [
+      "Competitive Exam Coaching",
+      "Medical & engineering entrance",
+      "Government exam prep",
+      "NEET coaching",
+      "JEE Main & Advanced"
+    ],
+    "products": [
+      {
+        "id": "neet-repeater-batch",
+        "name": "NEET UG Long Term Repeater & Achievers Batch",
+        "description": "Intensive biology, physics & chemistry daily test series, NCERT chapter-wise mastery and expert faculty mentorship.",
+        "price": 75000,
+        "unit": "academic year"
+      },
+      {
+        "id": "jee-foundation-course",
+        "name": "IIT-JEE Foundation Course (Class 9 & 10)",
+        "description": "Conceptual mathematics and science foundation coaching with Olympiad and NTSE preparation.",
+        "price": 45000,
+        "unit": "year"
+      },
+      {
+        "id": "tnpsc-group-coaching",
+        "name": "TNPSC Group 2 & Group 4 Weekend Batch",
+        "description": "Tamil Nadu public service commission general studies and mental ability syllabus with bilingual test series.",
+        "price": 18500,
+        "unit": "6 months"
+      }
+    ],
+    "description": "Specialized competitive entrance exam coaching institute on Old Bangalore Road, Hosur. Outstanding track record in NEET Medical, IIT-JEE engineering, and TNPSC coaching.",
+    "distance": 1.1,
+    "demoCoordinates": {
+      "latitude": 12.738,
+      "longitude": 77.829
+    },
+    "rating": 4.8,
+    "reviews": 210,
+    "price": "from ₹40,000/course",
+    "icon": "📖",
+    "color": "amber",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Education & Coaching",
+      "Competitive Exam Coaching"
+    ]
+  },
+  {
+    "name": "Hosur National Driving & Computer Institute",
+    "category": "Education & Coaching",
+    "subcategories": [
+      "Driving & Sports Academies",
+      "Skill & Vocational Training",
+      "Driving schools",
+      "Computer & software",
+      "Four-wheeler driving",
+      "Full stack development"
+    ],
+    "products": [
+      {
+        "id": "drv-car-license",
+        "name": "4-Wheeler Car Driving Course with RTO License",
+        "description": "15 practical on-road sessions with dual-control vehicles, simulator training and Hosur RTO driving test assistance.",
+        "price": 5800,
+        "unit": "complete course"
+      },
+      {
+        "id": "drv-two-wheeler",
+        "name": "2-Wheeler Motorcycle / Gearless Scooter Training",
+        "description": "Balance and defensive riding training with Learner's License (LLR) and permanent DL processing.",
+        "price": 2800,
+        "unit": "course"
+      },
+      {
+        "id": "edu-tally-gst",
+        "name": "Tally Prime, GST Filing & Advanced Excel Training",
+        "description": "Practical corporate accounting certification with real company vouchers, GST e-filing and payroll modules.",
+        "price": 6500,
+        "unit": "2 months"
+      }
+    ],
+    "description": "Government recognized driving school and certified IT computer skill training institute near Old Bus Stand, Hosur. Dual-control car training and corporate software courses.",
+    "distance": 0.7,
+    "demoCoordinates": {
+      "latitude": 12.733,
+      "longitude": 77.826
+    },
+    "rating": 4.9,
+    "reviews": 325,
+    "price": "from ₹2,800",
+    "icon": "🚗",
+    "color": "emerald",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Education & Coaching",
+      "Driving & Sports Academies",
+      "Skill & Vocational Training"
+    ]
+  },
+  {
+    "name": "Sri Krishna Grand Kalyana Mandapam",
+    "category": "Events & Weddings",
+    "subcategories": [
+      "Venues & Mandapams",
+      "Kalyana mandapams",
+      "Party halls & lawns",
+      "AC marriage halls",
+      "Mini banquet halls"
+    ],
+    "products": [
+      {
+        "id": "vnu-central-ac-hall",
+        "name": "1,200 Seater Central AC Kalyana Mandapam with Dining",
+        "description": "Grand wedding hall with crystal chandeliers, separate 500-capacity dining hall, 15 deluxe AC guest rooms and 200-car parking.",
+        "price": 150000,
+        "unit": "24 hrs"
+      },
+      {
+        "id": "vnu-mini-banquet",
+        "name": "300 Capacity Mini AC Banquet Hall for Reception & Birthday",
+        "description": "Modern decorated banquet hall with acoustic sound insulation, stage lighting and attached dining space.",
+        "price": 35000,
+        "unit": "slot"
+      },
+      {
+        "id": "vnu-outdoor-lawn",
+        "name": "Open Garden Lawn for Evening Wedding Reception",
+        "description": "Natural green manicured lawn under the open sky with ambient fairy lighting and buffet setup area.",
+        "price": 60000,
+        "unit": "evening"
+      }
+    ],
+    "description": "Luxurious air-conditioned wedding and reception destination on NH-44 Bangalore Highway, Hosur. 1,200 guest capacity, executive bridal suites, and sprawling parking lot.",
+    "distance": 2.1,
+    "demoCoordinates": {
+      "latitude": 12.748,
+      "longitude": 77.821
+    },
+    "rating": 4.9,
+    "reviews": 290,
+    "price": "from ₹35,000",
+    "icon": "🏛️",
+    "color": "gold",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Events & Weddings",
+      "Venues & Mandapams"
+    ]
+  },
+  {
+    "name": "Sri Annam Traditional Wedding Caterers",
+    "category": "Events & Weddings",
+    "subcategories": [
+      "Catering & Feast",
+      "Snacks & live counters",
+      "Traditional catering",
+      "South Indian plantain leaf",
+      "Chaat & welcome drinks"
+    ],
+    "products": [
+      {
+        "id": "cat-traditional-veg-feast",
+        "name": "Grand South Indian 24-Item Kalyana Plantain Leaf Feast",
+        "description": "Traditional Brahmin/Chettinad style feast: Mysore pak, payasam, appalam, vadai, 3 varieties of poriyal, sambar, rasam, and curd.",
+        "price": 340,
+        "unit": "leaf"
+      },
+      {
+        "id": "cat-morning-tiffin",
+        "name": "Morning Tiffin Buffet (Malli Ghee Idli, Medu Vada, Pongal)",
+        "description": "Hot live counters for mini podi idli, poori masala, pineapple kesari, filter coffee, and 3 chutneys.",
+        "price": 160,
+        "unit": "plate"
+      },
+      {
+        "id": "cat-biryani-banquet",
+        "name": "Dum Biryani & Live Tandoor Non-Veg Wedding Buffet",
+        "description": "Authentic seeraga samba mutton dum biryani, chicken 65, butter chicken, naan, raita and ice cream counter.",
+        "price": 480,
+        "unit": "plate"
+      }
+    ],
+    "description": "Award-winning wedding catering service on Thally Road, Hosur. Renowned for authentic South Indian plantain leaf feasts, live breakfast tiffins, and grand evening banquet spreads.",
+    "distance": 1.3,
+    "demoCoordinates": {
+      "latitude": 12.728,
+      "longitude": 77.834
+    },
+    "rating": 4.9,
+    "reviews": 412,
+    "price": "from ₹160/plate",
+    "icon": "🍱",
+    "color": "amber",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Events & Weddings",
+      "Catering & Feast"
+    ]
+  },
+  {
+    "name": "Hosur Royal Wedding Decors, Photography & Sound",
+    "category": "Events & Weddings",
+    "subcategories": [
+      "Decor & Stage Setup",
+      "Sound, Light & Entertainment",
+      "Photography & Styling",
+      "Stage decoration",
+      "Sound & DJ",
+      "Wedding photography"
+    ],
+    "products": [
+      {
+        "id": "dec-fresh-flower-stage",
+        "name": "Grand Fresh Rose & Jasmine Floral Stage Backdrop",
+        "description": "Hosur fresh cut Dutch roses, fragrant jasmine strings, crystal pillars, and focus warm spot lighting.",
+        "price": 45000,
+        "unit": "setup"
+      },
+      {
+        "id": "dj-jbl-wedding-sound",
+        "name": "JBL High-Power Wedding DJ Sound & Truss Moving Heads",
+        "description": "Professional 10,000W line array sound system, laser beam lighting, haze machine and trending DJ beats.",
+        "price": 22000,
+        "unit": "event"
+      },
+      {
+        "id": "pho-candid-wedding-4k",
+        "name": "Cinematic 4K Wedding Photography & Drone Coverage",
+        "description": "Candid couple photography, cinematic highlight video teaser, 40-page luxury canvera album and drone aerial shots.",
+        "price": 55000,
+        "unit": "2 days"
+      }
+    ],
+    "description": "Full-service event management studio on Bagalur Road, Hosur. Exotic floral stage backdrops, cinematic wedding photography, aerial drone shoots, and high-power DJ setups.",
+    "distance": 1.6,
+    "demoCoordinates": {
+      "latitude": 12.742,
+      "longitude": 77.839
+    },
+    "rating": 4.8,
+    "reviews": 178,
+    "price": "from ₹15,000",
+    "icon": "🎉",
+    "color": "purple",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Events & Weddings",
+      "Decor & Stage Setup",
+      "Sound, Light & Entertainment",
+      "Photography & Styling"
+    ]
+  },
+  {
+    "name": "Hosur Rose & Flora City Nurseries",
+    "category": "Agriculture, Nurseries & Pets",
+    "subcategories": [
+      "Nurseries & Plants",
+      "Seeds & Agri Inputs",
+      "Hosur flora & rose",
+      "Garden & ornamental",
+      "Farming seeds"
+    ],
+    "products": [
+      {
+        "id": "flr-hosur-red-rose",
+        "name": "Hosur Export Quality Red Rose Bud Saplings",
+        "description": "Famous Hosur climatic red rose grafted plants with large long-lasting vibrant blooms and rich scent.",
+        "price": 65,
+        "unit": "sapling"
+      },
+      {
+        "id": "flr-indoor-bonsai",
+        "name": "Indoor Air-Purifying Plants & Ficus Bonsai",
+        "description": "Oxygen-rich snake plants, ZZ plants, money plants and manicured ornamental ficus bonsai in glazed pots.",
+        "price": 450,
+        "unit": "ceramic pot"
+      },
+      {
+        "id": "flr-hybrid-tomato-seeds",
+        "name": "High-Yield Hybrid Tomato & Capsicum Seeds (100g)",
+        "description": "Disease-resistant high yield commercial greenhouse seeds developed for Hosur and Krishnagiri farming belt.",
+        "price": 850,
+        "unit": "pack"
+      }
+    ],
+    "description": "Hosur's premier flower nursery on Bagalur Main Road. Authentic Hosur cut-flower roses, greenhouse saplings, indoor air-purifying plants, and certified hybrid vegetable seeds.",
+    "distance": 3.9,
+    "demoCoordinates": {
+      "latitude": 12.765,
+      "longitude": 77.852
+    },
+    "rating": 4.9,
+    "reviews": 340,
+    "price": "from ₹40/plant",
+    "icon": "🌹",
+    "color": "rose",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Agriculture, Nurseries & Pets",
+      "Nurseries & Plants",
+      "Seeds & Agri Inputs"
+    ]
+  },
+  {
+    "name": "Paws & Tails Pet Shop & 24/7 Veterinary Clinic",
+    "category": "Agriculture, Nurseries & Pets",
+    "subcategories": [
+      "Pet Shops & Supplies",
+      "Veterinary & Live Animals",
+      "Pet food & nutrition",
+      "Veterinary care",
+      "Pet accessories"
+    ],
+    "products": [
+      {
+        "id": "pet-royal-canin-food",
+        "name": "Royal Canin Maxi Adult Dog Food (15 kg)",
+        "description": "Complete balanced nutritional diet for large breed dogs with glucosamine for joint health.",
+        "price": 7450,
+        "unit": "bag"
+      },
+      {
+        "id": "pet-vaccination-checkup",
+        "name": "Pet Vaccination & General Veterinary Health Checkup",
+        "description": "Anti-rabies, DHPPiL booster vaccination and complete health screening by registered veterinary doctor.",
+        "price": 650,
+        "unit": "visit"
+      },
+      {
+        "id": "pet-grooming-spa",
+        "name": "Full Pet Spa, Medicated Bath & Coat Trimming",
+        "description": "Anti-tick herbal shampoo wash, blow dry, nail clipping, ear cleaning, and styling for dogs and cats.",
+        "price": 1200,
+        "unit": "session"
+      }
+    ],
+    "description": "Complete pet care clinic and accessories store on Rayakottai Road, Hosur. Premium Royal Canin & Drools pet foods, dog grooming spa, and 24/7 emergency veterinary doctor.",
+    "distance": 1.2,
+    "demoCoordinates": {
+      "latitude": 12.73,
+      "longitude": 77.831
+    },
+    "rating": 4.9,
+    "reviews": 256,
+    "price": "from ₹150",
+    "icon": "🐾",
+    "color": "peach",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Agriculture, Nurseries & Pets",
+      "Pet Shops & Supplies",
+      "Veterinary & Live Animals"
+    ]
+  },
+  {
+    "name": "Sri Murugan Agro Agency & Cattle Feed",
+    "category": "Agriculture, Nurseries & Pets",
+    "subcategories": [
+      "Seeds & Agri Inputs",
+      "Irrigation & Farm Tools",
+      "Veterinary & Live Animals",
+      "Fertilizers & organic manure",
+      "Micro irrigation",
+      "Livestock & feed"
+    ],
+    "products": [
+      {
+        "id": "agr-vermicompost-bag",
+        "name": "100% Organic Vermicompost & Neem Cake (50 kg)",
+        "description": "Nutrient-rich earthworm compost and natural soil conditioner for garden and commercial horticulture.",
+        "price": 420,
+        "unit": "bag"
+      },
+      {
+        "id": "agr-drip-irrigation-kit",
+        "name": "1-Acre Micro Drip Irrigation Pipe & Emitter Kit",
+        "description": "ISI certified 16mm inline drip laterals, screen filter, venturi injector, and control valves.",
+        "price": 14500,
+        "unit": "acre kit"
+      },
+      {
+        "id": "agr-milch-cattle-feed",
+        "name": "Godrej MilkoMax Cattle Feed Pellets (50 kg)",
+        "description": "High protein balanced dairy cattle feed for improved milk yield, fat percentage and cow health.",
+        "price": 1680,
+        "unit": "bag"
+      }
+    ],
+    "description": "Authorized agricultural inputs and cattle feed dealer at Gandhi Statue Circle, Hosur. Organic vermicompost, micro drip irrigation equipment, and dairy cattle feed pellets.",
+    "distance": 0.8,
+    "demoCoordinates": {
+      "latitude": 12.735,
+      "longitude": 77.827
+    },
+    "rating": 4.8,
+    "reviews": 198,
+    "price": "from ₹280",
+    "icon": "🌾",
+    "color": "emerald",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Agriculture, Nurseries & Pets",
+      "Seeds & Agri Inputs",
+      "Irrigation & Farm Tools",
+      "Veterinary & Live Animals"
+    ]
   }
 ];
 
@@ -7669,7 +8440,31 @@ const SEARCH_SYNONYMS: Record<string, string[]> = {
   washing: ["washing machine", "front load", "top load", "ifb", "bosch", "lg", "samsung", "appliances"],
   chimney: ["chimney", "kitchen chimney", "faber", "prestige", "hob", "gas stove", "kitchen appliances"],
   purifier: ["water purifier", "ro", "aquaguard", "kent", "geyser", "water heater", "ao smith"],
-  geyser: ["geyser", "water heater", "water geyser", "instant geyser", "racold", "crompton", "havells", "ao smith"]
+  geyser: ["geyser", "water heater", "water geyser", "instant geyser", "racold", "crompton", "havells", "ao smith"],
+  property: ["property", "properties", "real estate", "plots", "site", "house for sale", "rental", "bhk", "villa", "shed", "land"],
+  realestate: ["real estate", "property", "plots", "sites", "dtcp", "villa", "construction", "builders", "industrial sheds"],
+  plot: ["plot", "plots", "site", "residential plots", "dtcp", "hntda", "land", "rayakottai road"],
+  rent: ["rent", "rental", "house rent", "2 bhk", "1 bhk", "lease", "shed", "office space", "godown"],
+  construction: ["construction", "builder", "civil", "architect", "building", "turnkey", "tmt steel", "cement", "hntda"],
+  industrial: ["industrial", "manufacturing", "sipcot", "cnc", "vmc", "machining", "laser cutting", "sheet metal", "sheds", "packaging"],
+  cnc: ["cnc", "vmc", "machining", "precision", "milling", "turning", "carbide inserts", "tools", "sidco"],
+  laser: ["laser", "laser cutting", "sheet metal", "fiber laser", "bending", "fabrication", "powder coating"],
+  packaging: ["packaging", "corrugated box", "boxes", "pallets", "ppe", "safety shoes", "safety gear", "skf"],
+  school: ["school", "schools", "cbse", "matriculation", "education", "kindergarten", "playgroup"],
+  college: ["college", "engineering", "adhiyamaan", "ace", "degree", "btech", "polytechnic", "mba"],
+  coaching: ["coaching", "neet", "jee", "sri chaitanya", "tnpsc", "tutor", "tuition", "entrance"],
+  neet: ["neet", "jee", "medical coaching", "entrance", "sri chaitanya", "iit jee", "coaching"],
+  driving: ["driving school", "driving", "license", "car driving", "two wheeler", "rto", "dl"],
+  mandapam: ["kalyana mandapam", "mandapam", "marriage hall", "wedding hall", "reception hall", "sri krishna"],
+  wedding: ["wedding", "marriage", "kalyanam", "mandapam", "catering", "stage decor", "dj", "photography"],
+  catering: ["catering", "caterers", "wedding food", "plantain leaf", "tiffin", "biryani feast", "annam"],
+  decor: ["stage decor", "decoration", "flower decor", "wedding decor", "dj sound", "photography"],
+  nursery: ["nursery", "plants", "roses", "hosur rose", "saplings", "flora", "garden", "flower"],
+  rose: ["rose", "roses", "hosur rose", "plants", "nursery", "saplings", "cut flowers"],
+  pet: ["pet", "pets", "pet shop", "dog food", "puppy", "vet", "veterinary", "clinic", "royal canin", "grooming"],
+  vet: ["vet", "veterinary", "pet clinic", "dog doctor", "animal clinic", "vaccination", "paws"],
+  agro: ["agro", "agriculture", "fertilizer", "seeds", "cattle feed", "drip irrigation", "vermicompost", "farming"],
+  fertilizer: ["fertilizer", "seeds", "agro", "organic", "vermicompost", "drip irrigation", "cattle feed"]
 };
 
 function escapeRegex(s: string) {
@@ -7700,7 +8495,11 @@ const VOCABULARY = [
   "temple", "kovil", "malai", "bus", "busstand", "train", "railway", "station", "dam", "kelavarapalli", "park", "rajaji", "library", "postoffice", "corporation",
   "electrical", "electricals", "wiring", "cables", "switches", "polycab", "havells", "legrand", "anchor", "inverter", "luminous",
   "hardware", "tools", "drill", "bosch", "makita", "ashirvad", "pipes", "texmo", "pumps", "locks", "hinges", "sanitaryware",
-  "appliances", "refrigerator", "fridge", "washing", "chimney", "geyser", "purifier", "daikin", "voltas", "vasanth", "sathya"
+  "appliances", "refrigerator", "fridge", "washing", "chimney", "geyser", "purifier", "daikin", "voltas", "vasanth", "sathya",
+  "property", "properties", "realestate", "plots", "rental", "construction", "builder", "architect", "civil", "sipcot",
+  "cnc", "vmc", "machining", "fabrication", "laser", "packaging", "safety", "college", "engineering", "adhiyamaan", "neet",
+  "chaitanya", "driving", "mandapam", "kalyanam", "wedding", "catering", "decor", "dj", "nursery", "plants", "rose", "pet",
+  "pets", "veterinary", "agro", "fertilizer", "cattlefeed"
 ];
 
 function levenshtein(a: string, b: string): number {
@@ -7965,11 +8764,16 @@ export default function Home() {
             "Chandra Choodeswarar Temple",
             "Samsung Galaxy S25",
             "Kelavarapalli Dam",
-            "Thalappakatti Biryani"
+            "Thalappakatti Biryani",
+            "Hosur Properties 2 BHK Rental",
+            "SIPCOT Industrial Sheds",
+            "Adhiyamaan College B.E",
+            "Sri Krishna Kalyana Mandapam",
+            "Hosur Rose & Flora City"
           ],
           businesses: businesses.slice(0, 3),
           products: businesses.flatMap((b) => b.products.slice(0, 1).map((p) => ({ product: p, business: b }))).slice(0, 3),
-          categories: ["Automobiles", "Electronics", "Electricals", "Hardware", "Home Appliances", "Books & Stationery", "Toys & Fancy Stores", "Public & Common Places", "Health & wellness"]
+          categories: ["Automobiles", "Electronics", "Electricals", "Hardware", "Home Appliances", "Real Estate & Construction", "Industrial & B2B Manufacturing", "Education & Coaching", "Events & Weddings", "Agriculture, Nurseries & Pets", "Books & Stationery", "Toys & Fancy Stores", "Public & Common Places", "Health & wellness"]
         };
       }
       const matchedQueries = new Set<string>();
@@ -9007,7 +9811,10 @@ export default function Home() {
                               "Car Wash & Detailing",
                               "Badminton Court",
                               "Godrej Interio",
-                              "Airport Taxi"
+                              "Airport Taxi",
+                              "Hosur Rose Nursery",
+                              "Kalyana Mandapam",
+                              "SIPCOT Industrial Sheds"
                             ].map((chip) => (
                               <button
                                 key={chip}
