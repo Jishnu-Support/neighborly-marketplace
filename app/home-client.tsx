@@ -10256,25 +10256,51 @@ export default function Home() {
                               <span>Direct Products &amp; Services</span>
                             </div>
                             {autocompleteData.products.map(({ product, business }) => (
-                              <button
+                              <div
                                 key={`${business.name}-${product.id}`}
-                                type="button"
                                 className="autocomplete-item"
-                                onClick={() => {
-                                  setEnquiryProduct({ business, product });
-                                  setSearchDropdownOpen(false);
-                                  recordEvent(`Autocomplete enquiry: ${product.name}`);
-                                }}
+                                style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", padding: "8px 10px" }}
                               >
-                                <div>
+                                <div
+                                  style={{ flex: 1, minWidth: 0, cursor: "pointer" }}
+                                  onClick={() => {
+                                    setEnquiryProduct({ business, product });
+                                    setSearchDropdownOpen(false);
+                                    recordEvent(`Autocomplete enquiry: ${product.name}`);
+                                  }}
+                                >
                                   <div style={{ fontSize: "12px", fontWeight: 700, color: "#1a3321" }}>{highlightMatch(product.name, query)}</div>
-                                  <div style={{ fontSize: "9.5px", color: "#748677" }}>by {business.name}</div>
+                                  <div style={{ fontSize: "9.5px", color: "#748677" }}>by {business.name} · {businessDistance(business).toFixed(1)} km</div>
                                 </div>
-                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                                   <span style={{ fontSize: "11px", fontWeight: 700, color: "#2d693f" }}>₹{product.price.toLocaleString("en-IN")}</span>
-                                  <span style={{ fontSize: "9.5px", background: "#386b4b", color: "#fff", padding: "3px 8px", borderRadius: "4px", fontWeight: 700 }}>Enquire ↗</span>
+                                  <button
+                                    type="button"
+                                    style={{ border: "1px solid #c9dcc8", background: "#f3f8f2", color: "#2d693f", borderRadius: "4px", padding: "4px 7px", fontSize: "9px", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedBusiness(business);
+                                      setSearchDropdownOpen(false);
+                                      recordEvent(`Autocomplete navigate: ${product.name}`);
+                                    }}
+                                    title="Navigate to store"
+                                  >
+                                    🧭 Map
+                                  </button>
+                                  <button
+                                    type="button"
+                                    style={{ border: 0, background: "#386b4b", color: "#fff", padding: "4px 8px", borderRadius: "4px", fontSize: "9.5px", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setEnquiryProduct({ business, product });
+                                      setSearchDropdownOpen(false);
+                                      recordEvent(`Autocomplete enquiry: ${product.name}`);
+                                    }}
+                                  >
+                                    Enquire ↗
+                                  </button>
                                 </div>
-                              </button>
+                              </div>
                             ))}
                           </div>
                         )}
@@ -10534,11 +10560,11 @@ export default function Home() {
                         </div>
                         <p className="related-product-desc" style={{ font: "10px/1.45 'DM Sans', sans-serif", color: "#6d7f71", margin: "6px 0 12px" }}>{highlightMatch(product.description, query)}</p>
                       </div>
-                      <div className="related-product-footer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", paddingTop: "10px", borderTop: "1px solid #f0f5ef" }}>
+                      <div className="related-product-footer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "6px", paddingTop: "10px", borderTop: "1px solid #f0f5ef", flexWrap: "wrap" }}>
                         <button
                           type="button"
                           className="related-product-provider"
-                          style={{ border: "1px solid #e4eee3", background: "#f7faf6", display: "inline-flex", alignItems: "center", gap: "5px", font: "600 9.5px Manrope, sans-serif", color: "#36593e", cursor: "pointer", padding: "4px 8px", borderRadius: "5px", maxWidth: "175px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                          style={{ border: "1px solid #e4eee3", background: "#f7faf6", display: "inline-flex", alignItems: "center", gap: "5px", font: "600 9.5px Manrope, sans-serif", color: "#36593e", cursor: "pointer", padding: "4px 8px", borderRadius: "5px", maxWidth: "140px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
                           onClick={() => setSelectedBusiness(business)}
                           title={`View ${business.name}`}
                         >
@@ -10546,17 +10572,31 @@ export default function Home() {
                           <span className="provider-name-truncate" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{business.name}</span>
                           <span className="provider-dist" style={{ fontSize: "8.5px", color: "#7a8a7d" }}>· {businessDistance(business).toFixed(1)} km</span>
                         </button>
-                        <button
-                          type="button"
-                          className="related-product-enquire-btn"
-                          style={{ border: 0, background: "#386b4b", color: "#ffffff", borderRadius: "5px", padding: "6px 12px", font: "700 9.5px Manrope, sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}
-                          onClick={() => {
-                            setEnquiryProduct({ business, product });
-                            recordEvent(`Related product enquiry: ${product.name}`);
-                          }}
-                        >
-                          Enquire ↗
-                        </button>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <button
+                            type="button"
+                            className="related-product-navigate-btn"
+                            style={{ border: "1px solid #c9dcc8", background: "#f3f8f2", color: "#2d693f", borderRadius: "5px", padding: "6px 9px", font: "700 9.5px Manrope, sans-serif", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px", whiteSpace: "nowrap" }}
+                            onClick={() => {
+                              setSelectedBusiness(business);
+                              recordEvent(`Product navigate clicked: ${product.name}`);
+                            }}
+                            title={`Navigate to ${business.name} from your location`}
+                          >
+                            <span>🧭</span> Navigate
+                          </button>
+                          <button
+                            type="button"
+                            className="related-product-enquire-btn"
+                            style={{ border: 0, background: "#386b4b", color: "#ffffff", borderRadius: "5px", padding: "6px 11px", font: "700 9.5px Manrope, sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}
+                            onClick={() => {
+                              setEnquiryProduct({ business, product });
+                              recordEvent(`Related product enquiry: ${product.name}`);
+                            }}
+                          >
+                            Enquire ↗
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -10588,7 +10628,21 @@ export default function Home() {
                             <p>{highlightMatch(business.description, query)}</p>
                             <div className="business-footer"><span className="rating">★ <b>{business.rating.toFixed(1)}</b> <small>({business.reviews})</small></span>
                               <span className="price">{business.price}</span></div>
-                            <button className="contact-button" onClick={() => { setSelectedBusiness(business); recordEvent("Business catalogue viewed"); }}>View all products & services <span>↗</span></button>
+                            <div style={{ display: "flex", gap: "8px", marginTop: "11px" }}>
+                              <button className="contact-button" style={{ flex: 1, marginTop: 0 }} onClick={() => { setSelectedBusiness(business); recordEvent("Business catalogue viewed"); }}>View products & services <span>↗</span></button>
+                              <button
+                                type="button"
+                                className="outline-button"
+                                style={{ padding: "8px 11px", fontSize: "10px", display: "inline-flex", alignItems: "center", gap: "4px", whiteSpace: "nowrap", borderColor: "#c2d6c3", color: "#275b36", background: "#f5f9f4" }}
+                                onClick={() => {
+                                  setSelectedBusiness(business);
+                                  recordEvent("Business navigate clicked");
+                                }}
+                                title={`Navigate to ${business.name}`}
+                              >
+                                🧭 Navigate
+                              </button>
+                            </div>
                           </div>
                         </article>
                       ))}
@@ -10657,7 +10711,21 @@ export default function Home() {
       {notice && <div className="toast" role="status"><span>✓</span>{notice}<button onClick={() => setNotice("")} aria-label="Dismiss">×</button></div>}
       {storageError && <div className="storage-warning" role="status">Demo data could not be saved in this browser: {storageError}</div>}
       {dialog && <Dialog kind={dialog} close={() => setDialog(null)} onOpenProfile={openMemberProfile} profileRole={role === "Account" || role === "Business" || role === "Agent" || role === "Company" ? role : "Account"} profileIdentity={role === "Company" ? sessionIdentity : ""} onLogin={logIn} onRegisterCustomerLocation={registerCustomerLocation} onBusiness={submitBusiness} businesses={role === "Business" ? businessAccountBusinesses : businesses} categories={categoryConfig.sectors} brandLogos={categoryConfig.brandLogos} onCheckout={submitCheckout} showNotice={showNotice} />}
-      {selectedBusiness && <BusinessDetailDialog business={businesses.find((item) => item.name === selectedBusiness.name) || selectedBusiness} distanceKm={businessDistance(businesses.find((item) => item.name === selectedBusiness.name) || selectedBusiness)} isDeviceDistance={locationEnabled} close={() => setSelectedBusiness(null)} requestProduct={(business, product) => { setSelectedBusiness(null); setEnquiryProduct({ business, product }); recordEvent("Customer selected a product or service"); }} />}
+      {selectedBusiness && (
+        <BusinessDetailDialog
+          business={businesses.find((item) => item.name === selectedBusiness.name) || selectedBusiness}
+          distanceKm={businessDistance(businesses.find((item) => item.name === selectedBusiness.name) || selectedBusiness)}
+          isDeviceDistance={locationEnabled}
+          close={() => setSelectedBusiness(null)}
+          requestProduct={(business, product) => {
+            setSelectedBusiness(null);
+            setEnquiryProduct({ business, product });
+            recordEvent("Customer selected a product or service");
+          }}
+          userCoordinates={locationCoordinates}
+          onRequestDeviceLocation={requestDeviceLocation}
+        />
+      )}
       {enquiryProduct && <EnquiryDialog business={enquiryProduct.business} product={enquiryProduct.product} close={() => setEnquiryProduct(null)} submit={submitEnquiry} />}
     </main>
   );
@@ -10712,40 +10780,252 @@ function BusinessDetailDialog({
   isDeviceDistance,
   close,
   requestProduct,
+  userCoordinates,
+  onRequestDeviceLocation,
 }: {
   business: Business;
   distanceKm: number;
   isDeviceDistance: boolean;
   close: () => void;
   requestProduct: (business: Business, product: Product) => void;
+  userCoordinates?: Coordinates | null;
+  onRequestDeviceLocation?: () => void;
 }) {
-  const coordinates = business.coordinates;
+  const [travelMode, setTravelMode] = useState<"driving" | "two-wheeler" | "walking">("driving");
+  const [mapProvider, setMapProvider] = useState<"google" | "osm">("google");
+  const [copiedCoords, setCopiedCoords] = useState(false);
+
+  // Fallback coordinates from business.coordinates OR business.demoCoordinates
+  const coordinates = business.coordinates || business.demoCoordinates;
+
+  // User origin: live GPS coords or default Hosur center coords
+  const DEFAULT_HOSUR_COORDS = { latitude: 12.7409, longitude: 77.8253 };
+  const origin = userCoordinates || DEFAULT_HOSUR_COORDS;
+  const isLiveUserLocation = Boolean(userCoordinates);
+
   const address = business.address
     ? [business.address.doorNumber, business.address.street, business.address.area, business.address.cityTown, business.address.taluka, business.address.district, business.address.state, business.address.pincode].filter(Boolean).join(", ")
+    : "Hosur, Tamil Nadu";
+
+  // Google Maps directions embed showing route between Origin and Destination
+  const googleRouteEmbedUrl = coordinates
+    ? `https://maps.google.com/maps?saddr=${origin.latitude},${origin.longitude}&daddr=${coordinates.latitude},${coordinates.longitude}&output=embed`
     : "";
-  const mapUrl = coordinates ? (() => {
-    const latitudeOffset = 0.008;
-    const longitudeOffset = 0.008;
+
+  // OpenStreetMap embed fallback
+  const osmEmbedUrl = coordinates ? (() => {
+    const minLat = Math.min(origin.latitude, coordinates.latitude) - 0.008;
+    const maxLat = Math.max(origin.latitude, coordinates.latitude) + 0.008;
+    const minLng = Math.min(origin.longitude, coordinates.longitude) - 0.008;
+    const maxLng = Math.max(origin.longitude, coordinates.longitude) + 0.008;
     const params = new URLSearchParams({
-      bbox: `${coordinates.longitude - longitudeOffset},${coordinates.latitude - latitudeOffset},${coordinates.longitude + longitudeOffset},${coordinates.latitude + latitudeOffset}`,
+      bbox: `${minLng},${minLat},${maxLng},${maxLat}`,
       layer: "mapnik",
       marker: `${coordinates.latitude},${coordinates.longitude}`,
     });
     return `https://www.openstreetmap.org/export/embed.html?${params.toString()}`;
   })() : "";
-  const directionsUrl = coordinates
-    ? `https://www.google.com/maps/dir/?api=1&destination=${coordinates.latitude},${coordinates.longitude}`
+
+  const activeMapUrl = mapProvider === "google" ? googleRouteEmbedUrl : osmEmbedUrl;
+
+  // Google Maps external turn-by-turn navigation URL
+  const googleDirectionsUrl = coordinates
+    ? `https://www.google.com/maps/dir/?api=1&origin=${origin.latitude},${origin.longitude}&destination=${coordinates.latitude},${coordinates.longitude}&travelmode=${travelMode === "walking" ? "walking" : travelMode === "two-wheeler" ? "two-wheeler" : "driving"}`
     : "";
+
+  // OpenStreetMap directions external URL
+  const osmDirectionsUrl = coordinates
+    ? `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${origin.latitude}%2C${origin.longitude}%3B${coordinates.latitude}%2C${coordinates.longitude}`
+    : "";
+
+  // Estimated travel time calculation
+  const speedKmH = travelMode === "walking" ? 4.5 : travelMode === "two-wheeler" ? 28 : 22;
+  const estimatedMinutes = Math.max(2, Math.round((distanceKm / speedKmH) * 60));
+
+  const copyCoordinates = () => {
+    if (!coordinates) return;
+    navigator.clipboard.writeText(`${coordinates.latitude.toFixed(6)}, ${coordinates.longitude.toFixed(6)}`);
+    setCopiedCoords(true);
+    setTimeout(() => setCopiedCoords(false), 2000);
+  };
+
   return <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
     <section className="modal catalog-modal" role="dialog" aria-modal="true"><button className="modal-close" onClick={close} aria-label="Close">×</button>
       <div className="eyebrow">{business.category.toUpperCase()} · {distanceKm.toFixed(1)} KM {isDeviceDistance ? "FROM DEVICE" : "SAMPLE DISTANCE"}</div><h2>{business.name}</h2><p>{business.description}</p>
-      <section className="provider-map-section" aria-label={`Location for ${business.name}`}>
-        <div className="provider-map-heading"><div><strong>Provider location</strong>{address && <p>{address}</p>}</div>
-          {directionsUrl && <a className="outline-button" href={directionsUrl} target="_blank" rel="noreferrer">Navigate to provider ↗</a>}
+      
+      <section className="navigation-route-card" aria-label={`Location and navigation to ${business.name}`} id="provider-navigation-map">
+        <div className="navigation-header">
+          <div className="navigation-title-group">
+            <div className="navigation-eyebrow">
+              <span className="live-indicator-dot" /> LIVE ROUTE NAVIGATION
+            </div>
+            <strong>Navigate to {business.name}</strong>
+            <p className="navigation-address">📍 {address}</p>
+          </div>
+          <div className="navigation-stats-pill">
+            <span className="stats-time">~{estimatedMinutes} min</span>
+            <span className="stats-dist">{distanceKm.toFixed(1)} km</span>
+          </div>
         </div>
-        {mapUrl ? <iframe className="provider-map" title={`Map showing ${business.name}`} src={mapUrl} loading="lazy" referrerPolicy="no-referrer" /> : <p className="provider-map-unavailable">A verified map pin is not available for this listing yet.</p>}
+
+        <div className="route-endpoints-bar">
+          <div className="route-point origin-point">
+            <span className="point-badge start">A</span>
+            <div className="point-info">
+              <span className="point-label">Your Location</span>
+              <strong className="point-name">
+                {isLiveUserLocation ? "Current GPS Location" : "Hosur Town Center (Default)"}
+              </strong>
+            </div>
+            {!isLiveUserLocation && onRequestDeviceLocation && (
+              <button
+                type="button"
+                className="use-gps-inline-btn"
+                onClick={onRequestDeviceLocation}
+                title="Detect your exact phone or browser GPS location"
+              >
+                📡 Use Live GPS
+              </button>
+            )}
+          </div>
+          <div className="route-arrow-divider">↓</div>
+          <div className="route-point dest-point">
+            <span className="point-badge dest">B</span>
+            <div className="point-info">
+              <span className="point-label">Destination</span>
+              <strong className="point-name">{business.name}</strong>
+            </div>
+            {coordinates && <span className="destination-coords-tag">{coordinates.latitude.toFixed(4)}, {coordinates.longitude.toFixed(4)}</span>}
+          </div>
+        </div>
+
+        <div className="navigation-controls-row">
+          <div className="travel-mode-tabs" role="tablist" aria-label="Travel mode">
+            <button
+              type="button"
+              className={`travel-mode-tab ${travelMode === "driving" ? "active" : ""}`}
+              onClick={() => setTravelMode("driving")}
+            >
+              🚗 Car / Auto
+            </button>
+            <button
+              type="button"
+              className={`travel-mode-tab ${travelMode === "two-wheeler" ? "active" : ""}`}
+              onClick={() => setTravelMode("two-wheeler")}
+            >
+              🏍️ 2-Wheeler
+            </button>
+            <button
+              type="button"
+              className={`travel-mode-tab ${travelMode === "walking" ? "active" : ""}`}
+              onClick={() => setTravelMode("walking")}
+            >
+              🚶 Walking
+            </button>
+          </div>
+
+          <div className="navigation-cta-group">
+            {googleDirectionsUrl && (
+              <a
+                className="navigation-turn-by-turn-btn"
+                href={googleDirectionsUrl}
+                target="_blank"
+                rel="noreferrer"
+                title="Start turn-by-turn navigation in Google Maps"
+              >
+                🧭 Start Turn-by-Turn Navigation ↗
+              </a>
+            )}
+          </div>
+        </div>
+
+        {activeMapUrl ? (
+          <div className="navigation-map-wrapper">
+            <iframe
+              className="provider-map navigation-active-map"
+              title={`Live route navigation from your location to ${business.name}`}
+              src={activeMapUrl}
+              loading="lazy"
+              referrerPolicy="no-referrer"
+            />
+            <div className="map-layer-switcher">
+              <button
+                type="button"
+                className={`layer-switch-btn ${mapProvider === "google" ? "active" : ""}`}
+                onClick={() => setMapProvider("google")}
+              >
+                Google Maps Route
+              </button>
+              <button
+                type="button"
+                className={`layer-switch-btn ${mapProvider === "osm" ? "active" : ""}`}
+                onClick={() => setMapProvider("osm")}
+              >
+                OpenStreetMap
+              </button>
+            </div>
+          </div>
+        ) : (
+          <p className="provider-map-unavailable">A verified map pin is not available for this listing yet.</p>
+        )}
+
+        <div className="navigation-quick-tools">
+          {googleDirectionsUrl && (
+            <a
+              className="quick-nav-link"
+              href={googleDirectionsUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Open in Google Maps App ↗
+            </a>
+          )}
+          {osmDirectionsUrl && (
+            <a
+              className="quick-nav-link"
+              href={osmDirectionsUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Open in OSM Directions ↗
+            </a>
+          )}
+          {coordinates && (
+            <button
+              type="button"
+              className="quick-nav-btn"
+              onClick={copyCoordinates}
+            >
+              {copiedCoords ? "✓ Coordinates Copied" : "📋 Copy GPS Coordinates"}
+            </button>
+          )}
+        </div>
       </section>
-      <div className="catalog-list">{business.products.length ? business.products.map((product) => <article className="catalog-item" key={product.id}><div><strong>{product.name}</strong><p>{product.description}</p><span>{product.price ? `₹${product.price.toLocaleString("en-IN")} ${product.unit}` : product.unit}</span></div><button className="outline-button" onClick={() => requestProduct(business, product)}>Request info</button></article>) : <EmptyState title="No catalogue items yet" text="The business has not added products or services to this demo listing." />}</div>
+
+      <div className="catalog-list">{business.products.length ? business.products.map((product) => (
+        <article className="catalog-item" key={product.id}>
+          <div>
+            <strong>{product.name}</strong>
+            <p>{product.description}</p>
+            <span>{product.price ? `₹${product.price.toLocaleString("en-IN")} ${product.unit}` : product.unit}</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", justifyContent: "flex-end" }}>
+            {googleDirectionsUrl && (
+              <a
+                className="outline-button"
+                style={{ padding: "6px 10px", fontSize: "9.5px", textDecoration: "none", color: "#2d693f", borderColor: "#cde3cc", background: "#f4f8f3", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                href={googleDirectionsUrl}
+                target="_blank"
+                rel="noreferrer"
+                title={`Navigate to store for ${product.name}`}
+              >
+                🧭 Navigate ↗
+              </a>
+            )}
+            <button className="outline-button" onClick={() => requestProduct(business, product)}>Request info</button>
+          </div>
+        </article>
+      )) : <EmptyState title="No catalogue items yet" text="The business has not added products or services to this demo listing." />}</div>
       <div className="fine-print">A request is stored locally only. The business will not receive it until a secure messaging service is connected.</div>
     </section>
   </div>;
