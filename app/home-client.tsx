@@ -339,11 +339,11 @@ const categoryIconIds: Record<string, string> = {
   automobiles: "four-wheeler",
   electronics: "electronics",
   fashion: "fashion",
-  "home & furniture": "home",
+  "home & furniture": "furniture",
   "food & dining": "food",
   "health & wellness": "health",
   travel: "plane",
-  entertainment: "event",
+  entertainment: "music",
   "everyday services": "tools",
   "two wheeler": "two-wheeler",
   "three wheeler": "three-wheeler",
@@ -407,6 +407,16 @@ const categoryIconIds: Record<string, string> = {
   "classes & workshops": "book",
   "home services": "home",
   "professional services": "briefcase",
+  electricals: "electricals",
+  hardware: "hardware",
+  "books & stationery": "book",
+  "toys & fancy stores": "toys-fancy",
+  "public & common places": "public-places",
+  "real estate & construction": "real-estate",
+  "industrial & b2b manufacturing": "industrial-mfg",
+  "education & coaching": "education",
+  "events & weddings": "events-weddings",
+  "agriculture, nurseries & pets": "agriculture-pets",
 };
 
 function categoryIconIdFor(name: string, sector = "") {
@@ -438,10 +448,19 @@ function categoryIconIdFor(name: string, sector = "") {
   if (/hotel|stay|guest house|accommodation/.test(key)) return "hotel";
   if (/bus|transport|ride|rail/.test(key)) return "buses";
   if (/rental|car hire/.test(key)) return "four-wheeler";
+  if (/wedding|marriage|mandapam|banquet|pandal|reception/.test(key)) return "events-weddings";
   if (/event|celebration|party/.test(key)) return "event";
   if (/movie|cinema|film/.test(key)) return "cinema";
   if (/music|instrument|artist/.test(key)) return "music";
+  if (/education|coaching|school|college|degree|academy|course|driving|tuition/.test(key)) return "education";
   if (/class|workshop|lesson|education|book/.test(key)) return "book";
+  if (/electrical|wire|switch|lighting|inverter/.test(key)) return "electricals";
+  if (/hardware|fastener|paint|cement|pipe|pump|lock/.test(key)) return "hardware";
+  if (/toy|fancy|gift|bangle|novelty|novelties|game/.test(key)) return "toys-fancy";
+  if (/public|common|transit|temple|park|dam|library|station|civic|corporation/.test(key)) return "public-places";
+  if (/real estate|construction|property|plot|shed|contractor|architect|builder/.test(key)) return "real-estate";
+  if (/industrial|manufacturing|cnc|vmc|machining|fabrication|laser|coating|packaging/.test(key)) return "industrial-mfg";
+  if (/agriculture|nursery|nurseries|plant|rose|seed|fertilizer|pet|vet|cattle|feed|livestock/.test(key)) return "agriculture-pets";
   if (/repair|service|maintenance|diagnostic|installation|cleaning|plumbing|carpentry/.test(key)) return "tools";
   if (/professional|consult|account|business/.test(key)) return "briefcase";
   return categoryIconIds[sector.trim().toLowerCase()] || "default-category";
@@ -9819,42 +9838,65 @@ export default function Home() {
           ))}
         </nav>
 
-        {role === "Discover" && <>
-          <div className="sidebar-divider" />
-          <div className="workspace-label">BROWSE BY</div>
-          <nav className="category-nav" aria-label="Browse categories">
-            <button
-              className={`category-link view-all ${browseMode === "atoz" ? "selected" : ""}`}
-              onClick={() => {
-                setBrowseMode("atoz");
-                setRole("Discover");
-                setMobileMenuOpen(false);
-                window.setTimeout(() => {
-                  document.getElementById("atoz-directory")?.scrollIntoView({ behavior: "smooth" });
-                }, 100);
-              }}
-            >
-              <Icon><span className="atoz-sidebar-pill">A–Z</span></Icon><span>All Products & Services</span>
-            </button>
-            {categories.slice(1).map((item) => (
-              <button key={item.name} className={`category-link ${browseMode === "sectors" && category === item.name ? "selected" : ""}`}
-                onClick={() => { setBrowseMode("sectors"); setCategory(item.name); setCategoryPath([]); setQuery(""); setRole("Discover"); setMobileMenuOpen(false); }}>
-                <Icon><CategoryIcon name={item.name} sector={item.name} /></Icon><span>{item.name}</span>
+        <div className="sidebar-scroll-middle">
+          {role === "Discover" && <>
+            <div className="sidebar-divider" />
+            <div className="workspace-label">BROWSE BY</div>
+            <nav className="category-nav" aria-label="Browse categories">
+              <button
+                className={`category-link view-all ${browseMode === "atoz" ? "selected" : ""}`}
+                onClick={() => {
+                  setBrowseMode("atoz");
+                  setRole("Discover");
+                  setMobileMenuOpen(false);
+                  window.setTimeout(() => {
+                    document.getElementById("atoz-directory")?.scrollIntoView({ behavior: "smooth" });
+                  }, 100);
+                }}
+              >
+                <Icon><span className="atoz-sidebar-pill">A–Z</span></Icon><span>All Products & Services</span>
               </button>
-            ))}
-            <button className={`category-link view-all ${browseMode === "sectors" && category === "All" ? "selected" : ""}`} onClick={() => { setBrowseMode("sectors"); setCategory("All"); setCategoryPath([]); setQuery(""); setRole("Discover"); setMobileMenuOpen(false); }}>
-              <Icon>&#43;</Icon><span>All categories</span>
-            </button>
-          </nav>
-        </>}
+              {categories.slice(1).map((item) => (
+                <button
+                  key={item.name}
+                  className={`category-link ${browseMode === "sectors" && category === item.name ? "selected" : ""}`}
+                  onClick={() => {
+                    setBrowseMode("sectors");
+                    setCategory(item.name);
+                    setCategoryPath([]);
+                    setQuery("");
+                    setRole("Discover");
+                    setMobileMenuOpen(false);
+                  }}
+                  title={item.name}
+                >
+                  <Icon><CategoryIcon name={item.name} sector={item.name} /></Icon>
+                  <span>{item.name}</span>
+                </button>
+              ))}
+              <button
+                className={`category-link view-all ${browseMode === "sectors" && category === "All" ? "selected" : ""}`}
+                onClick={() => {
+                  setBrowseMode("sectors");
+                  setCategory("All");
+                  setCategoryPath([]);
+                  setQuery("");
+                  setRole("Discover");
+                  setMobileMenuOpen(false);
+                }}
+              >
+                <Icon>&#43;</Icon><span>All categories</span>
+              </button>
+            </nav>
 
-        <div className="sidebar-spacer" />
-        {role === "Discover" && <div className="neighbor-card">
-          <div className="neighbor-sparkle">&#10038;</div>
-          <strong>Good things are closer.</strong>
-          <p>Every search supports a business in your neighborhood.</p>
-          <button onClick={() => setDialog("business")}>Register your business <span>&#8599;</span></button>
-        </div>}
+            <div className="neighbor-card">
+              <div className="neighbor-sparkle">&#10038;</div>
+              <strong>Good things are closer.</strong>
+              <p>Every search supports a business in your neighborhood.</p>
+              <button onClick={() => setDialog("business")}>Register your business <span>&#8599;</span></button>
+            </div>
+          </>}
+        </div>
 
         <div className="sidebar-bottom">
             <button className="profile-button" onClick={() => { if (role === "Discover") openPortal("Account"); else { openPortal(role); window.dispatchEvent(new Event("neighborly-open-profile")); } }}>
