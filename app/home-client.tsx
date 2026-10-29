@@ -472,6 +472,60 @@ function CategoryIcon({ name, sector = "" }: { name: string; sector?: string }) 
 }
 
 const verifiedBrandLogos: Record<string, string> = {
+  // Heavy Machinery, Earth Movers & Commercial
+  jcb: "/brand-logos/jcb.svg",
+  "tata hitachi": "/brand-logos/tatahitachi.svg",
+  tatahitachi: "/brand-logos/tatahitachi.svg",
+  komatsu: "/brand-logos/komatsu.svg",
+  caterpillar: "/brand-logos/caterpillar.svg",
+  cat: "/brand-logos/caterpillar.svg",
+  "case construction": "/brand-logos/case-construction.svg",
+  case: "/brand-logos/case-construction.svg",
+  ace: "/brand-logos/ace.svg",
+  "escorts kubota": "/brand-logos/escorts-kubota.svg",
+  escorts: "/brand-logos/escorts-kubota.svg",
+  sany: "/brand-logos/sany.svg",
+  xcmg: "/brand-logos/xcmg.svg",
+  ammann: "/brand-logos/ammann.svg",
+  beml: "/brand-logos/beml.svg",
+
+  // Tractors & Agricultural Machinery
+  swaraj: "/brand-logos/swaraj.svg",
+  sonalika: "/brand-logos/sonalika.svg",
+  "massey ferguson": "/brand-logos/masseyferguson.svg",
+  "john deere": "/brand-logos/johndeere.svg",
+  "new holland": "/brand-logos/newholland.svg",
+  kubota: "/brand-logos/kubota.svg",
+
+  // Commercial & Two/Three Wheeler Makes
+  eicher: "/brand-logos/eicher.svg",
+  "ather energy": "/brand-logos/ather.svg",
+  ather: "/brand-logos/ather.svg",
+  "yc electric": "/brand-logos/ycelectric.svg",
+  skoda: "/brand-logos/skoda.svg",
+  "atul auto": "/brand-logos/atulauto.png",
+
+  // Home Appliances & Electronics
+  haier: "/brand-logos/haier.svg",
+  daikin: "/brand-logos/daikin.svg",
+  voltas: "/brand-logos/voltas.svg",
+  "blue star": "/brand-logos/bluestar.svg",
+  bluestar: "/brand-logos/bluestar.svg",
+  carrier: "/brand-logos/carrier.svg",
+  hitachi: "/brand-logos/hitachi.svg",
+  prestige: "/brand-logos/prestige.svg",
+  faber: "/brand-logos/faber.svg",
+  glen: "/brand-logos/glen.svg",
+  "morphy richards": "/brand-logos/morphyrichards.svg",
+  aquaguard: "/brand-logos/aquaguard.svg",
+  kent: "/brand-logos/kent.svg",
+  "a.o. smith": "/brand-logos/aosmith.svg",
+  "ao smith": "/brand-logos/aosmith.svg",
+  havells: "/brand-logos/havells.svg",
+  crompton: "/brand-logos/crompton.svg",
+  racold: "/brand-logos/racold.svg",
+
+  // Existing Verified Brand Logos
   acer: "/brand-logos/acer.svg",
   ampere: "/brand-logos/ampere.png",
   "apple": "/brand-logos/apple.svg",
@@ -578,8 +632,8 @@ function isBrandOption(sector: string, parentPath: string[], node: TaxonomyNode,
       ((parentPath.length === 2 && parentPath[1] !== "Multi wheel / commercial") ||
         (parentPath.length === 3 && parentPath[1] === "Multi wheel / commercial"));
   }
-  // For Electronics: Sales/Service → Device type → [BRAND] → Model
-  if (sectorKey === "electronics") {
+  // For Electronics & Home Appliances: Sales/Service → Device type → [BRAND] → Model
+  if (sectorKey === "electronics" || sectorKey === "home appliances") {
     return ["sales", "service"].includes(parentPath[0]?.trim().toLowerCase() || "") &&
       parentPath.length === 2;
   }

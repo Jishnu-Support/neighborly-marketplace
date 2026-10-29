@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" rx="16" fill="#367C2B"/>
+  <rect width="90" height="90" x="5" y="5" rx="13" fill="none" stroke="#FFDE00" stroke-width="3"/>
+  <g transform="translate(18, 16)" fill="#FFDE00">
+    <path d="M45 12 c-2-3-7-4-11-2 l-6 4 c-2-3-5-5-8-5 -2 0-4 1-5 3 l-3 5 c2 2 4 4 7 5 l5-2 c3 4 8 10 13 14 l-10 2 c-3-2-6-5-9-8 l-3 3 c4 4 8 8 13 10 l-2 5 c-2 4-5 6-9 7 l2 3 c6-1 11-4 14-10 l3-7 c3-2 7-6 10-11 l4 1 c3 1 6 3 9 6 l3-3 c-4-4-9-7-14-8 l-2-4 c3-3 5-7 7-11z"/>
+  </g>
+  <text x="50" y="80" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="8" fill="#FFDE00" text-anchor="middle" letter-spacing="1">JOHN DEERE</text>
+</svg>

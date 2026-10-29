@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 100">
+  <rect width="120" height="100" rx="14" fill="#ffffff" stroke="#e0e0e0" stroke-width="2"/>
+  <path d="M20 30 Q60 16 100 30 L95 65 Q60 85 25 65 Z" fill="#D32F2F"/>
+  <text x="60" y="52" font-family="Arial Black, sans-serif" font-weight="900" font-size="14" fill="#ffffff" text-anchor="middle" letter-spacing="1">SWARAJ</text>
+  <text x="60" y="63" font-family="Arial, sans-serif" font-weight="700" font-size="6" fill="#FFEB3B" text-anchor="middle" letter-spacing="1">TRACTORS</text>
+</svg>

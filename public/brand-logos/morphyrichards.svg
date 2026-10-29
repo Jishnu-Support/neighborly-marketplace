@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 100">
+  <rect width="140" height="100" rx="14" fill="#ffffff" stroke="#e0e0e0" stroke-width="2"/>
+  <g transform="translate(10, 30)">
+    <rect width="120" height="40" rx="8" fill="#C41230"/>
+    <text x="60" y="18" font-family="Arial, sans-serif" font-weight="800" font-size="11" fill="#ffffff" text-anchor="middle" letter-spacing="1">morphy</text>
+    <text x="60" y="32" font-family="Arial, sans-serif" font-weight="800" font-size="11" fill="#ffffff" text-anchor="middle" letter-spacing="1">richards</text>
+  </g>
+</svg>

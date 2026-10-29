@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 100">
+  <rect width="120" height="100" rx="14" fill="#ffffff" stroke="#e0e0e0" stroke-width="2"/>
+  <ellipse cx="60" cy="50" rx="48" ry="26" fill="#003882"/>
+  <text x="60" y="57" font-family="Georgia, serif" font-style="italic" font-weight="bold" font-size="20" fill="#ffffff" text-anchor="middle">Carrier</text>
+</svg>

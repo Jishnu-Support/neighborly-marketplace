@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 100">
+  <rect width="120" height="100" rx="14" fill="#ffffff" stroke="#e0e0e0" stroke-width="2"/>
+  <g transform="translate(10, 20)">
+    <rect x="10" y="10" width="80" height="30" rx="6" fill="#ED1C24"/>
+    <text x="50" y="31" font-family="Arial Black, sans-serif" font-weight="900" font-size="14" fill="#ffffff" text-anchor="middle" letter-spacing="1">ESCORTS</text>
+    <text x="50" y="55" font-family="Arial, sans-serif" font-weight="800" font-size="10" fill="#007F99" text-anchor="middle" letter-spacing="1">KUBOTA</text>
+  </g>
+</svg>

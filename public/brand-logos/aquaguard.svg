@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 100">
+  <rect width="120" height="100" rx="14" fill="#ffffff" stroke="#e0e0e0" stroke-width="2"/>
+  <path d="M60 20 C48 35 44 45 44 54 C44 65 51 72 60 72 C69 72 76 65 76 54 C76 45 72 35 60 20 Z" fill="#0099DA"/>
+  <text x="60" y="86" font-family="Arial Black, sans-serif" font-weight="900" font-size="10" fill="#003366" text-anchor="middle" letter-spacing="1">Aquaguard</text>
+</svg>
