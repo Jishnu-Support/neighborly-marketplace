@@ -3,7 +3,7 @@ import BrandSplash from "./brand-splash";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://bizearch.in"),
+  metadataBase: new URL("https://bizearch.co"),
   alternates: {
     canonical: "/",
   },
