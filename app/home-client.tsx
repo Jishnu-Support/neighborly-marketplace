@@ -52,6 +52,8 @@ type Product = {
   description: string;
   price: number;
   unit: string;
+  image?: string;
+  badge?: string;
   catalogueSelections?: CatalogueSelection[];
 };
 type CatalogueActivity = "Sales" | "Service";
@@ -70,6 +72,7 @@ type BusinessAddress = {
 type Business = {
   name: string;
   category: string;
+  phone?: string;
   address?: BusinessAddress;
   coordinates?: Coordinates | null;
   businessModes?: string[];
@@ -683,6 +686,205 @@ function updateCatalogueSelections(current: CatalogueSelection[], activity: Cata
     }),
     { activity, sector, path },
   ];
+}
+
+function businessPhoneFor(business: Business): string {
+  if (business.phone) return business.phone;
+  let hash = 0;
+  for (let i = 0; i < business.name.length; i++) {
+    hash = (hash * 31 + business.name.charCodeAt(i)) & 0xffffffff;
+  }
+  const absHash = Math.abs(hash);
+  const prefixes = [
+    "+91 94432",
+    "+91 98420",
+    "+91 99440",
+    "+91 97890",
+    "+91 96290",
+    "+91 90800",
+    "+91 82480",
+    "+91 94880",
+    "04344 2",
+    "+91 93600",
+  ];
+  const prefix = prefixes[absHash % prefixes.length];
+  const suffix = prefix.startsWith("04344")
+    ? String(20000 + (absHash % 80000))
+    : String(10000 + (absHash % 90000));
+  return `${prefix} ${suffix}`;
+}
+
+function businessRawPhone(phone: string): string {
+  return phone.replace(/[^\d+]/g, "");
+}
+
+function productImageFor(product: Product, business?: Business): string {
+  if (product.image) return product.image;
+  const name = (product.name || "").toLowerCase();
+  const desc = (product.description || "").toLowerCase();
+  const cat = (business?.category || "").toLowerCase();
+  const combined = `${name} ${desc} ${cat}`;
+
+  // 1. Two-wheelers & Scooters
+  if (/chetak|electric scooter|\bev\b|scooter|jupiter|activa|ntorq|iqube|ola s1|ather|rayzr|fascino/.test(combined)) {
+    return "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/pulsar|motorcycle|\bbike\b|apache|royal enfield|classic 350|hunter 350|bullet|duke|ktm|ninja|yamaha r15|fzs|gixxer|speed 400|scrambler/.test(combined)) {
+    return "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=700&q=80";
+  }
+  // 2. Automotive Services & Repairs
+  if (/oil change|routine service|two-wheeler service|bike service|general service|brake check|chain lube|tune-up/.test(combined)) {
+    return "https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/car service|car wash|car repair|detailing|wheel alignment|water wash|engine diagnostic|brake pad|car ac/.test(combined)) {
+    return "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/puncture|tyre|tire|tubeless/.test(combined)) {
+    return "https://images.unsplash.com/photo-1578844251758-2f71da64c96f?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/battery|inverter battery|jump start|exide|amaron/.test(combined)) {
+    return "https://images.unsplash.com/photo-1619725002198-6a689b72f41d?auto=format&fit=crop&w=700&q=80";
+  }
+  // 3. Four-wheelers & Cars
+  if (/four wheeler|\bcar\b|swift|baleno|creta|nexon|thar|scorpio|innova|fortuner|virtus|slavia|kushaq|elevate|curvv/.test(combined)) {
+    return "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=700&q=80";
+  }
+  // 4. Heavy Vehicles / Earth Movers / Tractors / Cranes
+  if (/tractor|swaraj|mahindra 575|john deere|sonalika|kubota|massey/.test(combined)) {
+    return "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/jcb|earth mover|excavator|crane|backhoe|loader|komatsu|caterpillar|tata hitachi|tipper|truck|dost|ashok leyland|eicher/.test(combined)) {
+    return "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=700&q=80";
+  }
+  // 5. Electronics & Mobiles
+  if (/screen replacement|display repair|touch glass|cracked screen/.test(combined)) {
+    return "https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/phone|mobile|smartphone|iphone|galaxy|pixel|redmi|oneplus|realme|android|5g phone/.test(combined)) {
+    return "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/laptop|macbook|thinkpad|computer|desktop|dell|hp|asus|pc repair/.test(combined)) {
+    return "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/television|\btv\b|bravia|oled|smart tv|led tv|soundbar/.test(combined)) {
+    return "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/headphone|earbud|speaker|bluetooth|jbl|bose|audio|sound/.test(combined)) {
+    return "https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/camera|dslr|lens|gopro|nikon|canon|sony alpha|photography/.test(combined)) {
+    return "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=700&q=80";
+  }
+  // 6. Home Appliances
+  if (/refrigerator|fridge|frost free|double door/.test(combined)) {
+    return "https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/washing machine|front load|top load|bloomwash/.test(combined)) {
+    return "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/\bac\b|air conditioner|cooling|split ac|inverter ac|ac service/.test(combined)) {
+    return "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/purifier|water filter|ro\+uv|aquaguard|kent|geyser|water heater/.test(combined)) {
+    return "https://images.unsplash.com/photo-1585338107529-13afc5f02586?auto=format&fit=crop&w=700&q=80";
+  }
+  // 7. Food & Dining
+  if (/thali|lunch|plate|meals|meals & thalis|south indian meals/.test(combined)) {
+    return "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/dosa|idli|vada|breakfast|chutney/.test(combined)) {
+    return "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/biryani|fried rice|chicken|meat|curry/.test(combined)) {
+    return "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/cake|pastry|bread|bun|bakery|sweet|dessert/.test(combined)) {
+    return "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/coffee|tea|filter coffee|beverage|juice|cafe/.test(combined)) {
+    return "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=700&q=80";
+  }
+  // 8. Furniture & Home
+  if (/sofa|couch|living room|chair|seating/.test(combined)) {
+    return "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/bed|bedroom|mattress|cot|wardrobe/.test(combined)) {
+    return "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/table|dining|desk|interior|decor|curtain/.test(combined)) {
+    return "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=700&q=80";
+  }
+  // 9. Hardware & Electricals
+  if (/drill|grinder|cutter|machinery|power tools|makita|bosch/.test(combined)) {
+    return "https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/tool|fastener|screw|hardware|lock|pipe|pump|fittings/.test(combined)) {
+    return "https://images.unsplash.com/photo-1581147036324-c17ac41dfa6c?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/wire|cable|switch|lighting|led|fan|havells|electrical/.test(combined)) {
+    return "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=700&q=80";
+  }
+  // 10. Fashion & Jewellery
+  if (/saree|silk|handloom|drape/.test(combined)) {
+    return "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/kurta|shirt|dress|clothing|wear|tailor|suit|pants/.test(combined)) {
+    return "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/jewel|gold|necklace|earring|bangle|silver|ornament/.test(combined)) {
+    return "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=700&q=80";
+  }
+  // 11. Health & Wellness
+  if (/doctor|consultation|clinic|health|check-up|medical|hospital/.test(combined)) {
+    return "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/dental|teeth|dentist|cleaning & fillings/.test(combined)) {
+    return "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/medicine|pharmacy|tablet|prescription/.test(combined)) {
+    return "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/physio|mobility|rehab|therapy|massage/.test(combined)) {
+    return "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=700&q=80";
+  }
+  // 12. Real Estate, Construction, Education, Agriculture & Others
+  if (/plot|house|villa|flat|apartment|rental|commercial space|real estate/.test(combined)) {
+    return "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/rose|plant|sapling|nursery|garden|flower|seed|fertilizer|livestock|cattle|pet/.test(combined)) {
+    return "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/mandapam|hall|wedding|banquet|event|reception|party/.test(combined)) {
+    return "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/college|school|tuition|course|degree|admission|education/.test(combined)) {
+    return "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/gym|fitness|workout|yoga|training|zumba/.test(combined)) {
+    return "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/cnc|vmc|machining|fabrication|manufacturing|industrial/.test(combined)) {
+    return "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=700&q=80";
+  }
+
+  const fallbacks: Record<string, string> = {
+    automobiles: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=700&q=80",
+    electronics: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=700&q=80",
+    "home appliances": "https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&w=700&q=80",
+    "food & dining": "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=700&q=80",
+    fashion: "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&w=700&q=80",
+    "home & furniture": "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=700&q=80",
+    "health & wellness": "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=700&q=80",
+    hardware: "https://images.unsplash.com/photo-1581147036324-c17ac41dfa6c?auto=format&fit=crop&w=700&q=80",
+    electricals: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=700&q=80",
+    "sports & fitness": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=700&q=80",
+    travel: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=700&q=80",
+    entertainment: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=700&q=80",
+    "real estate & construction": "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=700&q=80",
+    "industrial & b2b manufacturing": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=700&q=80",
+    "agriculture, nurseries & pets": "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=700&q=80",
+  };
+  return fallbacks[cat] || "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=700&q=80";
 }
 
 const initialBusinesses: Business[] = [
@@ -8734,6 +8936,7 @@ export default function Home() {
   const [locationEnabled, setLocationEnabled] = useState(false);
   const [locationCoordinates, setLocationCoordinates] = useState<Coordinates | null>(null);
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
+  const [businessModalTab, setBusinessModalTab] = useState<"products" | "navigation">("products");
   const [enquiryProduct, setEnquiryProduct] = useState<{ business: Business; product: Product } | null>(null);
   const [dialog, setDialog] = useState<"login" | "business" | "sos" | "plans" | null>(null);
   const [notice, setNotice] = useState("");
@@ -10286,6 +10489,7 @@ export default function Home() {
                                 type="button"
                                 className="autocomplete-item"
                                 onClick={() => {
+                                  setBusinessModalTab("products");
                                   setSelectedBusiness(biz);
                                   setSearchDropdownOpen(false);
                                   recordEvent(`Autocomplete selected business: ${biz.name}`);
@@ -10333,6 +10537,7 @@ export default function Home() {
                                     style={{ border: "1px solid #c9dcc8", background: "#f3f8f2", color: "#2d693f", borderRadius: "4px", padding: "4px 7px", fontSize: "9px", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}
                                     onClick={(e) => {
                                       e.stopPropagation();
+                                      setBusinessModalTab("navigation");
                                       setSelectedBusiness(business);
                                       setSearchDropdownOpen(false);
                                       recordEvent(`Autocomplete navigate: ${product.name}`);
@@ -10619,7 +10824,10 @@ export default function Home() {
                           type="button"
                           className="related-product-provider"
                           style={{ border: "1px solid #e4eee3", background: "#f7faf6", display: "inline-flex", alignItems: "center", gap: "5px", font: "600 9.5px Manrope, sans-serif", color: "#36593e", cursor: "pointer", padding: "4px 8px", borderRadius: "5px", maxWidth: "140px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
-                          onClick={() => setSelectedBusiness(business)}
+                          onClick={() => {
+                            setBusinessModalTab("products");
+                            setSelectedBusiness(business);
+                          }}
                           title={`View ${business.name}`}
                         >
                           <span>{business.icon}</span>
@@ -10632,6 +10840,7 @@ export default function Home() {
                             className="related-product-navigate-btn"
                             style={{ border: "1px solid #c9dcc8", background: "#f3f8f2", color: "#2d693f", borderRadius: "5px", padding: "6px 9px", font: "700 9.5px Manrope, sans-serif", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px", whiteSpace: "nowrap" }}
                             onClick={() => {
+                              setBusinessModalTab("navigation");
                               setSelectedBusiness(business);
                               recordEvent(`Product navigate clicked: ${product.name}`);
                             }}
@@ -10682,13 +10891,23 @@ export default function Home() {
                             <p>{highlightMatch(business.description, query)}</p>
                             <div className="business-footer"><span className="rating">★ <b>{business.rating.toFixed(1)}</b> <small>({business.reviews})</small></span>
                               <span className="price">{business.price}</span></div>
-                            <div style={{ display: "flex", gap: "8px", marginTop: "11px" }}>
-                              <button className="contact-button" style={{ flex: 1, marginTop: 0 }} onClick={() => { setSelectedBusiness(business); recordEvent("Business catalogue viewed"); }}>View products & services <span>↗</span></button>
+                            <div className="business-card-action-bar">
                               <button
                                 type="button"
-                                className="outline-button"
-                                style={{ padding: "8px 11px", fontSize: "10px", display: "inline-flex", alignItems: "center", gap: "4px", whiteSpace: "nowrap", borderColor: "#c2d6c3", color: "#275b36", background: "#f5f9f4" }}
+                                className="contact-button"
                                 onClick={() => {
+                                  setBusinessModalTab("products");
+                                  setSelectedBusiness(business);
+                                  recordEvent("Business catalogue viewed");
+                                }}
+                              >
+                                View products & services <span>↗</span>
+                              </button>
+                              <button
+                                type="button"
+                                className="business-card-nav-btn"
+                                onClick={() => {
+                                  setBusinessModalTab("navigation");
                                   setSelectedBusiness(business);
                                   recordEvent("Business navigate clicked");
                                 }}
@@ -10696,6 +10915,16 @@ export default function Home() {
                               >
                                 🧭 Navigate
                               </button>
+                              <a
+                                className="business-card-call-btn"
+                                href={`tel:${businessRawPhone(businessPhoneFor(business))}`}
+                                onClick={() => {
+                                  recordEvent(`Business call clicked: ${business.name}`);
+                                }}
+                                title={`Call ${business.name} at ${businessPhoneFor(business)}`}
+                              >
+                                📞 Call
+                              </a>
                             </div>
                           </div>
                         </article>
@@ -10778,6 +11007,7 @@ export default function Home() {
           }}
           userCoordinates={locationCoordinates}
           onRequestDeviceLocation={requestDeviceLocation}
+          initialTab={businessModalTab}
         />
       )}
       {enquiryProduct && <EnquiryDialog business={enquiryProduct.business} product={enquiryProduct.product} close={() => setEnquiryProduct(null)} submit={submitEnquiry} />}
@@ -10836,6 +11066,7 @@ function BusinessDetailDialog({
   requestProduct,
   userCoordinates,
   onRequestDeviceLocation,
+  initialTab = "products",
 }: {
   business: Business;
   distanceKm: number;
@@ -10844,10 +11075,19 @@ function BusinessDetailDialog({
   requestProduct: (business: Business, product: Product) => void;
   userCoordinates?: Coordinates | null;
   onRequestDeviceLocation?: () => void;
+  initialTab?: "products" | "navigation";
 }) {
+  const [activeTab, setActiveTab] = useState<"products" | "navigation">(initialTab);
   const [travelMode, setTravelMode] = useState<"driving" | "two-wheeler" | "walking">("driving");
   const [mapProvider, setMapProvider] = useState<"google" | "osm">("google");
   const [copiedCoords, setCopiedCoords] = useState(false);
+
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab, business.name]);
+
+  const phone = businessPhoneFor(business);
+  const rawPhone = businessRawPhone(phone);
 
   // Fallback coordinates from business.coordinates OR business.demoCoordinates
   const coordinates = business.coordinates || business.demoCoordinates;
@@ -10903,186 +11143,278 @@ function BusinessDetailDialog({
     setTimeout(() => setCopiedCoords(false), 2000);
   };
 
-  return <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
-    <section className="modal catalog-modal" role="dialog" aria-modal="true"><button className="modal-close" onClick={close} aria-label="Close">×</button>
-      <div className="eyebrow">{business.category.toUpperCase()} · {distanceKm.toFixed(1)} KM {isDeviceDistance ? "FROM DEVICE" : "SAMPLE DISTANCE"}</div><h2>{business.name}</h2><p>{business.description}</p>
-      
-      <section className="navigation-route-card" aria-label={`Location and navigation to ${business.name}`} id="provider-navigation-map">
-        <div className="navigation-header">
-          <div className="navigation-title-group">
-            <div className="navigation-eyebrow">
-              <span className="live-indicator-dot" /> LIVE ROUTE NAVIGATION
-            </div>
-            <strong>Navigate to {business.name}</strong>
-            <p className="navigation-address">📍 {address}</p>
+  return (
+    <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
+      <section className="modal catalog-modal" role="dialog" aria-modal="true">
+        <button className="modal-close" onClick={close} aria-label="Close">×</button>
+        <div className="eyebrow">{business.category.toUpperCase()} · {distanceKm.toFixed(1)} KM {isDeviceDistance ? "FROM DEVICE" : "SAMPLE DISTANCE"}</div>
+        <h2>{business.name}</h2>
+        <p>{business.description}</p>
+
+        {/* Business Contact Call Banner */}
+        <div className="business-contact-banner">
+          <div className="business-contact-info">
+            <span className="business-contact-badge">DIRECT BUSINESS CONTACT</span>
+            <strong className="business-contact-phone">📞 {phone}</strong>
+            <span className="business-contact-hint">Call directly for instant stock availability, quotes & bookings</span>
           </div>
-          <div className="navigation-stats-pill">
-            <span className="stats-time">~{estimatedMinutes} min</span>
-            <span className="stats-dist">{distanceKm.toFixed(1)} km</span>
-          </div>
+          <a
+            href={`tel:${rawPhone}`}
+            className="business-call-button-primary"
+            title={`Call ${business.name}`}
+          >
+            📞 Call Now ({phone})
+          </a>
         </div>
 
-        <div className="route-endpoints-bar">
-          <div className="route-point origin-point">
-            <span className="point-badge start">A</span>
-            <div className="point-info">
-              <span className="point-label">Your Location</span>
-              <strong className="point-name">
-                {isLiveUserLocation ? "Current GPS Location" : "Hosur Town Center (Default)"}
-              </strong>
-            </div>
-            {!isLiveUserLocation && onRequestDeviceLocation && (
-              <button
-                type="button"
-                className="use-gps-inline-btn"
-                onClick={onRequestDeviceLocation}
-                title="Detect your exact phone or browser GPS location"
-              >
-                📡 Use Live GPS
-              </button>
+        {/* Modal Tab Switcher */}
+        <div className="modal-tab-switcher" role="tablist" aria-label="Business details view">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "products"}
+            className={`modal-tab-pill ${activeTab === "products" ? "active" : ""}`}
+            onClick={() => setActiveTab("products")}
+          >
+            🛍️ View Products & Services ({business.products.length})
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "navigation"}
+            className={`modal-tab-pill ${activeTab === "navigation" ? "active" : ""}`}
+            onClick={() => setActiveTab("navigation")}
+          >
+            🧭 Navigation Maps ({distanceKm.toFixed(1)} km)
+          </button>
+        </div>
+
+        {activeTab === "products" && (
+          <div className="catalog-tab-content">
+            {business.products.length ? (
+              <div className="catalog-grid">
+                {business.products.map((product) => {
+                  const pImg = productImageFor(product, business);
+                  return (
+                    <article className="catalog-card" key={product.id}>
+                      <div className="catalog-card-image-wrap">
+                        <img
+                          src={pImg}
+                          alt={product.name}
+                          className="catalog-card-img"
+                          loading="lazy"
+                        />
+                        <span className="catalog-card-badge">
+                          {product.badge || (product.price > 50000 ? "Authorized" : product.price === 0 ? "On Request" : "In Stock")}
+                        </span>
+                      </div>
+                      <div className="catalog-card-body">
+                        <div className="catalog-card-title-row">
+                          <h4 className="catalog-card-title">{product.name}</h4>
+                        </div>
+                        <p className="catalog-card-desc">{product.description}</p>
+                        <div className="catalog-card-price-bar">
+                          <div className="catalog-card-price">
+                            {product.price > 0 ? (
+                              <>
+                                <span className="price-currency">₹</span>
+                                <span className="price-number">{product.price.toLocaleString("en-IN")}</span>
+                                {product.unit && <span className="price-unit">/{product.unit}</span>}
+                              </>
+                            ) : (
+                              <span className="price-on-demand">{product.unit || "Price on request"}</span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="catalog-card-actions">
+                          <button
+                            type="button"
+                            className="catalog-action-btn primary"
+                            onClick={() => requestProduct(business, product)}
+                          >
+                            Request info ↗
+                          </button>
+                          <a
+                            className="catalog-action-btn call"
+                            href={`tel:${rawPhone}`}
+                            title={`Call ${business.name} about ${product.name}`}
+                          >
+                            📞 Call
+                          </a>
+                          <button
+                            type="button"
+                            className="catalog-action-btn nav"
+                            onClick={() => setActiveTab("navigation")}
+                            title="View route map to store"
+                          >
+                            🧭 Map
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            ) : (
+              <EmptyState title="No catalogue items yet" text="The business has not added products or services to this demo listing." />
             )}
+            <div className="fine-print">A request is stored locally only. The business will not receive it until a secure messaging service is connected.</div>
           </div>
-          <div className="route-arrow-divider">↓</div>
-          <div className="route-point dest-point">
-            <span className="point-badge dest">B</span>
-            <div className="point-info">
-              <span className="point-label">Destination</span>
-              <strong className="point-name">{business.name}</strong>
-            </div>
-            {coordinates && <span className="destination-coords-tag">{coordinates.latitude.toFixed(4)}, {coordinates.longitude.toFixed(4)}</span>}
-          </div>
-        </div>
-
-        <div className="navigation-controls-row">
-          <div className="travel-mode-tabs" role="tablist" aria-label="Travel mode">
-            <button
-              type="button"
-              className={`travel-mode-tab ${travelMode === "driving" ? "active" : ""}`}
-              onClick={() => setTravelMode("driving")}
-            >
-              🚗 Car / Auto
-            </button>
-            <button
-              type="button"
-              className={`travel-mode-tab ${travelMode === "two-wheeler" ? "active" : ""}`}
-              onClick={() => setTravelMode("two-wheeler")}
-            >
-              🏍️ 2-Wheeler
-            </button>
-            <button
-              type="button"
-              className={`travel-mode-tab ${travelMode === "walking" ? "active" : ""}`}
-              onClick={() => setTravelMode("walking")}
-            >
-              🚶 Walking
-            </button>
-          </div>
-
-          <div className="navigation-cta-group">
-            {googleDirectionsUrl && (
-              <a
-                className="navigation-turn-by-turn-btn"
-                href={googleDirectionsUrl}
-                target="_blank"
-                rel="noreferrer"
-                title="Start turn-by-turn navigation in Google Maps"
-              >
-                🧭 Start Turn-by-Turn Navigation ↗
-              </a>
-            )}
-          </div>
-        </div>
-
-        {activeMapUrl ? (
-          <div className="navigation-map-wrapper">
-            <iframe
-              className="provider-map navigation-active-map"
-              title={`Live route navigation from your location to ${business.name}`}
-              src={activeMapUrl}
-              loading="lazy"
-              referrerPolicy="no-referrer"
-            />
-            <div className="map-layer-switcher">
-              <button
-                type="button"
-                className={`layer-switch-btn ${mapProvider === "google" ? "active" : ""}`}
-                onClick={() => setMapProvider("google")}
-              >
-                Google Maps Route
-              </button>
-              <button
-                type="button"
-                className={`layer-switch-btn ${mapProvider === "osm" ? "active" : ""}`}
-                onClick={() => setMapProvider("osm")}
-              >
-                OpenStreetMap
-              </button>
-            </div>
-          </div>
-        ) : (
-          <p className="provider-map-unavailable">A verified map pin is not available for this listing yet.</p>
         )}
 
-        <div className="navigation-quick-tools">
-          {googleDirectionsUrl && (
-            <a
-              className="quick-nav-link"
-              href={googleDirectionsUrl}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Open in Google Maps App ↗
-            </a>
-          )}
-          {osmDirectionsUrl && (
-            <a
-              className="quick-nav-link"
-              href={osmDirectionsUrl}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Open in OSM Directions ↗
-            </a>
-          )}
-          {coordinates && (
-            <button
-              type="button"
-              className="quick-nav-btn"
-              onClick={copyCoordinates}
-            >
-              {copiedCoords ? "✓ Coordinates Copied" : "📋 Copy GPS Coordinates"}
-            </button>
-          )}
-        </div>
-      </section>
+        {activeTab === "navigation" && (
+          <section className="navigation-route-card" aria-label={`Location and navigation to ${business.name}`} id="provider-navigation-map">
+            <div className="navigation-header">
+              <div className="navigation-title-group">
+                <div className="navigation-eyebrow">
+                  <span className="live-indicator-dot" /> LIVE ROUTE NAVIGATION
+                </div>
+                <strong>Navigate to {business.name}</strong>
+                <p className="navigation-address">📍 {address}</p>
+              </div>
+              <div className="navigation-stats-pill">
+                <span className="stats-time">~{estimatedMinutes} min</span>
+                <span className="stats-dist">{distanceKm.toFixed(1)} km</span>
+              </div>
+            </div>
 
-      <div className="catalog-list">{business.products.length ? business.products.map((product) => (
-        <article className="catalog-item" key={product.id}>
-          <div>
-            <strong>{product.name}</strong>
-            <p>{product.description}</p>
-            <span>{product.price ? `₹${product.price.toLocaleString("en-IN")} ${product.unit}` : product.unit}</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", justifyContent: "flex-end" }}>
-            {googleDirectionsUrl && (
-              <a
-                className="outline-button"
-                style={{ padding: "6px 10px", fontSize: "9.5px", textDecoration: "none", color: "#2d693f", borderColor: "#cde3cc", background: "#f4f8f3", display: "inline-flex", alignItems: "center", gap: "4px" }}
-                href={googleDirectionsUrl}
-                target="_blank"
-                rel="noreferrer"
-                title={`Navigate to store for ${product.name}`}
-              >
-                🧭 Navigate ↗
-              </a>
+            <div className="route-endpoints-bar">
+              <div className="route-point origin-point">
+                <span className="point-badge start">A</span>
+                <div className="point-info">
+                  <span className="point-label">Your Location</span>
+                  <strong className="point-name">
+                    {isLiveUserLocation ? "Current GPS Location" : "Hosur Town Center (Default)"}
+                  </strong>
+                </div>
+                {!isLiveUserLocation && onRequestDeviceLocation && (
+                  <button
+                    type="button"
+                    className="use-gps-inline-btn"
+                    onClick={onRequestDeviceLocation}
+                    title="Detect your exact phone or browser GPS location"
+                  >
+                    📡 Use Live GPS
+                  </button>
+                )}
+              </div>
+              <div className="route-arrow-divider">↓</div>
+              <div className="route-point dest-point">
+                <span className="point-badge dest">B</span>
+                <div className="point-info">
+                  <span className="point-label">Destination</span>
+                  <strong className="point-name">{business.name}</strong>
+                </div>
+                {coordinates && <span className="destination-coords-tag">{coordinates.latitude.toFixed(4)}, {coordinates.longitude.toFixed(4)}</span>}
+              </div>
+            </div>
+
+            <div className="navigation-controls-row">
+              <div className="travel-mode-tabs" role="tablist" aria-label="Travel mode">
+                <button
+                  type="button"
+                  className={`travel-mode-tab ${travelMode === "driving" ? "active" : ""}`}
+                  onClick={() => setTravelMode("driving")}
+                >
+                  🚗 Car / Auto
+                </button>
+                <button
+                  type="button"
+                  className={`travel-mode-tab ${travelMode === "two-wheeler" ? "active" : ""}`}
+                  onClick={() => setTravelMode("two-wheeler")}
+                >
+                  🏍️ 2-Wheeler
+                </button>
+                <button
+                  type="button"
+                  className={`travel-mode-tab ${travelMode === "walking" ? "active" : ""}`}
+                  onClick={() => setTravelMode("walking")}
+                >
+                  🚶 Walking
+                </button>
+              </div>
+
+              <div className="navigation-cta-group">
+                {googleDirectionsUrl && (
+                  <a
+                    className="navigation-turn-by-turn-btn"
+                    href={googleDirectionsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Start turn-by-turn navigation in Google Maps"
+                  >
+                    🧭 Start Turn-by-Turn Navigation ↗
+                  </a>
+                )}
+              </div>
+            </div>
+
+            {activeMapUrl ? (
+              <div className="navigation-map-wrapper">
+                <iframe
+                  className="provider-map navigation-active-map"
+                  title={`Live route navigation from your location to ${business.name}`}
+                  src={activeMapUrl}
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="map-layer-switcher">
+                  <button
+                    type="button"
+                    className={`layer-switch-btn ${mapProvider === "google" ? "active" : ""}`}
+                    onClick={() => setMapProvider("google")}
+                  >
+                    Google Maps Route
+                  </button>
+                  <button
+                    type="button"
+                    className={`layer-switch-btn ${mapProvider === "osm" ? "active" : ""}`}
+                    onClick={() => setMapProvider("osm")}
+                  >
+                    OpenStreetMap
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p className="provider-map-unavailable">A verified map pin is not available for this listing yet.</p>
             )}
-            <button className="outline-button" onClick={() => requestProduct(business, product)}>Request info</button>
-          </div>
-        </article>
-      )) : <EmptyState title="No catalogue items yet" text="The business has not added products or services to this demo listing." />}</div>
-      <div className="fine-print">A request is stored locally only. The business will not receive it until a secure messaging service is connected.</div>
-    </section>
-  </div>;
+
+            <div className="navigation-quick-tools">
+              {googleDirectionsUrl && (
+                <a
+                  className="quick-nav-link"
+                  href={googleDirectionsUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Open in Google Maps App ↗
+                </a>
+              )}
+              {osmDirectionsUrl && (
+                <a
+                  className="quick-nav-link"
+                  href={osmDirectionsUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Open in OSM Directions ↗
+                </a>
+              )}
+              {coordinates && (
+                <button
+                  type="button"
+                  className="quick-nav-btn"
+                  onClick={copyCoordinates}
+                >
+                  {copiedCoords ? "✓ Coordinates Copied" : "📋 Copy GPS Coordinates"}
+                </button>
+              )}
+            </div>
+          </section>
+        )}
+      </section>
+    </div>
+  );
 }
 
 function EnquiryDialog({
