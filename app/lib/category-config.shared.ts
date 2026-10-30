@@ -21,6 +21,7 @@ const categories = [
   { name: "Toys & Fancy Stores", icon: "🧸" },
   { name: "Public & Common Places", icon: "🏛️" },
   { name: "Real Estate & Construction", icon: "🏢" },
+  { name: "Heavy Industries & Machinery", icon: "🚜" },
   { name: "Industrial & B2B Manufacturing", icon: "⚙️" },
   { name: "Education & Coaching", icon: "🎓" },
   { name: "Events & Weddings", icon: "🎉" },
@@ -309,6 +310,70 @@ const taxonomyPaths: Record<string, string[][]> = {
     ["Architects & Surveyors", "Architectural design", "3D Elevation & floor plan", "Modern house plans & elevation"],
     ["Architects & Surveyors", "Architectural design", "Structural engineering", "Structural RCC design & drawings"],
     ["Architects & Surveyors", "Interior designers", "Modular interiors", "Complete modular home interiors"],
+  ],
+  "Heavy Industries & Machinery": [
+    // Earth Moving & Excavation
+    ["Sales", "Earth Moving & Excavation", "JCB", "3DX Plus EcoXcellence Backhoe Loader"],
+    ["Sales", "Earth Moving & Excavation", "JCB", "4DX Heavy Duty Backhoe Loader"],
+    ["Sales", "Earth Moving & Excavation", "Tata Hitachi", "EX200 LC Hydraulic Excavator"],
+    ["Sales", "Earth Moving & Excavation", "Tata Hitachi", "ZAXIS 140LC Excavator"],
+    ["Sales", "Earth Moving & Excavation", "Komatsu", "PC210-10M0 Hydraulic Excavator"],
+    ["Sales", "Earth Moving & Excavation", "Komatsu", "D65EX-16 Crawler Bulldozer"],
+    ["Sales", "Earth Moving & Excavation", "Caterpillar", "CAT 320 Next Gen Excavator"],
+    ["Sales", "Earth Moving & Excavation", "Caterpillar", "CAT 424 Backhoe Loader"],
+    ["Sales", "Earth Moving & Excavation", "Caterpillar", "CAT 303.5 Mini Excavator"],
+    ["Sales", "Earth Moving & Excavation", "CASE Construction", "770EX Magnum Backhoe Loader"],
+    ["Sales", "Earth Moving & Excavation", "CASE Construction", "1107EX Soil Compactor"],
+    ["Sales", "Earth Moving & Excavation", "Sany", "SY215C Heavy Excavator"],
+    ["Sales", "Earth Moving & Excavation", "BEML", "BE220 LC Excavator"],
+
+    // Cranes & Material Handling
+    ["Sales", "Cranes & Material Handling", "ACE", "15XW Pick & Carry Mobile Crane"],
+    ["Sales", "Cranes & Material Handling", "ACE", "FX 250 Heavy Hydraulic Crane"],
+    ["Sales", "Cranes & Material Handling", "Godrej", "GX 300 D 3-Ton Diesel Forklift"],
+    ["Sales", "Cranes & Material Handling", "Godrej", "Bravo Electric 2.5T Forklift"],
+    ["Sales", "Cranes & Material Handling", "Escorts Kubota", "Digmax II Heavy Excavator"],
+    ["Sales", "Cranes & Material Handling", "XCMG", "QY25K5 25T Truck Crane"],
+
+    // Heavy CNC & Machine Tools
+    ["Sales", "Heavy CNC & Machine Tools", "CNC Machining Centers", "5-Axis Vertical Machining Center"],
+    ["Sales", "Heavy CNC & Machine Tools", "CNC Machining Centers", "Heavy Duty Slant Bed Turning Lathe"],
+    ["Sales", "Heavy CNC & Machine Tools", "Industrial Laser & Cutting", "12kW-30kW Fiber Laser Cutting"],
+    ["Sales", "Heavy CNC & Machine Tools", "Press Brakes & Shearing", "300T CNC Hydraulic Press Brake"],
+
+    // Industrial Power & Generators
+    ["Sales", "Industrial Power & Generators", "Silent Diesel Generators", "Cummins 250kVA-1000kVA DG Set"],
+    ["Sales", "Industrial Power & Generators", "Silent Diesel Generators", "Kirloskar 50kVA-250kVA DG Set"],
+    ["Sales", "Industrial Power & Generators", "HT Transformers & Panels", "11kV/433V 500kVA-2500kVA Transformer"],
+
+    // Industrial Air & Fluid Systems
+    ["Sales", "Industrial Air & Fluid Systems", "Rotary Screw Compressors", "Atlas Copco GA 37+ VSD Compressor"],
+    ["Sales", "Industrial Air & Fluid Systems", "Rotary Screw Compressors", "ELGi EG Series 45kW Compressor"],
+    ["Sales", "Industrial Air & Fluid Systems", "Industrial Chillers & Pumps", "Centralized 50TR-150TR Chiller"],
+
+    // Road & Concrete Machinery
+    ["Sales", "Road & Concrete Machinery", "Concrete Batching Plants", "Schwing Stetter CP-30 Batching Plant"],
+    ["Sales", "Road & Concrete Machinery", "Concrete Transit Mixers", "Stetter 7m³ Mounted Transit Mixer"],
+    ["Sales", "Road & Concrete Machinery", "Road Rollers & Compactors", "Hamm 11-Ton Vibratory Compactor"],
+    ["Sales", "Road & Concrete Machinery", "Asphalt Pavers & Milling", "Ammann Tracked Bitumen Paver"],
+
+    // Service - Rental & Hire
+    ["Service", "Machinery Rental & Hire", "Mobile Cranes on Hire", "15T-50T Crane Rental with Certified Operator"],
+    ["Service", "Machinery Rental & Hire", "Forklifts on Hire", "3T-5T Diesel & Electric Forklift Rental"],
+    ["Service", "Machinery Rental & Hire", "JCB & Excavators on Hire", "Daily & Monthly JCB 3DX with Diesel & Driver"],
+    ["Service", "Machinery Rental & Hire", "Silent DG Sets on Hire", "100kVA-500kVA Emergency Generator Rental"],
+
+    // Service - Overhaul & Maintenance
+    ["Service", "Overhaul & Maintenance", "Heavy Diesel Engine Overhaul", "Complete In-Chassis Engine Rebuilding"],
+    ["Service", "Overhaul & Maintenance", "Hydraulic Cylinder Repair", "Hard Chrome Plating, Rod Grinding & Seals"],
+    ["Service", "Overhaul & Maintenance", "Compressor AMC & Service", "Air End Rebuilding & Scheduled Maintenance"],
+    ["Service", "Overhaul & Maintenance", "Track & Undercarriage Service", "Track Pin, Bushing & Chain Pressing"],
+
+    // Service - Spares & Attachments
+    ["Service", "Spares & Attachments", "Heavy Rock Breakers", "Hydraulic Rock Breaker Chisel & Diaphragm"],
+    ["Service", "Spares & Attachments", "Undercarriage Spares", "Track Rollers, Idlers & Sprockets"],
+    ["Service", "Spares & Attachments", "Wear Parts & Chisel Teeth", "High Abrasion Bucket Teeth & Adapters"],
+    ["Service", "Spares & Attachments", "High Pressure Hydraulic Hoses", "Custom 4-Wire Hydraulic Hose Crimping"],
   ],
   "Industrial & B2B Manufacturing": [
     ["Machining & Tooling", "CNC & VMC machining", "Precision turned components", "Automotive CNC machining"],

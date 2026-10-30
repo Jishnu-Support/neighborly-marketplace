@@ -27,6 +27,7 @@ const subcategoriesSummary: Record<string, string> = {
   "Toys & Fancy Stores": "Toys & Games · Fancy store · Bangles & Gifts · Cosmetics",
   "Public & Common Places": "Bus stand · Railway station · Temples · Parks & Civic hubs",
   "Real Estate & Construction": "Rentals · Plots · Industrial sheds · Civil contractors · Architects",
+  "Heavy Industries & Machinery": "Earth movers · Cranes & forklifts · Heavy CNC · Generators · Compressors · Plant machinery",
   "Industrial & B2B Manufacturing": "CNC machining · Sheet metal · Powder coating · Packaging · PPE safety",
   "Education & Coaching": "CBSE schools · Engineering colleges · NEET/TNPSC coaching · Driving schools",
   "Events & Weddings": "Kalyana mandapams · Catering · Stage decor · Sound & DJ · Photography",
@@ -416,6 +417,7 @@ const categoryIconIds: Record<string, string> = {
   "toys & fancy stores": "toys-fancy",
   "public & common places": "public-places",
   "real estate & construction": "real-estate",
+  "heavy industries & machinery": "earth-movers",
   "industrial & b2b manufacturing": "industrial-mfg",
   "education & coaching": "education",
   "events & weddings": "events-weddings",
@@ -462,6 +464,7 @@ function categoryIconIdFor(name: string, sector = "") {
   if (/toy|fancy|gift|bangle|novelty|novelties|game/.test(key)) return "toys-fancy";
   if (/public|common|transit|temple|park|dam|library|station|civic|corporation/.test(key)) return "public-places";
   if (/real estate|construction|property|plot|shed|contractor|architect|builder/.test(key)) return "real-estate";
+  if (/heavy industri|machiner|earthmover|earth mover|crane|forklift|generator|compressor|excavator|backhoe|loader|grader|batching/.test(key)) return "earth-movers";
   if (/industrial|manufacturing|cnc|vmc|machining|fabrication|laser|coating|packaging/.test(key)) return "industrial-mfg";
   if (/agriculture|nursery|nurseries|plant|rose|seed|fertilizer|pet|vet|cattle|feed|livestock/.test(key)) return "agriculture-pets";
   if (/repair|service|maintenance|diagnostic|installation|cleaning|plumbing|carpentry/.test(key)) return "tools";
@@ -749,11 +752,32 @@ function productImageFor(product: Product, business?: Business): string {
   if (/four wheeler|\bcar\b|swift|baleno|creta|nexon|thar|scorpio|innova|fortuner|virtus|slavia|kushaq|elevate|curvv/.test(combined)) {
     return "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=700&q=80";
   }
-  // 4. Heavy Vehicles / Earth Movers / Tractors / Cranes
+  // 4. Heavy Vehicles / Earth Movers / Tractors / Cranes / Heavy Machinery
+  if (/crane|forklift|boom lift|scissor lift|overhead crane|eot crane|hoist|material handling|ace 15xw|pick & carry/.test(combined)) {
+    return "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/jcb|earth mover|excavator|backhoe|loader|bulldozer|dozer|komatsu|caterpillar|tata hitachi|sany|beml|rock breaker/.test(combined)) {
+    return "https://images.unsplash.com/photo-1541888946425-d0fbb186c5f7?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/concrete mixer|transit mixer|batching plant|road roller|compactor|asphalt paver|schwing|stetter|wirtgen|ammann/.test(combined)) {
+    return "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/generator|\bdg set\b|diesel generator|cummins|kirloskar|transformer|power plant|silent dg/.test(combined)) {
+    return "https://images.unsplash.com/photo-1513828583688-c52646db42da?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/compressor|screw compressor|atlas copco|elgi|air dryer|chiller|process pump/.test(combined)) {
+    return "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/vmc|machining center|laser cutting|fiber laser|press brake|shearing machine|turning lathe|lathe/.test(combined)) {
+    return "https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=700&q=80";
+  }
+  if (/hydraulic cylinder|undercarriage|track chain|sprocket|bucket teeth|chrome plating/.test(combined)) {
+    return "https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=700&q=80";
+  }
   if (/tractor|swaraj|mahindra 575|john deere|sonalika|kubota|massey/.test(combined)) {
     return "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=700&q=80";
   }
-  if (/jcb|earth mover|excavator|crane|backhoe|loader|komatsu|caterpillar|tata hitachi|tipper|truck|dost|ashok leyland|eicher/.test(combined)) {
+  if (/tipper|truck|dost|ashok leyland|eicher|scania|bharatbenz/.test(combined)) {
     return "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=700&q=80";
   }
   // 5. Electronics & Mobiles
@@ -881,6 +905,7 @@ function productImageFor(product: Product, business?: Business): string {
     travel: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=700&q=80",
     entertainment: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=700&q=80",
     "real estate & construction": "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=700&q=80",
+    "heavy industries & machinery": "https://images.unsplash.com/photo-1541888946425-d0fbb186c5f7?auto=format&fit=crop&w=700&q=80",
     "industrial & b2b manufacturing": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=700&q=80",
     "agriculture, nurseries & pets": "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=700&q=80",
   };
@@ -8044,6 +8069,433 @@ const initialBusinesses: Business[] = [
     ]
   },
   {
+    "name": "Hosur Heavy Earthmovers & Construction Equipment",
+    "category": "Heavy Industries & Machinery",
+    "subcategories": [
+      "Earth Moving & Excavation",
+      "Heavy excavators",
+      "Backhoe loaders",
+      "JCB",
+      "Tata Hitachi",
+      "Caterpillar",
+      "Machinery Rentals & Contracts"
+    ],
+    "products": [
+      {
+        "id": "hvy-jcb-3dx",
+        "name": "JCB 3DX Plus EcoXcellence Backhoe Loader",
+        "description": "Authorized supply of JCB 3DX Plus with 76hp CRDI engine, 1.1 cu.m loader bucket and 0.26 cu.m excavator bucket.",
+        "price": 3780000,
+        "unit": "onwards",
+        "badge": "Authorized OEM"
+      },
+      {
+        "id": "hvy-tata-ex200",
+        "name": "Tata Hitachi EX200 LC Hydraulic Excavator (20-Ton)",
+        "description": "Heavy quarry and mining crawler excavator with 0.9 cu.m heavy rock bucket, Cummins 6BT engine and telematics.",
+        "price": 6250000,
+        "unit": "onwards",
+        "badge": "In Stock"
+      },
+      {
+        "id": "hvy-cat-303",
+        "name": "CAT 303.5 Mini Excavator with Rubber Tracks",
+        "description": "Compact 3.5-ton hydraulic mini excavator for trenching, pipe laying and foundation works in tight urban spaces.",
+        "price": 2600000,
+        "unit": "onwards",
+        "badge": "Authorized Dealer"
+      },
+      {
+        "id": "hvy-rock-breaker",
+        "name": "Heavy Hydraulic Rock Breaker Attachment (20T Class)",
+        "description": "High impact nitrogen-charged hydraulic hammer breaker for hard Hosur blue metal quarrying and demolition.",
+        "price": 485000,
+        "unit": "unit",
+        "badge": "Heavy Duty"
+      },
+      {
+        "id": "hvy-jcb-hire",
+        "name": "Daily & Monthly JCB 3DX with Diesel & Certified Driver",
+        "description": "Hourly, daily and monthly earthmover machinery rental with skilled operator, fuel and on-site maintenance backup.",
+        "price": 1150,
+        "unit": "hour",
+        "badge": "Rental on Hire"
+      }
+    ],
+    "description": "Authorized heavy earthmovers sales, hire and genuine spare parts center in SIPCOT Phase-II, Hosur. New & certified used excavators, backhoe loaders and quarry equipment.",
+    "distance": 2.1,
+    "demoCoordinates": {
+      "latitude": 12.7214,
+      "longitude": 77.8112
+    },
+    "rating": 4.8,
+    "reviews": 142,
+    "price": "Machines from ₹1,150/hr",
+    "icon": "🚜",
+    "color": "mint",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Heavy Industries & Machinery",
+      "Earth Moving & Excavation",
+      "Heavy excavators",
+      "Backhoe loaders",
+      "Machinery Rentals & Contracts"
+    ]
+  },
+  {
+    "name": "Kaveri Industrial Cranes & Material Handling Hub",
+    "category": "Heavy Industries & Machinery",
+    "subcategories": [
+      "Cranes & Material Handling",
+      "Hydraulic mobile cranes",
+      "Industrial forklifts",
+      "ACE",
+      "Godrej",
+      "Machinery Rentals & Contracts"
+    ],
+    "products": [
+      {
+        "id": "crane-ace-15xw",
+        "name": "ACE 15XW Pick & Carry Mobile Crane (15-Ton)",
+        "description": "Heavy-duty hydraulic articulated pick and carry crane with 15-ton capacity, 4-part slotted boom and outriggers.",
+        "price": 1650000,
+        "unit": "onwards",
+        "badge": "Authorized Sales"
+      },
+      {
+        "id": "crane-godrej-forklift",
+        "name": "Godrej 3-Ton Diesel Forklift (GX 300 D)",
+        "description": "Industrial heavy counterbalanced diesel forklift with 4.5m duplex mast, side shifter and solid puncture-proof tyres.",
+        "price": 1320000,
+        "unit": "onwards",
+        "badge": "OEM Stock"
+      },
+      {
+        "id": "crane-eot-overhead",
+        "name": "Demag Double Girder Overhead EOT Crane (10T - 20m Span)",
+        "description": "Complete factory workshop overhead travelling crane with wire rope hoist, festoon power feed and wireless pendant control.",
+        "price": 1850000,
+        "unit": "onwards",
+        "badge": "Custom Built"
+      },
+      {
+        "id": "crane-mobile-rental",
+        "name": "25-Ton Hydraulic Mobile Crane Rental with Operator",
+        "description": "Heavy equipment erection, factory machine shifting and container unloading mobile crane rental on hourly/daily hire.",
+        "price": 1600,
+        "unit": "hour",
+        "badge": "Rental on Hire"
+      },
+      {
+        "id": "crane-boom-lift",
+        "name": "JLG 18-Meter Electric Articulated Boom Lift Rental",
+        "description": "High-altitude industrial factory maintenance, electrical cable laying and roofing access self-propelled manlift.",
+        "price": 4500,
+        "unit": "day",
+        "badge": "Rental & Sales"
+      }
+    ],
+    "description": "Premier material handling, hydraulic mobile cranes and industrial forklift dealership on NH-44, Moranapalli, Hosur. Crane rental services and warehouse equipment.",
+    "distance": 3.4,
+    "demoCoordinates": {
+      "latitude": 12.7538,
+      "longitude": 77.8421
+    },
+    "rating": 4.9,
+    "reviews": 98,
+    "price": "from ₹1,600/hr",
+    "icon": "🏗️",
+    "color": "lavender",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Heavy Industries & Machinery",
+      "Cranes & Material Handling",
+      "Hydraulic mobile cranes",
+      "Industrial forklifts",
+      "Machinery Rentals & Contracts"
+    ]
+  },
+  {
+    "name": "SIPCOT CNC Machining Centers & Machine Tools Expo",
+    "category": "Heavy Industries & Machinery",
+    "subcategories": [
+      "Heavy CNC & Machine Tools",
+      "CNC Machining Centers",
+      "Industrial Laser & Cutting",
+      "Press Brakes & Shearing"
+    ],
+    "products": [
+      {
+        "id": "mach-vmc-5axis",
+        "name": "5-Axis CNC Vertical Machining Center (VMC 1050)",
+        "description": "High rigidity BT40/BBT40 spindle, 12,000 RPM, 30-pocket tool changer, Fanuc 0i-MF Plus CNC controller for aerospace and auto moulds.",
+        "price": 4200000,
+        "unit": "onwards",
+        "badge": "High Precision"
+      },
+      {
+        "id": "mach-cnc-lathe",
+        "name": "Heavy Duty CNC Slant Bed Turning Lathe (LT-20)",
+        "description": "Heavy cast iron 45-degree slant bed, 8-inch hydraulic chuck, 12-station servo turret and 4,000 RPM spindle.",
+        "price": 2450000,
+        "unit": "onwards",
+        "badge": "In Stock"
+      },
+      {
+        "id": "mach-fiber-laser",
+        "name": "12kW High Power Sheet & Tube Fiber Laser Cutting Machine",
+        "description": "Raycus/IPG 12kW fiber resonator with dual exchange shuttle table, CypCut CNC system and auto nozzle changer for 35mm steel.",
+        "price": 6800000,
+        "unit": "onwards",
+        "badge": "Turnkey Installation"
+      },
+      {
+        "id": "mach-press-brake",
+        "name": "300-Ton CNC Hydraulic Press Brake & Bending Machine",
+        "description": "Delem DA-53T 4+1 axis CNC synchronized hydraulic press brake with 4,000mm bending length and hydraulic crowning system.",
+        "price": 3200000,
+        "unit": "onwards",
+        "badge": "Heavy Duty"
+      },
+      {
+        "id": "mach-spindle-service",
+        "name": "Spindle Reconditioning & Axis Laser Calibration Service",
+        "description": "On-site Renishaw laser interferometer calibration, ballbar circularity testing and precision ceramic spindle bearing rebuild.",
+        "price": 28000,
+        "unit": "machine",
+        "badge": "Certified Service"
+      }
+    ],
+    "description": "Industrial heavy CNC machine tool distributor and engineering showroom in SIPCOT Phase-I, Hosur. Vertical machining centers, CNC turning lathes, fiber lasers and automated press brakes.",
+    "distance": 1.7,
+    "demoCoordinates": {
+      "latitude": 12.7382,
+      "longitude": 77.8095
+    },
+    "rating": 4.9,
+    "reviews": 116,
+    "price": "from ₹24.5 Lakh",
+    "icon": "⚙️",
+    "color": "sky",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Heavy Industries & Machinery",
+      "Heavy CNC & Machine Tools",
+      "CNC Machining Centers",
+      "Industrial Laser & Cutting"
+    ]
+  },
+  {
+    "name": "Atlas & ELGi Industrial Power & Air Systems",
+    "category": "Heavy Industries & Machinery",
+    "subcategories": [
+      "Industrial Power & Generators",
+      "Industrial Air & Fluid Systems",
+      "Rotary Screw Compressors",
+      "Silent Diesel Generators"
+    ],
+    "products": [
+      {
+        "id": "pwr-elgi-eg",
+        "name": "ELGi EG Series Rotary Screw Air Compressor (45kW / 60HP)",
+        "description": "Energy-efficient oil-lubricated rotary screw compressor with UPTIME assurance, integrated dryer and variable frequency drive.",
+        "price": 780000,
+        "unit": "onwards",
+        "badge": "Authorized ELGi"
+      },
+      {
+        "id": "pwr-atlas-copco",
+        "name": "Atlas Copco GA 37+ VSD Variable Speed Compressor",
+        "description": "Class 0 oil-free/oil-injected rotary screw air compressor with Elektronikon Touch controller and 35% energy savings.",
+        "price": 950000,
+        "unit": "onwards",
+        "badge": "OEM Certified"
+      },
+      {
+        "id": "pwr-cummins-dg",
+        "name": "Cummins 250 kVA Heavy Silent Diesel Generator (CPCB IV+)",
+        "description": "Central Pollution Control Board IV+ certified acoustic silent diesel generator set with Stamford alternator and AMF automation panel.",
+        "price": 1490000,
+        "unit": "onwards",
+        "badge": "Ready Stock"
+      },
+      {
+        "id": "pwr-dg-rental",
+        "name": "100 kVA to 500 kVA Silent DG Set Rental with Sound Enclosure",
+        "description": "Emergency plant backup power rental on daily, weekly or monthly hire with fuel management and technician support.",
+        "price": 3200,
+        "unit": "day",
+        "badge": "Rental on Hire"
+      },
+      {
+        "id": "pwr-compressor-amc",
+        "name": "Compressor Annual Maintenance Contract (AMC) & Air Filters",
+        "description": "OEM scheduled compressor servicing, synthetic screw oil top-up, oil separator and air intake filter replacements.",
+        "price": 15000,
+        "unit": "year",
+        "badge": "Annual Support"
+      }
+    ],
+    "description": "Authorized industrial air compressor and heavy diesel generator dealership in Mookandapalli, Hosur. Plant compressed air piping, backup power solutions and 24/7 service.",
+    "distance": 1.4,
+    "demoCoordinates": {
+      "latitude": 12.7475,
+      "longitude": 77.8188
+    },
+    "rating": 4.8,
+    "reviews": 84,
+    "price": "DG & Air from ₹3,200",
+    "icon": "⚡",
+    "color": "gold",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Heavy Industries & Machinery",
+      "Industrial Power & Generators",
+      "Industrial Air & Fluid Systems",
+      "Rotary Screw Compressors"
+    ]
+  },
+  {
+    "name": "Schwing & Stetter Heavy Concrete Machinery",
+    "category": "Heavy Industries & Machinery",
+    "subcategories": [
+      "Road & Concrete Machinery",
+      "Concrete Batching Plants",
+      "Concrete Transit Mixers",
+      "Road Rollers & Compactors"
+    ],
+    "products": [
+      {
+        "id": "rd-schwing-cp30",
+        "name": "Schwing Stetter CP-30 Compact Concrete Batching Plant (30m³/h)",
+        "description": "Compact high-capacity ready mix concrete plant with turbo pan mixer, 4-compartment aggregate feeder and digital weighing.",
+        "price": 4400000,
+        "unit": "onwards",
+        "badge": "Authorized Dealer"
+      },
+      {
+        "id": "rd-transit-mixer",
+        "name": "Stetter 7m³ Mounted Transit Concrete Mixer (AM 7 FHC)",
+        "description": "Truck-mounted concrete transit mixer drum with high wear-resistant T-steel spiral blades, slave engine or PTO drive.",
+        "price": 1450000,
+        "unit": "onwards",
+        "badge": "Truck Mounted"
+      },
+      {
+        "id": "rd-hamm-roller",
+        "name": "Hamm 11-Ton Vibratory Soil Compactor / Road Roller",
+        "description": "Heavy highway compaction roller with 3-point articulation, high vibration frequency and hydrostatic drive.",
+        "price": 2900000,
+        "unit": "onwards",
+        "badge": "Heavy Highway"
+      },
+      {
+        "id": "rd-concrete-spares",
+        "name": "Heavy Concrete Pump Pipe Line & Clamp Spares",
+        "description": "Twin-wall 125mm concrete delivery pipes, heavy forging snap clamps, rubber gaskets and cleaning balls.",
+        "price": 3800,
+        "unit": "set",
+        "badge": "OEM Spares"
+      },
+      {
+        "id": "rd-plant-calibration",
+        "name": "Batching Plant Calibration & Load Cell Overhaul Service",
+        "description": "NABL-traceable test weight calibration, load cell signal conditioning and plant PLC software recalibration.",
+        "price": 22000,
+        "unit": "service",
+        "badge": "Certified Calibration"
+      }
+    ],
+    "description": "Concrete equipment, batching plants, transit mixers and road compaction machinery hub on Thally Road, Hosur. Sales, erection and genuine replacement parts.",
+    "distance": 2.8,
+    "demoCoordinates": {
+      "latitude": 12.7291,
+      "longitude": 77.8285
+    },
+    "rating": 4.7,
+    "reviews": 72,
+    "price": "Heavy plant from ₹14.5L",
+    "icon": "🛣️",
+    "color": "amber",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Heavy Industries & Machinery",
+      "Road & Concrete Machinery",
+      "Concrete Batching Plants",
+      "Road Rollers & Compactors"
+    ]
+  },
+  {
+    "name": "Hosur Heavy Hydraulic & Undercarriage Engineering",
+    "category": "Heavy Industries & Machinery",
+    "subcategories": [
+      "Machinery Spares & Overhauls",
+      "OEM machinery spares",
+      "Reconditioning & repair",
+      "Undercarriage Spares"
+    ],
+    "products": [
+      {
+        "id": "hyd-track-chain",
+        "name": "Excavator Undercarriage Track Chain & Sprocket Assembly",
+        "description": "Sealed and lubricated heavy track link chains, bottom rollers, top carrier rollers and drive sprockets for 20T excavators.",
+        "price": 145000,
+        "unit": "pair",
+        "badge": "Heavy Duty Forged"
+      },
+      {
+        "id": "hyd-cylinder-rebuild",
+        "name": "Heavy Hydraulic Cylinder Reconditioning & Hard Chrome Plating",
+        "description": "Boom, arm and bucket cylinder barrel honing, induction hardened piston rod hard chrome plating and polyurethane seal kits.",
+        "price": 18500,
+        "unit": "cylinder",
+        "badge": "Complete Rebuild"
+      },
+      {
+        "id": "hyd-chisel-tool",
+        "name": "Rock Breaker Chisel Tool & Piston Seal Kit Replacement",
+        "description": "Moil point and blunt wedge chisel steel forged from high alloy tool steel for Soosan, Furukawa and Atlas Copco rock breakers.",
+        "price": 12000,
+        "unit": "tool",
+        "badge": "High Impact Alloy"
+      },
+      {
+        "id": "hyd-bucket-teeth",
+        "name": "JCB & CAT High Abrasion Bucket Teeth Set (5 Pcs)",
+        "description": "Side pin and top pin rock chisel bucket teeth with locking retainers cast from heavy manganese alloy steel.",
+        "price": 6500,
+        "unit": "set",
+        "badge": "Wear Resistant"
+      },
+      {
+        "id": "hyd-hose-crimping",
+        "name": "On-Site Hydraulic Line Flushing & Hose Crimping Service",
+        "description": "Mobile van on-site service with 4-spiral heavy hydraulic hose crimping up to 5000 PSI, BSP and metric flange fittings.",
+        "price": 3500,
+        "unit": "visit",
+        "badge": "24/7 Mobile Van"
+      }
+    ],
+    "description": "Heavy earthmoving and industrial machinery hydraulic workshop near Bagalur Road Gate, Hosur. Cylinder reconditioning, undercarriage track pressing, rock breaker tools and mobile hose crimping.",
+    "distance": 1.2,
+    "demoCoordinates": {
+      "latitude": 12.7441,
+      "longitude": 77.8398
+    },
+    "rating": 4.9,
+    "reviews": 128,
+    "price": "Spares & repairs from ₹3,500",
+    "icon": "🔧",
+    "color": "mint",
+    "subscribed": true,
+    "taxonomyTags": [
+      "Heavy Industries & Machinery",
+      "Machinery Spares & Overhauls",
+      "OEM machinery spares",
+      "Reconditioning & repair"
+    ]
+  },
+  {
     "name": "Hosur Precision CNC & VMC Machining",
     "category": "Industrial & B2B Manufacturing",
     "subcategories": [
@@ -9219,7 +9671,7 @@ export default function Home() {
           ],
           businesses: businesses.slice(0, 3),
           products: businesses.flatMap((b) => b.products.slice(0, 1).map((p) => ({ product: p, business: b }))).slice(0, 3),
-          categories: ["Automobiles", "Electronics", "Electricals", "Hardware", "Home Appliances", "Real Estate & Construction", "Industrial & B2B Manufacturing", "Education & Coaching", "Events & Weddings", "Agriculture, Nurseries & Pets", "Books & Stationery", "Toys & Fancy Stores", "Public & Common Places", "Health & wellness"]
+          categories: ["Automobiles", "Heavy Industries & Machinery", "Electronics", "Electricals", "Hardware", "Home Appliances", "Real Estate & Construction", "Industrial & B2B Manufacturing", "Education & Coaching", "Events & Weddings", "Agriculture, Nurseries & Pets", "Books & Stationery", "Toys & Fancy Stores", "Public & Common Places", "Health & wellness"]
         };
       }
       const matchedQueries = new Set<string>();

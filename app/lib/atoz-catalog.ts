@@ -725,6 +725,19 @@ export const atozCatalog: AtoZItem[] = [
 
   // --- H ---
   {
+    id: "heavy-machinery-earthmovers-cranes",
+    name: "Heavy Machinery, Earthmovers & Cranes",
+    letter: "H",
+    sector: "Heavy Industries & Machinery",
+    subcategory: "Earth Moving & Excavation",
+    type: "Product",
+    icon: "🚜",
+    description: "JCB 3DX backhoe loaders, 20T hydraulic excavators, mobile cranes, forklifts and heavy rock breakers.",
+    priceHint: "From ₹1,150/hr",
+    searchQuery: "Heavy machinery",
+    popular: true,
+  },
+  {
     id: "house-rentals-apartments",
     name: "House Rentals & 2/3 BHK Apartments",
     letter: "H",
