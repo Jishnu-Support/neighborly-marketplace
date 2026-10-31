@@ -733,82 +733,634 @@ function getBusinessWorkingStatus(business: Business): { isOpen: boolean; label:
   };
 }
 
-type Language = "en" | "ta" | "kn";
+type Language = "en" | "ta" | "kn" | "te";
 
 const TRANSLATIONS = {
   en: {
+    // Topbar & Sidebar
+    workspaceLabel: "WORKSPACE",
+    discover: "Discover",
+    myActivity: "My activity",
+    businessPortal: "Business portal",
+    agentPortal: "Agent portal",
+    companyPortal: "Company portal",
+    browseBy: "BROWSE BY",
+    allProductsAndServices: "All Products & Services",
+    allCategories: "All categories",
+    goodThingsCloser: "Good things are closer.",
+    goodThingsDesc: "Every search supports a business in your neighborhood.",
+    yourBizearchActivity: "Your Bizearch activity",
+    savedOnDevice: "Saved on this device",
+    companyLogin: "Company login",
+    yourNeighborhood: "Your neighborhood",
+    poweredBy: "Powered by",
+    signIn: "Sign in",
+    signOut: "Sign out",
+    hosurLocation: "Hosur, Tamil Nadu",
+    stopLocation: "Stop using device location",
+
+    // Hero
+    madeForAroundHere: "MADE FOR AROUND HERE",
+    heroHeadingMain: "Your neighborhood,",
+    heroHeadingSub: "in reach.",
     heroTitle: "Hosur's premier local & industrial marketplace",
     heroDesc: "Discover verified manufacturers, retail, healthcare, and everyday services across Hosur.",
+    registerBusiness: "Register your business",
+    registerBusinessNote: "No customer account needed to start. One business profile per business account.",
+
+    // Search Panel
+    whatDoYouNeed: "WHAT DO YOU NEED?",
+    nearLocality: "NEAR LOCALITY",
+    withinKm: "WITHIN",
     searchPlaceholder: "Search 85+ Hosur businesses, Maruti Swift, Hero bike, Kauvery Hospital, Biryani...",
     findNearby: "Find nearby",
+    allHosur: "All Hosur",
+
+    // Modes & Sections
+    browseBySector: "Browse by Sector",
+    atozDirectoryTab: "A–Z Directory (All Products & Services)",
+    aLittleBitOfEverything: "A LITTLE BIT OF EVERYTHING",
+    exploreLocalScene: "Explore your local scene",
+    browseWithinSector: "BROWSE WITHIN SECTOR",
+    atozDirectoryLink: "A–Z Directory →",
+    allSectors: "All sectors",
+    backBtn: "Back",
+    allIn: "All in",
+
+    // Filter Chips
     openNow: "Open Now",
     topRated: "Top Rated ★ 4.5+",
     verifiedOnly: "Verified",
     whatsappReady: "WhatsApp Ready",
-    allResults: "All",
-    recentlyViewed: "Recently Viewed Places",
-    clearRecent: "Clear recent",
-    rate: "Rate",
-    claim: "Claim",
-    call: "Call",
-    whatsapp: "WhatsApp",
-    navigate: "Navigate",
-    productsServices: "View products & services",
     clearFilters: "Clear filters",
     open: "Open",
     closed: "Closed",
     filterNotice: "Active filters applied",
     noFilteredMatches: "No businesses match your active filter combination.",
+
+    // Results Header
+    localVerifiedProviders: "LOCAL VERIFIED PROVIDERS",
+    aroundYourCorner: "Around your corner",
+    providersFor: "Providers for",
+    subscribedListings: "Subscribed listings · demo distances",
+    subscribedListingsGps: "Subscribed listings · device radius",
+    sampleDistance: "sample",
+    reviewsLabel: "reviews",
+
+    // Actions & Cards
+    productsServices: "View products & services",
+    navigate: "Navigate",
+    call: "Call",
+    whatsapp: "WhatsApp",
+    share: "Share",
+    rate: "Rate",
+    claim: "Claim",
+    requestAQuote: "Request a Quote",
+    requestInfo: "Request info",
+    recentlyViewed: "Recently Viewed Places",
+    clearRecent: "Clear recent",
+    rateBusiness: "Rate Business",
+    claimBusinessLink: "Claim this business",
+    writeReview: "Write a Review",
+    reviewsAndRatings: "Reviews & Community Ratings",
+    directionsAndMap: "Directions & Map",
+    directBusinessContact: "DIRECT BUSINESS CONTACT",
+    instantCallHint: "Call or WhatsApp directly for instant stock availability, quotes & bookings",
+    verifiedMerchantLicense: "Verified Merchant License",
+    freeCustomerParking: "Free Customer Parking",
+    gstInvoiced: "GST Invoiced",
+    acceptsUpiCash: "Accepts UPI & Cash",
+    fastResponse: "Fast Response (<15m)",
+
+    // Advertisement Rail & SOS
+    advertisement: "ADVERTISEMENT",
+    videoAd: "VIDEO ADVERTISEMENT",
+    localSpotlight: "Local spotlight",
+    emergencyHelp: "Emergency help",
+    promoteYourBusiness: "Promote your business",
+    localFirst: "Local first. People always.",
+    localFirstDesc: "Every recommendation comes from a business that chose to be here.",
   },
   ta: {
+    // Topbar & Sidebar
+    workspaceLabel: "பணிப்பகுதி",
+    discover: "கண்டறியவும்",
+    myActivity: "என் செயல்பாடு",
+    businessPortal: "வணிக தளம்",
+    agentPortal: "முகவர் தளம்",
+    companyPortal: "நிறுவன தளம்",
+    browseBy: "வகைப்படி பார்க்க",
+    allProductsAndServices: "அனைத்து பொருட்கள் & சேவைகள்",
+    allCategories: "அனைத்து பிரிவுகள்",
+    goodThingsCloser: "சிறந்தவை உங்கள் அருகிலேயே.",
+    goodThingsDesc: "ஒவ்வொரு தேடலும் உங்கள் பகுதியில் உள்ள உள்ளூர் வணிகத்தை ஆதரிக்கிறது.",
+    yourBizearchActivity: "உங்கள் பைசர்ச் செயல்பாடு",
+    savedOnDevice: "இந்த சாதனத்தில் சேமிக்கப்பட்டது",
+    companyLogin: "நிறுவன உள்நுழைவு",
+    yourNeighborhood: "உங்கள் பகுதி",
+    poweredBy: "இயக்குவது",
+    signIn: "உள்நுழைக",
+    signOut: "வெளியேறுக",
+    hosurLocation: "ஓசூர், தமிழ்நாடு",
+    stopLocation: "சாதன இருப்பிடத்தை நிறுத்து",
+
+    // Hero
+    madeForAroundHere: "நம்ம ஊருக்கான தளம்",
+    heroHeadingMain: "உங்கள் அருகிலுள்ள வணிகங்கள்,",
+    heroHeadingSub: "உங்கள் கைகளில்.",
     heroTitle: "ஓசூரின் முதன்மையான உள்ளூர் & தொழில்துறை வர்த்தக களம்",
     heroDesc: "ஓசூர் முழுவதும் உள்ள சரிபார்க்கப்பட்ட உற்பத்தியாளர்கள், கடைகள், மருத்துவமனைகள் மற்றும் சேவைகளை எளிதில் கண்டறியுங்கள்.",
+    registerBusiness: "உங்கள் வணிகத்தைப் பதிவு செய்க",
+    registerBusinessNote: "தொடங்க வாடிக்கையாளர் கணக்கு தேவையில்லை. ஒரு வணிகத்திற்கு ஒரு சுயவிவரம்.",
+
+    // Search Panel
+    whatDoYouNeed: "உங்களுக்கு என்ன தேவை?",
+    nearLocality: "அருகிலுள்ள பகுதி",
+    withinKm: "தொலைவு",
     searchPlaceholder: "வாகன உதிரிபாகங்கள், CNC இயந்திரங்கள், உணவகங்கள், மருத்துவமனைகள்...",
     findNearby: "அருகிலுள்ளவை தேடு",
+    allHosur: "அனைத்து ஓசூர்",
+
+    // Modes & Sections
+    browseBySector: "துறை வாரியாகப் பார்க்க",
+    atozDirectoryTab: "A–Z அகராதி (அனைத்து பொருட்கள் & சேவைகள்)",
+    aLittleBitOfEverything: "அனைத்தும் ஒரே இடத்தில்",
+    exploreLocalScene: "உங்கள் உள்ளூர் வணிகங்களைக் காணுங்கள்",
+    browseWithinSector: "துறைக்குள் தேடுக",
+    atozDirectoryLink: "A–Z பட்டியல் →",
+    allSectors: "அனைத்து துறைகள்",
+    backBtn: "பின்செல்",
+    allIn: "அனைத்தும்:",
+
+    // Filter Chips
     openNow: "இப்போது திறந்துள்ளது",
     topRated: "உயர்தர மதிப்பீடு ★ 4.5+",
     verifiedOnly: "சரிபார்க்கப்பட்டது",
     whatsappReady: "வாட்ஸ்அப் வசதி",
-    allResults: "அனைத்தும்",
-    recentlyViewed: "சமீபத்தில் பார்த்தவை",
-    clearRecent: "அழி",
-    rate: "மதிப்பீடு",
-    claim: "உரிமைகோரு",
-    call: "அழைப்பு",
-    whatsapp: "வாட்ஸ்அப்",
-    navigate: "வழிசெலுத்து",
-    productsServices: "தயாரிப்புகள் & சேவைகள்",
     clearFilters: "வடிகட்டிகளை நீக்கு",
     open: "திறந்துள்ளது",
     closed: "மூடப்பட்டுள்ளது",
     filterNotice: "வடிகட்டிகள் பயன்படுத்தப்பட்டுள்ளன",
     noFilteredMatches: "தேர்ந்தெடுக்கப்பட்ட வடிகட்டிகளுக்குப் பொருத்தமான வணிகங்கள் இல்லை.",
+
+    // Results Header
+    localVerifiedProviders: "சரிபார்க்கப்பட்ட உள்ளூர் வணிகங்கள்",
+    aroundYourCorner: "உங்கள் அருகில் உள்ளவை",
+    providersFor: "இதற்கான வணிகங்கள்",
+    subscribedListings: "பதிவுசெய்யப்பட்ட வணிகங்கள் · மாதிரி தூரம்",
+    subscribedListingsGps: "பதிவுசெய்யப்பட்ட வணிகங்கள் · நேரலை தூரம்",
+    sampleDistance: "மாதிரி",
+    reviewsLabel: "மதிப்புரைகள்",
+
+    // Actions & Cards
+    productsServices: "தயாரிப்புகள் & சேவைகள்",
+    navigate: "வழிசெலுத்து",
+    call: "அழைப்பு",
+    whatsapp: "வாட்ஸ்அப்",
+    share: "பகிர்",
+    rate: "மதிப்பிடு",
+    claim: "உரிமைகோரு",
+    requestAQuote: "விலை மதிப்பீடு கோருக",
+    requestInfo: "விவரம் கோருக",
+    recentlyViewed: "சமீபத்தில் பார்த்தவை",
+    clearRecent: "அழி",
+    rateBusiness: "வணிகத்தை மதிப்பிடுக",
+    claimBusinessLink: "வணிகத்தை உரிமைகோருங்கள்",
+    writeReview: "மதிப்புரை எழுதுக",
+    reviewsAndRatings: "சமூக மதிப்பீடுகள் & கருத்துகள்",
+    directionsAndMap: "வரைபடம் & வழிகள்",
+    directBusinessContact: "நேரடி வணிகத் தொடர்பு",
+    instantCallHint: "இருப்பு விவரங்கள், விலை மற்றும் முன்பதிவுகளுக்கு நேரடியாக அழைக்கவும்",
+    verifiedMerchantLicense: "சரிபார்க்கப்பட்ட வணிக உரிமம்",
+    freeCustomerParking: "இலவச வாகன நிறுத்துமிடம்",
+    gstInvoiced: "GST வரி ரசீது உண்டு",
+    acceptsUpiCash: "UPI & பணம் ஏற்கப்படும்",
+    fastResponse: "விரைவான பதில் (<15 நிமிடம்)",
+
+    // Advertisement Rail & SOS
+    advertisement: "விளம்பரம்",
+    videoAd: "வீடியோ விளம்பரம்",
+    localSpotlight: "உள்ளூர் சிறப்பம்சம்",
+    emergencyHelp: "அவசர உதவி",
+    promoteYourBusiness: "வணிகத்தை விளம்பரப்படுத்துங்கள்",
+    localFirst: "முதன்மையாக உள்ளூர். எப்போதும் மக்கள்.",
+    localFirstDesc: "ஒவ்வொரு பரிந்துரையும் உங்கள் ஊரிலேயே உள்ள சிறந்த வணிகங்களிடமிருந்து வருகிறது.",
   },
   kn: {
+    // Topbar & Sidebar
+    workspaceLabel: "ಕಾರ್ಯಕ್ಷೇತ್ರ",
+    discover: "ಅನ್ವೇಷಿಸಿ",
+    myActivity: "ನನ್ನ ಚಟುವಟಿಕೆ",
+    businessPortal: "ವ್ಯಾಪಾರ ಪೋರ್ಟಲ್",
+    agentPortal: "ಏಜೆಂಟ್ ಪೋರ್ಟಲ್",
+    companyPortal: "ಕಂಪನಿ ಪೋರ್ಟಲ್",
+    browseBy: "ವರ್ಗೀಕರಿಸಿ ನೋಡಿ",
+    allProductsAndServices: "ಎಲ್ಲಾ ಉತ್ಪನ್ನಗಳು & ಸೇವೆಗಳು",
+    allCategories: "ಎಲ್ಲಾ ವಿಭಾಗಗಳು",
+    goodThingsCloser: "ಉತ್ತಮ ವಿಷಯಗಳು ಹತ್ತಿರದಲ್ಲಿವೆ.",
+    goodThingsDesc: "ಪ್ರತಿಯೊಂದು ಹುಡುಕಾಟವೂ ನಿಮ್ಮ ಪ್ರದೇಶದ ಸ್ಥಳೀಯ ವ್ಯಾಪಾರವನ್ನು ಬೆಂಬಲಿಸುತ್ತದೆ.",
+    yourBizearchActivity: "ನಿಮ್ಮ ಬೈಜರ್ಚ್ ಚಟುವಟಿಕೆ",
+    savedOnDevice: "ಈ ಸಾಧನದಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ",
+    companyLogin: "ಕಂಪನಿ ಲಾಗಿನ್",
+    yourNeighborhood: "ನಿಮ್ಮ ನೆರೆಹೊರೆ",
+    poweredBy: "ಪ್ರಾಯೋಜಿತ",
+    signIn: "ಸೈನ್ ಇನ್",
+    signOut: "ಸೈನ್ ಔಟ್",
+    hosurLocation: "ಹೊಸೂರು, ತಮಿಳುನಾಡು",
+    stopLocation: "ಸಾಧನದ ಸ್ಥಳ ನಿಲ್ಲಿಸಿ",
+
+    // Hero
+    madeForAroundHere: "ನಮ್ಮ ಸ್ಥಳೀಯರಿಗಾಗಿ ಮಾಡಲ್ಪಟ್ಟಿದೆ",
+    heroHeadingMain: "ನಿಮ್ಮ ನೆರೆಹೊರೆ,",
+    heroHeadingSub: "ನಿಮ್ಮ ಕೈಗೆಟಕುವಂತೆ.",
     heroTitle: "ಹೊಸೂರಿನ ಪ್ರಮುಖ ಸ್ಥಳೀಯ ಮತ್ತು ಕೈಗಾರಿಕಾ ಮಾರುಕಟ್ಟೆ",
     heroDesc: "ಹೊಸೂರಿನಾದ್ಯಂತ ಪರಿಶೀಲಿಸಿದ ತಯಾರಕರು, ಚಿಲ್ಲರೆ ವ್ಯಾಪಾರ, ಆರೋಗ್ಯ ಸೇವೆಗಳು ಮತ್ತು ದೈನಂದಿನ ಸೇವೆಗಳನ್ನು ಅನ್ವೇಷಿಸಿ.",
+    registerBusiness: "ನಿಮ್ಮ ವ್ಯಾಪಾರವನ್ನು ನೋಂದಾಯಿಸಿ",
+    registerBusinessNote: "ಪ್ರಾರಂಭಿಸಲು ಗ್ರಾಹಕರ ಖಾತೆಯ ಅಗತ್ಯವಿಲ್ಲ. ಪ್ರತಿ ವ್ಯಾಪಾರ ಖಾತೆಗೆ ಒಂದು ಪ್ರೊಫೈಲ್.",
+
+    // Search Panel
+    whatDoYouNeed: "ನಿಮಗೆ ಏನು ಬೇಕು?",
+    nearLocality: "ಹತ್ತಿರದ ಪ್ರದೇಶ",
+    withinKm: "ವ್ಯಾಪ್ತಿ",
     searchPlaceholder: "ಆಟೋ ಭಾಗಗಳು, ಸಿಎನ್‌ಸಿ ಯಂತ್ರ, ಉಪಹಾರಗೃಹಗಳು, ಆಸ್ಪತ್ರೆಗಳು...",
     findNearby: "ಹತ್ತಿರ ಹುಡುಕಿ",
+    allHosur: "ಎಲ್ಲಾ ಹೊಸೂರು",
+
+    // Modes & Sections
+    browseBySector: "ವಲಯವಾರು ಅನ್ವೇಷಿಸಿ",
+    atozDirectoryTab: "A–Z ಡೈರೆಕ್ಟರಿ (ಎಲ್ಲಾ ಉತ್ಪನ್ನಗಳು & ಸೇವೆಗಳು)",
+    aLittleBitOfEverything: "ಎಲ್ಲವೂ ಒಂದೇ ಸ್ಥಳದಲ್ಲಿ",
+    exploreLocalScene: "ನಿಮ್ಮ ಸ್ಥಳೀಯ ವ್ಯಾಪಾರಗಳನ್ನು ಅನ್ವೇಷಿಸಿ",
+    browseWithinSector: "ವಲಯದೊಳಗೆ ಬ್ರೌಸ್ ಮಾಡಿ",
+    atozDirectoryLink: "A–Z ಡೈರೆಕ್ಟರಿ →",
+    allSectors: "ಎಲ್ಲಾ ವಲಯಗಳು",
+    backBtn: "ಹಿಂದಕ್ಕೆ",
+    allIn: "ಎಲ್ಲವೂ:",
+
+    // Filter Chips
     openNow: "ಈಗ ತೆರೆದಿದೆ",
     topRated: "ಉನ್ನತ ರೇಟಿಂಗ್ ★ 4.5+",
     verifiedOnly: "ಪರಿಶೀಲಿಸಲಾಗಿದೆ",
     whatsappReady: "ವಾಟ್ಸಾಪ್ ಲಭ್ಯವಿದೆ",
-    allResults: "ಎಲ್ಲವೂ",
-    recentlyViewed: "ಇತ್ತೀಚೆಗೆ ವೀಕ್ಷಿಸಿದ ಸ್ಥಳಗಳು",
-    clearRecent: "ತೆರವುಗೊಳಿಸಿ",
-    rate: "ರೇಟ್ ಮಾಡಿ",
-    claim: "ಕ್ಲೈಮ್ ಮಾಡಿ",
-    call: "ಕರೆ ಮಾಡಿ",
-    whatsapp: "ವಾಟ್ಸಾಪ್",
-    navigate: "ಮಾರ್ಗ",
-    productsServices: "ಉತ್ಪನ್ನಗಳು & ಸೇವೆಗಳು",
     clearFilters: "ಫಿಲ್ಟರ್ ತೆರವುಗೊಳಿಸಿ",
     open: "ತೆರೆದಿದೆ",
     closed: "ಮುಚ್ಚಲಾಗಿದೆ",
     filterNotice: "ಫಿಲ್ಟರ್‌ಗಳನ್ನು ಅನ್ವಯಿಸಲಾಗಿದೆ",
     noFilteredMatches: "ಆಯ್ಕೆಮಾಡಿದ ಫಿಲ್ಟರ್‌ಗಳಿಗೆ ಹೊಂದಿಕೆಯಾಗುವ ಯಾವುದೇ ವ್ಯಾಪಾರಗಳು ಕಂಡುಬಂದಿಲ್ಲ.",
+
+    // Results Header
+    localVerifiedProviders: "ಪರಿಶೀಲಿಸಿದ ಸ್ಥಳೀಯ ಪೂರೈಕೆದಾರರು",
+    aroundYourCorner: "ನಿಮ್ಮ ಸುತ್ತಮುತ್ತಲಿನ ಸ್ಥಳಗಳು",
+    providersFor: "ಇದಕ್ಕಾಗಿ ಪೂರೈಕೆದಾರರು",
+    subscribedListings: "ನೋಂದಾಯಿತ ಪಟ್ಟಿಗಳು · ಮಾದರಿ ದೂರ",
+    subscribedListingsGps: "ನೋಂದಾಯಿತ ಪಟ್ಟಿಗಳು · ಸಾಧನದ ವ್ಯಾಪ್ತಿ",
+    sampleDistance: "ಮಾದರಿ",
+    reviewsLabel: "ವಿಮರ್ಶೆಗಳು",
+
+    // Actions & Cards
+    productsServices: "ಉತ್ಪನ್ನಗಳು & ಸೇವೆಗಳು",
+    navigate: "ಮಾರ್ಗ",
+    call: "ಕರೆ ಮಾಡಿ",
+    whatsapp: "ವಾಟ್ಸಾಪ್",
+    share: "ಹಂಚಿಕೊಳ್ಳಿ",
+    rate: "ರೇಟ್ ಮಾಡಿ",
+    claim: "ಕ್ಲೈಮ್ ಮಾಡಿ",
+    requestAQuote: "ಉಲ್ಲೇಖವನ್ನು ವಿನಂತಿಸಿ",
+    requestInfo: "ಮಾಹಿತಿ ವಿನಂತಿಸಿ",
+    recentlyViewed: "ಇತ್ತೀಚೆಗೆ ವೀಕ್ಷಿಸಿದ ಸ್ಥಳಗಳು",
+    clearRecent: "ತೆರವುಗೊಳಿಸಿ",
+    rateBusiness: "ವ್ಯಾಪಾರ ರೇಟ್ ಮಾಡಿ",
+    claimBusinessLink: "ಈ ವ್ಯಾಪಾರವನ್ನು ಕ್ಲೈಮ್ ಮಾಡಿ",
+    writeReview: "ವಿಮರ್ಶೆ ಬರೆಯಿರಿ",
+    reviewsAndRatings: "ಸಮುದಾಯ ವಿಮರ್ಶೆಗಳು & ರೇಟಿಂಗ್‌ಗಳು",
+    directionsAndMap: "ನಕ್ಷೆ & ನಿರ್ದೇಶನಗಳು",
+    directBusinessContact: "ನೇರ ವ್ಯಾಪಾರ ಸಂಪರ್ಕ",
+    instantCallHint: "ಲಭ್ಯತೆ, ದರಪಟ್ಟಿ ಮತ್ತು ಬುಕಿಂಗ್‌ಗಾಗಿ ನೇರವಾಗಿ ಕರೆ ಮಾಡಿ",
+    verifiedMerchantLicense: "ಪರಿಶೀಲಿಸಿದ ವ್ಯಾಪಾರ ಪರವಾನಗಿ",
+    freeCustomerParking: "ಉಚಿತ ಗ್ರಾಹಕ ಪಾರ್ಕಿಂಗ್",
+    gstInvoiced: "GST ಇನ್‌ವಾಯ್ಸ್ ಲಭ್ಯವಿದೆ",
+    acceptsUpiCash: "UPI ಮತ್ತು ನಗದು ಸ್ವೀಕಾರಾರ್ಹ",
+    fastResponse: "ವೇಗದ ಪ್ರತಿಕ್ರಿಯೆ (<15 ನಿಮಿಷ)",
+
+    // Advertisement Rail & SOS
+    advertisement: "ಜಾಹೀರಾತು",
+    videoAd: "ವೀಡಿಯೊ ಜಾಹೀರಾತು",
+    localSpotlight: "ಸ್ಥಳೀಯ ಮುಖ್ಯಾಂಶ",
+    emergencyHelp: "ತುರ್ತು ಸಹಾಯ",
+    promoteYourBusiness: "ನಿಮ್ಮ ವ್ಯಾಪಾರವನ್ನು ಪ್ರಚಾರ ಮಾಡಿ",
+    localFirst: "ಮೊದಲು ಸ್ಥಳೀಯ. ಸದಾ ಜನರು.",
+    localFirstDesc: "ಪ್ರತಿಯೊಂದು ಶಿಫಾರಸು ಇಲ್ಲಿರಲು ಬಯಸಿದ ಸ್ಥಳೀಯ ವ್ಯಾಪಾರದಿಂದ ಬರುತ್ತದೆ.",
+  },
+  te: {
+    // Topbar & Sidebar
+    workspaceLabel: "వర్క్‌స్పేస్",
+    discover: "కనుగొనండి",
+    myActivity: "నా యాక్టివిటీ",
+    businessPortal: "వ్యాపార పోర్టల్",
+    agentPortal: "ఏజెంట్ పోర్టల్",
+    companyPortal: "కంపెనీ పోర్టల్",
+    browseBy: "వర్గాల వారీగా",
+    allProductsAndServices: "అన్ని ఉత్పత్తులు & సేవలు",
+    allCategories: "అన్ని విభాగాలు",
+    goodThingsCloser: "మంచి విషయాలు మీకు సమీపంలోనే ఉన్నాయి.",
+    goodThingsDesc: "ప్రతి శోధన మీ పరిసరాల్లోని స్థానిక వ్యాపారానికి మద్దతు ఇస్తుంది.",
+    yourBizearchActivity: "మీ బైజెర్చ్ కార్యాచరణ",
+    savedOnDevice: "ఈ పరికరంలో సేవ్ చేయబడింది",
+    companyLogin: "కంపెనీ లాగిన్",
+    yourNeighborhood: "మీ పరిసరాలు",
+    poweredBy: "సహకారంతో",
+    signIn: "సైన్ ఇన్",
+    signOut: "సైన్ అవుట్",
+    hosurLocation: "హోసూరు, తమిళనాడు",
+    stopLocation: "పరికర స్థానాన్ని ఆపండి",
+
+    // Hero
+    madeForAroundHere: "మన స్థానిక ప్రజల కోసం ప్రత్యేకంగా",
+    heroHeadingMain: "మీ పరిసరాల వ్యాపారాలు,",
+    heroHeadingSub: "మీ చేతిలోనే.",
+    heroTitle: "హోసూరు ప్రముఖ స్థానిక & పారిశ్రామిక మార్కెట్‌ప్లేస్",
+    heroDesc: "హోసూరు అంతటా ధృవీకరించబడిన తయారీదారులు, దుకాణాలు, ఆసుపత్రులు మరియు రోజువారీ సేవలను సులభంగా కనుగొనండి.",
+    registerBusiness: "మీ వ్యాపారాన్ని నమోదు చేయండి",
+    registerBusinessNote: "ప్రారంభించడానికి ఖాతా అవసరం లేదు. ఒక వ్యాపారానికి ఒక ప్రొఫైల్.",
+
+    // Search Panel
+    whatDoYouNeed: "మీకు ఏమి కావాలి?",
+    nearLocality: "సమీప ప్రాంతం",
+    withinKm: "పరిధి",
+    searchPlaceholder: "ఆటో విడిభాగాలు, సిఎన్‌సి యంత్రాలు, రెస్టారెంట్లు, ఆసుపత్రులు...",
+    findNearby: "సమీపంలో వెతకండి",
+    allHosur: "మొత్తం హోసూరు",
+
+    // Modes & Sections
+    browseBySector: "రంగాల వారీగా బ్రౌజ్ చేయండి",
+    atozDirectoryTab: "A–Z డైరెక్టరీ (అన్ని ఉత్పత్తులు & సేవలు)",
+    aLittleBitOfEverything: "అన్నీ ఒకే చోట",
+    exploreLocalScene: "మీ స్థానిక వ్యాపారాలను అన్వేషించండి",
+    browseWithinSector: "విభాగంలో చూడండి",
+    atozDirectoryLink: "A–Z డైరెక్టరీ →",
+    allSectors: "అన్ని రంగాలు",
+    backBtn: "వెనుకకు",
+    allIn: "అన్నీ:",
+
+    // Filter Chips
+    openNow: "ఇప్పుడు తెరిచి ఉంది",
+    topRated: "ఉన్నత రేటింగ్ ★ 4.5+",
+    verifiedOnly: "ధృవీకరించబడింది",
+    whatsappReady: "వాట్సాప్ సౌకర్యం",
+    clearFilters: "ఫిల్టర్లు క్లియర్ చేయండి",
+    open: "తెరిచి ఉంది",
+    closed: "మూసివేయబడింది",
+    filterNotice: "ఫిల్టర్లు వర్తింపజేయబడ్డాయి",
+    noFilteredMatches: "ఎంచుకున్న ఫిల్టర్లకు సరిపోయే వ్యాపారాలు లేవు.",
+
+    // Results Header
+    localVerifiedProviders: "ధృవీకరించబడిన స్థానిక వ్యాపారాలు",
+    aroundYourCorner: "మీ సమీపంలో ఉన్న ప్రదేశాలు",
+    providersFor: "వీరి కోసం వ్యాపారాలు",
+    subscribedListings: "నమోదిత జాబితాలు · నమూనా దూరం",
+    subscribedListingsGps: "నమోదిత జాబితాలు · పరికర దూరం",
+    sampleDistance: "నమూనా",
+    reviewsLabel: "సమీక్షలు",
+
+    // Actions & Cards
+    productsServices: "ఉత్పత్తులు & సేవలు",
+    navigate: "మ్యాప్ మార్గం",
+    call: "కాల్ చేయండి",
+    whatsapp: "వాట్సాప్",
+    share: "షేర్ చేయండి",
+    rate: "రేట్ చేయండి",
+    claim: "క్లెయిమ్ చేయండి",
+    requestAQuote: "ధర అంచనాను అడగండి",
+    requestInfo: "వివరాలు అడగండి",
+    recentlyViewed: "ఇటీవల చూసిన స్థలాలు",
+    clearRecent: "క్లియర్ చేయండి",
+    rateBusiness: "వ్యాపారాన్ని రేట్ చేయండి",
+    claimBusinessLink: "ఈ వ్యాపారాన్ని క్లెయిమ్ చేయండి",
+    writeReview: "సమీక్ష రాయండి",
+    reviewsAndRatings: "కమ్యూనిటీ సమీక్షలు & రేటింగ్‌లు",
+    directionsAndMap: "మ్యాప్ & దిశలు",
+    directBusinessContact: "ప్రత్యక్ష వ్యాపార సంప్రదింపు",
+    instantCallHint: "లభ్యత, ధర మరియు బుకింగ్ కోసం నేరుగా కాల్ లేదా వాట్సాప్ చేయండి",
+    verifiedMerchantLicense: "ధృవీకరించబడిన వ్యాపార లైసెన్స్",
+    freeCustomerParking: "ఉచిత కస్టమర్ పార్కింగ్",
+    gstInvoiced: "GST ఇన్‌వాయిస్ లభ్యం",
+    acceptsUpiCash: "UPI & నగదు అంగీకరించబడును",
+    fastResponse: "వేగవంతమైన స్పందన (<15 నిమిషాలు)",
+
+    // Advertisement Rail & SOS
+    advertisement: "ప్రకటన",
+    videoAd: "వీడియో ప్రకటన",
+    localSpotlight: "స్థానిక విశేషాలు",
+    emergencyHelp: "అత్యవసర సహాయం",
+    promoteYourBusiness: "మీ వ్యాపారాన్ని ప్రచారం చేయండి",
+    localFirst: "ముందుగా స్థానిక. ఎల్లప్పుడూ ప్రజలు.",
+    localFirstDesc: "ప్రతి సిఫార్సు ఇక్కడే ఉండాలని ఎంచుకున్న వ్యాపారం నుండి వస్తుంది.",
   },
 };
+
+const CATEGORY_LOCALIZED: Record<Language, Record<string, string>> = {
+  en: {},
+  ta: {
+    "Automobiles": "தானியங்கிகள் & வாகனங்கள்",
+    "Electronics": "மின்னணுவியல் & சாதனங்கள்",
+    "Electricals": "மின்சாதனங்கள் & வயரிங்",
+    "Hardware": "வன்பொருள் & கருவிகள்",
+    "Home Appliances": "வீட்டு உபயோகப் பொருட்கள்",
+    "Fashion": "ஆடை & ஜவுளி",
+    "Home & furniture": "வீடு & மரச்சாமான்கள்",
+    "Food & dining": "உணவு & உணவகங்கள்",
+    "Health & wellness": "மருத்துவம் & நல்வாழ்வு",
+    "Sports & fitness": "விளையாட்டு & உடற்பயிற்சி",
+    "Travel": "பயணம் & தங்குமிடம்",
+    "Entertainment": "பொழுதுபோக்கு",
+    "Everyday services": "தினசரி சேவைகள்",
+    "Books & Stationery": "புத்தகங்கள் & எழுதுபொருட்கள்",
+    "Toys & Fancy Stores": "பொம்மைகள் & பேன்சி கடைகள்",
+    "Public & Common Places": "பொது இடங்கள் & தளங்கள்",
+    "Real Estate & Construction": "ரியல் எஸ்டேட் & கட்டுமானம்",
+    "Industrial & B2B Manufacturing": "தொழில்துறை & உற்பத்தி",
+    "Heavy Industries & Machinery": "கனரக தொழில்துறை & இயந்திரங்கள்",
+    "Education & Coaching": "கல்வி & பயிற்சி மையங்கள்",
+    "Events & Weddings": "திருமணங்கள் & நிகழ்வுகள்",
+    "Agriculture, Nurseries & Pets": "விவசாயம், நர்சரி & வளர்ப்பு பிராணிகள்",
+  },
+  kn: {
+    "Automobiles": "ವಾಹನಗಳು & ಸೇವೆಗಳು",
+    "Electronics": "ಎಲೆಕ್ಟ್ರಾನಿಕ್ಸ್ & ಮೊಬೈಲ್",
+    "Electricals": "ಎಲೆಕ್ಟ್ರಿಕಲ್ಸ್ & ವೈರಿಂಗ್",
+    "Hardware": "ಹಾರ್ಡ್‌ವೇರ್ & ಉಪಕರಣಗಳು",
+    "Home Appliances": "ಗೃಹೋಪಯೋಗಿ ವಸ್ತುಗಳು",
+    "Fashion": "ಫ್ಯಾಷನ್ & ಬಟ್ಟೆಗಳು",
+    "Home & furniture": "ಮನೆ ಮತ್ತು ಪೀಠೋಪಕರಣಗಳು",
+    "Food & dining": "ಆಹಾರ & ರೆಸ್ಟೋರೆಂಟ್‌ಗಳು",
+    "Health & wellness": "ಆರೋಗ್ಯ & ಕ್ಷೇಮ",
+    "Sports & fitness": "ಕ್ರೀಡೆ & ಫಿಟ್‌ನೆಸ್",
+    "Travel": "ಪ್ರಯಾಣ & ಪ್ರವಾಸ",
+    "Entertainment": "ಮನರಂಜನೆ",
+    "Everyday services": "ದೈನಂದಿನ ಸೇವೆಗಳು",
+    "Books & Stationery": "ಪುಸ್ತಕಗಳು & ಸ್ಟೇಷನರಿ",
+    "Toys & Fancy Stores": "ಆಟಿಕೆಗಳು & ಫ್ಯಾನ್ಸಿ ಮಳಿಗೆಗಳು",
+    "Public & Common Places": "ಸಾರ್ವಜನಿಕ ಸ್ಥಳಗಳು",
+    "Real Estate & Construction": "ರಿಯಲ್ ಎಸ್ಟೇಟ್ & ನಿರ್ಮಾಣ",
+    "Industrial & B2B Manufacturing": "ಕೈಗಾರಿಕಾ & B2B ಉತ್ಪಾದನೆ",
+    "Heavy Industries & Machinery": "ಭಾರಿ ಯಂತ್ರೋಪಕರಣಗಳು",
+    "Education & Coaching": "ಶಿಕ್ಷಣ & ತರಬೇತಿ",
+    "Events & Weddings": "ವಿವಾಹ & ಸಮಾರಂಭಗಳು",
+    "Agriculture, Nurseries & Pets": "ಕೃಷಿ, ನರ್ಸರಿ & ಸಾಕುಪ್ರಾಣಿಗಳು",
+  },
+  te: {
+    "Automobiles": "ఆటోమొబైల్స్ & వాహనాలు",
+    "Electronics": "ఎలక్ట్రానిక్స్ & మొబైల్స్",
+    "Electricals": "ఎలక్ట్రికల్స్ & వైరింగ్",
+    "Hardware": "హార్డ్‌వేర్ & టూల్స్",
+    "Home Appliances": "గృహోపకరణాలు",
+    "Fashion": "ఫ్యాషన్ & దుస్తులు",
+    "Home & furniture": "ఇల్లు & ఫర్నిచర్",
+    "Food & dining": "ఆహారం & రెస్టారెంట్లు",
+    "Health & wellness": "ఆరోగ్యం & వెల్‌నెస్",
+    "Sports & fitness": "క్రీడలు & ఫిట్‌నెస్",
+    "Travel": "ప్రయాణం & రవాణా",
+    "Entertainment": "వినోదం",
+    "Everyday services": "రోజువారీ సేవలు",
+    "Books & Stationery": "పుస్తకాలు & స్టేషనరీ",
+    "Toys & Fancy Stores": "బొమ్మలు & ఫ్యాన్సీ స్టోర్స్",
+    "Public & Common Places": "ప్రజా ప్రదేశాలు",
+    "Real Estate & Construction": "రియల్ ఎస్టేట్ & నిర్మాణం",
+    "Industrial & B2B Manufacturing": "పారిశ్రామిక & B2B తయారీ",
+    "Heavy Industries & Machinery": "భారీ పరిశ్రమలు & యంత్రాలు",
+    "Education & Coaching": "విద్య & కోచింగ్",
+    "Events & Weddings": "వివాహాలు & ఈవెంట్లు",
+    "Agriculture, Nurseries & Pets": "వ్యవసాయం, నర్సరీలు & పెంపుడు జంతువులు",
+  },
+};
+
+const CATEGORY_DESC_LOCALIZED: Record<Language, Record<string, string>> = {
+  en: {},
+  ta: {
+    "Automobiles": "விற்பனை · பழுதுபார்த்தல் · இருசக்கர வாகனம் ↗",
+    "Electronics": "விற்பனை · சர்வீஸ் · மொபைல்கள் · மடிக்கணினிகள் ↗",
+    "Electricals": "வயரிங் & கேபிள்கள் · மாடுலர் சுவிட்சுகள் ↗",
+    "Hardware": "பவர் டூல்ஸ் · கைக்கருவிகள் · குழாய்கள் ↗",
+    "Home Appliances": "குளிர்சாதன பெட்டி · வாஷிங் மெஷின் ↗",
+    "Fashion": "ஆடை · காலணிகள் · நகைகள் ↗",
+    "Home & furniture": "மரச்சாமான்கள் · அலங்காரம் · சமையலறை ↗",
+    "Food & dining": "உணவகங்கள் · உணவு டெலிவரி · பேக்கரிகள் ↗",
+    "Health & wellness": "மருத்துவமனைகள் · பல் மருத்துவம் · மருந்தகங்கள் ↗",
+    "Sports & fitness": "உடற்பயிற்சி கூடம் · யோகா · விளையாட்டு ↗",
+    "Travel": "டிராவல்ஸ் · தங்குமிடம் · விமான டாக்ஸி ↗",
+    "Entertainment": "நிகழ்வுகள் · இசை · திரையரங்குகள் ↗",
+    "Everyday services": "பிளம்பிங் · சுத்தம் செய்தல் · தச்சு வேலை ↗",
+    "Books & Stationery": "பாடப்புத்தகங்கள் · நோட்டுப்புத்தகங்கள் · ஜெராக்ஸ் ↗",
+    "Toys & Fancy Stores": "பொம்மைகள் & விளையாட்டுகள் · பரிசுகள் ↗",
+    "Public & Common Places": "பேருந்து நிலையம் · ரயில் நிலையம் · கோயில்கள் ↗",
+    "Real Estate & Construction": "வாடகை · வீட்டு மனைகள் · தொழிற்சாலை கட்டிடங்கள் ↗",
+    "Industrial & B2B Manufacturing": "CNC எந்திரம் · தாள் உலோகம் · பிளாஸ்டிக் ↗",
+    "Heavy Industries & Machinery": "ஹைட்ராலிக் பிரஸ் · லேசர் கட்டிங் · கிரேன் ↗",
+    "Education & Coaching": "பள்ளிகள் · பொறியியல் கல்லூரிகள் · பயிற்சி ↗",
+    "Events & Weddings": "திருமண மண்டபங்கள் · கேட்டரிங் · அலங்காரம் ↗",
+    "Agriculture, Nurseries & Pets": "ஓசூர் ரோஜா நர்சரி · விதைகள் · செல்லப்பிராணிகள் ↗",
+  },
+  kn: {
+    "Automobiles": "ಮಾರಾಟ · ಸೇವೆ · ದ್ವಿಚಕ್ರ ವಾಹನಗಳು ↗",
+    "Electronics": "ಮಾರಾಟ · ಸೇವೆ · ಮೊಬೈಲ್ · ಲ್ಯಾಪ್‌ಟಾಪ್ ↗",
+    "Electricals": "ವೈರಿಂಗ್ & ಕೇಬಲ್‌ಗಳು · ಮಾಡ್ಯುಲರ್ ಸ್ವಿಚ್‌ಗಳು ↗",
+    "Hardware": "ಪವರ್ ಟೂಲ್ಸ್ · ಕೈ ಉಪಕರಣಗಳು · ಪೈಪ್‌ಗಳು ↗",
+    "Home Appliances": "ರೆಫ್ರಿಜರೇಟರ್ · ವಾಷಿಂಗ್ ಮೆಷಿನ್ ↗",
+    "Fashion": "ಉಡುಪು · ಪಾದರಕ್ಷೆ · ಆಭರಣ ↗",
+    "Home & furniture": "ಪೀಠೋಪಕರಣ · ಅಲಂಕಾರ · ಅಡುಗೆಮನೆ ↗",
+    "Food & dining": "ರೆಸ್ಟೋರೆಂಟ್‌ಗಳು · ಊಟ ವಿತರಣೆ · ಬೇಕರಿಗಳು ↗",
+    "Health & wellness": "ಕ್ಲಿನಿಕ್‌ಗಳು · ದಂತವೈದ್ಯ · ಔಷಧಾಲಯಗಳು ↗",
+    "Sports & fitness": "ಜಿಮ್ · ಯೋಗ · ಕ್ರೀಡಾ ತರಬೇತಿ ↗",
+    "Travel": "ಟ್ರಾವೆಲ್ ಏಜೆಂಟ್‌ಗಳು · ವಾಸ್ತವ್ಯ · ವಿಮಾನ ಟ್ಯಾಕ್ಸಿ ↗",
+    "Entertainment": "ಈವೆಂಟ್‌ಗಳು · ಸಂಗೀತ · ಆಟಗಳು ↗",
+    "Everyday services": "ಪ್ಲಂಬಿಂಗ್ · ಸ್ವಚ್ಛತೆ · ಬಡಗಿ ಕೆಲಸ ↗",
+    "Books & Stationery": "ಪಠ್ಯಪುಸ್ತಕಗಳು · ನೋಟ್‌ಬುಕ್‌ಗಳು · ಜೆರಾಕ್ಸ್ ↗",
+    "Toys & Fancy Stores": "ಆಟಿಕೆಗಳು · ಉಡುಗೊರೆಗಳು · ಫ್ಯಾನ್ಸಿ ↗",
+    "Public & Common Places": "ಬಸ್ ನಿಲ್ದಾಣ · ರೈಲ್ವೆ ನಿಲ್ದಾಣ · ದೇವಾಲಯಗಳು ↗",
+    "Real Estate & Construction": "ಬಾಡಿಗೆ · ನಿವೇಶನಗಳು · ಕೈಗಾರಿಕಾ ಶೆಡ್‌ಗಳು ↗",
+    "Industrial & B2B Manufacturing": "ಸಿಎನ್‌ಸಿ ಯಂತ್ರ · ಶೀಟ್ ಮೆಟಲ್ · ಪ್ಲಾಸ್ಟಿಕ್ ↗",
+    "Heavy Industries & Machinery": "ಹೈಡ್ರಾಲಿಕ್ ಪ್ರೆಸ್ · ಲೇಸರ್ ಕಟ್ಟಿಂಗ್ · ಕ್ರೇನ್‌ಗಳು ↗",
+    "Education & Coaching": "ಶಾಲೆಗಳು · ಎಂಜಿನಿಯರಿಂಗ್ ಕಾಲೇಜುಗಳು ↗",
+    "Events & Weddings": "ಕಲ್ಯಾಣ ಮಂಟಪಗಳು · ಕ್ಯಾಟರಿಂಗ್ · ಅಲಂಕಾರ ↗",
+    "Agriculture, Nurseries & Pets": "ಹೊಸೂರು ಗುಲಾಬಿ ನರ್ಸರಿ · ಬೀಜಗಳು · ಸಾಕುಪ್ರಾಣಿಗಳು ↗",
+  },
+  te: {
+    "Automobiles": "సేల్స్ · సర్వీస్ · ద్విచక్ర వాహనాలు ↗",
+    "Electronics": "సేల్స్ · సర్వీస్ · మొబైల్స్ · ల్యాప్‌టాప్‌లు ↗",
+    "Electricals": "వైరింగ్ & కేబుల్స్ · మాడ్యులర్ స్విచ్‌లు ↗",
+    "Hardware": "పవర్ టూల్స్ · హ్యాండ్ టూల్స్ · పైపులు ↗",
+    "Home Appliances": "రిఫ్రిజిరేటర్లు · వాషింగ్ మెషీన్లు ↗",
+    "Fashion": "దుస్తులు · పాదరక్షలు · ఆభరణాలు ↗",
+    "Home & furniture": "ఫర్నిచర్ · అలంకరణ · కిచెన్ ↗",
+    "Food & dining": "రెస్టారెంట్లు · ఫుడ్ డెలివరీ · బేకరీలు ↗",
+    "Health & wellness": "క్లినిక్‌లు · దంత వైద్యం · ఫార్మసీలు ↗",
+    "Sports & fitness": "జిమ్ · యోగా · స్పోర్ట్స్ కోచింగ్ ↗",
+    "Travel": "ట్రావెల్ ఏజెంట్లు · బస · ఎయిర్‌పోర్ట్ క్యాబ్‌లు ↗",
+    "Entertainment": "ఈవెంట్‌లు · సంగీతం · వినోదం ↗",
+    "Everyday services": "ప్లంబింగ్ · క్లీనింగ్ · కార్పెంట్రీ ↗",
+    "Books & Stationery": "పాఠ్యపుస్తకాలు · నోట్‌బుక్స్ · జిరాక్స్ ↗",
+    "Toys & Fancy Stores": "బొమ్మలు & ఆటలు · ఫ్యాన్సీ · బహుమతులు ↗",
+    "Public & Common Places": "బస్ స్టాండ్ · రైల్వే స్టేషన్ · ఆలయాలు ↗",
+    "Real Estate & Construction": "అద్దెలు · ప్లాట్లు · పారిశ్రామిక షెడ్లు ↗",
+    "Industrial & B2B Manufacturing": "సిఎన్‌సి మ్యాచినింగ్ · షీట్ మెటల్ · ప్లాస్టిక్స్ ↗",
+    "Heavy Industries & Machinery": "హైడ్రాలిక్ ప్రెస్ · లేజర్ కటింగ్ · క్రేన్లు ↗",
+    "Education & Coaching": "పాఠశాలలు · ఇంజనీరింగ్ కళాశాలలు ↗",
+    "Events & Weddings": "కల్యాణ మండపాలు · క్యాటరింగ్ · డెకరేషన్ ↗",
+    "Agriculture, Nurseries & Pets": "హోసూరు గులాబీ నర్సరీ · విత్తనాలు · పెంపుడు జంతువులు ↗",
+  },
+};
+
+const NEIGHBORHOOD_LOCALIZED: Record<Language, Record<string, string>> = {
+  en: {},
+  ta: {
+    "All Hosur": "அனைத்து ஓசூர்",
+    "SIPCOT Phase 1": "சிப்காட் பகுதி 1",
+    "SIPCOT Phase 2": "சிப்காட் பகுதி 2",
+    "Bagalur Road": "பாகலூர் சாலை",
+    "Mookandapalli": "மூக்கண்டப்பள்ளி",
+    "Mathigiri": "மத்திகிரி",
+    "MG Road / Railway Station": "எம்.ஜி சாலை / ரயில் நிலையம்",
+    "Denkanikottai Road": "தேன்கனிக்கோட்டை சாலை",
+    "Rayakottai Road": "ராயக்கோட்டை சாலை",
+  },
+  kn: {
+    "All Hosur": "ಎಲ್ಲಾ ಹೊಸೂರು",
+    "SIPCOT Phase 1": "ಸಿಪ್ಕಾಟ್ ಹಂತ 1",
+    "SIPCOT Phase 2": "ಸಿಪ್ಕಾಟ್ ಹಂತ 2",
+    "Bagalur Road": "ಬಾಗಲೂರು ರಸ್ತೆ",
+    "Mookandapalli": "ಮೂಕಂಡಪಲ್ಲಿ",
+    "Mathigiri": "ಮತ್ತಿಗಿರಿ",
+    "MG Road / Railway Station": "ಎಂ.ಜಿ ರಸ್ತೆ / ರೈಲ್ವೆ ನಿಲ್ದಾಣ",
+    "Denkanikottai Road": "ದೇನಕನಿಕೋಟೆ ರಸ್ತೆ",
+    "Rayakottai Road": "ರಾಯಕ್ಕೋಟೆ ರಸ್ತೆ",
+  },
+  te: {
+    "All Hosur": "మొత్తం హోసూరు",
+    "SIPCOT Phase 1": "సిప్‌కాట్ ఫేజ్ 1",
+    "SIPCOT Phase 2": "సిప్‌కాట్ ఫేజ్ 2",
+    "Bagalur Road": "బాగలూరు రోడ్",
+    "Mookandapalli": "మూకండపల్లి",
+    "Mathigiri": "మత్తిగిరి",
+    "MG Road / Railway Station": "ఎం.జి రోడ్ / రైల్వే స్టేషన్",
+    "Denkanikottai Road": "దేనకనికోటై రోడ్",
+    "Rayakottai Road": "రాయకోటై రోడ్",
+  },
+};
+
+function translateCategory(name: string, lang: Language): string {
+  if (lang === "en") return name;
+  return CATEGORY_LOCALIZED[lang]?.[name] || name;
+}
+
+function translateCategoryDesc(name: string, lang: Language, fallback: string): string {
+  if (lang === "en") return fallback;
+  return CATEGORY_DESC_LOCALIZED[lang]?.[name] || fallback;
+}
+
+function translateNeighborhood(name: string, lang: Language): string {
+  if (lang === "en") return name;
+  return NEIGHBORHOOD_LOCALIZED[lang]?.[name] || name;
+}
 
 const HOSUR_NEIGHBORHOODS = [
   "All Hosur",
@@ -10764,11 +11316,11 @@ export default function Home() {
           <span>bizearch<span className="brand-period">.</span></span>
         </a>
         <button className="mobile-menu-toggle" type="button" aria-label={mobileMenuOpen ? "Close menu" : "Open menu"} aria-expanded={mobileMenuOpen} onClick={() => setMobileMenuOpen((open) => !open)}>{mobileMenuOpen ? "×" : "☰"}</button>
-        <div className="workspace-label">{role === "Discover" ? "WORKSPACE" : `${role === "Account" ? "CUSTOMER" : role.toUpperCase()} WORKSPACE`}</div>
+        <div className="workspace-label">{role === "Discover" ? t.workspaceLabel : `${role === "Account" ? "CUSTOMER" : role.toUpperCase()} ${t.workspaceLabel}`}</div>
         <nav className="main-nav" aria-label="Main navigation">
           {workspaceLinks.map(([item, icon]) => (
             <button key={item} className={`nav-item ${role === item ? "active" : ""}`} onClick={() => { openPortal(item); setMobileMenuOpen(false); }}>
-              <Icon>{icon}</Icon><span>{item === "Discover" ? "Discover" : item === "Account" ? "My activity" : `${item} portal`}</span>
+              <Icon>{icon}</Icon><span>{item === "Discover" ? t.discover : item === "Account" ? t.myActivity : item === "Business" ? t.businessPortal : item === "Agent" ? t.agentPortal : t.companyPortal}</span>
               {item === role && <span className="nav-active-dot" />}
             </button>
           ))}
@@ -10777,7 +11329,7 @@ export default function Home() {
         <div className="sidebar-scroll-middle">
           {role === "Discover" && <>
             <div className="sidebar-divider" />
-            <div className="workspace-label">BROWSE BY</div>
+            <div className="workspace-label">{t.browseBy}</div>
             <nav className="category-nav" aria-label="Browse categories">
               <button
                 className={`category-link view-all ${browseMode === "atoz" ? "selected" : ""}`}
@@ -10790,7 +11342,7 @@ export default function Home() {
                   }, 100);
                 }}
               >
-                <Icon><span className="atoz-sidebar-pill">A–Z</span></Icon><span>All Products & Services</span>
+                <Icon><span className="atoz-sidebar-pill">A–Z</span></Icon><span>{t.allProductsAndServices}</span>
               </button>
               {categories.slice(1).map((item) => (
                 <button
@@ -10804,10 +11356,10 @@ export default function Home() {
                     setRole("Discover");
                     setMobileMenuOpen(false);
                   }}
-                  title={item.name}
+                  title={translateCategory(item.name, lang)}
                 >
                   <Icon><CategoryIcon name={item.name} sector={item.name} /></Icon>
-                  <span>{item.name}</span>
+                  <span>{translateCategory(item.name, lang)}</span>
                 </button>
               ))}
               <button
@@ -10821,15 +11373,15 @@ export default function Home() {
                   setMobileMenuOpen(false);
                 }}
               >
-                <Icon>&#43;</Icon><span>All categories</span>
+                <Icon>&#43;</Icon><span>{t.allCategories}</span>
               </button>
             </nav>
 
             <div className="neighbor-card">
               <div className="neighbor-sparkle">&#10038;</div>
-              <strong>Good things are closer.</strong>
-              <p>Every search supports a business in your neighborhood.</p>
-              <button onClick={() => setDialog("business")}>Register your business <span>&#8599;</span></button>
+              <strong>{t.goodThingsCloser}</strong>
+              <p>{t.goodThingsDesc}</p>
+              <button onClick={() => setDialog("business")}>{t.registerBusiness} <span>&#8599;</span></button>
             </div>
           </>}
         </div>
@@ -10837,20 +11389,20 @@ export default function Home() {
         <div className="sidebar-bottom">
             <button className="profile-button" onClick={() => { if (role === "Discover") openPortal("Account"); else { openPortal(role); window.dispatchEvent(new Event("neighborly-open-profile")); } }}>
             <span className="avatar">N</span>
-            <span className="profile-text"><strong>{role === "Discover" ? "Your Bizearch activity" : `${role === "Account" ? "Customer" : role} profile`}</strong><small>{role === "Discover" ? "Saved on this device" : "Profile and account details"}</small></span>
+            <span className="profile-text"><strong>{role === "Discover" ? t.yourBizearchActivity : `${role === "Account" ? "Customer" : role} profile`}</strong><small>{role === "Discover" ? t.savedOnDevice : "Profile and account details"}</small></span>
             <span className="profile-menu">···</span>
           </button>
-          {role !== "Company" && <a className="company-login-link" href="/company-login">Company login</a>}
+          {role !== "Company" && <a className="company-login-link" href="/company-login">{t.companyLogin}</a>}
         </div>
       </aside>
 
       <section className="main-area">
         <header className="topbar">
-          <div className="breadcrumb">Your neighborhood <span>/</span> <strong>{role === "Discover" ? "Discover" : role === "Account" ? "My activity" : `${role} portal`}</strong></div>
-          <div className="topbar-partner" aria-label="Powered by Jishnu Infotech"><span>Powered by</span><img src="/jishnu-infotech-logo.png" alt="Jishnu Infotech" /></div>
-          <div className="topbar-actions">
+          <div className="breadcrumb">{t.yourNeighborhood} <span>/</span> <strong>{role === "Discover" ? t.discover : role === "Account" ? t.myActivity : `${role} portal`}</strong></div>
+          <div className="topbar-partner" aria-label="Powered by Jishnu Infotech"><span>{t.poweredBy}</span><img src="/jishnu-infotech-logo.png" alt="Jishnu Infotech" /></div>
+          <div className="topbar-actions" style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
             <button className="location-chip" onClick={toggleDeviceLocation}>
-              <span className="location-pin">📍</span> {locationEnabled ? "Stop using device location" : "Hosur, Tamil Nadu"} <span className="chevron">⌄</span>
+              <span className="location-pin">📍</span> {locationEnabled ? t.stopLocation : t.hosurLocation} <span className="chevron">⌄</span>
             </button>
             <div className="notification-wrapper" ref={notificationsRef}>
               <button
@@ -10973,14 +11525,19 @@ export default function Home() {
                 </div>
               )}
             </div>
-            <div className="language-selector-pill" role="group" aria-label="Select language" style={{ display: "inline-flex", alignItems: "center", background: "#f0f4f1", borderRadius: "20px", border: "1px solid #d4ded6", padding: "2px 3px" }}>
-              {(["en", "ta", "kn"] as const).map((l) => (
+            <div className="language-selector-pill" role="group" aria-label="Select language" style={{ display: "inline-flex", alignItems: "center", background: "#f0f4f1", borderRadius: "20px", border: "1px solid #d4ded6", padding: "2px 4px", gap: "2px" }}>
+              {(["en", "ta", "kn", "te"] as const).map((l) => (
                 <button
                   key={l}
                   type="button"
                   onClick={() => {
                     setLang(l);
-                    showNotice(l === "ta" ? "மொழி: தமிழ் தேர்ந்தெடுக்கப்பட்டது" : l === "kn" ? "ಭಾಷೆ: ಕನ್ನಡ ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ" : "Language: English selected");
+                    showNotice(
+                      l === "ta" ? "மொழி: தமிழ் தேர்ந்தெடுக்கப்பட்டது" :
+                      l === "kn" ? "ಭಾಷೆ: ಕನ್ನಡ ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ" :
+                      l === "te" ? "భాష: తెలుగు ఎంపిక చేయబడింది" :
+                      "Language: English selected"
+                    );
                   }}
                   style={{
                     background: lang === l ? "#386b4b" : "transparent",
@@ -10994,15 +11551,15 @@ export default function Home() {
                     transition: "all 0.15s ease",
                     whiteSpace: "nowrap",
                   }}
-                  title={l === "en" ? "English" : l === "ta" ? "தமிழ் (Tamil)" : "ಕನ್ನಡ (Kannada)"}
+                  title={l === "en" ? "English" : l === "ta" ? "தமிழ் (Tamil)" : l === "kn" ? "ಕನ್ನಡ (Kannada)" : "తెలుగు (Telugu)"}
                 >
-                  {l === "en" ? "EN" : l === "ta" ? "தமிழ்" : "ಕನ್ನಡ"}
+                  {l === "en" ? "EN" : l === "ta" ? "தமிழ்" : l === "kn" ? "ಕನ್ನಡ" : "తెలుగు"}
                 </button>
               ))}
             </div>
             {authenticatedPortals.length > 0 && (role === "Discover" || authenticatedPortals.includes(role)) ?
-              <button className="sign-in-button" onClick={() => void logOut()}>Sign out</button> :
-              <button className="sign-in-button" onClick={() => openPortal("Account")}>Sign in <span>&rarr;</span></button>}
+              <button className="sign-in-button" onClick={() => void logOut()}>{t.signOut}</button> :
+              <button className="sign-in-button" onClick={() => openPortal("Account")}>{t.signIn} <span>&rarr;</span></button>}
           </div>
         </header>
 
@@ -11015,10 +11572,10 @@ export default function Home() {
         </div>}
 
         <aside className="ad-rail" aria-label="Advertisements">
-          <button className="sos-fab sos-ad-button" aria-label="Emergency help (SOS)" onClick={() => setDialog("sos")}><span>✚</span> SOS <small>Emergency help</small></button>
+          <button className="sos-fab sos-ad-button" aria-label="Emergency help (SOS)" onClick={() => setDialog("sos")}><span>✚</span> SOS <small>{t.emergencyHelp}</small></button>
           <section className="image-ad-panel" aria-label="Rotating image advertisement">
             <div className={`image-ad-creative ${adConfig.imageAds[activeAd].tone}`} style={{ backgroundImage: `linear-gradient(180deg, transparent 18%, rgba(17, 34, 23, .78) 100%), url("${adConfig.imageAds[activeAd].image}")` }}>
-              <span className="ad-label">ADVERTISEMENT</span>
+              <span className="ad-label">{t.advertisement}</span>
               <div className="image-ad-copy"><small>{adConfig.imageAds[activeAd].label}</small><strong>{adConfig.imageAds[activeAd].title}</strong></div>
             </div>
             <div className="ad-dots" aria-label={`Advertisement ${activeAd + 1} of ${adConfig.imageAds.length}`}>
@@ -11026,9 +11583,9 @@ export default function Home() {
             </div>
           </section>
           <section className="video-ad-panel" aria-label="Video advertisement">
-            <div className="video-ad-heading"><span>VIDEO ADVERTISEMENT</span><small>Local spotlight</small></div>
+            <div className="video-ad-heading"><span>{t.videoAd}</span><small>{t.localSpotlight}</small></div>
             <video key={adConfig.videoAd.sourceUrl} className="video-ad-player" controls muted loop autoPlay playsInline poster={adConfig.videoAd.posterUrl || undefined} src={adConfig.videoAd.sourceUrl}>Your browser does not support embedded video.</video>
-            <div className="video-ad-caption"><strong>{adConfig.videoAd.title}</strong><p>{adConfig.videoAd.description}</p><button onClick={() => openPortal("Business")}>{adConfig.videoAd.callToAction} <span>&#8594;</span></button></div>
+            <div className="video-ad-caption"><strong>{adConfig.videoAd.title}</strong><p>{adConfig.videoAd.description}</p><button onClick={() => openPortal("Business")}>{t.promoteYourBusiness} <span>&#8594;</span></button></div>
             {adConfig.audioAd.sourceUrl && <div className="audio-ad-content"><strong>{adConfig.audioAd.title}</strong><p>{adConfig.audioAd.description}</p><audio controls preload="none" src={adConfig.audioAd.sourceUrl}>Your browser does not support embedded audio.</audio></div>}
           </section>
         </aside>
@@ -11036,11 +11593,11 @@ export default function Home() {
         {role === "Discover" && (
           <div className="page-content discover-content">
             <div className="welcome-row">
-              <div className="welcome-copy"><div className="eyebrow"><span /> MADE FOR AROUND HERE</div>
-                <h1>Your neighborhood,<br /><em>in reach.</em></h1>
+              <div className="welcome-copy"><div className="eyebrow"><span /> {t.madeForAroundHere}</div>
+                <h1>{t.heroHeadingMain}<br /><em>{t.heroHeadingSub}</em></h1>
                 <p className="welcome-subtitle">{t.heroDesc}</p>
-                <button className="business-registration-cta" type="button" onClick={() => setDialog("business")}><strong>Register your business</strong><span aria-hidden="true">→</span></button>
-                <p className="business-registration-note">No customer account needed to start. One business profile per business account.</p></div>
+                <button className="business-registration-cta" type="button" onClick={() => setDialog("business")}><strong>{t.registerBusiness}</strong><span aria-hidden="true">→</span></button>
+                <p className="business-registration-note">{t.registerBusinessNote}</p></div>
               <div className="hero-illustration" aria-hidden="true">
                 <div className="sun-disc" /><div className="hero-plant">✿</div>
                 <div className="hero-house"><div className="house-roof" /><div className="house-body"><i /><i /></div><div className="house-door" /></div>
@@ -11050,7 +11607,7 @@ export default function Home() {
 
             <div className="search-panel">
               <div className="search-main" ref={searchContainerRef} style={{ position: "relative" }}>
-                <label htmlFor="what-search">WHAT DO YOU NEED?</label>
+                <label htmlFor="what-search">{t.whatDoYouNeed}</label>
                 <div className="search-input-wrap">
                   <span className="search-symbol">🔍</span>
                   <input
@@ -11321,7 +11878,7 @@ export default function Home() {
               <div className="search-divider" />
               <div className="neighborhood-control" style={{ width: "160px", flexShrink: 0 }}>
                 <label htmlFor="neighborhood-select" style={{ fontSize: "9px", color: "#858f87", letterSpacing: "0.85px", fontWeight: 700, display: "block" }}>
-                  NEAR <strong>LOCALITY</strong>
+                  {t.nearLocality}
                 </label>
                 <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "8px" }}>
                   <span style={{ fontSize: "16px", color: "#62906a" }}>📍</span>
@@ -11347,7 +11904,7 @@ export default function Home() {
                   >
                     {HOSUR_NEIGHBORHOODS.map((nh) => (
                       <option key={nh} value={nh}>
-                        {nh}
+                        {translateNeighborhood(nh, lang)}
                       </option>
                     ))}
                   </select>
@@ -11355,7 +11912,7 @@ export default function Home() {
               </div>
               <div className="search-divider" />
               <div className="radius-control">
-                <label htmlFor="radius-range">WITHIN <strong>{radius} KM</strong></label>
+                <label htmlFor="radius-range">{t.withinKm} <strong>{radius} KM</strong></label>
                 <div className="range-wrap"><input id="radius-range" type="range" min="1" max="25" value={radius} onChange={(event) => setRadius(Number(event.target.value))} /><span>⌖</span></div>
                 <div className="range-captions"><span>1 km</span><span>25 km</span></div>
               </div>
@@ -11369,7 +11926,7 @@ export default function Home() {
                 onClick={() => setBrowseMode("sectors")}
                 aria-selected={browseMode === "sectors"}
               >
-                <span>❖</span> Browse by Sector
+                <span>❖</span> {t.browseBySector}
               </button>
               <button
                 type="button"
@@ -11377,7 +11934,7 @@ export default function Home() {
                 onClick={() => setBrowseMode("atoz")}
                 aria-selected={browseMode === "atoz"}
               >
-                <span>🔤</span> A–Z Directory (All Products & Services) <span className="browse-tab-badge">A–Z</span>
+                <span>🔤</span> {t.atozDirectoryTab} <span className="browse-tab-badge">A–Z</span>
               </button>
             </div>
 
@@ -11459,21 +12016,21 @@ export default function Home() {
               <>
                 <div className="section-heading category-heading">
                   <div>
-                    <div className="eyebrow">{category === "All" ? "A LITTLE BIT OF EVERYTHING" : "BROWSE WITHIN SECTOR"}</div>
-                    <h2>{category === "All" ? "Explore your local scene" : category}</h2>
+                    <div className="eyebrow">{category === "All" ? t.aLittleBitOfEverything : t.browseWithinSector}</div>
+                    <h2>{category === "All" ? t.exploreLocalScene : translateCategory(category, lang)}</h2>
                     {categoryPath.length > 0 && <p className="selected-taxonomy-path">{categoryPath.join(" › ")}</p>}
                   </div>
                   {category === "All" ? (
                     <button className="text-link" onClick={() => setBrowseMode("atoz")}>
-                      A–Z Directory <span>→</span>
+                      {t.atozDirectoryLink}
                     </button>
                   ) : (
                     <div className="taxonomy-navigation">
                       <button type="button" onClick={() => categoryPath.length ? setCategoryPath((current) => current.slice(0, -1)) : setCategory("All")}>
-                        ← Back
+                        ← {t.backBtn}
                       </button>
                       <button type="button" onClick={() => { setCategory("All"); setCategoryPath([]); setQuery(""); }}>
-                        All sectors
+                        {t.allSectors}
                       </button>
                     </div>
                   )}
@@ -11488,7 +12045,7 @@ export default function Home() {
                         className={`subcategory-pill ${categoryPath.length === 0 ? "active" : ""}`}
                         onClick={() => setCategoryPath([])}
                       >
-                        All in {category}
+                        {t.allIn} {translateCategory(category, lang)}
                       </button>
                       {topSubcats.map((subcat) => (
                         <button
@@ -11511,14 +12068,14 @@ export default function Home() {
                       onClick={() => { setCategory(category === item.name ? "All" : item.name); setCategoryPath([]); setQuery(""); }}>
                       <span className="category-art"><CategoryIcon name={item.name} sector={item.name} /></span>
                       <div className="category-card-content">
-                        <strong>{item.name}</strong>
-                        {subcategoriesSummary[item.name] && <span className="category-sub-summary">{subcategoriesSummary[item.name]}</span>}
+                        <strong>{translateCategory(item.name, lang)}</strong>
+                        {subcategoriesSummary[item.name] && <span className="category-sub-summary">{translateCategoryDesc(item.name, lang, subcategoriesSummary[item.name])}</span>}
                       </div>
                       <span className="category-arrow">↗</span>
                     </button>
                   )) : (() => {
                     const options = getTaxonomyOptions(category, categoryPath, categoryConfig);
-                    if (!options.length) return <div className="taxonomy-complete"><strong>{categoryPath[categoryPath.length - 1] || category}</strong><span>{categoryPath.length ? "Showing matching listings for this subcategory." : "No subcategories are listed yet. Showing matching businesses."}</span></div>;
+                    if (!options.length) return <div className="taxonomy-complete"><strong>{categoryPath[categoryPath.length - 1] || translateCategory(category, lang)}</strong><span>{categoryPath.length ? "Showing matching listings for this subcategory." : "No subcategories are listed yet. Showing matching businesses."}</span></div>;
                     return options.map((option, index) => {
                       const logo = brandLogoFor(option.name, categoryConfig.brandLogos);
                       const isBrand = isBrandOption(category, categoryPath, option, categoryConfig.brandLogos);
@@ -11578,9 +12135,9 @@ export default function Home() {
             )}
 
             <section className="image-ad-panel mobile-image-ad" aria-label="Rotating image advertisement">
-              <button className="sos-fab sos-ad-button" aria-label="Emergency help (SOS)" onClick={() => setDialog("sos")}><span>✚</span> SOS <small>Emergency help</small></button>
+              <button className="sos-fab sos-ad-button" aria-label="Emergency help (SOS)" onClick={() => setDialog("sos")}><span>✚</span> SOS <small>{t.emergencyHelp}</small></button>
               <div className={`image-ad-creative ${adConfig.imageAds[activeAd].tone}`} style={{ backgroundImage: `linear-gradient(180deg, transparent 18%, rgba(17, 34, 23, .78) 100%), url("${adConfig.imageAds[activeAd].image}")` }}>
-                <span className="ad-label">ADVERTISEMENT</span>
+                <span className="ad-label">{t.advertisement}</span>
                 <div className="image-ad-copy"><small>{adConfig.imageAds[activeAd].label}</small><strong>{adConfig.imageAds[activeAd].title}</strong></div>
               </div>
               <div className="ad-dots" aria-label={`Advertisement ${activeAd + 1} of ${adConfig.imageAds.length}`}>
@@ -11720,10 +12277,10 @@ export default function Home() {
               <>
                 <div className="section-heading results-heading" id="results">
                   <div>
-                    <div className="eyebrow">LOCAL VERIFIED PROVIDERS</div>
-                    <h2>{query ? `Providers for “${query}”` : category !== "All" ? `${categoryPath.length ? `${categoryPath.join(" › ")} providers` : `${category} providers`}` : "Around your corner"} <span className="result-count">{displayedBusinesses.length}</span></h2>
+                    <div className="eyebrow">{t.localVerifiedProviders}</div>
+                    <h2>{query ? `${t.providersFor} “${query}”` : category !== "All" ? `${categoryPath.length ? `${categoryPath.join(" › ")}` : `${translateCategory(category, lang)}`}` : t.aroundYourCorner} <span className="result-count">{displayedBusinesses.length}</span></h2>
                   </div>
-                  <div className="sort-label"><span className="green-dot" /> Subscribed listings · {locationEnabled ? "device radius" : "demo distances"}</div>
+                  <div className="sort-label"><span className="green-dot" /> {locationEnabled ? t.subscribedListingsGps : t.subscribedListings}</div>
                 </div>
 
                 {/* Instant Quick-Filter Chips */}
@@ -11788,8 +12345,8 @@ export default function Home() {
                           </div>
                           <div className="business-info">
                             <div className="business-meta">
-                              <span>{business.category}</span>
-                              <span className="distance">⌖ {businessDistance(business).toFixed(1)} km{locationEnabled ? "" : " sample"}</span>
+                              <span>{translateCategory(business.category, lang)}</span>
+                              <span className="distance">⌖ {businessDistance(business).toFixed(1)} km{locationEnabled ? "" : ` ${t.sampleDistance}`}</span>
                             </div>
                             <div className="business-title-row" style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "8px" }}>
                               <h3 style={{ margin: "3px 0 0" }}>{highlightMatch(business.name, query)}</h3>
@@ -11811,7 +12368,7 @@ export default function Home() {
                                       flexShrink: 0,
                                     }}
                                   >
-                                    ● {st.isOpen ? "Open" : "Closed"}
+                                    ● {st.isOpen ? t.open : t.closed}
                                   </span>
                                 );
                               })()}
@@ -11835,7 +12392,7 @@ export default function Home() {
                                   color: "#275934",
                                 }}
                               >
-                                <span className="rating">★ <b>{business.rating.toFixed(1)}</b> <small>({business.reviews} reviews)</small></span>
+                                <span className="rating">★ <b>{business.rating.toFixed(1)}</b> <small>({business.reviews} {t.reviewsLabel})</small></span>
                                 <span style={{ fontSize: "9px", color: "#366e47", textDecoration: "underline", marginLeft: "4px" }}>{t.rate}</span>
                               </button>
                               <span className="price">{business.price}</span>
@@ -11893,7 +12450,7 @@ export default function Home() {
                                 }}
                                 title={`Share ${business.name}`}
                               >
-                                ↗ Share
+                                ↗ {t.share}
                               </button>
                               <button
                                 type="button"
@@ -11972,12 +12529,12 @@ export default function Home() {
               </>
             )}
             <section className="video-ad-panel mobile-video-ad" aria-label="Video advertisement">
-              <div className="video-ad-heading"><span>VIDEO ADVERTISEMENT</span><small>Local spotlight</small></div>
+              <div className="video-ad-heading"><span>{t.videoAd}</span><small>{t.localSpotlight}</small></div>
               <video key={adConfig.videoAd.sourceUrl} className="video-ad-player" controls muted loop playsInline poster={adConfig.videoAd.posterUrl || undefined} src={adConfig.videoAd.sourceUrl}>Your browser does not support embedded video.</video>
-              <div className="video-ad-caption"><strong>{adConfig.videoAd.title}</strong><p>{adConfig.videoAd.description}</p><button onClick={() => openPortal("Business")}>{adConfig.videoAd.callToAction} <span>&#8594;</span></button></div>
+              <div className="video-ad-caption"><strong>{adConfig.videoAd.title}</strong><p>{adConfig.videoAd.description}</p><button onClick={() => openPortal("Business")}>{t.promoteYourBusiness} <span>&#8594;</span></button></div>
               {adConfig.audioAd.sourceUrl && <div className="audio-ad-content"><strong>{adConfig.audioAd.title}</strong><p>{adConfig.audioAd.description}</p><audio controls preload="none" src={adConfig.audioAd.sourceUrl}>Your browser does not support embedded audio.</audio></div>}
             </section>
-            <div className="trust-strip"><span className="trust-icon">✳</span><div><strong>Local first. People always.</strong><p>Every recommendation comes from a business that chose to be here.</p></div><span className="trust-arrow">↗</span></div>
+            <div className="trust-strip"><span className="trust-icon">✳</span><div><strong>{t.localFirst}</strong><p>{t.localFirstDesc}</p></div><span className="trust-arrow">↗</span></div>
           </div>
         )}
 
