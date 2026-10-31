@@ -55,6 +55,7 @@ type Product = {
   unit: string;
   image?: string;
   badge?: string;
+  inStock?: boolean;
   catalogueSelections?: CatalogueSelection[];
 };
 type CatalogueActivity = "Sales" | "Service";
@@ -1645,44 +1646,62 @@ const initialBusinesses: Business[] = [
       {
         "id": "maya-meals",
         "name": "Homestyle lunch plate",
-        "description": "Seasonal thali with fresh sides.",
+        "description": "Seasonal thali with fresh sides, hot sambar, rasam, kootu, 2 poriyals, curd & appalam.",
         "price": 180,
-        "unit": "per plate"
+        "unit": "per plate",
+        "image": "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=800&q=80",
+        "badge": "Bestseller",
+        "inStock": true
       },
       {
         "id": "maya-breakfast",
         "name": "Breakfast box",
-        "description": "A rotating local breakfast, made fresh.",
+        "description": "A rotating morning spread: 2 hot idlis, crispy medu vada, mini masala dosa, coconut & tomato chutneys.",
         "price": 120,
-        "unit": "per box"
+        "unit": "per box",
+        "image": "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=800&q=80",
+        "badge": "Popular",
+        "inStock": true
       },
       {
         "id": "dosa-south-indian-meals",
         "name": "Dosa, Idli & South Indian Meals",
-        "description": "Crispy ghee roast dosas, steamed idlis, vada, chutneys and traditional tiffin items.",
+        "description": "Crispy golden ghee roast dosas, steamed idlis, vada, chutneys and traditional tiffin items.",
         "price": 70,
-        "unit": "unit"
+        "unit": "per plate",
+        "image": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?auto=format&fit=crop&w=800&q=80",
+        "badge": "Quick Bite",
+        "inStock": true
       },
       {
         "id": "meal-delivery-tiffin",
         "name": "Meal Delivery & Homestyle Tiffins",
-        "description": "Daily subscription tiffin boxes with balanced roti, dal, sabzi, curd and steamed rice.",
+        "description": "Daily subscription tiffin boxes with balanced roti, dal tadka, seasonal sabzi, curd and steamed rice.",
         "price": 150,
-        "unit": "unit"
+        "unit": "per tiffin",
+        "image": "https://images.unsplash.com/photo-1613292443284-8d10ef9383fe?auto=format&fit=crop&w=800&q=80",
+        "badge": "Daily Tiffin",
+        "inStock": true
       },
       {
         "id": "north-indian-thali",
         "name": "North Indian Meals & Thalis",
-        "description": "Paneer butter masala, dal makhani, butter naan, jeera rice and tandoori rotis.",
+        "description": "Paneer butter masala, slow-cooked dal makhani, butter naan, jeera rice and hot gulab jamun.",
         "price": 199,
-        "unit": "unit"
+        "unit": "per thali",
+        "image": "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=800&q=80",
+        "badge": "Chef Special",
+        "inStock": true
       },
       {
         "id": "restaurant-dine-in",
         "name": "Restaurant Dining & Regional Food",
-        "description": "Family dining tables, regional delicacies, coastal seafood, tandoor specials and chef curations.",
+        "description": "Family dining tables, regional Kongu delicacies, tandoor specials and chef feast platters.",
         "price": 300,
-        "unit": "unit"
+        "unit": "per person",
+        "image": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80",
+        "badge": "Family Feast",
+        "inStock": true
       }
     ],
     "description": "Fresh, homestyle meals made with local ingredients.",
@@ -10860,15 +10879,53 @@ export default function Home() {
   }
 
   function addProduct(businessName: string, product: Omit<Product, "id">) {
-    const newProduct = { ...product, id: `${Date.now()}-${Math.random()}` };
+    const newProduct: Product = {
+      ...product,
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      inStock: product.inStock !== false,
+    };
     setDemoData((current) => ({
       ...current,
-      businesses: current.businesses.map((business, index) =>
+      businesses: current.businesses.map((business) =>
         business.name === businessName ? { ...business, products: [...business.products, newProduct] } : business,
       ),
     }));
     recordEvent("Business catalogue updated");
-    showNotice("Product added to this browser's demo catalogue.");
+    showNotice(`"${product.name}" added to catalogue.`);
+  }
+
+  function updateProduct(businessName: string, productId: string, updated: Partial<Product>) {
+    setDemoData((current) => ({
+      ...current,
+      businesses: current.businesses.map((business) =>
+        business.name === businessName
+          ? {
+              ...business,
+              products: business.products.map((p) =>
+                p.id === productId ? { ...p, ...updated } : p
+              ),
+            }
+          : business
+      ),
+    }));
+    recordEvent("Business catalogue item updated");
+    showNotice("Catalogue item updated.");
+  }
+
+  function deleteProduct(businessName: string, productId: string) {
+    setDemoData((current) => ({
+      ...current,
+      businesses: current.businesses.map((business) =>
+        business.name === businessName
+          ? {
+              ...business,
+              products: business.products.filter((p) => p.id !== productId),
+            }
+          : business
+      ),
+    }));
+    recordEvent("Business catalogue item deleted");
+    showNotice("Catalogue item removed.");
   }
 
   function submitCheckout(businessName: string, plan: string, paymentMethod: string) {
@@ -11308,6 +11365,531 @@ export default function Home() {
         }
         .related-product-enquire-btn:hover {
           background: #234a32 !important;
+        }
+
+        /* Business Portal Catalogue Manager Styles */
+        .catalogue-manager-root {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+        .catalogue-stats-strip {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+          gap: 12px;
+          margin-bottom: 8px;
+        }
+        .catalogue-stat-card {
+          background: #fbfdfb;
+          border: 1px solid #e2ece3;
+          border-radius: 10px;
+          padding: 12px 14px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .catalogue-stat-icon {
+          width: 36px;
+          height: 36px;
+          border-radius: 8px;
+          background: #eef6ef;
+          color: #245834;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 16px;
+          flex-shrink: 0;
+        }
+        .catalogue-stat-info small {
+          display: block;
+          font-size: 9.5px;
+          font-weight: 700;
+          color: #637768;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .catalogue-stat-info strong {
+          font-size: 16px;
+          font-weight: 800;
+          color: #1a3824;
+        }
+        .catalogue-toolbar {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          flex-wrap: wrap;
+          padding: 12px 16px;
+          background: #f6f9f6;
+          border: 1px solid #deebdf;
+          border-radius: 10px;
+        }
+        .catalogue-search-wrap {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: #ffffff;
+          border: 1px solid #cedece;
+          border-radius: 20px;
+          padding: 6px 14px;
+          flex: 1;
+          min-width: 220px;
+          max-width: 360px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+        .catalogue-search-wrap input {
+          border: 0;
+          outline: 0;
+          background: transparent;
+          font-family: inherit;
+          font-size: 12px;
+          color: #1f3927;
+          width: 100%;
+        }
+        .catalogue-filter-chips {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          flex-wrap: wrap;
+        }
+        .catalogue-filter-chip {
+          border: 1px solid #d0e0d2;
+          background: #ffffff;
+          color: #274b32;
+          font-size: 10.5px;
+          font-weight: 700;
+          padding: 5px 12px;
+          border-radius: 16px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .catalogue-filter-chip.active {
+          background: #285536;
+          color: #ffffff;
+          border-color: #285536;
+        }
+        .catalogue-view-toggles {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          background: #e9f0ea;
+          padding: 3px;
+          border-radius: 8px;
+        }
+        .catalogue-view-btn {
+          border: 0;
+          background: transparent;
+          color: #435e4b;
+          font-size: 12px;
+          padding: 4px 8px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-weight: 700;
+        }
+        .catalogue-view-btn.active {
+          background: #ffffff;
+          color: #1e4529;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .catalogue-cards-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          gap: 20px;
+          margin-top: 6px;
+        }
+        .catalogue-product-card {
+          background: #ffffff;
+          border: 1px solid #e1eee2;
+          border-radius: 12px;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          box-shadow: 0 2px 7px rgba(30,50,35,0.04);
+          transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+          position: relative;
+        }
+        .catalogue-product-card:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 8px 22px rgba(30,60,40,0.09);
+          border-color: #b3d1b8;
+        }
+        .catalogue-card-img-wrap {
+          position: relative;
+          width: 100%;
+          height: 180px;
+          background: #f0f5f1;
+          overflow: hidden;
+        }
+        .catalogue-card-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+          transition: transform 0.3s ease;
+        }
+        .catalogue-product-card:hover .catalogue-card-img {
+          transform: scale(1.04);
+        }
+        .catalogue-card-badge-pill {
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          background: rgba(26, 60, 36, 0.92);
+          color: #ffffff;
+          font-size: 9px;
+          font-weight: 800;
+          padding: 3px 8px;
+          border-radius: 4px;
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
+          backdrop-filter: blur(4px);
+          box-shadow: 0 2px 5px rgba(0,0,0,0.18);
+        }
+        .catalogue-stock-toggle-btn {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          background: #ffffff;
+          border: 1px solid #d0e0d2;
+          padding: 3px 9px;
+          border-radius: 14px;
+          font-size: 9.5px;
+          font-weight: 800;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+          transition: all 0.15s ease;
+        }
+        .catalogue-stock-toggle-btn.in-stock {
+          color: #17652e;
+          border-color: #9bd2a7;
+          background: #f3fcf4;
+        }
+        .catalogue-stock-toggle-btn.out-of-stock {
+          color: #a82a2a;
+          border-color: #f1b3b3;
+          background: #fdf2f2;
+        }
+        .catalogue-change-img-overlay {
+          position: absolute;
+          bottom: 8px;
+          right: 8px;
+          background: rgba(18, 38, 25, 0.85);
+          color: #ffffff;
+          font-size: 9.5px;
+          font-weight: 700;
+          padding: 4px 9px;
+          border-radius: 6px;
+          border: 0;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          backdrop-filter: blur(4px);
+          transition: background 0.15s ease, transform 0.15s ease;
+        }
+        .catalogue-change-img-overlay:hover {
+          background: #1b4d29;
+          transform: scale(1.03);
+        }
+        .catalogue-card-body {
+          padding: 14px 16px 16px;
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+        }
+        .catalogue-card-cat-tag {
+          font-size: 9px;
+          font-weight: 800;
+          color: #4d7a55;
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
+          margin-bottom: 5px;
+        }
+        .catalogue-card-name {
+          font-size: 15px;
+          font-weight: 700;
+          color: #193421;
+          margin: 0 0 6px;
+          line-height: 1.35;
+        }
+        .catalogue-card-description {
+          font-size: 11.5px;
+          color: #596d5e;
+          line-height: 1.45;
+          margin: 0 0 12px;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          flex: 1;
+        }
+        .catalogue-card-price-row {
+          display: flex;
+          align-items: baseline;
+          justify-content: space-between;
+          padding: 8px 0;
+          border-top: 1px solid #eff5f0;
+          margin-bottom: 12px;
+        }
+        .catalogue-price-text {
+          font-size: 18px;
+          font-weight: 800;
+          color: #1c6b35;
+        }
+        .catalogue-price-unit {
+          font-size: 10.5px;
+          font-weight: 600;
+          color: #697c6d;
+          margin-left: 3px;
+        }
+        .catalogue-actions-row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .catalogue-edit-action-btn {
+          flex: 1;
+          background: #f0f7f1;
+          color: #215931;
+          border: 1px solid #c8dec9;
+          border-radius: 6px;
+          padding: 7px 12px;
+          font-size: 11px;
+          font-weight: 700;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 5px;
+          transition: all 0.15s ease;
+        }
+        .catalogue-edit-action-btn:hover {
+          background: #245532;
+          color: #ffffff;
+          border-color: #245532;
+        }
+        .catalogue-delete-action-btn {
+          background: #fdf5f5;
+          color: #a83333;
+          border: 1px solid #f1c7c7;
+          border-radius: 6px;
+          padding: 7px 11px;
+          font-size: 11px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .catalogue-delete-action-btn:hover {
+          background: #992323;
+          color: #ffffff;
+          border-color: #992323;
+        }
+        /* List View */
+        .catalogue-list-table {
+          width: 100%;
+          border-collapse: collapse;
+          background: #ffffff;
+          border: 1px solid #e1eee2;
+          border-radius: 10px;
+          overflow: hidden;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+        }
+        .catalogue-list-table th {
+          text-align: left;
+          padding: 10px 14px;
+          background: #f4f8f4;
+          font-size: 9.5px;
+          font-weight: 800;
+          letter-spacing: 0.6px;
+          color: #4a6650;
+          text-transform: uppercase;
+          border-bottom: 1px solid #e0ece1;
+        }
+        .catalogue-list-table td {
+          padding: 12px 14px;
+          border-bottom: 1px solid #edf4ee;
+          font-size: 12px;
+          color: #243e2c;
+          vertical-align: middle;
+        }
+        .catalogue-list-table tr:hover td {
+          background: #f9fbf9;
+        }
+        .catalogue-list-thumb {
+          width: 44px;
+          height: 44px;
+          border-radius: 6px;
+          object-fit: cover;
+          display: block;
+        }
+        /* Modal Backdrop & Container */
+        .catalogue-modal-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(12, 28, 17, 0.58);
+          backdrop-filter: blur(4px);
+          z-index: 10000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 16px;
+        }
+        .catalogue-modal-card {
+          background: #ffffff;
+          border-radius: 14px;
+          max-width: 580px;
+          width: 100%;
+          max-height: 92vh;
+          overflow-y: auto;
+          box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+          border: 1px solid #cfe0d1;
+          display: flex;
+          flex-direction: column;
+        }
+        .catalogue-modal-header {
+          padding: 16px 22px;
+          border-bottom: 1px solid #e5eee6;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: #fafcfa;
+          border-radius: 14px 14px 0 0;
+        }
+        .catalogue-modal-header h3 {
+          margin: 0;
+          font-size: 16px;
+          font-weight: 800;
+          color: #1a3f25;
+          display: flex;
+          align-items: center;
+          gap: 7px;
+        }
+        .catalogue-modal-close-btn {
+          background: transparent;
+          border: 0;
+          font-size: 20px;
+          color: #637a69;
+          cursor: pointer;
+          padding: 4px 8px;
+          border-radius: 6px;
+        }
+        .catalogue-modal-close-btn:hover {
+          background: #eef5ef;
+          color: #1a3f25;
+        }
+        .catalogue-modal-form {
+          padding: 20px 22px;
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+        .catalogue-form-field {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+        }
+        .catalogue-form-field label {
+          font-size: 11px;
+          font-weight: 700;
+          color: #274730;
+        }
+        .catalogue-form-field input,
+        .catalogue-form-field select,
+        .catalogue-form-field textarea {
+          border: 1px solid #c7d9c8;
+          border-radius: 7px;
+          padding: 8px 11px;
+          font-family: inherit;
+          font-size: 12px;
+          color: #1e3624;
+          outline: none;
+          background: #ffffff;
+        }
+        .catalogue-form-field input:focus,
+        .catalogue-form-field select:focus,
+        .catalogue-form-field textarea:focus {
+          border-color: #285536;
+          box-shadow: 0 0 0 2px rgba(40,85,54,0.12);
+        }
+        .catalogue-form-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+        }
+        .catalogue-image-preview-box {
+          position: relative;
+          width: 100%;
+          height: 140px;
+          border-radius: 8px;
+          border: 1px dashed #b9d1bb;
+          background: #f7faf7;
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-top: 6px;
+        }
+        .catalogue-image-preview-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .catalogue-preset-chips-wrap {
+          display: flex;
+          gap: 6px;
+          flex-wrap: wrap;
+          margin-top: 6px;
+        }
+        .catalogue-preset-chip {
+          border: 1px solid #d0e0d2;
+          background: #f7faf7;
+          color: #264a30;
+          font-size: 10px;
+          font-weight: 700;
+          padding: 4px 9px;
+          border-radius: 12px;
+          cursor: pointer;
+        }
+        .catalogue-preset-chip:hover {
+          background: #e6f2e7;
+          border-color: #285536;
+        }
+        .catalogue-modal-footer {
+          padding: 14px 22px 18px;
+          border-top: 1px solid #e7efe8;
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 10px;
+          background: #fafcfa;
+          border-radius: 0 0 14px 14px;
+        }
+        .catalogue-cancel-btn {
+          border: 1px solid #d0dfd2;
+          background: #ffffff;
+          color: #4b6250;
+          padding: 8px 14px;
+          border-radius: 6px;
+          font-size: 11.5px;
+          font-weight: 700;
+          cursor: pointer;
+        }
+        .catalogue-submit-btn {
+          border: 0;
+          background: #245532;
+          color: #ffffff;
+          padding: 8px 18px;
+          border-radius: 6px;
+          font-size: 11.5px;
+          font-weight: 700;
+          cursor: pointer;
+          box-shadow: 0 2px 6px rgba(36,85,50,0.2);
+        }
+        .catalogue-submit-btn:hover {
+          background: #173b22;
         }
       `}</style>
       <aside className={`sidebar ${mobileMenuOpen ? "mobile-menu-open" : ""}`}>
@@ -12539,7 +13121,21 @@ export default function Home() {
         )}
 
         {role === "Account" && <CustomerPortal data={demoData} onRemoveFavorite={toggleFavorite} onSearch={(term) => { setQuery(term); setCategory("All"); setCategoryPath([]); setRole("Discover"); }} onFindBusiness={(name) => { const business = businesses.find((item) => item.name === name); if (business) setSelectedBusiness(business); }} onOpenAccount={() => setDialog("login")} showNotice={showNotice} />}
-        {role === "Business" && <BusinessPortal businesses={businessAccountBusinesses} categoryConfig={categoryConfig} enquiries={demoData.enquiries} checkouts={demoData.checkouts} openBusinessProfile={() => window.dispatchEvent(new Event("neighborly-open-business-profile"))} openPlans={() => setDialog("plans")} verifyLocation={verifyBusinessLocation} onAddProduct={addProduct} showNotice={showNotice} />}
+        {role === "Business" && (
+          <BusinessPortal
+            businesses={businessAccountBusinesses}
+            categoryConfig={categoryConfig}
+            enquiries={demoData.enquiries}
+            checkouts={demoData.checkouts}
+            openBusinessProfile={() => window.dispatchEvent(new Event("neighborly-open-business-profile"))}
+            openPlans={() => setDialog("plans")}
+            verifyLocation={verifyBusinessLocation}
+            onAddProduct={addProduct}
+            onUpdateProduct={updateProduct}
+            onDeleteProduct={deleteProduct}
+            showNotice={showNotice}
+          />
+        )}
         {role === "Agent" && <AgentPortal showNotice={showNotice} />}
         {role === "Company" && <CompanyPortal accessLevel={companyAccessLevel} identity={sessionIdentity} businesses={businesses} enquiries={demoData.enquiries} events={demoData.events} checkouts={demoData.checkouts} locationEnabled={locationEnabled} showNotice={showNotice} />}
       </section>
@@ -13607,6 +14203,8 @@ function BusinessPortal({
   openPlans,
   verifyLocation,
   onAddProduct,
+  onUpdateProduct,
+  onDeleteProduct,
   showNotice,
 }: {
   businesses: Business[];
@@ -13617,6 +14215,8 @@ function BusinessPortal({
   openPlans: () => void;
   verifyLocation: () => void;
   onAddProduct: (businessName: string, product: Omit<Product, "id">) => void;
+  onUpdateProduct?: (businessName: string, productId: string, updated: Partial<Product>) => void;
+  onDeleteProduct?: (businessName: string, productId: string) => void;
   showNotice: (message: string) => void;
 }) {
   const [tab, setTab] = useState("Overview");
@@ -13639,7 +14239,15 @@ function BusinessPortal({
       <div className="form-note"><strong>Demo dashboard</strong><span>Views, enquiries and subscription status are sample data until your business is connected to a production backend.</span></div>
     </>}
     {tab === "My business" && <section className="panel tab-panel"><div className="panel-heading"><div><div className="eyebrow">BUSINESS PROFILE</div><h2>Your business</h2></div></div>{businesses.length ? businesses.map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category} · {business.distance} km sample distance</small></span><span className={`status-pill ${business.subscribed ? "verified" : "pending"}`}>● {business.subscribed ? "Subscribed" : "Needs plan"}</span></div>) : <EmptyState title="No business profile yet" text="Complete your business registration to set up your profile." />}</section>}
-    {tab === "Products & services" && <ProductManager businesses={businesses} categoryConfig={categoryConfig} onAddProduct={onAddProduct} />}
+    {tab === "Products & services" && (
+      <ProductManager
+        businesses={businesses}
+        categoryConfig={categoryConfig}
+        onAddProduct={onAddProduct}
+        onUpdateProduct={onUpdateProduct}
+        onDeleteProduct={onDeleteProduct}
+      />
+    )}
     {tab === "Enquiries" && <section className="panel tab-panel"><div className="eyebrow">CUSTOMER ENQUIRIES</div><h2>Requests for your business</h2><p>These are local demo enquiries and have not been delivered to customers or businesses.</p>{accountEnquiries.length ? accountEnquiries.map((enquiry) => <EnquiryRow enquiry={enquiry} key={enquiry.id} />) : <EmptyState title="No enquiries yet" text="Customer requests for your business will appear here." />}</section>}
     {tab === "Plans & billing" && <><PlansSection openPlans={openPlans} />{accountCheckouts.length > 0 && <section className="panel tab-panel"><div className="eyebrow">CHECKOUT PREVIEWS</div><h2>Subscription activity</h2>{accountCheckouts.map((item, index) => <div className="listing-row" key={`${item.createdAt}-${index}`}><span className="listing-icon lavender">₹</span><span className="listing-name"><strong>{item.businessName} · {item.plan}</strong><small>{item.paymentMethod} · {new Date(item.createdAt).toLocaleString()}</small></span><span className="status-pill pending">{item.status}</span></div>)}</section>}</>}
     {tab === "Verification" && <section className="panel tab-panel"><div className="eyebrow">BUILD TRUST LOCALLY</div><h2>Verify your business location</h2><p>Share your location only when you are ready. Bizearch uses the location to check your business address; production verification requires a secure server-side workflow.</p><button className="primary-button" onClick={verifyLocation}>⌖ Verify with this device</button></section>}
@@ -13727,40 +14335,1062 @@ function ProfilePanel({ role, label, identity = "" }: { role: "Account" | "Busin
   return <section className="panel tab-panel"><div className="eyebrow">{label.toUpperCase()} PROFILE</div><h2>Your details and emergency contacts</h2><p>Profile details and emergency contacts are saved in this browser. When you send an SOS, its contact and location details are recorded server-side for Super Admin review.</p><form className="stacked-form" onSubmit={save}><label>Full name<input value={profile.fullName} onChange={(event) => update("fullName", event.target.value)} maxLength={100} required /></label><label>Mobile number<input type="tel" value={profile.phone} onChange={(event) => update("phone", event.target.value)} minLength={8} maxLength={20} required /></label><label>Email address<input type="email" value={profile.email} onChange={(event) => update("email", event.target.value)} maxLength={254} /></label><label>{role === "Business" ? "Business address" : "Address"}<input value={profile.address} onChange={(event) => update("address", event.target.value)} maxLength={300} /></label><div className="eyebrow">SOS CONTACTS</div><label>Emergency contact 1<input type="tel" value={profile.emergencyPhones[0]} onChange={(event) => update("emergencyPhones", [event.target.value, profile.emergencyPhones[1]])} minLength={8} maxLength={20} required /></label><label>Emergency contact 2<input type="tel" value={profile.emergencyPhones[1]} onChange={(event) => update("emergencyPhones", [profile.emergencyPhones[0], event.target.value])} minLength={8} maxLength={20} required /></label>{profileError && <p className="form-error" role="alert">{profileError}</p>}<div className="form-button-row"><button className="primary-button" type="submit">Save profile</button>{saved && <span role="status">Profile saved</span>}</div></form><p className="fine-print">Calls and messages open your device apps for confirmation. This demo never automatically calls or messages contacts.</p></section>;
 }
 
+const CATALOGUE_IMAGE_PRESETS = [
+  { label: "Homestyle Thali", url: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=800&q=80" },
+  { label: "Dosa & Tiffin", url: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?auto=format&fit=crop&w=800&q=80" },
+  { label: "Breakfast Box", url: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=800&q=80" },
+  { label: "Tiffin Box", url: "https://images.unsplash.com/photo-1613292443284-8d10ef9383fe?auto=format&fit=crop&w=800&q=80" },
+  { label: "North Indian", url: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=800&q=80" },
+  { label: "Dine In Feast", url: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80" },
+  { label: "Biryani Special", url: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=800&q=80" },
+  { label: "Coffee & Tea", url: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80" },
+  { label: "Bakery & Sweets", url: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80" },
+  { label: "Workshop / Service", url: "https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80" },
+];
+
 function ProductManager({
   businesses,
   categoryConfig,
   onAddProduct,
+  onUpdateProduct,
+  onDeleteProduct,
 }: {
   businesses: Business[];
   categoryConfig: CategoryConfig;
   onAddProduct: (businessName: string, product: Omit<Product, "id">) => void;
+  onUpdateProduct?: (businessName: string, productId: string, updated: Partial<Product>) => void;
+  onDeleteProduct?: (businessName: string, productId: string) => void;
 }) {
   const [selectedBusiness, setSelectedBusiness] = useState(businesses[0]?.name || "");
-  const [showForm, setShowForm] = useState(false);
-  const [error, setError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [stockFilter, setStockFilter] = useState<"all" | "inStock" | "outOfStock">("all");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [changingImageProduct, setChangingImageProduct] = useState<Product | null>(null);
+
+  // Add Item State
+  const [addName, setAddName] = useState("");
+  const [addDescription, setAddDescription] = useState("");
+  const [addPrice, setAddPrice] = useState("");
+  const [addUnit, setAddUnit] = useState("per plate");
+  const [addImage, setAddImage] = useState("");
+  const [addBadge, setAddBadge] = useState("");
+  const [addInStock, setAddInStock] = useState(true);
   const [selectedActivities, setSelectedActivities] = useState<CatalogueActivity[]>([]);
   const [catalogueSelections, setCatalogueSelections] = useState<CatalogueSelection[]>([]);
-  const selectedBusinessProfile = businesses.find((business) => business.name === selectedBusiness);
-  const businessCategories = new Set([...(selectedBusinessProfile?.categories || []), selectedBusinessProfile?.category].filter((value): value is string => Boolean(value)).map((value) => value.toLowerCase()));
-  const availableSectors = categoryConfig.sectors.filter((sector) => businessCategories.has(sector.name.toLowerCase()));
+  const [addError, setAddError] = useState("");
+
+  // Edit Item State
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editPrice, setEditPrice] = useState("");
+  const [editUnit, setEditUnit] = useState("per plate");
+  const [editImage, setEditImage] = useState("");
+  const [editBadge, setEditBadge] = useState("");
+  const [editInStock, setEditInStock] = useState(true);
+  const [editError, setEditError] = useState("");
+
+  // Quick Change Image State
+  const [quickImageUrl, setQuickImageUrl] = useState("");
+
+  const selectedBusinessProfile = businesses.find((b) => b.name === selectedBusiness) || businesses[0];
+  const allProducts = selectedBusinessProfile?.products || [];
+
+  const businessCategories = new Set(
+    [...(selectedBusinessProfile?.categories || []), selectedBusinessProfile?.category]
+      .filter((v): v is string => Boolean(v))
+      .map((v) => v.toLowerCase())
+  );
+  const availableSectors = categoryConfig.sectors.filter((sector) =>
+    businessCategories.has(sector.name.toLowerCase())
+  );
+
   function toggleActivity(activity: CatalogueActivity) {
-    setSelectedActivities((current) => current.includes(activity) ? current.filter((item) => item !== activity) : [...current, activity]);
+    setSelectedActivities((current) =>
+      current.includes(activity) ? current.filter((item) => item !== activity) : [...current, activity]
+    );
     setCatalogueSelections((current) => current.filter((selection) => selection.activity !== activity));
   }
+
   function toggleCataloguePath(activity: CatalogueActivity, sector: string, path: string[], checked: boolean) {
     setCatalogueSelections((current) => updateCatalogueSelections(current, activity, sector, path, checked));
   }
-  return <section className="panel tab-panel"><div className="panel-heading"><div><div className="eyebrow">BUSINESS CATALOGUE</div><h2>Products & services</h2></div><button className="primary-button" onClick={() => setShowForm(!showForm)}>{showForm ? "Cancel" : "＋ Add item"}</button></div>
-    {showForm && <form className="product-form" onSubmit={(event) => { event.preventDefault(); const form = new FormData(event.currentTarget); const name = String(form.get("productName") || "").trim(); const description = String(form.get("productDescription") || "").trim(); const price = Number(form.get("productPrice")); if (!name || !description || !Number.isFinite(price) || price < 0 || !selectedBusiness) { setError("Enter a name, description, valid price and business."); return; } if (!selectedActivities.length || !catalogueSelections.length) { setError("Select Sales or Service and at least one category or subcategory."); return; } onAddProduct(selectedBusiness, { name, description, price, unit: String(form.get("productUnit") || "from"), catalogueSelections }); event.currentTarget.reset(); setError(""); setSelectedActivities([]); setCatalogueSelections([]); setShowForm(false); }}>
-      <label>Business<select value={selectedBusiness} onChange={(event) => { setSelectedBusiness(event.target.value); setSelectedActivities([]); setCatalogueSelections([]); setError(""); }}>{businesses.map((business, index) => <option key={`${business.name}-${index}`}>{business.name}</option>)}</select></label><label>Product or service<input name="productName" placeholder="e.g. Same-day phone repair" required /></label>
-      <fieldset className="catalogue-selection"><legend>Choose what you offer</legend><div className="catalogue-activity-options">{(["Sales", "Service"] as const).map((activity) => <label key={activity}><input type="checkbox" checked={selectedActivities.includes(activity)} onChange={() => toggleActivity(activity)} />{activity}</label>)}</div>
-        {selectedActivities.map((activity) => <div className="catalogue-activity-group" key={activity}><strong>{activity} categories</strong>{availableSectors.length ? <div className="catalogue-sector-list">{availableSectors.map((sector) => <fieldset className="catalogue-sector" key={`${activity}-${sector.name}`}><legend>{sector.name}</legend><CatalogueTaxonomyOptions activity={activity} sector={sector.name} paths={getSectorActivityPaths(sector, activity)} selections={catalogueSelections} brandLogos={categoryConfig.brandLogos} onToggle={toggleCataloguePath} /></fieldset>)}</div> : <small>No categories are configured for this business.</small>}</div>)}
-      </fieldset>
-      <label>Description<input name="productDescription" placeholder="What is included?" required /></label><label>Price (₹)<input name="productPrice" type="number" min="0" step="1" placeholder="499" required /></label><label>Price unit<input name="productUnit" placeholder="from / per visit / per item" defaultValue="from" required /></label><button className="primary-button" type="submit">Add to catalogue</button>{error && <span className="form-error">{error}</span>}
-    </form>}
-    {businesses.map((business, index) => <div className="catalog-business" key={`${business.name}-${index}`}><strong>{business.name}</strong>{business.products.length ? business.products.map((product) => <div className="catalog-row" key={product.id}><span>{product.name}{product.catalogueSelections?.length ? <small className="catalogue-item-categories">{product.catalogueSelections.map((selection) => `${selection.activity}: ${selection.sector ? `${selection.sector} › ` : ""}${selection.path.join(" › ")}`).join(" · ")}</small> : null}</span><small>{product.price ? `₹${product.price.toLocaleString("en-IN")} ${product.unit}` : product.unit}</small></div>) : <small className="catalog-empty">No catalogue items added yet.</small>}</div>)}
-  </section>;
+
+  function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>, setter: (url: string) => void) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image is larger than 5MB. Please choose a smaller photo.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result;
+      if (typeof result === "string") {
+        setter(result);
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function submitAddProduct(event: React.FormEvent) {
+    event.preventDefault();
+    if (!addName.trim() || !addDescription.trim() || !selectedBusinessProfile) {
+      setAddError("Enter a product/service name and description.");
+      return;
+    }
+    const priceNum = Number(addPrice);
+    if (!Number.isFinite(priceNum) || priceNum < 0) {
+      setAddError("Enter a valid price (0 or higher).");
+      return;
+    }
+
+    onAddProduct(selectedBusinessProfile.name, {
+      name: addName.trim(),
+      description: addDescription.trim(),
+      price: priceNum,
+      unit: addUnit.trim() || "unit",
+      image: addImage.trim() || undefined,
+      badge: addBadge.trim() || undefined,
+      inStock: addInStock,
+      catalogueSelections: catalogueSelections.length ? catalogueSelections : undefined,
+    });
+
+    // Reset Form
+    setAddName("");
+    setAddDescription("");
+    setAddPrice("");
+    setAddUnit("per plate");
+    setAddImage("");
+    setAddBadge("");
+    setAddInStock(true);
+    setAddError("");
+    setSelectedActivities([]);
+    setCatalogueSelections([]);
+    setShowAddModal(false);
+  }
+
+  function startEditing(product: Product) {
+    setEditingProduct(product);
+    setEditName(product.name);
+    setEditDescription(product.description);
+    setEditPrice(String(product.price));
+    setEditUnit(product.unit || "unit");
+    setEditImage(product.image || "");
+    setEditBadge(product.badge || "");
+    setEditInStock(product.inStock !== false);
+    setEditError("");
+  }
+
+  function submitEditProduct(event: React.FormEvent) {
+    event.preventDefault();
+    if (!editingProduct || !selectedBusinessProfile) return;
+    if (!editName.trim() || !editDescription.trim()) {
+      setEditError("Enter a product/service name and description.");
+      return;
+    }
+    const priceNum = Number(editPrice);
+    if (!Number.isFinite(priceNum) || priceNum < 0) {
+      setEditError("Enter a valid price (0 or higher).");
+      return;
+    }
+
+    onUpdateProduct?.(selectedBusinessProfile.name, editingProduct.id, {
+      name: editName.trim(),
+      description: editDescription.trim(),
+      price: priceNum,
+      unit: editUnit.trim() || "unit",
+      image: editImage.trim() || undefined,
+      badge: editBadge.trim() || undefined,
+      inStock: editInStock,
+    });
+
+    setEditingProduct(null);
+  }
+
+  function startQuickChangeImage(product: Product) {
+    setChangingImageProduct(product);
+    setQuickImageUrl(product.image || productImageFor(product, selectedBusinessProfile));
+  }
+
+  function submitQuickImage() {
+    if (!changingImageProduct || !selectedBusinessProfile) return;
+    onUpdateProduct?.(selectedBusinessProfile.name, changingImageProduct.id, {
+      image: quickImageUrl.trim() || undefined,
+    });
+    setChangingImageProduct(null);
+  }
+
+  function toggleStock(product: Product) {
+    if (!selectedBusinessProfile) return;
+    const nextStatus = product.inStock === false ? true : false;
+    onUpdateProduct?.(selectedBusinessProfile.name, product.id, {
+      inStock: nextStatus,
+    });
+  }
+
+  function handleDelete(product: Product) {
+    if (!selectedBusinessProfile) return;
+    if (window.confirm(`Are you sure you want to remove "${product.name}" from your catalogue?`)) {
+      onDeleteProduct?.(selectedBusinessProfile.name, product.id);
+    }
+  }
+
+  const filteredProducts = allProducts.filter((product) => {
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const match =
+        product.name.toLowerCase().includes(q) ||
+        product.description.toLowerCase().includes(q) ||
+        (product.badge && product.badge.toLowerCase().includes(q));
+      if (!match) return false;
+    }
+    if (stockFilter === "inStock") return product.inStock !== false;
+    if (stockFilter === "outOfStock") return product.inStock === false;
+    return true;
+  });
+
+  const inStockCount = allProducts.filter((p) => p.inStock !== false).length;
+  const outOfStockCount = allProducts.length - inStockCount;
+  const avgPrice =
+    allProducts.length > 0
+      ? Math.round(allProducts.reduce((sum, p) => sum + (p.price || 0), 0) / allProducts.length)
+      : 0;
+
+  return (
+    <section className="panel tab-panel catalogue-manager-root">
+      <div className="panel-heading" style={{ flexWrap: "wrap", gap: "12px", alignItems: "center" }}>
+        <div>
+          <div className="eyebrow">BUSINESS CATALOGUE</div>
+          <h2 style={{ margin: "2px 0 0" }}>Products & services</h2>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+          {businesses.length > 1 && (
+            <select
+              value={selectedBusiness}
+              onChange={(e) => setSelectedBusiness(e.target.value)}
+              style={{
+                border: "1px solid #c9dec9",
+                background: "#f4f8f4",
+                color: "#1d4429",
+                fontWeight: 700,
+                fontSize: "12px",
+                padding: "7px 12px",
+                borderRadius: "8px",
+                cursor: "pointer",
+              }}
+            >
+              {businesses.map((b) => (
+                <option key={b.name} value={b.name}>
+                  🏪 {b.name}
+                </option>
+              ))}
+            </select>
+          )}
+          <button
+            type="button"
+            className="primary-button"
+            onClick={() => setShowAddModal(true)}
+            style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+          >
+            <span>＋</span> Add item
+          </button>
+        </div>
+      </div>
+
+      {/* Catalogue Metric Overview Strip */}
+      <div className="catalogue-stats-strip">
+        <div className="catalogue-stat-card">
+          <div className="catalogue-stat-icon">🛍️</div>
+          <div className="catalogue-stat-info">
+            <small>Total Items</small>
+            <strong>{allProducts.length} Items</strong>
+          </div>
+        </div>
+        <div className="catalogue-stat-card">
+          <div className="catalogue-stat-icon" style={{ background: "#edf8ef", color: "#19662e" }}>
+            🟢
+          </div>
+          <div className="catalogue-stat-info">
+            <small>Available in Stock</small>
+            <strong>{inStockCount} Active</strong>
+          </div>
+        </div>
+        <div className="catalogue-stat-card">
+          <div className="catalogue-stat-icon" style={{ background: "#fdf2f2", color: "#a82d2d" }}>
+            🔴
+          </div>
+          <div className="catalogue-stat-info">
+            <small>Out of Stock</small>
+            <strong>{outOfStockCount} Inactive</strong>
+          </div>
+        </div>
+        <div className="catalogue-stat-card">
+          <div className="catalogue-stat-icon" style={{ background: "#eef5ff", color: "#1b4d8f" }}>
+            ₹
+          </div>
+          <div className="catalogue-stat-info">
+            <small>Average Price</small>
+            <strong>₹{avgPrice.toLocaleString("en-IN")}</strong>
+          </div>
+        </div>
+      </div>
+
+      {/* Search & Filter Controls Toolbar */}
+      <div className="catalogue-toolbar">
+        <div className="catalogue-search-wrap">
+          <span>🔍</span>
+          <input
+            type="search"
+            placeholder="Search items by name, description..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              style={{ border: 0, background: "transparent", cursor: "pointer", color: "#778d7c", fontSize: "12px" }}
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+        <div className="catalogue-filter-chips">
+          <button
+            type="button"
+            className={`catalogue-filter-chip ${stockFilter === "all" ? "active" : ""}`}
+            onClick={() => setStockFilter("all")}
+          >
+            All ({allProducts.length})
+          </button>
+          <button
+            type="button"
+            className={`catalogue-filter-chip ${stockFilter === "inStock" ? "active" : ""}`}
+            onClick={() => setStockFilter("inStock")}
+          >
+            🟢 In Stock ({inStockCount})
+          </button>
+          <button
+            type="button"
+            className={`catalogue-filter-chip ${stockFilter === "outOfStock" ? "active" : ""}`}
+            onClick={() => setStockFilter("outOfStock")}
+          >
+            🔴 Out of Stock ({outOfStockCount})
+          </button>
+        </div>
+
+        <div className="catalogue-view-toggles">
+          <button
+            type="button"
+            className={`catalogue-view-btn ${viewMode === "grid" ? "active" : ""}`}
+            onClick={() => setViewMode("grid")}
+            title="Catalogue Grid Cards"
+          >
+            ⊞ Cards
+          </button>
+          <button
+            type="button"
+            className={`catalogue-view-btn ${viewMode === "list" ? "active" : ""}`}
+            onClick={() => setViewMode("list")}
+            title="Compact Table List"
+          >
+            ☰ List
+          </button>
+        </div>
+      </div>
+
+      {/* Catalogue Cards Grid View */}
+      {viewMode === "grid" && (
+        <div className="catalogue-cards-grid">
+          {filteredProducts.map((product) => {
+            const displayImage = product.image || productImageFor(product, selectedBusinessProfile);
+            const inStock = product.inStock !== false;
+            return (
+              <article className="catalogue-product-card" key={product.id}>
+                <div className="catalogue-card-img-wrap">
+                  <img
+                    src={displayImage}
+                    alt={product.name}
+                    className="catalogue-card-img"
+                    loading="lazy"
+                  />
+                  {product.badge && (
+                    <span className="catalogue-card-badge-pill">{product.badge}</span>
+                  )}
+                  <button
+                    type="button"
+                    className={`catalogue-stock-toggle-btn ${inStock ? "in-stock" : "out-of-stock"}`}
+                    onClick={() => toggleStock(product)}
+                    title={inStock ? "Click to mark Out of Stock" : "Click to mark In Stock"}
+                  >
+                    <span>{inStock ? "● In Stock" : "○ Sold Out"}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="catalogue-change-img-overlay"
+                    onClick={() => startQuickChangeImage(product)}
+                    title="Change photo for this product"
+                  >
+                    <span>📷</span> Change photo
+                  </button>
+                </div>
+
+                <div className="catalogue-card-body">
+                  <div className="catalogue-card-cat-tag">
+                    {product.catalogueSelections?.[0]?.path?.join(" › ") ||
+                      product.catalogueSelections?.[0]?.sector ||
+                      selectedBusinessProfile.category}
+                  </div>
+                  <h3 className="catalogue-card-name">{product.name}</h3>
+                  <p className="catalogue-card-description">{product.description}</p>
+
+                  <div className="catalogue-card-price-row">
+                    <div>
+                      <span className="catalogue-price-text">₹{product.price.toLocaleString("en-IN")}</span>
+                      {product.unit && <span className="catalogue-price-unit">/{product.unit}</span>}
+                    </div>
+                    <span style={{ fontSize: "10px", color: inStock ? "#1e6b35" : "#a83333", fontWeight: 700 }}>
+                      {inStock ? "✓ Orderable" : "✕ Unavailable"}
+                    </span>
+                  </div>
+
+                  <div className="catalogue-actions-row">
+                    <button
+                      type="button"
+                      className="catalogue-edit-action-btn"
+                      onClick={() => startEditing(product)}
+                      title="Edit details and price"
+                    >
+                      <span>✏️</span> Edit details
+                    </button>
+                    <button
+                      type="button"
+                      className="catalogue-delete-action-btn"
+                      onClick={() => handleDelete(product)}
+                      title="Delete item from catalogue"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Alternative List View */}
+      {viewMode === "list" && (
+        <table className="catalogue-list-table">
+          <thead>
+            <tr>
+              <th style={{ width: "60px" }}>Photo</th>
+              <th>Product / Service</th>
+              <th>Description</th>
+              <th>Price</th>
+              <th>Status</th>
+              <th style={{ textAlign: "right" }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredProducts.map((product) => {
+              const displayImage = product.image || productImageFor(product, selectedBusinessProfile);
+              const inStock = product.inStock !== false;
+              return (
+                <tr key={product.id}>
+                  <td>
+                    <img src={displayImage} alt="" className="catalogue-list-thumb" />
+                  </td>
+                  <td>
+                    <strong>{product.name}</strong>
+                    {product.badge && (
+                      <span
+                        style={{
+                          fontSize: "8.5px",
+                          fontWeight: 700,
+                          padding: "1px 5px",
+                          borderRadius: "4px",
+                          background: "#e8f2e9",
+                          color: "#1e532b",
+                          marginLeft: "6px",
+                        }}
+                      >
+                        {product.badge}
+                      </span>
+                    )}
+                  </td>
+                  <td style={{ maxWidth: "260px", color: "#607464" }}>{product.description}</td>
+                  <td>
+                    <strong style={{ color: "#1e6835", fontSize: "13px" }}>
+                      ₹{product.price.toLocaleString("en-IN")}
+                    </strong>
+                    <small style={{ color: "#748877", marginLeft: "3px" }}>/{product.unit}</small>
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      onClick={() => toggleStock(product)}
+                      style={{
+                        border: "1px solid",
+                        borderColor: inStock ? "#b2e0bc" : "#f1c2c2",
+                        background: inStock ? "#f2faf3" : "#fdf2f2",
+                        color: inStock ? "#1c6833" : "#a83333",
+                        fontSize: "9.5px",
+                        fontWeight: 800,
+                        padding: "3px 8px",
+                        borderRadius: "12px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {inStock ? "● In Stock" : "○ Sold Out"}
+                    </button>
+                  </td>
+                  <td style={{ textAlign: "right" }}>
+                    <button
+                      type="button"
+                      onClick={() => startEditing(product)}
+                      style={{
+                        border: "1px solid #c8dbc9",
+                        background: "#f4f8f4",
+                        color: "#21532f",
+                        borderRadius: "5px",
+                        padding: "5px 10px",
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        marginRight: "6px",
+                      }}
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(product)}
+                      style={{
+                        border: "1px solid #f1c7c7",
+                        background: "#fdf5f5",
+                        color: "#a83333",
+                        borderRadius: "5px",
+                        padding: "5px 9px",
+                        fontSize: "11px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      🗑️
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+
+      {filteredProducts.length === 0 && (
+        <div
+          style={{
+            textAlign: "center",
+            padding: "40px 20px",
+            background: "#fbfdfb",
+            border: "1px dashed #c9dccb",
+            borderRadius: "12px",
+            margin: "20px 0",
+          }}
+        >
+          <span style={{ fontSize: "36px", display: "block", marginBottom: "8px" }}>📦</span>
+          <strong style={{ fontSize: "16px", color: "#1c3c26", display: "block" }}>
+            No matching catalogue items found
+          </strong>
+          <p style={{ fontSize: "12px", color: "#617765", margin: "6px 0 16px" }}>
+            Try adjusting your search terms or filters, or add a new product or service.
+          </p>
+          <button
+            type="button"
+            className="primary-button"
+            onClick={() => setShowAddModal(true)}
+          >
+            ＋ Add new item
+          </button>
+        </div>
+      )}
+
+      {/* ADD ITEM MODAL */}
+      {showAddModal && (
+        <div className="catalogue-modal-overlay" onClick={() => setShowAddModal(false)}>
+          <div className="catalogue-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="catalogue-modal-header">
+              <h3>
+                <span>🛍️</span> Add Product or Service
+              </h3>
+              <button
+                type="button"
+                className="catalogue-modal-close-btn"
+                onClick={() => setShowAddModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={submitAddProduct} className="catalogue-modal-form">
+              {businesses.length > 1 && (
+                <div className="catalogue-form-field">
+                  <label>Business</label>
+                  <select
+                    value={selectedBusiness}
+                    onChange={(e) => setSelectedBusiness(e.target.value)}
+                  >
+                    {businesses.map((b) => (
+                      <option key={b.name} value={b.name}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className="catalogue-form-field">
+                <label>Product or service name *</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Masala Dosa Feast / Same-day Phone Screen Repair"
+                  value={addName}
+                  onChange={(e) => setAddName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="catalogue-form-row">
+                <div className="catalogue-form-field">
+                  <label>Price (₹) *</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="180"
+                    value={addPrice}
+                    onChange={(e) => setAddPrice(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="catalogue-form-field">
+                  <label>Price unit *</label>
+                  <input
+                    type="text"
+                    placeholder="per plate / per box / per visit / unit"
+                    value={addUnit}
+                    onChange={(e) => setAddUnit(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="catalogue-form-field">
+                <label>Description *</label>
+                <textarea
+                  rows={2}
+                  placeholder="What is included in this item or service?"
+                  value={addDescription}
+                  onChange={(e) => setAddDescription(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="catalogue-form-row">
+                <div className="catalogue-form-field">
+                  <label>Promotional badge (optional)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Bestseller / Popular / Chef Special"
+                    value={addBadge}
+                    onChange={(e) => setAddBadge(e.target.value)}
+                  />
+                </div>
+                <div className="catalogue-form-field" style={{ justifyContent: "center" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", marginTop: "14px" }}>
+                    <input
+                      type="checkbox"
+                      checked={addInStock}
+                      onChange={(e) => setAddInStock(e.target.checked)}
+                      style={{ width: "16px", height: "16px" }}
+                    />
+                    <span style={{ fontSize: "12px", fontWeight: 700, color: "#1e522d" }}>In stock & ready to order</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Photo Upload & Presets */}
+              <div className="catalogue-form-field">
+                <label>Product image</label>
+                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                  <input
+                    type="text"
+                    placeholder="Paste image URL (https://...)"
+                    value={addImage}
+                    onChange={(e) => setAddImage(e.target.value)}
+                    style={{ flex: 1 }}
+                  />
+                  <label
+                    style={{
+                      border: "1px solid #b8d2bb",
+                      background: "#eaf3eb",
+                      color: "#1c512a",
+                      padding: "8px 12px",
+                      borderRadius: "6px",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    📁 Upload photo
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      onChange={(e) => handleImageUpload(e, setAddImage)}
+                    />
+                  </label>
+                </div>
+
+                <div className="catalogue-preset-chips-wrap">
+                  <span style={{ fontSize: "9.5px", color: "#647768", fontWeight: 700, alignSelf: "center" }}>Presets:</span>
+                  {CATALOGUE_IMAGE_PRESETS.slice(0, 6).map((preset) => (
+                    <button
+                      type="button"
+                      key={preset.label}
+                      className="catalogue-preset-chip"
+                      onClick={() => setAddImage(preset.url)}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+
+                {addImage && (
+                  <div className="catalogue-image-preview-box">
+                    <img src={addImage} alt="Preview" className="catalogue-image-preview-img" />
+                    <button
+                      type="button"
+                      onClick={() => setAddImage("")}
+                      style={{
+                        position: "absolute",
+                        top: "6px",
+                        right: "6px",
+                        background: "rgba(0,0,0,0.65)",
+                        color: "#fff",
+                        border: 0,
+                        borderRadius: "50%",
+                        width: "22px",
+                        height: "22px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Category / Sector Selections */}
+              <fieldset className="catalogue-selection" style={{ margin: "4px 0" }}>
+                <legend>Category & Activity</legend>
+                <div className="catalogue-activity-options">
+                  {(["Sales", "Service"] as const).map((activity) => (
+                    <label key={activity}>
+                      <input
+                        type="checkbox"
+                        checked={selectedActivities.includes(activity)}
+                        onChange={() => toggleActivity(activity)}
+                      />
+                      {activity}
+                    </label>
+                  ))}
+                </div>
+                {selectedActivities.map((activity) => (
+                  <div className="catalogue-activity-group" key={activity}>
+                    <strong>{activity} categories</strong>
+                    {availableSectors.length ? (
+                      <div className="catalogue-sector-list">
+                        {availableSectors.map((sector) => (
+                          <fieldset className="catalogue-sector" key={`${activity}-${sector.name}`}>
+                            <legend>{sector.name}</legend>
+                            <CatalogueTaxonomyOptions
+                              activity={activity}
+                              sector={sector.name}
+                              paths={getSectorActivityPaths(sector, activity)}
+                              selections={catalogueSelections}
+                              brandLogos={categoryConfig.brandLogos}
+                              onToggle={toggleCataloguePath}
+                            />
+                          </fieldset>
+                        ))}
+                      </div>
+                    ) : (
+                      <small>No sectors are configured for this business.</small>
+                    )}
+                  </div>
+                ))}
+              </fieldset>
+
+              {addError && <span className="form-error">{addError}</span>}
+
+              <div className="catalogue-modal-footer">
+                <button
+                  type="button"
+                  className="catalogue-cancel-btn"
+                  onClick={() => setShowAddModal(false)}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="catalogue-submit-btn">
+                  Add to catalogue
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT PRODUCT MODAL */}
+      {editingProduct && (
+        <div className="catalogue-modal-overlay" onClick={() => setEditingProduct(null)}>
+          <div className="catalogue-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="catalogue-modal-header">
+              <h3>
+                <span>✏️</span> Edit Catalogue Item
+              </h3>
+              <button
+                type="button"
+                className="catalogue-modal-close-btn"
+                onClick={() => setEditingProduct(null)}
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={submitEditProduct} className="catalogue-modal-form">
+              <div className="catalogue-form-field">
+                <label>Product or service name *</label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="catalogue-form-row">
+                <div className="catalogue-form-field">
+                  <label>Price (₹) *</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={editPrice}
+                    onChange={(e) => setEditPrice(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="catalogue-form-field">
+                  <label>Price unit *</label>
+                  <input
+                    type="text"
+                    value={editUnit}
+                    onChange={(e) => setEditUnit(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="catalogue-form-field">
+                <label>Description *</label>
+                <textarea
+                  rows={2}
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="catalogue-form-row">
+                <div className="catalogue-form-field">
+                  <label>Promotional badge</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Bestseller / Popular / Chef Special"
+                    value={editBadge}
+                    onChange={(e) => setEditBadge(e.target.value)}
+                  />
+                </div>
+                <div className="catalogue-form-field" style={{ justifyContent: "center" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", marginTop: "14px" }}>
+                    <input
+                      type="checkbox"
+                      checked={editInStock}
+                      onChange={(e) => setEditInStock(e.target.checked)}
+                      style={{ width: "16px", height: "16px" }}
+                    />
+                    <span style={{ fontSize: "12px", fontWeight: 700, color: "#1e522d" }}>In stock & active</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Photo Edit */}
+              <div className="catalogue-form-field">
+                <label>Item image</label>
+                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                  <input
+                    type="text"
+                    placeholder="Image link (https://...)"
+                    value={editImage}
+                    onChange={(e) => setEditImage(e.target.value)}
+                    style={{ flex: 1 }}
+                  />
+                  <label
+                    style={{
+                      border: "1px solid #b8d2bb",
+                      background: "#eaf3eb",
+                      color: "#1c512a",
+                      padding: "8px 12px",
+                      borderRadius: "6px",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    📁 Upload photo
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      onChange={(e) => handleImageUpload(e, setEditImage)}
+                    />
+                  </label>
+                </div>
+
+                <div className="catalogue-preset-chips-wrap">
+                  <span style={{ fontSize: "9.5px", color: "#647768", fontWeight: 700, alignSelf: "center" }}>Presets:</span>
+                  {CATALOGUE_IMAGE_PRESETS.slice(0, 6).map((preset) => (
+                    <button
+                      type="button"
+                      key={preset.label}
+                      className="catalogue-preset-chip"
+                      onClick={() => setEditImage(preset.url)}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="catalogue-image-preview-box">
+                  <img
+                    src={editImage || productImageFor(editingProduct, selectedBusinessProfile)}
+                    alt="Preview"
+                    className="catalogue-image-preview-img"
+                  />
+                </div>
+              </div>
+
+              {editError && <span className="form-error">{editError}</span>}
+
+              <div className="catalogue-modal-footer">
+                <button
+                  type="button"
+                  className="catalogue-cancel-btn"
+                  onClick={() => setEditingProduct(null)}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="catalogue-submit-btn">
+                  Save changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* QUICK CHANGE IMAGE MODAL */}
+      {changingImageProduct && (
+        <div className="catalogue-modal-overlay" onClick={() => setChangingImageProduct(null)}>
+          <div className="catalogue-modal-card" style={{ maxWidth: "460px" }} onClick={(e) => e.stopPropagation()}>
+            <div className="catalogue-modal-header">
+              <h3>
+                <span>📷</span> Change Photo: {changingImageProduct.name}
+              </h3>
+              <button
+                type="button"
+                className="catalogue-modal-close-btn"
+                onClick={() => setChangingImageProduct(null)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="catalogue-modal-form">
+              <div className="catalogue-image-preview-box" style={{ height: "180px" }}>
+                <img src={quickImageUrl} alt="Preview" className="catalogue-image-preview-img" />
+              </div>
+
+              <div className="catalogue-form-field">
+                <label>Upload new image from your device</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e, setQuickImageUrl)}
+                  style={{ padding: "6px" }}
+                />
+              </div>
+
+              <div className="catalogue-form-field">
+                <label>Or paste image URL</label>
+                <input
+                  type="text"
+                  placeholder="https://..."
+                  value={quickImageUrl}
+                  onChange={(e) => setQuickImageUrl(e.target.value)}
+                />
+              </div>
+
+              <div className="catalogue-form-field">
+                <label>Or select from recommended presets</label>
+                <div className="catalogue-preset-chips-wrap">
+                  {CATALOGUE_IMAGE_PRESETS.map((preset) => (
+                    <button
+                      type="button"
+                      key={preset.label}
+                      className="catalogue-preset-chip"
+                      onClick={() => setQuickImageUrl(preset.url)}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="catalogue-modal-footer" style={{ margin: "10px -22px -20px" }}>
+                <button
+                  type="button"
+                  className="catalogue-cancel-btn"
+                  onClick={() => setChangingImageProduct(null)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="catalogue-submit-btn"
+                  onClick={submitQuickImage}
+                >
+                  Save Photo
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
 }
 
 function CatalogueTaxonomyOptions({
