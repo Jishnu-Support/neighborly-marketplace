@@ -1525,3 +1525,101 @@ h1 em{font-family:var(--serif);font-weight:400;color:#507959;letter-spacing:-1px
   from { opacity: 0; transform: translateY(10px) scale(0.98); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+/* Quick Filter Chips & Recently Viewed */
+.quick-filter-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 10px 0 18px;
+}
+
+.quick-filter-chip {
+  background: #ffffff;
+  border: 1px solid #d4ded6;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #31533b;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.16s ease;
+  line-height: 1.2;
+}
+
+.quick-filter-chip:hover {
+  background: #edf5ee;
+  border-color: #92b197;
+  transform: translateY(-1px);
+}
+
+.quick-filter-chip.active {
+  background: #386b4b;
+  border-color: #386b4b;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(56, 107, 75, 0.25);
+}
+
+.quick-filter-clear-btn {
+  background: #faeceb;
+  border: 1px solid #f2c7c4;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #b03831;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.quick-filter-clear-btn:hover {
+  background: #f7dcdb;
+}
+
+.business-card-claim-btn {
+  grid-column: 1 / -1;
+  background: #fbfdfa;
+  border: 1px dashed #cad7cc;
+  border-radius: 5px;
+  padding: 6px 8px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #386043;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.business-card-claim-btn:hover {
+  background: #edf5ee;
+  border-color: #386b4b;
+  color: #1a4f2c;
+}
+
+.claim-modal {
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+.recently-viewed-panel {
+  animation: modalFadeIn 0.25s ease-out;
+}
+
+.recently-viewed-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.recently-viewed-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 70, 48, 0.08);
+}
+
+.language-selector-pill button:hover {
+  background: #e2ebe4;
+}

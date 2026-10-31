@@ -733,6 +733,83 @@ function getBusinessWorkingStatus(business: Business): { isOpen: boolean; label:
   };
 }
 
+type Language = "en" | "ta" | "kn";
+
+const TRANSLATIONS = {
+  en: {
+    heroTitle: "Hosur's premier local & industrial marketplace",
+    heroDesc: "Discover verified manufacturers, retail, healthcare, and everyday services across Hosur.",
+    searchPlaceholder: "Search 85+ Hosur businesses, Maruti Swift, Hero bike, Kauvery Hospital, Biryani...",
+    findNearby: "Find nearby",
+    openNow: "Open Now",
+    topRated: "Top Rated ★ 4.5+",
+    verifiedOnly: "Verified",
+    whatsappReady: "WhatsApp Ready",
+    allResults: "All",
+    recentlyViewed: "Recently Viewed Places",
+    clearRecent: "Clear recent",
+    rate: "Rate",
+    claim: "Claim",
+    call: "Call",
+    whatsapp: "WhatsApp",
+    navigate: "Navigate",
+    productsServices: "View products & services",
+    clearFilters: "Clear filters",
+    open: "Open",
+    closed: "Closed",
+    filterNotice: "Active filters applied",
+    noFilteredMatches: "No businesses match your active filter combination.",
+  },
+  ta: {
+    heroTitle: "ஓசூரின் முதன்மையான உள்ளூர் & தொழில்துறை வர்த்தக களம்",
+    heroDesc: "ஓசூர் முழுவதும் உள்ள சரிபார்க்கப்பட்ட உற்பத்தியாளர்கள், கடைகள், மருத்துவமனைகள் மற்றும் சேவைகளை எளிதில் கண்டறியுங்கள்.",
+    searchPlaceholder: "வாகன உதிரிபாகங்கள், CNC இயந்திரங்கள், உணவகங்கள், மருத்துவமனைகள்...",
+    findNearby: "அருகிலுள்ளவை தேடு",
+    openNow: "இப்போது திறந்துள்ளது",
+    topRated: "உயர்தர மதிப்பீடு ★ 4.5+",
+    verifiedOnly: "சரிபார்க்கப்பட்டது",
+    whatsappReady: "வாட்ஸ்அப் வசதி",
+    allResults: "அனைத்தும்",
+    recentlyViewed: "சமீபத்தில் பார்த்தவை",
+    clearRecent: "அழி",
+    rate: "மதிப்பீடு",
+    claim: "உரிமைகோரு",
+    call: "அழைப்பு",
+    whatsapp: "வாட்ஸ்அப்",
+    navigate: "வழிசெலுத்து",
+    productsServices: "தயாரிப்புகள் & சேவைகள்",
+    clearFilters: "வடிகட்டிகளை நீக்கு",
+    open: "திறந்துள்ளது",
+    closed: "மூடப்பட்டுள்ளது",
+    filterNotice: "வடிகட்டிகள் பயன்படுத்தப்பட்டுள்ளன",
+    noFilteredMatches: "தேர்ந்தெடுக்கப்பட்ட வடிகட்டிகளுக்குப் பொருத்தமான வணிகங்கள் இல்லை.",
+  },
+  kn: {
+    heroTitle: "ಹೊಸೂರಿನ ಪ್ರಮುಖ ಸ್ಥಳೀಯ ಮತ್ತು ಕೈಗಾರಿಕಾ ಮಾರುಕಟ್ಟೆ",
+    heroDesc: "ಹೊಸೂರಿನಾದ್ಯಂತ ಪರಿಶೀಲಿಸಿದ ತಯಾರಕರು, ಚಿಲ್ಲರೆ ವ್ಯಾಪಾರ, ಆರೋಗ್ಯ ಸೇವೆಗಳು ಮತ್ತು ದೈನಂದಿನ ಸೇವೆಗಳನ್ನು ಅನ್ವೇಷಿಸಿ.",
+    searchPlaceholder: "ಆಟೋ ಭಾಗಗಳು, ಸಿಎನ್‌ಸಿ ಯಂತ್ರ, ಉಪಹಾರಗೃಹಗಳು, ಆಸ್ಪತ್ರೆಗಳು...",
+    findNearby: "ಹತ್ತಿರ ಹುಡುಕಿ",
+    openNow: "ಈಗ ತೆರೆದಿದೆ",
+    topRated: "ಉನ್ನತ ರೇಟಿಂಗ್ ★ 4.5+",
+    verifiedOnly: "ಪರಿಶೀಲಿಸಲಾಗಿದೆ",
+    whatsappReady: "ವಾಟ್ಸಾಪ್ ಲಭ್ಯವಿದೆ",
+    allResults: "ಎಲ್ಲವೂ",
+    recentlyViewed: "ಇತ್ತೀಚೆಗೆ ವೀಕ್ಷಿಸಿದ ಸ್ಥಳಗಳು",
+    clearRecent: "ತೆರವುಗೊಳಿಸಿ",
+    rate: "ರೇಟ್ ಮಾಡಿ",
+    claim: "ಕ್ಲೈಮ್ ಮಾಡಿ",
+    call: "ಕರೆ ಮಾಡಿ",
+    whatsapp: "ವಾಟ್ಸಾಪ್",
+    navigate: "ಮಾರ್ಗ",
+    productsServices: "ಉತ್ಪನ್ನಗಳು & ಸೇವೆಗಳು",
+    clearFilters: "ಫಿಲ್ಟರ್ ತೆರವುಗೊಳಿಸಿ",
+    open: "ತೆರೆದಿದೆ",
+    closed: "ಮುಚ್ಚಲಾಗಿದೆ",
+    filterNotice: "ಫಿಲ್ಟರ್‌ಗಳನ್ನು ಅನ್ವಯಿಸಲಾಗಿದೆ",
+    noFilteredMatches: "ಆಯ್ಕೆಮಾಡಿದ ಫಿಲ್ಟರ್‌ಗಳಿಗೆ ಹೊಂದಿಕೆಯಾಗುವ ಯಾವುದೇ ವ್ಯಾಪಾರಗಳು ಕಂಡುಬಂದಿಲ್ಲ.",
+  },
+};
+
 function businessPhoneFor(business: Business): string {
   if (business.phone) return business.phone;
   let hash = 0;
@@ -9472,6 +9549,14 @@ export default function Home() {
   const [reviewBusiness, setReviewBusiness] = useState<Business | null>(null);
   const [isListening, setIsListening] = useState(false);
   const [enquiryProduct, setEnquiryProduct] = useState<{ business: Business; product: Product } | null>(null);
+  const [claimBusiness, setClaimBusiness] = useState<Business | null>(null);
+  const [lang, setLang] = useState<Language>("en");
+  const t = TRANSLATIONS[lang];
+  const [filterOpenNow, setFilterOpenNow] = useState(false);
+  const [filterTopRated, setFilterTopRated] = useState(false);
+  const [filterVerified, setFilterVerified] = useState(false);
+  const [filterWhatsApp, setFilterWhatsApp] = useState(false);
+  const [recentlyViewed, setRecentlyViewed] = useState<Business[]>([]);
   const [dialog, setDialog] = useState<"login" | "business" | "sos" | "plans" | null>(null);
   const [notice, setNotice] = useState("");
   const [adConfig, setAdConfig] = useState<AdConfig>(defaultAdConfig);
@@ -9543,6 +9628,34 @@ export default function Home() {
     setNotifications([]);
     showNotice("All notifications cleared.");
   }
+
+  const viewBusiness = (business: Business, tab: "products" | "navigation" = "products") => {
+    setBusinessModalTab(tab);
+    setSelectedBusiness(business);
+    setRecentlyViewed((prev) => {
+      const filtered = prev.filter((b) => b.name !== business.name);
+      const updated = [business, ...filtered].slice(0, 8);
+      try {
+        window.localStorage.setItem("bizearch_recent_viewed", JSON.stringify(updated.map((b) => b.name)));
+      } catch {}
+      return updated;
+    });
+  };
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem("bizearch_recent_viewed");
+      if (saved) {
+        const names = JSON.parse(saved);
+        if (Array.isArray(names)) {
+          const list = names
+            .map((name: string) => businesses.find((b) => b.name === name))
+            .filter(Boolean) as Business[];
+          setRecentlyViewed(list);
+        }
+      }
+    } catch {}
+  }, [businesses]);
 
   function handleNotificationAction(notif: MarketplaceNotification) {
     markNotificationRead(notif.id);
@@ -10032,6 +10145,16 @@ export default function Home() {
       autocompleteData
     };
   }, [businesses, category, categoryPath, query, radius, locationCoordinates, locationEnabled, searchSort]);
+
+  const displayedBusinesses = useMemo(() => {
+    return results.filter((b) => {
+      if (filterOpenNow && !getBusinessWorkingStatus(b).isOpen) return false;
+      if (filterTopRated && b.rating < 4.5) return false;
+      if (filterVerified && !(b.tag === "Verified" || b.tag === "Featured")) return false;
+      if (filterWhatsApp && !b.phone) return false;
+      return true;
+    });
+  }, [results, filterOpenNow, filterTopRated, filterVerified, filterWhatsApp]);
 
   function showNotice(message: string) {
     setNotice(message);
@@ -10828,6 +10951,33 @@ export default function Home() {
                 </div>
               )}
             </div>
+            <div className="language-selector-pill" role="group" aria-label="Select language" style={{ display: "inline-flex", alignItems: "center", background: "#f0f4f1", borderRadius: "20px", border: "1px solid #d4ded6", padding: "2px 3px" }}>
+              {(["en", "ta", "kn"] as const).map((l) => (
+                <button
+                  key={l}
+                  type="button"
+                  onClick={() => {
+                    setLang(l);
+                    showNotice(l === "ta" ? "மொழி: தமிழ் தேர்ந்தெடுக்கப்பட்டது" : l === "kn" ? "ಭಾಷೆ: ಕನ್ನಡ ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ" : "Language: English selected");
+                  }}
+                  style={{
+                    background: lang === l ? "#386b4b" : "transparent",
+                    color: lang === l ? "#ffffff" : "#455a4b",
+                    border: 0,
+                    borderRadius: "14px",
+                    padding: "3px 8px",
+                    cursor: "pointer",
+                    fontSize: "9.5px",
+                    fontWeight: 700,
+                    transition: "all 0.15s ease",
+                    whiteSpace: "nowrap",
+                  }}
+                  title={l === "en" ? "English" : l === "ta" ? "தமிழ் (Tamil)" : "ಕನ್ನಡ (Kannada)"}
+                >
+                  {l === "en" ? "EN" : l === "ta" ? "தமிழ்" : "ಕನ್ನಡ"}
+                </button>
+              ))}
+            </div>
             {authenticatedPortals.length > 0 && (role === "Discover" || authenticatedPortals.includes(role)) ?
               <button className="sign-in-button" onClick={() => void logOut()}>Sign out</button> :
               <button className="sign-in-button" onClick={() => openPortal("Account")}>Sign in <span>&rarr;</span></button>}
@@ -10866,7 +11016,7 @@ export default function Home() {
             <div className="welcome-row">
               <div className="welcome-copy"><div className="eyebrow"><span /> MADE FOR AROUND HERE</div>
                 <h1>Your neighborhood,<br /><em>in reach.</em></h1>
-                <p className="welcome-subtitle">Find what you need. Meet the people who make it happen.</p>
+                <p className="welcome-subtitle">{t.heroDesc}</p>
                 <button className="business-registration-cta" type="button" onClick={() => setDialog("business")}><strong>Register your business</strong><span aria-hidden="true">→</span></button>
                 <p className="business-registration-note">No customer account needed to start. One business profile per business account.</p></div>
               <div className="hero-illustration" aria-hidden="true">
@@ -10896,7 +11046,7 @@ export default function Home() {
                         setSearchDropdownOpen(false);
                       }
                     }}
-                    placeholder="Search 85+ Hosur businesses, Maruti Swift, Hero bike, Kauvery Hospital, Biryani..."
+                    placeholder={t.searchPlaceholder}
                     autoComplete="off"
                   />
                   {query && (
@@ -10954,7 +11104,7 @@ export default function Home() {
                     {isListening ? "🔴" : "🎙️"}
                   </button>
                   <button className="search-submit" onClick={() => searchNearby()}>
-                    Find nearby <span>↗</span>
+                    {t.findNearby} <span>↗</span>
                   </button>
                 </div>
 
@@ -11173,6 +11323,74 @@ export default function Home() {
                 <span>🔤</span> A–Z Directory (All Products & Services) <span className="browse-tab-badge">A–Z</span>
               </button>
             </div>
+
+            {recentlyViewed.length > 0 && (
+              <div className="recently-viewed-panel" style={{ margin: "16px 0 24px", padding: "12px 14px", background: "#f8faf8", border: "1px solid #e2ebe1", borderRadius: "10px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <span style={{ fontSize: "14px" }}>👁️</span>
+                    <strong style={{ font: "700 12px Manrope, sans-serif", color: "#253b2c" }}>{t.recentlyViewed} ({recentlyViewed.length})</strong>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRecentlyViewed([]);
+                      try { window.localStorage.removeItem("bizearch_recent_viewed"); } catch {}
+                      showNotice("Recently viewed places cleared.");
+                    }}
+                    style={{ background: "transparent", border: 0, color: "#6a7b6f", fontSize: "10.5px", cursor: "pointer", textDecoration: "underline" }}
+                  >
+                    {t.clearRecent}
+                  </button>
+                </div>
+                <div className="recently-viewed-strip" style={{ display: "flex", gap: "10px", overflowX: "auto", paddingBottom: "4px" }}>
+                  {recentlyViewed.map((b) => (
+                    <div
+                      key={b.name}
+                      className="recently-viewed-card"
+                      style={{ minWidth: "200px", maxWidth: "230px", flexShrink: 0, background: "#ffffff", border: "1px solid #e4ede3", borderRadius: "8px", padding: "10px 12px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}
+                    >
+                      <div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
+                          <span style={{ fontSize: "15px" }}>{b.icon}</span>
+                          <strong style={{ font: "700 11.5px Manrope, sans-serif", color: "#223528", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={b.name}>
+                            {b.name}
+                          </strong>
+                        </div>
+                        <div style={{ fontSize: "9.5px", color: "#6e7f72", marginBottom: "8px" }}>
+                          {b.category} · {businessDistance(b).toFixed(1)} km
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", gap: "5px", marginTop: "4px" }}>
+                        <button
+                          type="button"
+                          onClick={() => viewBusiness(b, "products")}
+                          style={{ flex: 1, padding: "5px 6px", fontSize: "9px", fontWeight: 700, borderRadius: "5px", border: "1px solid #d0e0d1", background: "#f3f8f2", color: "#245234", cursor: "pointer" }}
+                        >
+                          View
+                        </button>
+                        <a
+                          href={`tel:${businessRawPhone(businessPhoneFor(b))}`}
+                          style={{ padding: "5px 8px", fontSize: "9px", fontWeight: 700, borderRadius: "5px", border: "1px solid #c8dbcc", background: "#ffffff", color: "#1f4a2d", textDecoration: "none", display: "inline-flex", alignItems: "center" }}
+                          title={`Call ${b.name}`}
+                        >
+                          📞
+                        </a>
+                        <a
+                          href={businessWhatsAppUrl(b)}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{ padding: "5px 8px", fontSize: "9px", fontWeight: 700, borderRadius: "5px", border: "1px solid #bce1c5", background: "#e8f7ec", color: "#136229", textDecoration: "none", display: "inline-flex", alignItems: "center" }}
+                          title={`WhatsApp ${b.name}`}
+                        >
+                          💬
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {browseMode === "atoz" ? (
               <AtoZDirectory
@@ -11446,14 +11664,66 @@ export default function Home() {
                 <div className="section-heading results-heading" id="results">
                   <div>
                     <div className="eyebrow">LOCAL VERIFIED PROVIDERS</div>
-                    <h2>{query ? `Providers for “${query}”` : category !== "All" ? `${categoryPath.length ? `${categoryPath.join(" › ")} providers` : `${category} providers`}` : "Around your corner"} <span className="result-count">{results.length}</span></h2>
+                    <h2>{query ? `Providers for “${query}”` : category !== "All" ? `${categoryPath.length ? `${categoryPath.join(" › ")} providers` : `${category} providers`}` : "Around your corner"} <span className="result-count">{displayedBusinesses.length}</span></h2>
                   </div>
                   <div className="sort-label"><span className="green-dot" /> Subscribed listings · {locationEnabled ? "device radius" : "demo distances"}</div>
                 </div>
-                {results.length ? (
+
+                {/* Instant Quick-Filter Chips */}
+                <div className="quick-filter-strip" style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", margin: "10px 0 18px" }}>
+                  <button
+                    type="button"
+                    className={`quick-filter-chip ${filterOpenNow ? "active" : ""}`}
+                    onClick={() => setFilterOpenNow((prev) => !prev)}
+                    title="Filter businesses currently open"
+                  >
+                    🟢 {t.openNow}
+                  </button>
+                  <button
+                    type="button"
+                    className={`quick-filter-chip ${filterTopRated ? "active" : ""}`}
+                    onClick={() => setFilterTopRated((prev) => !prev)}
+                    title="Filter businesses rated 4.5 and above"
+                  >
+                    ⭐ {t.topRated}
+                  </button>
+                  <button
+                    type="button"
+                    className={`quick-filter-chip ${filterVerified ? "active" : ""}`}
+                    onClick={() => setFilterVerified((prev) => !prev)}
+                    title="Filter verified businesses"
+                  >
+                    ✓ {t.verifiedOnly}
+                  </button>
+                  <button
+                    type="button"
+                    className={`quick-filter-chip ${filterWhatsApp ? "active" : ""}`}
+                    onClick={() => setFilterWhatsApp((prev) => !prev)}
+                    title="Filter businesses ready for WhatsApp enquiry"
+                  >
+                    💬 {t.whatsappReady}
+                  </button>
+                  {(filterOpenNow || filterTopRated || filterVerified || filterWhatsApp) && (
+                    <button
+                      type="button"
+                      className="quick-filter-clear-btn"
+                      onClick={() => {
+                        setFilterOpenNow(false);
+                        setFilterTopRated(false);
+                        setFilterVerified(false);
+                        setFilterWhatsApp(false);
+                      }}
+                      title="Reset all active filters"
+                    >
+                      ✕ {t.clearFilters}
+                    </button>
+                  )}
+                </div>
+
+                {displayedBusinesses.length ? (
                   <>
                     <div className="business-grid">
-                      {results.slice(0, visibleCount).map((business, index) => (
+                      {displayedBusinesses.slice(0, visibleCount).map((business, index) => (
                         <article className="business-card" key={`${business.name}-${index}`}>
                           <div className={`business-image ${business.color}`}><span className="business-emoji">{business.icon}</span>
                             {business.tag && <span className="business-tag">{business.tag}</span>}
@@ -11509,7 +11779,7 @@ export default function Home() {
                                 }}
                               >
                                 <span className="rating">★ <b>{business.rating.toFixed(1)}</b> <small>({business.reviews} reviews)</small></span>
-                                <span style={{ fontSize: "9px", color: "#366e47", textDecoration: "underline", marginLeft: "4px" }}>Rate</span>
+                                <span style={{ fontSize: "9px", color: "#366e47", textDecoration: "underline", marginLeft: "4px" }}>{t.rate}</span>
                               </button>
                               <span className="price">{business.price}</span>
                             </div>
@@ -11518,24 +11788,22 @@ export default function Home() {
                                 type="button"
                                 className="contact-button"
                                 onClick={() => {
-                                  setBusinessModalTab("products");
-                                  setSelectedBusiness(business);
+                                  viewBusiness(business, "products");
                                   recordEvent("Business catalogue viewed");
                                 }}
                               >
-                                View products & services <span>↗</span>
+                                {t.productsServices} <span>↗</span>
                               </button>
                               <button
                                 type="button"
                                 className="business-card-nav-btn"
                                 onClick={() => {
-                                  setBusinessModalTab("navigation");
-                                  setSelectedBusiness(business);
+                                  viewBusiness(business, "navigation");
                                   recordEvent("Business navigate clicked");
                                 }}
                                 title={`Navigate to ${business.name}`}
                               >
-                                🧭 Navigate
+                                🧭 {t.navigate}
                               </button>
                               <a
                                 className="business-card-call-btn"
@@ -11545,7 +11813,7 @@ export default function Home() {
                                 }}
                                 title={`Call ${business.name} at ${businessPhoneFor(business)}`}
                               >
-                                📞 Call
+                                📞 {t.call}
                               </a>
                               <a
                                 className="business-card-wa-btn"
@@ -11557,7 +11825,7 @@ export default function Home() {
                                 }}
                                 title={`Chat with ${business.name} on WhatsApp`}
                               >
-                                💬 WhatsApp
+                                💬 {t.whatsapp}
                               </a>
                               <button
                                 type="button"
@@ -11570,22 +11838,48 @@ export default function Home() {
                               >
                                 ↗ Share
                               </button>
+                              <button
+                                type="button"
+                                className="business-card-claim-btn"
+                                onClick={() => setClaimBusiness(business)}
+                                title={`Claim ownership of ${business.name}`}
+                              >
+                                🏷️ {t.claim}
+                              </button>
                             </div>
                           </div>
                         </article>
                       ))}
                     </div>
-                    {results.length > visibleCount && (
+                    {displayedBusinesses.length > visibleCount && (
                       <div style={{ textAlign: "center", margin: "28px 0 16px", display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
                         <button type="button" className="outline-button" onClick={() => setVisibleCount((v) => v + 24)}>
-                          Show more ({results.length - visibleCount} remaining)
+                          Show more ({displayedBusinesses.length - visibleCount} remaining)
                         </button>
-                        <button type="button" className="outline-button" onClick={() => setVisibleCount(results.length)}>
-                          Show all {results.length} businesses
+                        <button type="button" className="outline-button" onClick={() => setVisibleCount(displayedBusinesses.length)}>
+                          Show all {displayedBusinesses.length} businesses
                         </button>
                       </div>
                     )}
                   </>
+                ) : results.length > 0 ? (
+                  <div className="local-empty" style={{ margin: "28px 0", textAlign: "center", padding: "32px 16px", background: "#fbfdfa", border: "1px dashed #d5ded4", borderRadius: "9px" }}>
+                    <div style={{ fontSize: "28px", marginBottom: "8px" }}>🔍</div>
+                    <strong style={{ fontSize: "14px", color: "#27422f" }}>{t.noFilteredMatches}</strong>
+                    <p style={{ fontSize: "12px", color: "#6a7b6e", margin: "6px 0 16px" }}>There are {results.length} businesses for this search, but none matched your active filter chips.</p>
+                    <button
+                      type="button"
+                      className="primary-button"
+                      onClick={() => {
+                        setFilterOpenNow(false);
+                        setFilterTopRated(false);
+                        setFilterVerified(false);
+                        setFilterWhatsApp(false);
+                      }}
+                    >
+                      ✕ {t.clearFilters}
+                    </button>
+                  </div>
                 ) : (
                   <div className="empty-results">
                     <span>⌕</span>
@@ -11653,6 +11947,8 @@ export default function Home() {
           userCoordinates={locationCoordinates}
           onRequestDeviceLocation={requestDeviceLocation}
           initialTab={businessModalTab}
+          onClaim={(biz) => setClaimBusiness(biz)}
+          onRate={(biz) => setReviewBusiness(biz)}
         />
       )}
       {enquiryProduct && <EnquiryDialog business={enquiryProduct.business} product={enquiryProduct.product} close={() => setEnquiryProduct(null)} submit={submitEnquiry} />}
@@ -11678,6 +11974,23 @@ export default function Home() {
             showNotice(`Thank you! Your ${stars}-star rating for "${reviewBusiness.name}" was recorded.`);
             recordEvent(`Customer rated ${reviewBusiness.name} ${stars} stars`);
             setReviewBusiness(null);
+          }}
+        />
+      )}
+      {claimBusiness && (
+        <ClaimBusinessDialog
+          business={claimBusiness}
+          close={() => setClaimBusiness(null)}
+          onSubmit={(data) => {
+            showNotice(`✓ Claim request received for "${claimBusiness.name}"! Our Hosur onboarding team will call ${data.phone}.`);
+            recordEvent(`Business claim submitted: ${claimBusiness.name} by ${data.ownerName}`);
+            addNotification({
+              title: `Claim Request: ${claimBusiness.name}`,
+              message: `Your verification request as ${data.role} has been received. Our Hosur verification manager will contact ${data.phone} within 24 hours.`,
+              type: "system",
+              read: false,
+            });
+            setClaimBusiness(null);
           }}
         />
       )}
@@ -11737,6 +12050,8 @@ function BusinessDetailDialog({
   userCoordinates,
   onRequestDeviceLocation,
   initialTab = "products",
+  onClaim,
+  onRate,
 }: {
   business: Business;
   distanceKm: number;
@@ -11746,6 +12061,8 @@ function BusinessDetailDialog({
   userCoordinates?: Coordinates | null;
   onRequestDeviceLocation?: () => void;
   initialTab?: "products" | "navigation";
+  onClaim?: (business: Business) => void;
+  onRate?: (business: Business) => void;
 }) {
   const [activeTab, setActiveTab] = useState<"products" | "navigation">(initialTab);
   const [travelMode, setTravelMode] = useState<"driving" | "two-wheeler" | "walking">("driving");
@@ -11873,6 +12190,36 @@ function BusinessDetailDialog({
               title={`Share ${business.name}`}
             >
               ↗ Share
+            </button>
+          </div>
+        </div>
+
+        {/* Rating and Claim Bar */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px", margin: "10px 0 14px", padding: "8px 12px", background: "#f8faf8", borderRadius: "8px", border: "1px solid #e7eee6" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "#254e32" }}>
+            <span>★</span> <strong>{business.rating.toFixed(1)}</strong> <span style={{ color: "#6a7c6f" }}>({business.reviews} reviews)</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <button
+              type="button"
+              onClick={() => {
+                close();
+                onRate?.(business);
+              }}
+              style={{ background: "transparent", border: 0, color: "#2d633b", fontSize: "11px", fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}
+            >
+              ⭐ Rate Business
+            </button>
+            <span style={{ color: "#d0dcd1" }}>|</span>
+            <button
+              type="button"
+              onClick={() => {
+                close();
+                onClaim?.(business);
+              }}
+              style={{ background: "transparent", border: 0, color: "#2d633b", fontSize: "11px", fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}
+            >
+              🏷️ Claim this business ↗
             </button>
           </div>
         </div>
@@ -12273,6 +12620,127 @@ function ReviewDialog({
             </button>
             <button type="submit" className="primary-button">
               Submit Review ★
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  );
+}
+
+function ClaimBusinessDialog({
+  business,
+  close,
+  onSubmit,
+}: {
+  business: Business;
+  close: () => void;
+  onSubmit: (data: { ownerName: string; phone: string; email: string; role: string; gstin: string; note: string }) => void;
+}) {
+  const [ownerName, setOwnerName] = useState("");
+  const [phone, setPhone] = useState(businessPhoneFor(business).replace(/[^0-9]/g, "").slice(-10));
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState("Owner / Proprietor");
+  const [gstin, setGstin] = useState("");
+  const [note, setNote] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ownerName.trim() || !phone.trim()) return;
+    onSubmit({ ownerName: ownerName.trim(), phone: phone.trim(), email: email.trim(), role, gstin: gstin.trim(), note: note.trim() });
+  };
+
+  return (
+    <div
+      className="modal-backdrop"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) close();
+      }}
+    >
+      <section className="modal claim-modal" role="dialog" aria-modal="true" style={{ maxWidth: "490px" }}>
+        <button className="modal-close" onClick={close} aria-label="Close">
+          ×
+        </button>
+        <div className="eyebrow">MERCHANT ONBOARDING & VERIFICATION</div>
+        <h2 style={{ marginTop: "4px", marginBottom: "4px" }}>Claim & Verify {business.name}</h2>
+        <p style={{ margin: "0 0 16px", color: "#68766b", fontSize: "13px", lineHeight: "1.5" }}>
+          Are you the authorized proprietor or manager of this business in Hosur? Claim this listing to manage your products, receive verified customer enquiries, and get your Official Verified Merchant Badge.
+        </p>
+
+        <form onSubmit={handleSubmit} className="stacked-form">
+          <label>
+            Your Full Name (Authorized Person) *
+            <input
+              type="text"
+              placeholder="e.g. Ramesh Kumar"
+              value={ownerName}
+              onChange={(e) => setOwnerName(e.target.value)}
+              required
+            />
+          </label>
+
+          <label>
+            Official Contact Mobile Number *
+            <input
+              type="tel"
+              placeholder="10-digit mobile number"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              maxLength={15}
+              required
+            />
+          </label>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+            <label>
+              Your Designation
+              <select value={role} onChange={(e) => setRole(e.target.value)}>
+                <option value="Owner / Proprietor">Owner / Proprietor</option>
+                <option value="Managing Partner">Managing Partner</option>
+                <option value="Branch Manager">Branch Manager</option>
+                <option value="Authorized Executive">Authorized Executive</option>
+              </select>
+            </label>
+
+            <label>
+              GSTIN / Udyam No. (Optional)
+              <input
+                type="text"
+                placeholder="e.g. 33AAAAA0000A1Z5"
+                value={gstin}
+                onChange={(e) => setGstin(e.target.value.toUpperCase())}
+                maxLength={20}
+              />
+            </label>
+          </div>
+
+          <label>
+            Official Business Email (Optional)
+            <input
+              type="email"
+              placeholder="contact@yourbusiness.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </label>
+
+          <label>
+            Additional Operating Notes / Verification Notes (Optional)
+            <textarea
+              rows={2}
+              placeholder="e.g. Current address updates, operating hours, direct WhatsApp number..."
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              maxLength={300}
+            />
+          </label>
+
+          <div className="form-button-row" style={{ marginTop: "16px" }}>
+            <button type="button" className="outline-button" onClick={close}>
+              Cancel
+            </button>
+            <button type="submit" className="primary-button">
+              Submit Claim Request ↗
             </button>
           </div>
         </form>
