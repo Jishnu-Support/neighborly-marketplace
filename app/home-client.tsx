@@ -144,6 +144,42 @@ type CheckoutRequest = {
   paymentMethod: string;
   status: "Not processed";
 };
+
+export type OrderStatus = "placed" | "accepted" | "preparing" | "ready" | "completed" | "cancelled";
+export type PaymentMethod = "upi" | "card" | "netbanking" | "cod";
+export type PaymentStatus = "paid" | "pending";
+
+export type OrderItem = {
+  productId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  unit: string;
+  image?: string;
+};
+
+export type OrderRecord = {
+  id: string;
+  businessName: string;
+  customerName: string;
+  customerPhone: string;
+  customerAddress: string;
+  deliveryType: "delivery" | "pickup";
+  notes?: string;
+  items: OrderItem[];
+  itemTotal: number;
+  deliveryFee: number;
+  taxes: number;
+  totalAmount: number;
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  paymentTransactionId: string;
+  upiId?: string;
+  status: OrderStatus;
+  createdAt: string;
+  estimatedTime: string;
+};
+
 type DemoData = {
   favorites: string[];
   recentSearches: string[];
@@ -151,10 +187,11 @@ type DemoData = {
   events: DemoEvent[];
   checkouts: CheckoutRequest[];
   businesses: Business[];
+  orders?: OrderRecord[];
 };
 type TaxonomyNode = { name: string; children: TaxonomyNode[] };
 
-export type NotificationType = "sos" | "enquiry" | "offer" | "business" | "favorite" | "system";
+export type NotificationType = "sos" | "enquiry" | "offer" | "business" | "favorite" | "system" | "order";
 
 export type MarketplaceNotification = {
   id: string;
@@ -165,7 +202,7 @@ export type MarketplaceNotification = {
   read: boolean;
   linkText?: string;
   action?: {
-    type: "search" | "business" | "role" | "category" | "sos";
+    type: "search" | "business" | "role" | "category" | "sos" | "order" | "portal";
     payload: string;
   };
 };
@@ -318,7 +355,8 @@ function isDemoData(value: unknown): value is DemoData {
       (item.vehicleModels === undefined || isStringArray(item.vehicleModels)) &&
       (item.categories === undefined || isStringArray(item.categories)) &&
       (item.taxonomyPaths === undefined || (Array.isArray(item.taxonomyPaths) && item.taxonomyPaths.every((path) => isStringArray(path)))) &&
-      (item.taxonomyTags === undefined || (Array.isArray(item.taxonomyTags) && item.taxonomyTags.every((entry) => typeof entry === "string"))));
+      (item.taxonomyTags === undefined || (Array.isArray(item.taxonomyTags) && item.taxonomyTags.every((entry) => typeof entry === "string")))) &&
+    (data.orders === undefined || Array.isArray(data.orders));
 }
 
 function buildTaxonomy(paths: string[][]): TaxonomyNode[] {
@@ -9848,6 +9886,75 @@ const initialBusinesses: Business[] = [
   }
 ];
 
+const initialSampleOrders: OrderRecord[] = [
+  {
+    id: "ORD-78214",
+    businessName: "Maya's Home Kitchen",
+    customerName: "Kavitha R.",
+    customerPhone: "+91 98452 31209",
+    customerAddress: "Plot 42, Rayakottai Road, Near Old Bus Stand, Hosur - 635109",
+    deliveryType: "delivery",
+    notes: "Please pack extra sambar and fresh banana leaf.",
+    items: [
+      {
+        productId: "mayas-lunch-plate",
+        name: "Homestyle lunch plate",
+        price: 180,
+        quantity: 2,
+        unit: "per plate",
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&auto=format&fit=crop&q=80"
+      },
+      {
+        productId: "mayas-breakfast-box",
+        name: "Breakfast box",
+        price: 120,
+        quantity: 1,
+        unit: "per box",
+        image: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=600&auto=format&fit=crop&q=80"
+      }
+    ],
+    itemTotal: 480,
+    deliveryFee: 30,
+    taxes: 24,
+    totalAmount: 534,
+    paymentMethod: "upi",
+    paymentStatus: "paid",
+    paymentTransactionId: "UPI/261031/94821038291",
+    upiId: "kavitha.r@oksbi",
+    status: "preparing",
+    createdAt: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+    estimatedTime: "20 - 30 mins"
+  },
+  {
+    id: "ORD-65190",
+    businessName: "Sunday Loom",
+    customerName: "Arun Kumar S.",
+    customerPhone: "+91 94432 77180",
+    customerAddress: "Flat 204, Green Meadows, Bagalur Road, Hosur - 635103",
+    deliveryType: "pickup",
+    notes: "Will pick up around 5:30 PM after office.",
+    items: [
+      {
+        productId: "p1",
+        name: "Organic Khadi Kurta",
+        price: 850,
+        quantity: 1,
+        unit: "piece"
+      }
+    ],
+    itemTotal: 850,
+    deliveryFee: 0,
+    taxes: 42,
+    totalAmount: 892,
+    paymentMethod: "card",
+    paymentStatus: "paid",
+    paymentTransactionId: "TXN-CRD-84729103",
+    status: "ready",
+    createdAt: new Date(Date.now() - 70 * 60 * 1000).toISOString(),
+    estimatedTime: "Ready for pickup"
+  }
+];
+
 const emptyDemoData: DemoData = {
   favorites: [],
   recentSearches: [],
@@ -9855,6 +9962,7 @@ const emptyDemoData: DemoData = {
   events: [],
   checkouts: [],
   businesses: initialBusinesses,
+  orders: initialSampleOrders,
 };
 
 const planNames = ["Starter", "Growth", "Spotlight"];
@@ -10132,6 +10240,8 @@ export default function Home() {
   const [reviewBusiness, setReviewBusiness] = useState<Business | null>(null);
   const [isListening, setIsListening] = useState(false);
   const [enquiryProduct, setEnquiryProduct] = useState<{ business: Business; product: Product } | null>(null);
+  const [orderingItem, setOrderingItem] = useState<{ business: Business; product: Product } | null>(null);
+  const [activeReceipt, setActiveReceipt] = useState<OrderRecord | null>(null);
   const [claimBusiness, setClaimBusiness] = useState<Business | null>(null);
   const [selectedNeighborhood, setSelectedNeighborhood] = useState("All Hosur");
   const [lang, setLang] = useState<Language>("en");
@@ -10261,6 +10371,10 @@ export default function Home() {
       setRole("Discover");
     } else if (notif.action.type === "role") {
       setRole(notif.action.payload as Role);
+    } else if (notif.action.type === "portal") {
+      setRole(notif.action.payload as Role);
+    } else if (notif.action.type === "order") {
+      setRole("Business");
     } else if (notif.action.type === "sos") {
       setDialog("sos");
     }
@@ -10389,6 +10503,7 @@ export default function Home() {
           setDemoData({
             ...parsed,
             businesses: [...custom, ...initialBusinesses],
+            orders: Array.isArray(parsed.orders) && parsed.orders.length > 0 ? parsed.orders : initialSampleOrders,
           });
         }
       }
@@ -10876,6 +10991,74 @@ export default function Home() {
       linkText: "View store",
       action: { type: "business", payload: business.name },
     });
+  }
+
+  function placeOrder(orderData: Omit<OrderRecord, "id" | "createdAt">) {
+    const orderId = `ORD-${Math.floor(10000 + Math.random() * 90000)}`;
+    const newOrder: OrderRecord = {
+      ...orderData,
+      id: orderId,
+      createdAt: new Date().toISOString(),
+    };
+
+    setDemoData((prev) => ({
+      ...prev,
+      orders: [newOrder, ...(prev.orders || [])],
+    }));
+
+    recordEvent(`Order placed: ${orderId} for ${orderData.businessName}`);
+
+    // Dispatches real-time merchant notification
+    addNotification({
+      type: "order",
+      title: `🛍️ New Order #${orderId} - ₹${newOrder.totalAmount}`,
+      message: `${newOrder.customerName} ordered ${newOrder.items.map((i) => `${i.quantity}x ${i.name}`).join(", ")} from ${newOrder.businessName}. Please accept and prepare!`,
+      linkText: "View order",
+      action: {
+        type: "portal",
+        payload: "Business",
+      },
+    });
+
+    setOrderingItem(null);
+    setActiveReceipt(newOrder);
+    showNotice(`🎉 Order #${orderId} placed successfully! The business partner has been alerted to prepare your order.`);
+  }
+
+  function updateOrderStatus(orderId: string, nextStatus: OrderStatus) {
+    let orderToNotify: OrderRecord | undefined;
+    setDemoData((prev) => {
+      const orders = (prev.orders || []).map((o) => {
+        if (o.id === orderId) {
+          orderToNotify = { ...o, status: nextStatus };
+          return orderToNotify;
+        }
+        return o;
+      });
+      return { ...prev, orders };
+    });
+
+    recordEvent(`Order status updated: ${orderId} to ${nextStatus}`);
+
+    const statusMessage =
+      nextStatus === "accepted" ? "accepted by store and entering preparation 👨‍🍳" :
+      nextStatus === "preparing" ? "now being freshly prepared by the business partner 👨‍🍳" :
+      nextStatus === "ready" ? "marked READY! Prepared and packed for pickup / delivery 🛵" :
+      nextStatus === "completed" ? "completed and successfully delivered ✅" :
+      nextStatus === "cancelled" ? "cancelled by store" : nextStatus;
+
+    addNotification({
+      type: "order",
+      title: `Order #${orderId} Update: ${nextStatus.toUpperCase()}`,
+      message: `Your order from ${orderToNotify?.businessName || "the store"} is ${statusMessage}.`,
+      linkText: "Track order",
+      action: {
+        type: "portal",
+        payload: "Account",
+      },
+    });
+
+    showNotice(`Order #${orderId} updated to ${nextStatus.toUpperCase()}! Customer notified.`);
   }
 
   function addProduct(businessName: string, product: Omit<Product, "id">) {
@@ -12487,6 +12670,18 @@ export default function Home() {
                                   </button>
                                   <button
                                     type="button"
+                                    style={{ border: 0, background: "#0f766e", color: "#fff", padding: "4px 8px", borderRadius: "4px", fontSize: "9.5px", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setOrderingItem({ business, product });
+                                      setSearchDropdownOpen(false);
+                                      recordEvent(`Autocomplete order: ${product.name}`);
+                                    }}
+                                  >
+                                    🛍️ Order
+                                  </button>
+                                  <button
+                                    type="button"
                                     style={{ border: 0, background: "#386b4b", color: "#fff", padding: "4px 8px", borderRadius: "4px", fontSize: "9.5px", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -12892,6 +13087,17 @@ export default function Home() {
                           </button>
                           <button
                             type="button"
+                            className="related-product-order-btn"
+                            style={{ border: 0, background: "#0f766e", color: "#ffffff", borderRadius: "5px", padding: "6px 11px", font: "700 9.5px Manrope, sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}
+                            onClick={() => {
+                              setOrderingItem({ business, product });
+                              recordEvent(`Related product order clicked: ${product.name}`);
+                            }}
+                          >
+                            🛍️ Order
+                          </button>
+                          <button
+                            type="button"
                             className="related-product-enquire-btn"
                             style={{ border: 0, background: "#386b4b", color: "#ffffff", borderRadius: "5px", padding: "6px 11px", font: "700 9.5px Manrope, sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}
                             onClick={() => {
@@ -13174,13 +13380,33 @@ export default function Home() {
           </div>
         )}
 
-        {role === "Account" && <CustomerPortal data={demoData} onRemoveFavorite={toggleFavorite} onSearch={(term) => { setQuery(term); setCategory("All"); setCategoryPath([]); setRole("Discover"); }} onFindBusiness={(name) => { const business = businesses.find((item) => item.name === name); if (business) setSelectedBusiness(business); }} onOpenAccount={() => setDialog("login")} showNotice={showNotice} />}
+        {role === "Account" && (
+          <CustomerPortal
+            data={demoData}
+            onRemoveFavorite={toggleFavorite}
+            onSearch={(term) => {
+              setQuery(term);
+              setCategory("All");
+              setCategoryPath([]);
+              setRole("Discover");
+            }}
+            onFindBusiness={(name) => {
+              const business = businesses.find((item) => item.name === name);
+              if (business) setSelectedBusiness(business);
+            }}
+            onOpenAccount={() => setDialog("login")}
+            onViewReceipt={(order) => setActiveReceipt(order)}
+            showNotice={showNotice}
+          />
+        )}
         {role === "Business" && (
           <BusinessPortal
             businesses={businessAccountBusinesses}
             categoryConfig={categoryConfig}
             enquiries={demoData.enquiries}
             checkouts={demoData.checkouts}
+            orders={demoData.orders || []}
+            onUpdateOrderStatus={updateOrderStatus}
             openBusinessProfile={() => window.dispatchEvent(new Event("neighborly-open-business-profile"))}
             openPlans={() => setDialog("plans")}
             verifyLocation={verifyBusinessLocation}
@@ -13197,6 +13423,24 @@ export default function Home() {
       {notice && <div className="toast" role="status"><span>✓</span>{notice}<button onClick={() => setNotice("")} aria-label="Dismiss">×</button></div>}
       {storageError && <div className="storage-warning" role="status">Demo data could not be saved in this browser: {storageError}</div>}
       {dialog && <Dialog kind={dialog} close={() => setDialog(null)} onOpenProfile={openMemberProfile} profileRole={role === "Account" || role === "Business" || role === "Agent" || role === "Company" ? role : "Account"} profileIdentity={role === "Company" ? sessionIdentity : ""} onLogin={logIn} onRegisterCustomerLocation={registerCustomerLocation} onBusiness={submitBusiness} businesses={role === "Business" ? businessAccountBusinesses : businesses} categories={categoryConfig.sectors} brandLogos={categoryConfig.brandLogos} onCheckout={submitCheckout} showNotice={showNotice} />}
+      {orderingItem && (
+        <OrderCheckoutDialog
+          business={orderingItem.business}
+          product={orderingItem.product}
+          close={() => setOrderingItem(null)}
+          onPlaceOrder={placeOrder}
+        />
+      )}
+      {activeReceipt && (
+        <OrderReceiptModal
+          order={activeReceipt}
+          close={() => setActiveReceipt(null)}
+          onViewInPortal={() => {
+            setActiveReceipt(null);
+            setRole("Account");
+          }}
+        />
+      )}
       {selectedBusiness && (
         <BusinessDetailDialog
           business={businesses.find((item) => item.name === selectedBusiness.name) || selectedBusiness}
@@ -13207,6 +13451,11 @@ export default function Home() {
             setSelectedBusiness(null);
             setEnquiryProduct({ business, product });
             recordEvent("Customer selected a product or service");
+          }}
+          onOrderProduct={(business, product) => {
+            setSelectedBusiness(null);
+            setOrderingItem({ business, product });
+            recordEvent(`Customer started ordering ${product.name} from ${business.name}`);
           }}
           userCoordinates={locationCoordinates}
           onRequestDeviceLocation={requestDeviceLocation}
@@ -13268,6 +13517,7 @@ function CustomerPortal({
   onSearch,
   onFindBusiness,
   onOpenAccount,
+  onViewReceipt,
   showNotice,
 }: {
   data: DemoData;
@@ -13275,6 +13525,7 @@ function CustomerPortal({
   onSearch: (term: string) => void;
   onFindBusiness: (businessName: string) => void;
   onOpenAccount: () => void;
+  onViewReceipt?: (order: OrderRecord) => void;
   showNotice: (message: string) => void;
 }) {
   const [tab, setTab] = useState("Overview");
@@ -13282,14 +13533,33 @@ function CustomerPortal({
   const savedBusinesses = data.businesses.filter((business) => data.favorites.includes(business.name));
   return <div className="page-content portal-content">
     <div className="portal-header"><div><div className="eyebrow"><span /> YOUR NEIGHBORHOOD ACTIVITY</div><h1>Your local <em>shortlist.</em></h1><p>Saved places, searches and enquiries stay in this browser in this demo.</p></div><button className="primary-button" onClick={onOpenAccount}>Sign in or register ↗</button></div>
-    <div className="portal-tabs">{["Overview", "Saved", "Recent searches", "Enquiries", "Profile"].map((item) => <button key={item} className={tab === item ? "current" : ""} onClick={() => setTab(item)}>{item}</button>)}</div>
+    <div className="portal-tabs">{["Overview", "Orders", "Saved", "Recent searches", "Enquiries", "Profile"].map((item) => <button key={item} className={tab === item ? "current" : ""} onClick={() => setTab(item)}>{item}</button>)}</div>
     {tab === "Overview" && <>
-      <div className="metric-grid"><Metric label="Saved businesses" value={String(data.favorites.length)} delta="Stored on this device" icon="♡" /><Metric label="Recent searches" value={String(data.recentSearches.length)} delta="Searches you chose to run" icon="⌕" /><Metric label="Enquiries" value={String(data.enquiries.length)} delta="Local demo drafts" icon="↗" /></div>
+      <div className="metric-grid">
+        <Metric label="Orders placed" value={String((data.orders || []).length)} delta="Active orders on device" icon="🛍️" />
+        <Metric label="Saved businesses" value={String(data.favorites.length)} delta="Stored on this device" icon="♡" />
+        <Metric label="Recent searches" value={String(data.recentSearches.length)} delta="Searches you chose to run" icon="⌕" />
+        <Metric label="Enquiries" value={String(data.enquiries.length)} delta="Local demo drafts" icon="↗" />
+      </div>
       <section className="panel tab-panel"><div className="panel-heading"><div><div className="eyebrow">YOUR SHORTLIST</div><h2>Saved businesses</h2></div><button className="text-link" onClick={() => setTab("Saved")}>See saved →</button></div>
         {savedBusinesses.length ? savedBusinesses.slice(0, 4).map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category}</small></span><button className="outline-button" onClick={() => onFindBusiness(business.name)}>View catalogue</button></div>) : <EmptyState title="Your shortlist is ready" text="Save a local business from Discover to find it here." />}
       </section>
       <div className="form-note"><strong>Private to this browser</strong><span>Favorites, searches and enquiries use this device's local storage. They are not synced to a customer account or sent to businesses.</span></div>
     </>}
+    {tab === "Orders" && (
+      <section className="panel tab-panel">
+        <div className="panel-heading">
+          <div>
+            <div className="eyebrow">YOUR ORDERS</div>
+            <h2>Order History &amp; Live Tracking</h2>
+          </div>
+        </div>
+        <CustomerOrdersManager
+          orders={data.orders || []}
+          onViewReceipt={onViewReceipt || (() => {})}
+        />
+      </section>
+    )}
     {tab === "Saved" && <section className="panel tab-panel"><div className="eyebrow">SAVED BUSINESSES</div><h2>Your favorites</h2>{savedBusinesses.length ? savedBusinesses.map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category} · {business.distance.toFixed(1)} km (sample distance)</small></span><button className="outline-button" onClick={() => onFindBusiness(business.name)}>View</button><button className="row-more" aria-label={`Remove ${business.name} from saved`} onClick={() => onRemoveFavorite(business.name)}>×</button></div>) : <EmptyState title="No saved businesses yet" text="Tap the heart on a search result to save it on this device." />}</section>}
     {tab === "Recent searches" && <section className="panel tab-panel"><div className="eyebrow">YOUR RECENT SEARCHES</div><h2>Pick up where you left off</h2>{data.recentSearches.length ? data.recentSearches.map((term) => <button className="history-row" key={term} onClick={() => onSearch(term)}><span>⌕</span><strong>{term}</strong><span>Search again →</span></button>) : <EmptyState title="No recent searches" text="Your search history appears here after you choose Find nearby." />}</section>}
     {tab === "Enquiries" && <section className="panel tab-panel"><div className="eyebrow">YOUR ENQUIRY HISTORY</div><h2>Requests saved on this device</h2>{data.enquiries.length ? data.enquiries.map((enquiry) => <EnquiryRow enquiry={enquiry} key={enquiry.id} />) : <EmptyState title="No enquiries yet" text="Open a product or service and choose Request information to create a local demo enquiry." />}</section>}
@@ -13311,6 +13581,7 @@ function BusinessDetailDialog({
   isDeviceDistance,
   close,
   requestProduct,
+  onOrderProduct,
   userCoordinates,
   onRequestDeviceLocation,
   initialTab = "products",
@@ -13322,6 +13593,7 @@ function BusinessDetailDialog({
   isDeviceDistance: boolean;
   close: () => void;
   requestProduct: (business: Business, product: Product) => void;
+  onOrderProduct?: (business: Business, product: Product) => void;
   userCoordinates?: Coordinates | null;
   onRequestDeviceLocation?: () => void;
   initialTab?: "products" | "reviews" | "navigation";
@@ -13601,6 +13873,25 @@ function BusinessDetailDialog({
                           </div>
                         </div>
                         <div className="catalog-card-actions">
+                          {onOrderProduct && (
+                            <button
+                              type="button"
+                              className="catalog-action-btn order-now"
+                              style={{
+                                background: "#0f766e",
+                                color: "#ffffff",
+                                fontWeight: 700,
+                                border: "none",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "4px",
+                                cursor: "pointer",
+                              }}
+                              onClick={() => onOrderProduct(business, product)}
+                            >
+                              🛍️ Order now
+                            </button>
+                          )}
                           <button
                             type="button"
                             className="catalog-action-btn primary"
@@ -14248,11 +14539,1032 @@ function ClaimBusinessDialog({
   );
 }
 
+function OrderCheckoutDialog({
+  business,
+  product,
+  close,
+  onPlaceOrder,
+}: {
+  business: Business;
+  product: Product;
+  close: () => void;
+  onPlaceOrder: (order: Omit<OrderRecord, "id" | "createdAt">) => void;
+}) {
+  const [quantity, setQuantity] = useState(1);
+  const [deliveryType, setDeliveryType] = useState<"delivery" | "pickup">("delivery");
+  const [customerName, setCustomerName] = useState("Senthil Nathan");
+  const [customerPhone, setCustomerPhone] = useState("+91 98450 12345");
+  const [customerAddress, setCustomerAddress] = useState(
+    "No. 18, 2nd Cross, Bagalur Road, Near Gandhi Statue, Hosur - 635109"
+  );
+  const [notes, setNotes] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("upi");
+  const [upiId, setUpiId] = useState("senthil.n@okhdfcbank");
+  const [cardData, setCardData] = useState({
+    number: "4532 8912 3456 7890",
+    expiry: "09/28",
+    cvv: "321",
+    name: "Senthil Nathan",
+  });
+  const [selectedBank, setSelectedBank] = useState("State Bank of India (SBI)");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingStage, setProcessingStage] = useState("Connecting to Payment Gateway...");
+
+  const basePrice = product.price > 0 ? product.price : 250;
+  const itemTotal = basePrice * quantity;
+  const deliveryFee = deliveryType === "delivery" ? 30 : 0;
+  const taxes = Math.round(itemTotal * 0.05); // 5% GST
+  const totalAmount = itemTotal + deliveryFee + taxes;
+
+  const merchantUpiVpa = `${business.name.toLowerCase().replace(/[^a-z0-9]/g, "")}.hosur@okhdfcbank`;
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (isProcessing) return;
+
+    setIsProcessing(true);
+    setProcessingStage(
+      paymentMethod === "upi"
+        ? "Connecting to UPI / NPCI Gateway..."
+        : paymentMethod === "card"
+        ? "Securing 256-bit SSL transaction..."
+        : paymentMethod === "netbanking"
+        ? `Authorizing payment with ${selectedBank}...`
+        : "Confirming Cash on Delivery Order..."
+    );
+
+    setTimeout(() => {
+      setProcessingStage("Payment Authorized! Generating receipt & notifying merchant...");
+      setTimeout(() => {
+        const txnId =
+          paymentMethod === "upi"
+            ? `UPI/261031/${Math.floor(100000000000 + Math.random() * 900000000000)}`
+            : paymentMethod === "card"
+            ? `TXN-CRD-${Math.floor(10000000 + Math.random() * 90000000)}`
+            : paymentMethod === "netbanking"
+            ? `NET-BNK-${Math.floor(10000000 + Math.random() * 90000000)}`
+            : `COD-${Math.floor(10000 + Math.random() * 90000)}`;
+
+        onPlaceOrder({
+          businessName: business.name,
+          customerName: customerName.trim() || "Customer",
+          customerPhone: customerPhone.trim() || "+91 98450 12345",
+          customerAddress: deliveryType === "delivery" ? customerAddress.trim() : `Store Pickup: ${business.name}, Hosur`,
+          deliveryType,
+          notes: notes.trim(),
+          items: [
+            {
+              productId: product.id,
+              name: product.name,
+              price: basePrice,
+              quantity,
+              unit: product.unit || "unit",
+              image: product.image,
+            },
+          ],
+          itemTotal,
+          deliveryFee,
+          taxes,
+          totalAmount,
+          paymentMethod,
+          paymentStatus: paymentMethod === "cod" ? "pending" : "paid",
+          paymentTransactionId: txnId,
+          upiId: paymentMethod === "upi" ? upiId : undefined,
+          status: "placed",
+          estimatedTime: deliveryType === "delivery" ? "25 - 35 mins" : "15 - 20 mins",
+        });
+      }, 700);
+    }, 900);
+  }
+
+  return (
+    <div className="order-modal-backdrop" onClick={close}>
+      <div className="order-checkout-container" onClick={(e) => e.stopPropagation()}>
+        <div className="order-checkout-header">
+          <div>
+            <h3>
+              <span>🛍️</span> Complete Your Order
+            </h3>
+            <span className="biz-badge">From {business.name}</span>
+          </div>
+          <button
+            type="button"
+            onClick={close}
+            aria-label="Close"
+            style={{
+              background: "transparent",
+              border: "none",
+              color: "#ffffff",
+              fontSize: "22px",
+              cursor: "pointer",
+            }}
+          >
+            ✕
+          </button>
+        </div>
+
+        {isProcessing ? (
+          <div style={{ padding: "60px 24px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
+            <div style={{ width: "48px", height: "48px", border: "4px solid #d1fae5", borderTopColor: "#0f766e", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+            <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+            <h4 style={{ margin: 0, fontSize: "17px", color: "#0f766e", fontWeight: 800 }}>Processing Payment</h4>
+            <p style={{ margin: 0, fontSize: "14px", color: "#475569" }}>{processingStage}</p>
+            <div style={{ fontSize: "12px", color: "#059669", background: "#ecfdf5", padding: "6px 14px", borderRadius: "20px", fontWeight: 700 }}>
+              Amount: ₹{totalAmount.toLocaleString("en-IN")} · 256-Bit Encrypted
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} style={{ display: "contents" }}>
+            <div className="order-checkout-body">
+              {/* Product Card */}
+              <div>
+                <div className="order-section-title"><span>📦</span> Selected Item</div>
+                <div className="order-item-summary-card">
+                  {product.image ? (
+                    <img src={product.image} alt={product.name} className="order-item-thumb" />
+                  ) : (
+                    <div className="order-item-thumb">🛍️</div>
+                  )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 800, fontSize: "15px", color: "#143e21" }}>{product.name}</div>
+                    <div style={{ fontSize: "12px", color: "#5d7363", margin: "2px 0 6px" }}>{product.description}</div>
+                    <div style={{ fontSize: "14px", fontWeight: 800, color: "#0f766e" }}>
+                      ₹{basePrice.toLocaleString("en-IN")}
+                      {product.unit ? <small style={{ fontSize: "11px", fontWeight: 500, color: "#6e8574" }}> /{product.unit}</small> : null}
+                    </div>
+                  </div>
+                  <div className="order-qty-pill">
+                    <button
+                      type="button"
+                      className="order-qty-btn"
+                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                      aria-label="Decrease quantity"
+                    >
+                      −
+                    </button>
+                    <span style={{ fontWeight: 800, fontSize: "14px", minWidth: "18px", textAlign: "center" }}>{quantity}</span>
+                    <button
+                      type="button"
+                      className="order-qty-btn"
+                      onClick={() => setQuantity((q) => Math.min(20, q + 1))}
+                      aria-label="Increase quantity"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Fulfilment Mode */}
+              <div>
+                <div className="order-section-title"><span>🚚</span> Fulfilment Option</div>
+                <div className="delivery-type-toggle">
+                  <button
+                    type="button"
+                    className={`delivery-toggle-btn ${deliveryType === "delivery" ? "active" : ""}`}
+                    onClick={() => setDeliveryType("delivery")}
+                  >
+                    <span>🛵 Home Delivery</span>
+                    <small style={{ fontSize: "11px", color: "#059669", fontWeight: 700 }}>+₹30</small>
+                  </button>
+                  <button
+                    type="button"
+                    className={`delivery-toggle-btn ${deliveryType === "pickup" ? "active" : ""}`}
+                    onClick={() => setDeliveryType("pickup")}
+                  >
+                    <span>🏬 Store Pickup</span>
+                    <small style={{ fontSize: "11px", color: "#059669", fontWeight: 700 }}>FREE</small>
+                  </button>
+                </div>
+              </div>
+
+              {/* Customer Details */}
+              <div>
+                <div className="order-section-title"><span>👤</span> Contact &amp; Delivery Details</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "10px" }}>
+                  <label style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "#36593e" }}>
+                    Your Name
+                    <input
+                      type="text"
+                      required
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      placeholder="e.g. Senthil Nathan"
+                      style={{ width: "100%", padding: "9px 12px", border: "1px solid #c9dcc8", borderRadius: "8px", marginTop: "4px" }}
+                    />
+                  </label>
+                  <label style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "#36593e" }}>
+                    Mobile Number (for updates)
+                    <input
+                      type="tel"
+                      required
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      placeholder="+91 98450 12345"
+                      style={{ width: "100%", padding: "9px 12px", border: "1px solid #c9dcc8", borderRadius: "8px", marginTop: "4px" }}
+                    />
+                  </label>
+                </div>
+
+                {deliveryType === "delivery" && (
+                  <label style={{ display: "block", marginBottom: "10px", fontSize: "12px", fontWeight: 700, color: "#36593e" }}>
+                    Delivery Address in Hosur
+                    <textarea
+                      rows={2}
+                      required
+                      value={customerAddress}
+                      onChange={(e) => setCustomerAddress(e.target.value)}
+                      placeholder="Door number, street name, Hosur area, landmark, pincode..."
+                      style={{ width: "100%", padding: "9px 12px", border: "1px solid #c9dcc8", borderRadius: "8px", marginTop: "4px", resize: "vertical" }}
+                    />
+                  </label>
+                )}
+
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#36593e" }}>
+                  Cooking / Packing Instructions (Optional)
+                  <input
+                    type="text"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="e.g. Pack spicy, extra chutney, banana leaf wrapping..."
+                    style={{ width: "100%", padding: "9px 12px", border: "1px solid #c9dcc8", borderRadius: "8px", marginTop: "4px" }}
+                  />
+                </label>
+              </div>
+
+              {/* Payment System */}
+              <div>
+                <div className="order-section-title"><span>💳</span> Integrated Payment System</div>
+                <div className="payment-method-selector" style={{ marginBottom: "12px" }}>
+                  <button
+                    type="button"
+                    className={`payment-method-tab ${paymentMethod === "upi" ? "active" : ""}`}
+                    onClick={() => setPaymentMethod("upi")}
+                  >
+                    <span className="icon">📱</span>
+                    <span>UPI (Instant)</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`payment-method-tab ${paymentMethod === "card" ? "active" : ""}`}
+                    onClick={() => setPaymentMethod("card")}
+                  >
+                    <span className="icon">💳</span>
+                    <span>Cards</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`payment-method-tab ${paymentMethod === "netbanking" ? "active" : ""}`}
+                    onClick={() => setPaymentMethod("netbanking")}
+                  >
+                    <span className="icon">🏦</span>
+                    <span>Net Banking</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`payment-method-tab ${paymentMethod === "cod" ? "active" : ""}`}
+                    onClick={() => setPaymentMethod("cod")}
+                  >
+                    <span className="icon">💵</span>
+                    <span>{deliveryType === "delivery" ? "Cash on Delivery" : "Pay at Store"}</span>
+                  </button>
+                </div>
+
+                {/* UPI Interface */}
+                {paymentMethod === "upi" && (
+                  <div className="payment-panel">
+                    <div className="upi-qr-card">
+                      <svg width="84" height="84" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="100" height="100" fill="white" />
+                        <rect x="10" y="10" width="28" height="28" stroke="#166534" strokeWidth="6" fill="none" />
+                        <rect x="18" y="18" width="12" height="12" fill="#166534" />
+                        <rect x="62" y="10" width="28" height="28" stroke="#166534" strokeWidth="6" fill="none" />
+                        <rect x="70" y="18" width="12" height="12" fill="#166534" />
+                        <rect x="10" y="62" width="28" height="28" stroke="#166534" strokeWidth="6" fill="none" />
+                        <rect x="18" y="70" width="12" height="12" fill="#166534" />
+                        <rect x="46" y="20" width="8" height="24" fill="#0f766e" />
+                        <rect x="20" y="46" width="24" height="8" fill="#0f766e" />
+                        <rect x="62" y="46" width="28" height="8" fill="#0f766e" />
+                        <rect x="46" y="62" width="8" height="28" fill="#0f766e" />
+                        <rect x="62" y="72" width="16" height="16" fill="#166534" />
+                        <circle cx="50" cy="50" r="10" fill="#0f766e" />
+                        <text x="50" y="54" fontSize="12" fontWeight="bold" fill="white" textAnchor="middle">₹</text>
+                      </svg>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: "11px", fontWeight: 700, color: "#627d68", textTransform: "uppercase" }}>Merchant UPI VPA</div>
+                        <div style={{ fontSize: "13px", fontWeight: 800, color: "#166534", wordBreak: "break-all" }}>{merchantUpiVpa}</div>
+                        <div style={{ fontSize: "11px", color: "#526d58", marginTop: "4px" }}>
+                          Scan with Google Pay, PhonePe, Paytm, BHIM, or enter your UPI ID below.
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: "flex", gap: "6px", margin: "12px 0 8px", flexWrap: "wrap" }}>
+                      {["Google Pay", "PhonePe", "Paytm", "BHIM"].map((appName) => (
+                        <button
+                          key={appName}
+                          type="button"
+                          onClick={() => setUpiId(`senthil@${appName.toLowerCase().replace(/\s/g, "")}`)}
+                          style={{
+                            background: "#ffffff",
+                            border: "1px solid #cfded0",
+                            borderRadius: "6px",
+                            padding: "4px 8px",
+                            fontSize: "11px",
+                            fontWeight: 700,
+                            color: "#284a32",
+                            cursor: "pointer",
+                          }}
+                        >
+                          ⚡ {appName}
+                        </button>
+                      ))}
+                    </div>
+
+                    <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#36593e", marginTop: "6px" }}>
+                      Your UPI ID (VPA)
+                      <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
+                        <input
+                          type="text"
+                          value={upiId}
+                          onChange={(e) => setUpiId(e.target.value)}
+                          placeholder="e.g. mobile@upi"
+                          style={{ flex: 1, padding: "8px 10px", border: "1px solid #c9dcc8", borderRadius: "6px", fontSize: "13px" }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setUpiId("hosur.buyer@okhdfcbank")}
+                          style={{ background: "#e8f5e9", border: "1px solid #b7deb9", color: "#1b5e20", borderRadius: "6px", padding: "0 10px", fontSize: "11px", fontWeight: 700, cursor: "pointer" }}
+                        >
+                          Auto-fill
+                        </button>
+                      </div>
+                    </label>
+                  </div>
+                )}
+
+                {/* Card Interface */}
+                {paymentMethod === "card" && (
+                  <div className="payment-panel">
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                      <span style={{ fontSize: "12px", fontWeight: 700, color: "#2d5236" }}>Credit or Debit Card</span>
+                      <span style={{ fontSize: "11px", color: "#059669", fontWeight: 700 }}>RuPay · Visa · Mastercard</span>
+                    </div>
+                    <label style={{ display: "block", marginBottom: "8px", fontSize: "11px", fontWeight: 700, color: "#36593e" }}>
+                      Card Number
+                      <input
+                        type="text"
+                        value={cardData.number}
+                        onChange={(e) => setCardData({ ...cardData, number: e.target.value })}
+                        maxLength={19}
+                        style={{ width: "100%", padding: "8px 10px", border: "1px solid #c9dcc8", borderRadius: "6px", marginTop: "3px", fontFamily: "monospace", letterSpacing: "1px" }}
+                      />
+                    </label>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr", gap: "8px" }}>
+                      <label style={{ fontSize: "11px", fontWeight: 700, color: "#36593e" }}>
+                        Expiry (MM/YY)
+                        <input
+                          type="text"
+                          value={cardData.expiry}
+                          onChange={(e) => setCardData({ ...cardData, expiry: e.target.value })}
+                          maxLength={5}
+                          style={{ width: "100%", padding: "8px 10px", border: "1px solid #c9dcc8", borderRadius: "6px", marginTop: "3px" }}
+                        />
+                      </label>
+                      <label style={{ fontSize: "11px", fontWeight: 700, color: "#36593e" }}>
+                        CVV
+                        <input
+                          type="password"
+                          value={cardData.cvv}
+                          onChange={(e) => setCardData({ ...cardData, cvv: e.target.value })}
+                          maxLength={4}
+                          style={{ width: "100%", padding: "8px 10px", border: "1px solid #c9dcc8", borderRadius: "6px", marginTop: "3px" }}
+                        />
+                      </label>
+                      <label style={{ fontSize: "11px", fontWeight: 700, color: "#36593e" }}>
+                        Name on Card
+                        <input
+                          type="text"
+                          value={cardData.name}
+                          onChange={(e) => setCardData({ ...cardData, name: e.target.value })}
+                          style={{ width: "100%", padding: "8px 10px", border: "1px solid #c9dcc8", borderRadius: "6px", marginTop: "3px" }}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                )}
+
+                {/* Net Banking Interface */}
+                {paymentMethod === "netbanking" && (
+                  <div className="payment-panel">
+                    <span style={{ fontSize: "12px", fontWeight: 700, color: "#2d5236", display: "block", marginBottom: "8px" }}>
+                      Select Your Bank
+                    </span>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                      {["State Bank of India (SBI)", "HDFC Bank", "ICICI Bank", "Axis Bank", "Kotak Mahindra Bank", "Canara Bank"].map((bank) => (
+                        <button
+                          key={bank}
+                          type="button"
+                          onClick={() => setSelectedBank(bank)}
+                          style={{
+                            padding: "8px 10px",
+                            background: selectedBank === bank ? "#f0fdf4" : "#ffffff",
+                            border: `1.5px solid ${selectedBank === bank ? "#16a34a" : "#cddccb"}`,
+                            borderRadius: "6px",
+                            fontSize: "12px",
+                            fontWeight: 700,
+                            color: selectedBank === bank ? "#15803d" : "#36593e",
+                            cursor: "pointer",
+                            textAlign: "left",
+                          }}
+                        >
+                          🏦 {bank}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* COD Interface */}
+                {paymentMethod === "cod" && (
+                  <div className="payment-panel" style={{ background: "#fefce8", borderColor: "#fef08a" }}>
+                    <div style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
+                      <span style={{ fontSize: "24px" }}>💵</span>
+                      <div>
+                        <strong style={{ fontSize: "13px", color: "#854d0e" }}>
+                          {deliveryType === "delivery" ? "Cash on Delivery" : "Pay at Store Counter"}
+                        </strong>
+                        <p style={{ margin: "3px 0 0", fontSize: "12px", color: "#a16207" }}>
+                          Please keep exact cash of ₹{totalAmount.toLocaleString("en-IN")} ready. UPI or cards are also accepted by the delivery person or at the store counter.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Bill Breakdown */}
+              <div className="bill-breakdown">
+                <div className="bill-breakdown-row">
+                  <span>Item Subtotal ({quantity}x)</span>
+                  <span>₹{itemTotal.toLocaleString("en-IN")}</span>
+                </div>
+                <div className="bill-breakdown-row">
+                  <span>Fulfilment &amp; Handling</span>
+                  <span>{deliveryFee > 0 ? `₹${deliveryFee}` : "FREE (Pickup)"}</span>
+                </div>
+                <div className="bill-breakdown-row">
+                  <span>Applicable Taxes (GST 5%)</span>
+                  <span>₹{taxes}</span>
+                </div>
+                <div className="bill-breakdown-row total">
+                  <span>Total Amount Payable</span>
+                  <span style={{ color: "#0f766e" }}>₹{totalAmount.toLocaleString("en-IN")}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="order-checkout-footer">
+              <button
+                type="button"
+                className="outline-button"
+                onClick={close}
+                style={{ padding: "12px 18px", borderRadius: "10px" }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="pay-btn-primary"
+                disabled={isProcessing}
+              >
+                <span>🔒</span>
+                <span>
+                  {paymentMethod === "cod"
+                    ? `Confirm Order · ₹${totalAmount.toLocaleString("en-IN")}`
+                    : `Pay ₹${totalAmount.toLocaleString("en-IN")} & Confirm Order`}
+                </span>
+                <span>→</span>
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function OrderReceiptModal({
+  order,
+  close,
+  onViewInPortal,
+}: {
+  order: OrderRecord;
+  close: () => void;
+  onViewInPortal: () => void;
+}) {
+  const steps: { key: OrderStatus; label: string; icon: string }[] = [
+    { key: "placed", label: "Placed", icon: "✓" },
+    { key: "preparing", label: "In Prep", icon: "👨‍🍳" },
+    { key: "ready", label: order.deliveryType === "pickup" ? "Ready" : "Out for Delivery", icon: "🛵" },
+    { key: "completed", label: "Done", icon: "✅" },
+  ];
+
+  const currentIdx =
+    order.status === "placed"
+      ? 0
+      : order.status === "accepted" || order.status === "preparing"
+      ? 1
+      : order.status === "ready"
+      ? 2
+      : order.status === "completed"
+      ? 3
+      : 0;
+
+  return (
+    <div className="order-modal-backdrop" onClick={close}>
+      <div className="order-receipt-card" onClick={(e) => e.stopPropagation()}>
+        <div className="receipt-header-banner">
+          <div className="receipt-check-icon">✓</div>
+          <h2 style={{ margin: "0 0 6px", fontSize: "20px", fontWeight: 800 }}>Order Confirmed!</h2>
+          <p style={{ margin: 0, fontSize: "13px", opacity: 0.9 }}>
+            The business partner has been alerted to make your order ready.
+          </p>
+        </div>
+
+        <div style={{ padding: "20px 24px" }}>
+          {/* Order ID & Time */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #e2ede0", paddingBottom: "12px", marginBottom: "16px" }}>
+            <div>
+              <div style={{ fontSize: "11px", fontWeight: 700, color: "#6a8270", textTransform: "uppercase" }}>Order Reference</div>
+              <div style={{ fontSize: "16px", fontWeight: 800, color: "#143e21" }}>{order.id}</div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: "11px", fontWeight: 700, color: "#6a8270", textTransform: "uppercase" }}>Estimated Time</div>
+              <div style={{ fontSize: "14px", fontWeight: 800, color: "#0f766e" }}>⏱️ {order.estimatedTime}</div>
+            </div>
+          </div>
+
+          {/* Live Progress Tracker */}
+          <div style={{ margin: "16px 0 20px" }}>
+            <div style={{ fontSize: "11.5px", fontWeight: 700, color: "#496850", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+              Live Order Status
+            </div>
+            <div className="receipt-timeline">
+              {steps.map((st, idx) => {
+                const isDone = idx < currentIdx;
+                const isActive = idx === currentIdx;
+                return (
+                  <div key={st.key} className={`receipt-step ${isActive ? "active" : isDone ? "done" : ""}`}>
+                    <div className="receipt-step-dot">{isDone ? "✓" : st.icon}</div>
+                    <span className="receipt-step-label">{st.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Store & Contact Box */}
+          <div style={{ background: "#f8faf8", border: "1px solid #dce8db", borderRadius: "10px", padding: "12px 14px", marginBottom: "16px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+              <div>
+                <strong style={{ fontSize: "14px", color: "#153e22" }}>{order.businessName}</strong>
+                <div style={{ fontSize: "11px", color: "#657d6b" }}>
+                  {order.deliveryType === "delivery" ? `Delivering to: ${order.customerAddress}` : `Store Pickup at Hosur`}
+                </div>
+              </div>
+              <span className={`order-status-pill ${order.status}`}>{order.status}</span>
+            </div>
+
+            <div style={{ display: "flex", gap: "8px", marginTop: "10px" }}>
+              <a
+                href={`tel:+919845012345`}
+                style={{
+                  flex: 1,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px",
+                  padding: "7px 10px",
+                  background: "#ffffff",
+                  border: "1px solid #c9dcc8",
+                  borderRadius: "6px",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  color: "#1c4a29",
+                  textDecoration: "none",
+                }}
+              >
+                📞 Call Store
+              </a>
+              <a
+                href={`https://wa.me/919845012345?text=${encodeURIComponent(`Hi ${order.businessName}, checking on my order #${order.id} for ${order.items[0]?.name}.`)}`}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  flex: 1,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px",
+                  padding: "7px 10px",
+                  background: "#25D366",
+                  color: "#ffffff",
+                  borderRadius: "6px",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  textDecoration: "none",
+                }}
+              >
+                💬 WhatsApp
+              </a>
+            </div>
+          </div>
+
+          {/* Itemized summary */}
+          <div style={{ border: "1px dashed #ceddce", borderRadius: "10px", padding: "14px", background: "#fcfdfc", marginBottom: "16px" }}>
+            <div style={{ fontSize: "12px", fontWeight: 800, color: "#163f23", marginBottom: "8px" }}>Ordered Items</div>
+            {order.items.map((item, idx) => (
+              <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "13px", padding: "4px 0" }}>
+                <span>
+                  <strong>{item.quantity}x</strong> {item.name}
+                </span>
+                <span style={{ fontWeight: 700, color: "#153e22" }}>
+                  ₹{(item.price * item.quantity).toLocaleString("en-IN")}
+                </span>
+              </div>
+            ))}
+            <div style={{ borderTop: "1px solid #e7efe6", margin: "8px 0 6px", paddingTop: "6px", fontSize: "12px", color: "#5d7363", display: "flex", justifyContent: "space-between" }}>
+              <span>Delivery Fee</span>
+              <span>{order.deliveryFee > 0 ? `₹${order.deliveryFee}` : "FREE"}</span>
+            </div>
+            <div style={{ fontSize: "12px", color: "#5d7363", display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+              <span>Taxes (5% GST)</span>
+              <span>₹{order.taxes}</span>
+            </div>
+            <div style={{ borderTop: "1.5px solid #d0dfcf", paddingTop: "8px", display: "flex", justifyContent: "space-between", fontSize: "15px", fontWeight: 800, color: "#143e21" }}>
+              <span>Total Paid</span>
+              <span style={{ color: "#0f766e" }}>₹{order.totalAmount.toLocaleString("en-IN")}</span>
+            </div>
+          </div>
+
+          {/* Payment metadata */}
+          <div style={{ fontSize: "11px", color: "#69816f", background: "#eef5ed", borderRadius: "8px", padding: "8px 12px", marginBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <span>Payment Mode: <strong>{order.paymentMethod.toUpperCase()}</strong></span>
+              <br />
+              <span>Txn: <code style={{ fontSize: "10px" }}>{order.paymentTransactionId}</code></span>
+            </div>
+            <span style={{ fontSize: "12px", fontWeight: 800, color: order.paymentStatus === "paid" ? "#15803d" : "#a16207" }}>
+              {order.paymentStatus === "paid" ? "PAID ✓" : "COD PENDING"}
+            </span>
+          </div>
+
+          {/* Action buttons */}
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button
+              type="button"
+              className="primary-button"
+              style={{ flex: 1, padding: "10px" }}
+              onClick={onViewInPortal}
+            >
+              Track in My Activity ↗
+            </button>
+            <button
+              type="button"
+              className="outline-button"
+              style={{ padding: "10px 14px" }}
+              onClick={() => window.print()}
+            >
+              🖨️ Print
+            </button>
+            <button
+              type="button"
+              className="outline-button"
+              style={{ padding: "10px 14px" }}
+              onClick={close}
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MerchantOrdersManager({
+  orders,
+  businessName,
+  onUpdateStatus,
+}: {
+  orders: OrderRecord[];
+  businessName?: string;
+  onUpdateStatus: (orderId: string, status: OrderStatus) => void;
+}) {
+  const [filter, setFilter] = useState<"all" | "prep" | "ready" | "completed">("all");
+
+  const totalRevenue = orders.reduce((sum, o) => sum + (o.status !== "cancelled" ? o.totalAmount : 0), 0);
+  const prepCount = orders.filter((o) => o.status === "placed" || o.status === "accepted" || o.status === "preparing").length;
+  const readyCount = orders.filter((o) => o.status === "ready").length;
+  const completedCount = orders.filter((o) => o.status === "completed").length;
+
+  const filteredOrders = orders.filter((o) => {
+    if (filter === "prep") return o.status === "placed" || o.status === "accepted" || o.status === "preparing";
+    if (filter === "ready") return o.status === "ready";
+    if (filter === "completed") return o.status === "completed";
+    return true;
+  });
+
+  return (
+    <div className="merchant-orders-board">
+      <div className="merchant-orders-stats">
+        <div className="merchant-stat-box">
+          <span className="stat-label">Total Orders</span>
+          <span className="stat-val">{orders.length}</span>
+        </div>
+        <div className="merchant-stat-box" style={{ borderColor: prepCount > 0 ? "#f59e0b" : "#d5e5d3" }}>
+          <span className="stat-label">Needs Prep 👨‍🍳</span>
+          <span className="stat-val" style={{ color: prepCount > 0 ? "#b45309" : "#143e21" }}>{prepCount}</span>
+        </div>
+        <div className="merchant-stat-box">
+          <span className="stat-label">Ready / Out 🛵</span>
+          <span className="stat-val" style={{ color: readyCount > 0 ? "#7c3aed" : "#143e21" }}>{readyCount}</span>
+        </div>
+        <div className="merchant-stat-box">
+          <span className="stat-label">Total Revenue</span>
+          <span className="stat-val" style={{ color: "#0f766e" }}>₹{totalRevenue.toLocaleString("en-IN")}</span>
+        </div>
+      </div>
+
+      {/* Filter Tabs */}
+      <div style={{ display: "flex", gap: "8px", margin: "10px 0 16px", flexWrap: "wrap" }}>
+        {[
+          { key: "all", label: `All Orders (${orders.length})` },
+          { key: "prep", label: `Needs Prep (${prepCount})` },
+          { key: "ready", label: `Ready (${readyCount})` },
+          { key: "completed", label: `Completed (${completedCount})` },
+        ].map((btn) => (
+          <button
+            key={btn.key}
+            type="button"
+            className={`quick-filter-chip ${filter === btn.key ? "active" : ""}`}
+            onClick={() => setFilter(btn.key as any)}
+          >
+            {btn.label}
+          </button>
+        ))}
+      </div>
+
+      {filteredOrders.length === 0 ? (
+        <EmptyState
+          title="No orders in this view"
+          text="Incoming customer orders will appear here in real time with customer contact details and preparation controls."
+        />
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          {filteredOrders.map((order) => {
+            const rawPhone = order.customerPhone.replace(/[^0-9]/g, "");
+            return (
+              <article key={order.id} className="merchant-order-card">
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px", flexWrap: "wrap" }}>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                      <strong style={{ fontSize: "16px", color: "#143e21" }}>#{order.id}</strong>
+                      <span className={`order-status-pill ${order.status}`}>
+                        ● {order.status === "placed" ? "New Order" : order.status}
+                      </span>
+                      <span style={{ fontSize: "11px", color: "#607d67", background: "#f2f7f1", padding: "2px 8px", borderRadius: "10px", fontWeight: 700 }}>
+                        {order.deliveryType === "delivery" ? "🛵 Delivery" : "🏬 Store Pickup"}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: "12px", color: "#617d68" }}>
+                      Placed {new Date(order.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {new Date(order.createdAt).toLocaleDateString()}
+                    </div>
+                  </div>
+
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontSize: "17px", fontWeight: 800, color: "#0f766e" }}>
+                      ₹{order.totalAmount.toLocaleString("en-IN")}
+                    </div>
+                    <span style={{ fontSize: "11px", fontWeight: 700, color: order.paymentStatus === "paid" ? "#15803d" : "#b45309" }}>
+                      {order.paymentStatus === "paid" ? `✓ Paid via ${order.paymentMethod.toUpperCase()}` : "Cash on Delivery"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Customer Info Card */}
+                <div style={{ background: "#f8faf8", border: "1px solid #dce8db", borderRadius: "10px", padding: "12px 14px", display: "grid", gridTemplateColumns: "1fr auto", gap: "12px", alignItems: "center" }}>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: "13px", color: "#163e23" }}>
+                      👤 {order.customerName} · <span style={{ color: "#4f6e56", fontWeight: 600 }}>{order.customerPhone}</span>
+                    </div>
+                    <div style={{ fontSize: "12px", color: "#546e5b", marginTop: "3px" }}>
+                      📍 {order.customerAddress}
+                    </div>
+                    {order.notes && (
+                      <div style={{ fontSize: "11.5px", color: "#b45309", background: "#fef3c7", padding: "3px 8px", borderRadius: "4px", marginTop: "6px", display: "inline-block" }}>
+                        📝 Note: {order.notes}
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ display: "flex", gap: "6px" }}>
+                    <a
+                      href={`tel:${rawPhone}`}
+                      style={{ background: "#ffffff", border: "1px solid #c9dcc8", borderRadius: "6px", padding: "6px 10px", fontSize: "11.5px", fontWeight: 700, color: "#1c4a29", textDecoration: "none", whiteSpace: "nowrap" }}
+                    >
+                      📞 Call
+                    </a>
+                    <a
+                      href={`https://wa.me/${rawPhone}?text=${encodeURIComponent(`Hello ${order.customerName}, this is ${order.businessName}. We received your order #${order.id}!`)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ background: "#25D366", color: "#ffffff", borderRadius: "6px", padding: "6px 10px", fontSize: "11.5px", fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}
+                    >
+                      💬 WhatsApp
+                    </a>
+                  </div>
+                </div>
+
+                {/* Items List */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <div style={{ fontSize: "11px", fontWeight: 700, color: "#5d7363", textTransform: "uppercase" }}>Order Items</div>
+                  {order.items.map((item, idx) => (
+                    <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "13px", padding: "4px 0", borderBottom: "1px dashed #e7efe6" }}>
+                      <span style={{ fontWeight: 600, color: "#1c3824" }}>
+                        <span style={{ fontWeight: 800, color: "#0f766e" }}>{item.quantity}x</span> {item.name}
+                      </span>
+                      <span style={{ fontWeight: 700, color: "#2d5236" }}>₹{(item.price * item.quantity).toLocaleString("en-IN")}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Merchant Actions Bar */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "10px", borderTop: "1px solid #eef5ed", flexWrap: "wrap", gap: "10px" }}>
+                  <div style={{ fontSize: "12px", color: "#6a8270" }}>
+                    ⏱️ Target: <strong>{order.estimatedTime}</strong>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                    {order.status === "placed" && (
+                      <button
+                        type="button"
+                        className="merchant-action-btn prep"
+                        onClick={() => onUpdateStatus(order.id, "preparing")}
+                      >
+                        👨‍🍳 Accept &amp; Start Prep
+                      </button>
+                    )}
+                    {(order.status === "accepted" || order.status === "preparing") && (
+                      <button
+                        type="button"
+                        className="merchant-action-btn ready"
+                        onClick={() => onUpdateStatus(order.id, "ready")}
+                      >
+                        🛵 Mark Ready for {order.deliveryType === "pickup" ? "Pickup" : "Delivery"}
+                      </button>
+                    )}
+                    {order.status === "ready" && (
+                      <button
+                        type="button"
+                        className="merchant-action-btn done"
+                        onClick={() => onUpdateStatus(order.id, "completed")}
+                      >
+                        ✅ Complete Order
+                      </button>
+                    )}
+                    {order.status === "completed" && (
+                      <span style={{ color: "#15803d", fontWeight: 800, fontSize: "12px", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                        ✓ Order Fulfilled
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CustomerOrdersManager({
+  orders,
+  onViewReceipt,
+}: {
+  orders: OrderRecord[];
+  onViewReceipt: (order: OrderRecord) => void;
+}) {
+  if (orders.length === 0) {
+    return (
+      <EmptyState
+        title="No orders placed yet"
+        text="Discover Hosur restaurants, bakeries, organic farms, and merchants, and tap 'Order now' to place an order."
+      />
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+      {orders.map((order) => {
+        const steps: { key: OrderStatus; label: string }[] = [
+          { key: "placed", label: "Placed" },
+          { key: "preparing", label: "Preparing" },
+          { key: "ready", label: order.deliveryType === "pickup" ? "Ready" : "Out for Delivery" },
+          { key: "completed", label: "Delivered" },
+        ];
+        const currentIdx =
+          order.status === "placed"
+            ? 0
+            : order.status === "accepted" || order.status === "preparing"
+            ? 1
+            : order.status === "ready"
+            ? 2
+            : order.status === "completed"
+            ? 3
+            : 0;
+
+        return (
+          <article key={order.id} className="merchant-order-card">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px", flexWrap: "wrap" }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                  <strong style={{ fontSize: "16px", color: "#143e21" }}>{order.businessName}</strong>
+                  <span className={`order-status-pill ${order.status}`}>
+                    ● {order.status}
+                  </span>
+                </div>
+                <div style={{ fontSize: "12px", color: "#617d68" }}>
+                  Order #{order.id} · {new Date(order.createdAt).toLocaleDateString()} at {new Date(order.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                </div>
+              </div>
+
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontSize: "17px", fontWeight: 800, color: "#0f766e" }}>
+                  ₹{order.totalAmount.toLocaleString("en-IN")}
+                </div>
+                <span style={{ fontSize: "11px", fontWeight: 700, color: order.paymentStatus === "paid" ? "#15803d" : "#b45309" }}>
+                  {order.paymentStatus === "paid" ? `Paid via ${order.paymentMethod.toUpperCase()}` : "Cash on Delivery"}
+                </span>
+              </div>
+            </div>
+
+            {/* Live Progress Bar */}
+            <div className="receipt-timeline" style={{ margin: "10px 0" }}>
+              {steps.map((st, idx) => {
+                const isDone = idx < currentIdx;
+                const isActive = idx === currentIdx;
+                return (
+                  <div key={st.key} className={`receipt-step ${isActive ? "active" : isDone ? "done" : ""}`}>
+                    <div className="receipt-step-dot">{isDone ? "✓" : idx + 1}</div>
+                    <span className="receipt-step-label">{st.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Items summary */}
+            <div style={{ fontSize: "13px", color: "#2d4b35", background: "#f8faf8", padding: "10px 14px", borderRadius: "8px" }}>
+              {order.items.map((i) => `${i.quantity}x ${i.name}`).join(" · ")}
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "8px", borderTop: "1px solid #eef5ed", flexWrap: "wrap", gap: "8px" }}>
+              <div style={{ fontSize: "12px", color: "#546e5b" }}>
+                ⏱️ Estimated: <strong>{order.estimatedTime}</strong>
+              </div>
+              <div style={{ display: "flex", gap: "8px" }}>
+                <button
+                  type="button"
+                  className="outline-button"
+                  style={{ padding: "6px 12px", fontSize: "12px" }}
+                  onClick={() => onViewReceipt(order)}
+                >
+                  🧾 View Receipt
+                </button>
+                <a
+                  href={`tel:+919845012345`}
+                  className="outline-button"
+                  style={{ padding: "6px 12px", fontSize: "12px", textDecoration: "none" }}
+                >
+                  📞 Contact Store
+                </a>
+              </div>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  );
+}
+
 function BusinessPortal({
   businesses,
   categoryConfig,
   enquiries,
   checkouts,
+  orders = [],
+  onUpdateOrderStatus,
   openBusinessProfile,
   openPlans,
   verifyLocation,
@@ -14265,6 +15577,8 @@ function BusinessPortal({
   categoryConfig: CategoryConfig;
   enquiries: DemoEnquiry[];
   checkouts: CheckoutRequest[];
+  orders?: OrderRecord[];
+  onUpdateOrderStatus?: (orderId: string, status: OrderStatus) => void;
   openBusinessProfile: () => void;
   openPlans: () => void;
   verifyLocation: () => void;
@@ -14277,13 +15591,23 @@ function BusinessPortal({
   const accountBusinessName = businesses[0]?.name;
   const accountEnquiries = enquiries.filter((item) => item.businessName === accountBusinessName);
   const accountCheckouts = checkouts.filter((item) => item.businessName === accountBusinessName);
+  const accountOrders = orders.filter((item) =>
+    !accountBusinessName || item.businessName.toLowerCase() === accountBusinessName.toLowerCase() || businesses.length > 1
+  );
+  const pendingPrepCount = accountOrders.filter((o) => o.status === "placed" || o.status === "accepted" || o.status === "preparing").length;
+
   useEffect(() => { const openProfile = () => setTab("Profile"); window.addEventListener("neighborly-open-profile", openProfile); return () => window.removeEventListener("neighborly-open-profile", openProfile); }, []);
   useEffect(() => { const openBusiness = () => setTab("My business"); window.addEventListener("neighborly-open-business-profile", openBusiness); return () => window.removeEventListener("neighborly-open-business-profile", openBusiness); }, []);
   return <div className="page-content portal-content">
     <div className="portal-header"><div><div className="eyebrow"><span /> FOR LOCAL BUSINESSES</div><h1>Grow with your <em>neighbors.</em></h1><p>Manage your business and connect with nearby customers.</p></div><button className="primary-button" onClick={openBusinessProfile}>Manage your business</button></div>
-    <div className="portal-tabs">{["Overview", "My business", "Products & services", "Enquiries", "Plans & billing", "Verification", "Profile"].map((item) => <button key={item} className={tab === item ? "current" : ""} onClick={() => setTab(item)}>{item}</button>)}</div>
+    <div className="portal-tabs">{["Overview", "My business", "Products & services", "Orders", "Enquiries", "Plans & billing", "Verification", "Profile"].map((item) => <button key={item} className={tab === item ? "current" : ""} onClick={() => setTab(item)}>{item === "Orders" && pendingPrepCount > 0 ? `Orders (${pendingPrepCount})` : item}</button>)}</div>
     {tab === "Overview" && <>
-      <div className="metric-grid"><Metric label="Profile views" value="1,284" delta="Sample dashboard metric" icon="◉" /><Metric label="Customer enquiries" value={String(accountEnquiries.length)} delta="Saved in this browser" icon="↗" /><Metric label="Search appearances" value="438" delta="Sample dashboard metric" icon="⌕" /></div>
+      <div className="metric-grid">
+        <Metric label="Profile views" value="1,284" delta="Sample dashboard metric" icon="◉" />
+        <Metric label="Active orders" value={String(accountOrders.length)} delta={`${pendingPrepCount} awaiting preparation`} icon="🛍️" />
+        <Metric label="Customer enquiries" value={String(accountEnquiries.length)} delta="Saved in this browser" icon="↗" />
+        <Metric label="Search appearances" value="438" delta="Sample dashboard metric" icon="⌕" />
+      </div>
       <div className="portal-columns"><section className="panel"><div className="panel-heading"><div><div className="eyebrow">YOUR BUSINESS</div><h2>Business profile</h2></div><button className="text-link" onClick={openBusinessProfile}>View details <span>→</span></button></div>
         {businesses.map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category}</small></span><span className={`status-pill ${business.subscribed ? "verified" : "pending"}`}>● {business.subscribed ? "Subscribed" : "Pending plan"}</span></div>)}
         {!businesses.length && <EmptyState title="No business profile yet" text="Complete your business registration to set up your profile." />}
@@ -14301,6 +15625,21 @@ function BusinessPortal({
         onUpdateProduct={onUpdateProduct}
         onDeleteProduct={onDeleteProduct}
       />
+    )}
+    {tab === "Orders" && (
+      <section className="panel tab-panel">
+        <div className="panel-heading">
+          <div>
+            <div className="eyebrow">ORDER FULFILMENT &amp; PREPARATION</div>
+            <h2>Incoming Customer Orders</h2>
+          </div>
+        </div>
+        <MerchantOrdersManager
+          orders={accountOrders}
+          businessName={accountBusinessName}
+          onUpdateStatus={onUpdateOrderStatus || (() => {})}
+        />
+      </section>
     )}
     {tab === "Enquiries" && <section className="panel tab-panel"><div className="eyebrow">CUSTOMER ENQUIRIES</div><h2>Requests for your business</h2><p>These are local demo enquiries and have not been delivered to customers or businesses.</p>{accountEnquiries.length ? accountEnquiries.map((enquiry) => <EnquiryRow enquiry={enquiry} key={enquiry.id} />) : <EmptyState title="No enquiries yet" text="Customer requests for your business will appear here." />}</section>}
     {tab === "Plans & billing" && <><PlansSection openPlans={openPlans} />{accountCheckouts.length > 0 && <section className="panel tab-panel"><div className="eyebrow">CHECKOUT PREVIEWS</div><h2>Subscription activity</h2>{accountCheckouts.map((item, index) => <div className="listing-row" key={`${item.createdAt}-${index}`}><span className="listing-icon lavender">₹</span><span className="listing-name"><strong>{item.businessName} · {item.plan}</strong><small>{item.paymentMethod} · {new Date(item.createdAt).toLocaleString()}</small></span><span className="status-pill pending">{item.status}</span></div>)}</section>}</>}

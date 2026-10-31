@@ -1658,3 +1658,536 @@ h1 em{font-family:var(--serif);font-weight:400;color:#507959;letter-spacing:-1px
     padding-bottom: 16px;
   }
 }
+
+/* ==========================================================================
+   Order & Payment System Styles (Checkout, Live Gateway, Merchant & Customer)
+   ========================================================================== */
+.order-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(18, 32, 22, 0.72);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 16px;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+.order-checkout-container {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(15, 30, 20, 0.28);
+  max-width: 680px;
+  width: 100%;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #d2e4d0;
+  font-family: inherit;
+}
+
+.order-checkout-header {
+  background: linear-gradient(135deg, #0d5f47 0%, #114b35 100%);
+  color: #ffffff;
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.order-checkout-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.order-checkout-header .biz-badge {
+  background: rgba(255, 255, 255, 0.18);
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.order-checkout-body {
+  padding: 22px 24px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.order-section-title {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #245233;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.order-item-summary-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px;
+  background: #f7faf7;
+  border: 1px solid #e1ede0;
+  border-radius: 12px;
+}
+
+.order-item-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #e9f0e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.order-qty-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #cfded0;
+  border-radius: 20px;
+  padding: 3px 8px;
+}
+
+.order-qty-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: #eef5ed;
+  color: #1a4f2c;
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.order-qty-btn:hover {
+  background: #386b4b;
+  color: #ffffff;
+}
+
+.delivery-type-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  background: #eef4ed;
+  padding: 4px;
+  border-radius: 12px;
+}
+
+.delivery-toggle-btn {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: #4b6851;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.18s ease;
+}
+
+.delivery-toggle-btn.active {
+  background: #ffffff;
+  color: #1a4f2c;
+  box-shadow: 0 2px 8px rgba(26, 79, 44, 0.12);
+}
+
+.payment-method-selector {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.payment-method-tab {
+  padding: 12px 8px;
+  background: #fbfdfb;
+  border: 1.5px solid #d9e7d7;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #3b5a41;
+  transition: all 0.16s ease;
+  text-align: center;
+}
+
+.payment-method-tab:hover {
+  border-color: #386b4b;
+  background: #f4f8f4;
+}
+
+.payment-method-tab.active {
+  border-color: #0f766e;
+  background: #f0fdfa;
+  color: #0f766e;
+  box-shadow: 0 2px 8px rgba(15, 118, 110, 0.15);
+}
+
+.payment-method-tab .icon {
+  font-size: 20px;
+}
+
+.payment-panel {
+  background: #f8faf8;
+  border: 1px solid #e1ece0;
+  border-radius: 12px;
+  padding: 16px;
+  animation: modalFadeIn 0.15s ease;
+}
+
+.upi-qr-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #ffffff;
+  border: 1px solid #dbe6da;
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.upi-qr-card svg {
+  border-radius: 6px;
+  border: 1px solid #edf2ed;
+}
+
+.bill-breakdown {
+  background: #f8faf8;
+  border-radius: 10px;
+  padding: 12px 16px;
+  border: 1px dashed #ceddce;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 13px;
+}
+
+.bill-breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  color: #55725c;
+}
+
+.bill-breakdown-row.total {
+  border-top: 1px solid #d5e4d3;
+  padding-top: 8px;
+  margin-top: 3px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #143e21;
+}
+
+.order-checkout-footer {
+  padding: 16px 24px;
+  background: #ffffff;
+  border-top: 1px solid #e4ede3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pay-btn-primary {
+  flex: 1;
+  background: linear-gradient(135deg, #0f766e 0%, #115e59 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 13px 20px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.28);
+}
+
+.pay-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #134e4a 0%, #0f766e 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(15, 118, 110, 0.35);
+}
+
+.pay-btn-primary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Order Receipt Modal */
+.order-receipt-card {
+  background: #ffffff;
+  border-radius: 16px;
+  max-width: 540px;
+  width: 100%;
+  max-height: 92vh;
+  overflow-y: auto;
+  border: 1px solid #cce0ca;
+  box-shadow: 0 24px 60px rgba(14, 34, 20, 0.3);
+  animation: modalFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.receipt-header-banner {
+  background: linear-gradient(135deg, #166534 0%, #15803d 100%);
+  color: #ffffff;
+  padding: 24px;
+  text-align: center;
+  position: relative;
+}
+
+.receipt-check-icon {
+  width: 52px;
+  height: 52px;
+  background: #ffffff;
+  color: #166534;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  margin: 0 auto 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.receipt-timeline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  margin: 20px 0;
+  padding: 0 10px;
+}
+
+.receipt-timeline::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  left: 24px;
+  right: 24px;
+  height: 3px;
+  background: #e2ede0;
+  z-index: 1;
+}
+
+.receipt-step {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+}
+
+.receipt-step-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2.5px solid #cddccb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: #7d9681;
+}
+
+.receipt-step.active .receipt-step-dot {
+  border-color: #16a34a;
+  background: #16a34a;
+  color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.18);
+}
+
+.receipt-step.done .receipt-step-dot {
+  border-color: #16a34a;
+  background: #eef8ee;
+  color: #16a34a;
+}
+
+.receipt-step-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #637a67;
+  max-width: 80px;
+}
+
+.receipt-step.active .receipt-step-label {
+  color: #15803d;
+  font-weight: 800;
+}
+
+/* Merchant Orders Manager */
+.merchant-orders-board {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.merchant-orders-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.merchant-stat-box {
+  background: #ffffff;
+  border: 1px solid #d5e5d3;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.merchant-stat-box .stat-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #617b66;
+  letter-spacing: 0.5px;
+}
+
+.merchant-stat-box .stat-val {
+  font-size: 22px;
+  font-weight: 800;
+  color: #143e21;
+}
+
+.merchant-order-card {
+  background: #ffffff;
+  border: 1px solid #d7e6d5;
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(20, 50, 30, 0.04);
+}
+
+.merchant-order-card:hover {
+  border-color: #92b890;
+  box-shadow: 0 6px 18px rgba(20, 50, 30, 0.08);
+}
+
+.order-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+.order-status-pill.placed {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.order-status-pill.preparing {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.order-status-pill.ready {
+  background: #f3e8ff;
+  color: #7e22ce;
+  border: 1px solid #e9d5ff;
+}
+
+.order-status-pill.completed {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.merchant-action-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.16s ease;
+}
+
+.merchant-action-btn.prep {
+  background: #0f766e;
+  color: #ffffff;
+}
+
+.merchant-action-btn.prep:hover {
+  background: #115e59;
+}
+
+.merchant-action-btn.ready {
+  background: #7c3aed;
+  color: #ffffff;
+}
+
+.merchant-action-btn.ready:hover {
+  background: #6d28d9;
+}
+
+.merchant-action-btn.done {
+  background: #15803d;
+  color: #ffffff;
+}
+
+.merchant-action-btn.done:hover {
+  background: #166534;
+}
+
+@media (max-width: 640px) {
+  .payment-method-selector {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .merchant-orders-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
