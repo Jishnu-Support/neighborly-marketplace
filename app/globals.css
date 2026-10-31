@@ -1281,3 +1281,53 @@ h1 em{font-family:var(--serif);font-weight:400;color:#507959;letter-spacing:-1px
 .catalog-action-btn.nav:hover {
   background: #e5eee3;
 }
+
+@media (max-width: 600px) {
+  .catalog-modal {
+    padding: 18px 14px !important;
+    width: 95vw !important;
+  }
+  .modal-tab-switcher {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .modal-tab-pill {
+    padding: 10px 12px;
+    font-size: 10.5px;
+    width: 100%;
+  }
+  .business-contact-banner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .business-call-button-primary {
+    justify-content: center;
+    width: 100%;
+  }
+  .catalog-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .catalog-card-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+  .catalog-action-btn.primary {
+    grid-column: 1 / -1;
+  }
+  .business-card-action-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .business-card-action-bar .contact-button {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+  }
+  .business-card-nav-btn,
+  .business-card-call-btn {
+    justify-content: center;
+    width: 100%;
+  }
+}
