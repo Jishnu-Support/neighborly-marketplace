@@ -1623,3 +1623,38 @@ h1 em{font-family:var(--serif);font-weight:400;color:#507959;letter-spacing:-1px
 .language-selector-pill button:hover {
   background: #e2ebe4;
 }
+
+/* ==========================================================================
+   Yelp-Style Dual Search, Amenities, & Rating Distribution
+   ========================================================================== */
+.neighborhood-control select:hover {
+  color: #1a4f2c;
+}
+
+.business-quote-button-primary {
+  transition: all 0.2s ease;
+}
+
+.business-quote-button-primary:hover {
+  background: #b45309 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(217, 119, 6, 0.25);
+}
+
+.yelp-amenities-strip span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+@media (max-width: 640px) {
+  .yelp-rating-summary-card {
+    grid-template-columns: 1fr !important;
+  }
+  .yelp-rating-summary-card > div:first-child {
+    border-right: none !important;
+    border-bottom: 1px solid #e8eee7;
+    padding-right: 0 !important;
+    padding-bottom: 16px;
+  }
+}
