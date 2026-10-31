@@ -43,9 +43,108 @@ const emergencyTypes: { id: EmergencyType; title: string; description: string; i
   { id: "women-safety", title: "Women?s safety", description: "Safety threat or harassment", icon: "?", phone: "112" },
   { id: "general", title: "Other emergency", description: "Any other immediate emergency", icon: "!", phone: "112" },
 ];
-type MemberProfile = { fullName: string; phone: string; email: string; address: string; emergencyPhones: [string, string] };
-const emptyMemberProfile: MemberProfile = { fullName: "", phone: "", email: "", address: "", emergencyPhones: ["", ""] };
+type MemberProfile = {
+  fullName: string;
+  phone: string;
+  email: string;
+  address: string;
+  doorNo?: string;
+  street?: string;
+  locality?: string;
+  city?: string;
+  district?: string;
+  state?: string;
+  pincode?: string;
+  bio?: string;
+  avatarInitials?: string;
+  avatarBg?: string;
+  emergencyPhones: [string, string];
+  emergencyNames?: [string, string];
+  emergencyRelations?: [string, string];
+  capturedGps?: { latitude: number; longitude: number; accuracy: number; timestamp: string };
+};
+
+type UserSettings = {
+  defaultRadius: number;
+  autoDetectLocation: boolean;
+  preferredLocality: string;
+  mapProvider: "google" | "osm";
+  language: "en" | "ta" | "kn" | "te";
+  catalogView: "grid" | "list";
+  compactDensity: boolean;
+  orderStatusAlerts: boolean;
+  smsOrderUpdates: boolean;
+  communityBroadcasts: boolean;
+  merchantOffers: boolean;
+  soundAlerts: boolean;
+  shareLocationWithShops: boolean;
+  saveSearchHistory: boolean;
+  twoFactorAuth: boolean;
+  passcode: string;
+};
+
+const defaultUserSettings: UserSettings = {
+  defaultRadius: 5,
+  autoDetectLocation: true,
+  preferredLocality: "All Hosur",
+  mapProvider: "google",
+  language: "en",
+  catalogView: "grid",
+  compactDensity: false,
+  orderStatusAlerts: true,
+  smsOrderUpdates: true,
+  communityBroadcasts: true,
+  merchantOffers: true,
+  soundAlerts: true,
+  shareLocationWithShops: true,
+  saveSearchHistory: true,
+  twoFactorAuth: false,
+  passcode: "",
+};
+
+const HOSUR_LOCALITIES = [
+  "All Hosur",
+  "Bagalur Road",
+  "Sipcot Phase 1",
+  "Sipcot Phase 2",
+  "Rayakottai Road",
+  "Mookandapalli",
+  "Mathigiri",
+  "Avalapalli",
+  "Gandhi Nagar",
+  "Kamaraj Nagar",
+  "Old Bangalore Road",
+  "Railway Station Road",
+  "Moranapalli",
+  "Zuzuvadi",
+  "Thally Road",
+  "Denkanikottai Road",
+  "Hosur Cattle Farm",
+  "Central Hosur",
+];
+
+const emptyMemberProfile: MemberProfile = {
+  fullName: "",
+  phone: "",
+  email: "",
+  address: "",
+  doorNo: "",
+  street: "",
+  locality: "Bagalur Road",
+  city: "Hosur",
+  district: "Krishnagiri",
+  state: "Tamil Nadu",
+  pincode: "635109",
+  bio: "",
+  avatarInitials: "N",
+  avatarBg: "#efc7aa",
+  emergencyPhones: ["", ""],
+  emergencyNames: ["", ""],
+  emergencyRelations: ["Spouse / Family", "Friend / Colleague"],
+};
+
 const profileStorageKey = (role: "Account" | "Business" | "Agent" | "Company", identity = "") => `neighborly-profile-v1-${role.toLowerCase()}${role === "Company" && identity ? `-${encodeURIComponent(identity.trim().toLowerCase())}` : ""}`;
+const settingsStorageKey = (role: "Account" | "Business" | "Agent" | "Company", identity = "") => `neighborly-settings-v1-${role.toLowerCase()}${role === "Company" && identity ? `-${encodeURIComponent(identity.trim().toLowerCase())}` : ""}`;
 type PortalRole = Exclude<Role, "Discover">;
 type Product = {
   id: string;
@@ -11351,11 +11450,21 @@ export default function Home() {
       showNotice("Could not sign out. Please try again.");
     }
   }
-  function openMemberProfile() {
-    const target = role === "Account" || role === "Business" || role === "Agent" || role === "Company" ? role : "Account";
+  const [portalActiveTab, setPortalActiveTab] = useState<string>("Overview");
+
+  function openProfileView(tabName: "Profile details" | "Settings" = "Profile details", targetRole?: Role) {
+    const dest = targetRole || (role === "Discover" ? "Account" : role);
     setDialog(null);
-    if (role !== target) setRole(target);
-    window.setTimeout(() => window.dispatchEvent(new Event("neighborly-open-profile")), 0);
+    setPortalActiveTab(tabName);
+    if (role !== dest) setRole(dest);
+    window.setTimeout(() => {
+      window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: tabName } }));
+      window.dispatchEvent(new Event("neighborly-open-profile"));
+    }, 40);
+  }
+
+  function openMemberProfile() {
+    openProfileView("Profile details");
   }
   function openPortal(portal: Role) {
     if (portal === "Discover") {
@@ -12219,9 +12328,16 @@ export default function Home() {
         </div>
 
         <div className="sidebar-bottom">
-            <button className="profile-button" onClick={() => { if (role === "Discover") openPortal("Account"); else { openPortal(role); window.dispatchEvent(new Event("neighborly-open-profile")); } }}>
+          <button
+            className="profile-button"
+            onClick={() => openProfileView("Profile details")}
+            title="Open Profile details & settings"
+          >
             <span className="avatar">N</span>
-            <span className="profile-text"><strong>{role === "Discover" ? t.yourBizearchActivity : `${role === "Account" ? "Customer" : role} profile`}</strong><small>{role === "Discover" ? t.savedOnDevice : "Profile and account details"}</small></span>
+            <span className="profile-text">
+              <strong>{role === "Discover" ? t.yourBizearchActivity : `${role === "Account" ? "Customer" : role} profile`}</strong>
+              <small>{role === "Discover" ? t.savedOnDevice : "Profile & account details"}</small>
+            </span>
             <span className="profile-menu">···</span>
           </button>
           {role !== "Company" && <a className="company-login-link" href="/company-login">{t.companyLogin}</a>}
@@ -13491,6 +13607,7 @@ export default function Home() {
         {role === "Account" && (
           <CustomerPortal
             data={demoData}
+            initialTab={portalActiveTab}
             onRemoveFavorite={toggleFavorite}
             onSearch={(term) => {
               setQuery(term);
@@ -13504,6 +13621,8 @@ export default function Home() {
             }}
             onOpenAccount={() => setDialog("login")}
             onViewReceipt={(order) => setActiveReceipt(order)}
+            onOpenPortal={openPortal}
+            onLanguageChange={(l) => setLang(l)}
             showNotice={showNotice}
           />
         )}
@@ -13514,6 +13633,7 @@ export default function Home() {
             enquiries={demoData.enquiries}
             checkouts={demoData.checkouts}
             orders={demoData.orders || []}
+            initialTab={portalActiveTab}
             onUpdateOrderStatus={updateOrderStatus}
             openBusinessProfile={() => window.dispatchEvent(new Event("neighborly-open-business-profile"))}
             openPlans={() => setSubscriptionCheckout({ businessName: businessAccountBusinesses[0]?.name || businesses[0]?.name, plan: "Growth" })}
@@ -13523,11 +13643,34 @@ export default function Home() {
             onAddProduct={addProduct}
             onUpdateProduct={updateProduct}
             onDeleteProduct={deleteProduct}
+            onOpenPortal={openPortal}
+            onLanguageChange={(l) => setLang(l)}
             showNotice={showNotice}
           />
         )}
-        {role === "Agent" && <AgentPortal showNotice={showNotice} />}
-        {role === "Company" && <CompanyPortal accessLevel={companyAccessLevel} identity={sessionIdentity} businesses={businesses} enquiries={demoData.enquiries} events={demoData.events} checkouts={demoData.checkouts} locationEnabled={locationEnabled} showNotice={showNotice} />}
+        {role === "Agent" && (
+          <AgentPortal
+            initialTab={portalActiveTab}
+            onOpenPortal={openPortal}
+            onLanguageChange={(l) => setLang(l)}
+            showNotice={showNotice}
+          />
+        )}
+        {role === "Company" && (
+          <CompanyPortal
+            accessLevel={companyAccessLevel}
+            identity={sessionIdentity}
+            businesses={businesses}
+            enquiries={demoData.enquiries}
+            events={demoData.events}
+            checkouts={demoData.checkouts}
+            initialTab={portalActiveTab}
+            locationEnabled={locationEnabled}
+            onOpenPortal={openPortal}
+            onLanguageChange={(l) => setLang(l)}
+            showNotice={showNotice}
+          />
+        )}
       </section>
 
       {notice && <div className="toast" role="status"><span>✓</span>{notice}<button onClick={() => setNotice("")} aria-label="Dismiss">×</button></div>}
@@ -13638,27 +13781,43 @@ export default function Home() {
 
 function CustomerPortal({
   data,
+  initialTab = "Overview",
   onRemoveFavorite,
   onSearch,
   onFindBusiness,
   onOpenAccount,
   onViewReceipt,
+  onOpenPortal,
+  onLanguageChange,
   showNotice,
 }: {
   data: DemoData;
+  initialTab?: string;
   onRemoveFavorite: (businessName: string) => void;
   onSearch: (term: string) => void;
   onFindBusiness: (businessName: string) => void;
   onOpenAccount: () => void;
   onViewReceipt?: (order: OrderRecord) => void;
+  onOpenPortal?: (role: Role) => void;
+  onLanguageChange?: (lang: "en" | "ta" | "kn" | "te") => void;
   showNotice: (message: string) => void;
 }) {
-  const [tab, setTab] = useState("Overview");
-  useEffect(() => { const openProfile = () => setTab("Profile"); window.addEventListener("neighborly-open-profile", openProfile); return () => window.removeEventListener("neighborly-open-profile", openProfile); }, []);
+  const [tab, setTab] = useState(initialTab || "Overview");
+  useEffect(() => {
+    if (initialTab && initialTab !== "Overview") setTab(initialTab);
+  }, [initialTab]);
+  useEffect(() => {
+    const openProfile = (e: Event) => {
+      const customEvent = e as CustomEvent<{ tab?: string }>;
+      setTab(customEvent.detail?.tab || "Profile details");
+    };
+    window.addEventListener("neighborly-open-profile", openProfile);
+    return () => window.removeEventListener("neighborly-open-profile", openProfile);
+  }, []);
   const savedBusinesses = data.businesses.filter((business) => data.favorites.includes(business.name));
   return <div className="page-content portal-content">
     <div className="portal-header"><div><div className="eyebrow"><span /> YOUR NEIGHBORHOOD ACTIVITY</div><h1>Your local <em>shortlist.</em></h1><p>Saved places, searches and enquiries stay in this browser in this demo.</p></div><button className="primary-button" onClick={onOpenAccount}>Sign in or register ↗</button></div>
-    <div className="portal-tabs">{["Overview", "Orders", "Saved", "Recent searches", "Enquiries", "Profile"].map((item) => <button key={item} className={tab === item ? "current" : ""} onClick={() => setTab(item)}>{item}</button>)}</div>
+    <div className="portal-tabs">{["Overview", "Orders", "Saved", "Recent searches", "Enquiries", "Profile details", "Settings"].map((item) => <button key={item} className={tab === item || (item === "Profile details" && tab === "Profile") ? "current" : ""} onClick={() => setTab(item)}>{item}</button>)}</div>
     {tab === "Overview" && <>
       <div className="metric-grid">
         <Metric label="Orders placed" value={String((data.orders || []).length)} delta="Active orders on device" icon="🛍️" />
@@ -13688,7 +13847,30 @@ function CustomerPortal({
     {tab === "Saved" && <section className="panel tab-panel"><div className="eyebrow">SAVED BUSINESSES</div><h2>Your favorites</h2>{savedBusinesses.length ? savedBusinesses.map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category} · {business.distance.toFixed(1)} km (sample distance)</small></span><button className="outline-button" onClick={() => onFindBusiness(business.name)}>View</button><button className="row-more" aria-label={`Remove ${business.name} from saved`} onClick={() => onRemoveFavorite(business.name)}>×</button></div>) : <EmptyState title="No saved businesses yet" text="Tap the heart on a search result to save it on this device." />}</section>}
     {tab === "Recent searches" && <section className="panel tab-panel"><div className="eyebrow">YOUR RECENT SEARCHES</div><h2>Pick up where you left off</h2>{data.recentSearches.length ? data.recentSearches.map((term) => <button className="history-row" key={term} onClick={() => onSearch(term)}><span>⌕</span><strong>{term}</strong><span>Search again →</span></button>) : <EmptyState title="No recent searches" text="Your search history appears here after you choose Find nearby." />}</section>}
     {tab === "Enquiries" && <section className="panel tab-panel"><div className="eyebrow">YOUR ENQUIRY HISTORY</div><h2>Requests saved on this device</h2>{data.enquiries.length ? data.enquiries.map((enquiry) => <EnquiryRow enquiry={enquiry} key={enquiry.id} />) : <EmptyState title="No enquiries yet" text="Open a product or service and choose Request information to create a local demo enquiry." />}</section>}
-    {tab === "Profile" && <ProfilePanel role="Account" label="Customer" />}
+    {(tab === "Profile details" || tab === "Profile") && (
+      <ProfileAndSettingsPanel
+        role="Account"
+        label="Customer"
+        initialSubTab="profile"
+        data={data}
+        onNavigateTab={(t) => setTab(t)}
+        onOpenPortal={onOpenPortal}
+        onLanguageChange={onLanguageChange}
+        showNotice={showNotice}
+      />
+    )}
+    {tab === "Settings" && (
+      <ProfileAndSettingsPanel
+        role="Account"
+        label="Customer"
+        initialSubTab="settings"
+        data={data}
+        onNavigateTab={(t) => setTab(t)}
+        onOpenPortal={onOpenPortal}
+        onLanguageChange={onLanguageChange}
+        showNotice={showNotice}
+      />
+    )}
   </div>;
 }
 
@@ -16308,6 +16490,7 @@ function BusinessPortal({
   enquiries,
   checkouts,
   orders = [],
+  initialTab = "Overview",
   onUpdateOrderStatus,
   openBusinessProfile,
   openPlans,
@@ -16317,6 +16500,8 @@ function BusinessPortal({
   onAddProduct,
   onUpdateProduct,
   onDeleteProduct,
+  onOpenPortal,
+  onLanguageChange,
   showNotice,
 }: {
   businesses: Business[];
@@ -16324,6 +16509,7 @@ function BusinessPortal({
   enquiries: DemoEnquiry[];
   checkouts: CheckoutRequest[];
   orders?: OrderRecord[];
+  initialTab?: string;
   onUpdateOrderStatus?: (orderId: string, status: OrderStatus) => void;
   openBusinessProfile: () => void;
   openPlans: () => void;
@@ -16333,9 +16519,11 @@ function BusinessPortal({
   onAddProduct: (businessName: string, product: Omit<Product, "id">) => void;
   onUpdateProduct?: (businessName: string, productId: string, updated: Partial<Product>) => void;
   onDeleteProduct?: (businessName: string, productId: string) => void;
+  onOpenPortal?: (role: Role) => void;
+  onLanguageChange?: (lang: "en" | "ta" | "kn" | "te") => void;
   showNotice: (message: string) => void;
 }) {
-  const [tab, setTab] = useState("Overview");
+  const [tab, setTab] = useState(initialTab || "Overview");
   const accountBusinessName = businesses[0]?.name;
   const accountEnquiries = enquiries.filter((item) => item.businessName === accountBusinessName);
   const accountCheckouts = checkouts.filter((item) => item.businessName === accountBusinessName);
@@ -16345,11 +16533,21 @@ function BusinessPortal({
   );
   const pendingPrepCount = accountOrders.filter((o) => o.status === "placed" || o.status === "accepted" || o.status === "preparing").length;
 
-  useEffect(() => { const openProfile = () => setTab("Profile"); window.addEventListener("neighborly-open-profile", openProfile); return () => window.removeEventListener("neighborly-open-profile", openProfile); }, []);
+  useEffect(() => {
+    if (initialTab && initialTab !== "Overview") setTab(initialTab);
+  }, [initialTab]);
+  useEffect(() => {
+    const openProfile = (e: Event) => {
+      const customEvent = e as CustomEvent<{ tab?: string }>;
+      setTab(customEvent.detail?.tab || "Profile details");
+    };
+    window.addEventListener("neighborly-open-profile", openProfile);
+    return () => window.removeEventListener("neighborly-open-profile", openProfile);
+  }, []);
   useEffect(() => { const openBusiness = () => setTab("My business"); window.addEventListener("neighborly-open-business-profile", openBusiness); return () => window.removeEventListener("neighborly-open-business-profile", openBusiness); }, []);
   return <div className="page-content portal-content">
     <div className="portal-header"><div><div className="eyebrow"><span /> FOR LOCAL BUSINESSES</div><h1>Grow with your <em>neighbors.</em></h1><p>Manage your business and connect with nearby customers.</p></div><button className="primary-button" onClick={openBusinessProfile}>Manage your business</button></div>
-    <div className="portal-tabs">{["Overview", "My business", "Products & services", "Orders", "Enquiries", "Plans & billing", "Verification", "Profile"].map((item) => <button key={item} className={tab === item ? "current" : ""} onClick={() => setTab(item)}>{item === "Orders" && pendingPrepCount > 0 ? `Orders (${pendingPrepCount})` : item}</button>)}</div>
+    <div className="portal-tabs">{["Overview", "My business", "Products & services", "Orders", "Enquiries", "Plans & billing", "Verification", "Profile details", "Settings"].map((item) => <button key={item} className={tab === item || (item === "Profile details" && tab === "Profile") ? "current" : ""} onClick={() => setTab(item)}>{item === "Orders" && pendingPrepCount > 0 ? `Orders (${pendingPrepCount})` : item}</button>)}</div>
     {tab === "Overview" && <>
       <div className="metric-grid">
         <Metric label="Profile views" value="1,284" delta="Sample dashboard metric" icon="◉" />
@@ -16496,14 +16694,55 @@ function BusinessPortal({
       )}
     </>}
     {tab === "Verification" && <section className="panel tab-panel"><div className="eyebrow">BUILD TRUST LOCALLY</div><h2>Verify your business location</h2><p>Share your location only when you are ready. Bizearch uses the location to check your business address; production verification requires a secure server-side workflow.</p><button className="primary-button" onClick={verifyLocation}>⌖ Verify with this device</button></section>}
-    {tab === "Profile" && <ProfilePanel role="Business" label="Business account" />}
+    {(tab === "Profile details" || tab === "Profile") && (
+      <ProfileAndSettingsPanel
+        role="Business"
+        label="Business Account"
+        initialSubTab="profile"
+        onNavigateTab={(t) => setTab(t)}
+        onOpenPortal={onOpenPortal}
+        onLanguageChange={onLanguageChange}
+        showNotice={showNotice}
+      />
+    )}
+    {tab === "Settings" && (
+      <ProfileAndSettingsPanel
+        role="Business"
+        label="Business Account"
+        initialSubTab="settings"
+        onNavigateTab={(t) => setTab(t)}
+        onOpenPortal={onOpenPortal}
+        onLanguageChange={onLanguageChange}
+        showNotice={showNotice}
+      />
+    )}
   </div>;
 }
 
-function AgentPortal({ showNotice }: { showNotice: (message: string) => void }) {
+function AgentPortal({
+  initialTab = "Overview",
+  onOpenPortal,
+  onLanguageChange,
+  showNotice,
+}: {
+  initialTab?: string;
+  onOpenPortal?: (role: Role) => void;
+  onLanguageChange?: (lang: "en" | "ta" | "kn" | "te") => void;
+  showNotice: (message: string) => void;
+}) {
   const [copied, setCopied] = useState(false);
-  const [tab, setTab] = useState("Overview");
-  useEffect(() => { const openProfile = () => setTab("Profile"); window.addEventListener("neighborly-open-profile", openProfile); return () => window.removeEventListener("neighborly-open-profile", openProfile); }, []);
+  const [tab, setTab] = useState(initialTab || "Overview");
+  useEffect(() => {
+    if (initialTab && initialTab !== "Overview") setTab(initialTab);
+  }, [initialTab]);
+  useEffect(() => {
+    const openProfile = (e: Event) => {
+      const customEvent = e as CustomEvent<{ tab?: string }>;
+      setTab(customEvent.detail?.tab || "Profile details");
+    };
+    window.addEventListener("neighborly-open-profile", openProfile);
+    return () => window.removeEventListener("neighborly-open-profile", openProfile);
+  }, []);
 
   function downloadReferralReport() {
     const rows = [
@@ -16527,7 +16766,7 @@ function AgentPortal({ showNotice }: { showNotice: (message: string) => void }) 
   }
 
   return <div className="page-content portal-content"><div className="portal-header"><div><div className="eyebrow"><span /> NEIGHBORHOOD PARTNERS</div><h1>Good connections,<br /><em>good things.</em></h1><p>Help great local businesses meet the neighbors who need them.</p></div><div className="agent-avatar">✳</div></div>
-    <div className="portal-tabs">{["Overview", "Profile"].map((item) => <button key={item} className={tab === item ? "current" : ""} onClick={() => setTab(item)}>{item}</button>)}</div>
+    <div className="portal-tabs">{["Overview", "Profile details", "Settings"].map((item) => <button key={item} className={tab === item || (item === "Profile details" && tab === "Profile") ? "current" : ""} onClick={() => setTab(item)}>{item}</button>)}</div>
     {tab === "Overview" && <>
     <section className="referral-card"><div className="referral-copy"><div className="eyebrow">YOUR REFERRAL CODE</div><h2>Share the local love.</h2><p>Businesses that use your code will be linked to your agent account when they register.</p></div><div className="code-box"><code>NEIGHBOR-4821</code><button onClick={() => { navigator.clipboard?.writeText("NEIGHBOR-4821"); setCopied(true); showNotice("Referral code copied."); }}>{copied ? "Copied ✓" : "Copy code ↗"}</button></div></section>
     <div className="metric-grid"><Metric label="Businesses referred" value="24" delta="Across 6 categories" icon="♧" /><Metric label="Awaiting signup" value="5" delta="Share your referral code" icon="◷" /><Metric label="This month's reward" value="₹4,800" delta="Demo estimate" icon="↗" /></div>
@@ -16536,48 +16775,1202 @@ function AgentPortal({ showNotice }: { showNotice: (message: string) => void }) 
       {[["Bloom & Bean Café", "Food & dining", "Oct 14, 2026", "Subscribed"], ["Kaveri Cycle Works", "Automobiles", "Oct 12, 2026", "Pending plan"], ["Pixel Fix Studio", "Electronics", "Oct 09, 2026", "Subscribed"], ["Sunday Loom", "Fashion", "Oct 06, 2026", "Reviewing"]].map((row) => <div className="table-row" key={row[0]}>{row.map((cell, index) => <span key={cell} className={index === 3 ? `status-pill ${cell === "Subscribed" ? "verified" : "pending"}` : ""}>{index === 3 && <i>● </i>}{cell}</span>)}</div>)}
     </section><div className="form-note"><strong>Agent data</strong><span>Referral records, commission rules, and payouts need authenticated server-side services before launch.</span></div>
     </>}
-    {tab === "Profile" && <ProfilePanel role="Agent" label="Field agent" />}
+    {(tab === "Profile details" || tab === "Profile") && (
+      <ProfileAndSettingsPanel
+        role="Agent"
+        label="Field agent"
+        initialSubTab="profile"
+        onNavigateTab={(t) => setTab(t)}
+        onOpenPortal={onOpenPortal}
+        onLanguageChange={onLanguageChange}
+        showNotice={showNotice}
+      />
+    )}
+    {tab === "Settings" && (
+      <ProfileAndSettingsPanel
+        role="Agent"
+        label="Field agent"
+        initialSubTab="settings"
+        onNavigateTab={(t) => setTab(t)}
+        onOpenPortal={onOpenPortal}
+        onLanguageChange={onLanguageChange}
+        showNotice={showNotice}
+      />
+    )}
   </div>;
 }
 
-function ProfilePanel({ role, label, identity = "" }: { role: "Account" | "Business" | "Agent" | "Company"; label: string; identity?: string }) {
+function ProfileAndSettingsPanel({
+  role,
+  label,
+  identity = "",
+  initialSubTab = "profile",
+  data,
+  onNavigateTab,
+  onOpenPortal,
+  onLanguageChange,
+  showNotice,
+}: {
+  role: "Account" | "Business" | "Agent" | "Company";
+  label: string;
+  identity?: string;
+  initialSubTab?: "profile" | "settings" | "notifications" | "security" | "data" | "features";
+  data?: DemoData;
+  onNavigateTab?: (tab: string) => void;
+  onOpenPortal?: (role: Role) => void;
+  onLanguageChange?: (lang: "en" | "ta" | "kn" | "te") => void;
+  showNotice?: (msg: string) => void;
+}) {
+  const [activeSubTab, setActiveSubTab] = useState<"profile" | "settings" | "notifications" | "security" | "data" | "features">(initialSubTab);
   const [profile, setProfile] = useState<MemberProfile>(emptyMemberProfile);
-  const [saved, setSaved] = useState(false);
+  const [settings, setSettings] = useState<UserSettings>(defaultUserSettings);
+  const [profileSaved, setProfileSaved] = useState(false);
+  const [settingsSaved, setSettingsSaved] = useState(false);
   const [profileError, setProfileError] = useState("");
+  const [gpsFetching, setGpsFetching] = useState(false);
+  const [gpsMessage, setGpsMessage] = useState("");
+  const [sosTested, setSosTested] = useState(false);
+  const [passcodeCurrent, setPasscodeCurrent] = useState("");
+  const [passcodeNew, setPasscodeNew] = useState("");
+  const [passcodeConfirm, setPasscodeConfirm] = useState("");
+  const [passcodeStatus, setPasscodeStatus] = useState("");
+
+  // Sync sub-tab if prop changes
+  useEffect(() => {
+    if (initialSubTab) setActiveSubTab(initialSubTab);
+  }, [initialSubTab]);
+
+  // Load profile & settings from local storage
   useEffect(() => {
     try {
-      const stored = window.localStorage.getItem(profileStorageKey(role, identity));
-      if (!stored) {
-        if (role === "Company" && identity) {
-          const localName = identity.split("@")[0].replace(/[._-]+/g, " ");
-          setProfile({ ...emptyMemberProfile, fullName: localName, email: identity });
-        }
-        return;
+      const storedProfile = window.localStorage.getItem(profileStorageKey(role, identity));
+      if (storedProfile) {
+        const parsed = JSON.parse(storedProfile) as Partial<MemberProfile>;
+        setProfile({
+          fullName: parsed.fullName || (role === "Company" && identity ? identity.split("@")[0].replace(/[._-]+/g, " ") : "Naveen Kumar"),
+          phone: parsed.phone || "94895 21482",
+          email: parsed.email || (identity || "naveen.hosur@gmail.com"),
+          doorNo: parsed.doorNo || "Flat 302, Sri Krishna Apts",
+          street: parsed.street || "Near Sub-Collector Office, Bagalur Main Road",
+          locality: parsed.locality || "Bagalur Road",
+          city: parsed.city || "Hosur",
+          district: parsed.district || "Krishnagiri",
+          state: parsed.state || "Tamil Nadu",
+          pincode: parsed.pincode || "635109",
+          address: parsed.address || "Flat 302, Sri Krishna Apts, Bagalur Main Road, Hosur - 635109",
+          bio: parsed.bio || "Hosur resident & community member since 2024. Active patron of local makers and farmers.",
+          avatarInitials: parsed.avatarInitials || "N",
+          avatarBg: parsed.avatarBg || "#efc7aa",
+          emergencyPhones: [parsed.emergencyPhones?.[0] || "98432 10987", parsed.emergencyPhones?.[1] || "94432 56789"],
+          emergencyNames: [parsed.emergencyNames?.[0] || "Priya Kumar", parsed.emergencyNames?.[1] || "Dr. Rajesh Raman"],
+          emergencyRelations: [parsed.emergencyRelations?.[0] || "Spouse / Family", parsed.emergencyRelations?.[1] || "Family Physician"],
+          capturedGps: parsed.capturedGps,
+        });
+      } else {
+        // Sensible initial profile for demo
+        setProfile({
+          fullName: role === "Company" && identity ? identity.split("@")[0].replace(/[._-]+/g, " ") : "Naveen Kumar",
+          phone: "94895 21482",
+          email: identity || "naveen.hosur@gmail.com",
+          doorNo: "Flat 302, Sri Krishna Apts",
+          street: "Near Sub-Collector Office, Bagalur Main Road",
+          locality: "Bagalur Road",
+          city: "Hosur",
+          district: "Krishnagiri",
+          state: "Tamil Nadu",
+          pincode: "635109",
+          address: "Flat 302, Sri Krishna Apts, Bagalur Main Road, Hosur - 635109",
+          bio: "Hosur resident & community member since 2024. Active patron of local makers and farmers.",
+          avatarInitials: "N",
+          avatarBg: "#efc7aa",
+          emergencyPhones: ["98432 10987", "94432 56789"],
+          emergencyNames: ["Priya Kumar", "Dr. Rajesh Raman"],
+          emergencyRelations: ["Spouse / Family", "Family Physician"],
+        });
       }
-      const parsed = JSON.parse(stored) as Partial<MemberProfile>;
-      setProfile({ fullName: parsed.fullName || "", phone: parsed.phone || "", email: parsed.email || "", address: parsed.address || "", emergencyPhones: [parsed.emergencyPhones?.[0] || "", parsed.emergencyPhones?.[1] || ""] });
-    } catch { setSaved(false); }
+
+      const storedSettings = window.localStorage.getItem(settingsStorageKey(role, identity));
+      if (storedSettings) {
+        setSettings({ ...defaultUserSettings, ...JSON.parse(storedSettings) });
+      }
+    } catch {
+      // Fallback
+    }
   }, [role, identity]);
-  function update<K extends keyof MemberProfile>(key: K, value: MemberProfile[K]) { setProfile((current) => ({ ...current, [key]: value })); setSaved(false); setProfileError(""); }
-  function save(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const phoneDigits = profile.phone.replace(/\D/g, "");
-    const contactDigits = profile.emergencyPhones.map((value) => value.replace(/\D/g, ""));
-    if (!profile.fullName.trim() || profile.fullName.trim().length > 100 || phoneDigits.length < 8 || phoneDigits.length > 15) {
-      setProfileError("Enter your name and a valid mobile number.");
-      return;
-    }
-    if (contactDigits.some((value) => value.length < 8 || value.length > 15) || contactDigits[0] === contactDigits[1]) {
-      setProfileError("Enter two different valid emergency contact numbers.");
-      return;
-    }
-    try {
-      window.localStorage.setItem(profileStorageKey(role, identity), JSON.stringify({ ...profile, fullName: profile.fullName.trim(), phone: profile.phone.trim() }));
-      setSaved(true);
-      setProfileError("");
-    } catch { setProfileError("Could not save the profile on this device."); }
+
+  function updateProfile<K extends keyof MemberProfile>(key: K, value: MemberProfile[K]) {
+    setProfile((curr) => ({ ...curr, [key]: value }));
+    setProfileSaved(false);
+    setProfileError("");
   }
-  return <section className="panel tab-panel"><div className="eyebrow">{label.toUpperCase()} PROFILE</div><h2>Your details and emergency contacts</h2><p>Profile details and emergency contacts are saved in this browser. When you send an SOS, its contact and location details are recorded server-side for Super Admin review.</p><form className="stacked-form" onSubmit={save}><label>Full name<input value={profile.fullName} onChange={(event) => update("fullName", event.target.value)} maxLength={100} required /></label><label>Mobile number<input type="tel" value={profile.phone} onChange={(event) => update("phone", event.target.value)} minLength={8} maxLength={20} required /></label><label>Email address<input type="email" value={profile.email} onChange={(event) => update("email", event.target.value)} maxLength={254} /></label><label>{role === "Business" ? "Business address" : "Address"}<input value={profile.address} onChange={(event) => update("address", event.target.value)} maxLength={300} /></label><div className="eyebrow">SOS CONTACTS</div><label>Emergency contact 1<input type="tel" value={profile.emergencyPhones[0]} onChange={(event) => update("emergencyPhones", [event.target.value, profile.emergencyPhones[1]])} minLength={8} maxLength={20} required /></label><label>Emergency contact 2<input type="tel" value={profile.emergencyPhones[1]} onChange={(event) => update("emergencyPhones", [profile.emergencyPhones[0], event.target.value])} minLength={8} maxLength={20} required /></label>{profileError && <p className="form-error" role="alert">{profileError}</p>}<div className="form-button-row"><button className="primary-button" type="submit">Save profile</button>{saved && <span role="status">Profile saved</span>}</div></form><p className="fine-print">Calls and messages open your device apps for confirmation. This demo never automatically calls or messages contacts.</p></section>;
+
+  function updateSettings<K extends keyof UserSettings>(key: K, value: UserSettings[K]) {
+    setSettings((curr) => {
+      const next = { ...curr, [key]: value };
+      try {
+        window.localStorage.setItem(settingsStorageKey(role, identity), JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+    setSettingsSaved(true);
+    setTimeout(() => setSettingsSaved(false), 2500);
+  }
+
+  function saveProfile(e: React.FormEvent) {
+    e.preventDefault();
+    if (!profile.fullName.trim()) {
+      setProfileError("Please enter your full name.");
+      return;
+    }
+    const combinedAddress = [profile.doorNo, profile.street, profile.locality, `${profile.city} - ${profile.pincode}`, profile.state].filter(Boolean).join(", ");
+    const updated: MemberProfile = {
+      ...profile,
+      fullName: profile.fullName.trim(),
+      address: combinedAddress || profile.address,
+      avatarInitials: (profile.fullName.trim()[0] || "N").toUpperCase(),
+    };
+    try {
+      window.localStorage.setItem(profileStorageKey(role, identity), JSON.stringify(updated));
+      setProfile(updated);
+      setProfileSaved(true);
+      setProfileError("");
+      if (showNotice) showNotice("✓ Profile details successfully saved.");
+      setTimeout(() => setProfileSaved(false), 3000);
+    } catch {
+      setProfileError("Could not save profile details on this device.");
+    }
+  }
+
+  function captureGpsPin() {
+    setGpsFetching(true);
+    setGpsMessage("Requesting device location from browser...");
+    if (!navigator.geolocation) {
+      setGpsMessage("Geolocation is not supported by your browser.");
+      setGpsFetching(false);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const coords = {
+          latitude: Number(pos.coords.latitude.toFixed(6)),
+          longitude: Number(pos.coords.longitude.toFixed(6)),
+          accuracy: Math.round(pos.coords.accuracy),
+          timestamp: new Date().toISOString(),
+        };
+        updateProfile("capturedGps", coords);
+        setGpsMessage(`✓ Captured GPS: ${coords.latitude}, ${coords.longitude} (±${coords.accuracy}m accuracy)`);
+        setGpsFetching(false);
+      },
+      (err) => {
+        setGpsMessage(`Location unavailable: ${err.message}. Using default Hosur city center.`);
+        setGpsFetching(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
+
+  function downloadBackupJson() {
+    const backupData = {
+      exportedAt: new Date().toISOString(),
+      role,
+      profile,
+      settings,
+      stats: {
+        favoritesCount: data?.favorites.length || 0,
+        ordersCount: data?.orders?.length || 0,
+        recentSearchesCount: data?.recentSearches.length || 0,
+      },
+      recentSearches: data?.recentSearches || [],
+      orders: data?.orders || [],
+    };
+    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `bizearch-${role.toLowerCase()}-profile-data.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    if (showNotice) showNotice("✓ Data export downloaded.");
+  }
+
+  function exportOrdersCsv() {
+    const orders = data?.orders || [];
+    if (!orders.length) {
+      if (showNotice) showNotice("No order records to export yet.");
+      return;
+    }
+    const headers = ["Order ID", "Date", "Business", "Items", "Total (INR)", "Status", "Payment Method", "Txn ID"];
+    const rows = orders.map((o) => [
+      o.id,
+      new Date(o.createdAt).toLocaleString(),
+      `"${o.businessName}"`,
+      `"${o.items?.map((it) => `${it.name} (x${it.quantity})`).join("; ") || "Order items"}"`,
+      o.totalAmount,
+      o.status,
+      o.paymentMethod,
+      o.paymentTransactionId || "N/A",
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const encoded = encodeURI(csvContent);
+    const a = document.createElement("a");
+    a.href = encoded;
+    a.download = `bizearch-orders-${role.toLowerCase()}.csv`;
+    a.click();
+    if (showNotice) showNotice("✓ Order history CSV downloaded.");
+  }
+
+  function updatePasscode(e: React.FormEvent) {
+    e.preventDefault();
+    if (passcodeNew.length < 4) {
+      setPasscodeStatus("Error: Passcode must be at least 4 digits.");
+      return;
+    }
+    if (passcodeNew !== passcodeConfirm) {
+      setPasscodeStatus("Error: Passcodes do not match.");
+      return;
+    }
+    updateSettings("passcode", passcodeNew);
+    setPasscodeStatus("✓ Account passcode updated successfully.");
+    setPasscodeCurrent("");
+    setPasscodeNew("");
+    setPasscodeConfirm("");
+  }
+
+  return (
+    <div className="profile-settings-root">
+      {/* Profile Hero Header */}
+      <section className="profile-hero-card">
+        <div className="profile-hero-left">
+          <div
+            className="profile-avatar-large"
+            style={{ background: profile.avatarBg || "#efc7aa", color: "#3d2414" }}
+          >
+            {profile.avatarInitials || profile.fullName[0] || "N"}
+          </div>
+          <div className="profile-hero-meta">
+            <h2>{profile.fullName || "Member Profile"}</h2>
+            <p>
+              <span>📞 {profile.phone || "+91 94895 21482"}</span>
+              <span>·</span>
+              <span>📍 {profile.locality || "Hosur, Tamil Nadu"}</span>
+            </p>
+            <div className="profile-hero-badges">
+              <span className="profile-hero-pill">● {label} Account</span>
+              <span className="profile-hero-pill">✓ Verified Resident</span>
+              <span className="profile-hero-pill">🛡️ SOS Enabled</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="profile-hero-stats">
+          <div className="profile-hero-stat-item">
+            <strong>{data?.orders?.length || 0}</strong>
+            <small>Orders</small>
+          </div>
+          <div style={{ width: 1, background: "rgba(255,255,255,0.2)" }} />
+          <div className="profile-hero-stat-item">
+            <strong>{data?.favorites.length || 0}</strong>
+            <small>Saved</small>
+          </div>
+          <div style={{ width: 1, background: "rgba(255,255,255,0.2)" }} />
+          <div className="profile-hero-stat-item">
+            <strong>100%</strong>
+            <small>Trust Score</small>
+          </div>
+        </div>
+      </section>
+
+      {/* Sub-Navigation Tabs */}
+      <nav className="profile-subtabs-nav" aria-label="Profile and settings navigation">
+        <button
+          type="button"
+          className={`profile-subtab-btn ${activeSubTab === "profile" ? "active" : ""}`}
+          onClick={() => setActiveSubTab("profile")}
+        >
+          <span>👤</span> Profile Details
+        </button>
+        <button
+          type="button"
+          className={`profile-subtab-btn ${activeSubTab === "settings" ? "active" : ""}`}
+          onClick={() => setActiveSubTab("settings")}
+        >
+          <span>⚙️</span> General Settings
+        </button>
+        <button
+          type="button"
+          className={`profile-subtab-btn ${activeSubTab === "notifications" ? "active" : ""}`}
+          onClick={() => setActiveSubTab("notifications")}
+        >
+          <span>🔔</span> Notifications &amp; Alerts
+        </button>
+        <button
+          type="button"
+          className={`profile-subtab-btn ${activeSubTab === "security" ? "active" : ""}`}
+          onClick={() => setActiveSubTab("security")}
+        >
+          <span>🔒</span> Security &amp; Privacy
+        </button>
+        <button
+          type="button"
+          className={`profile-subtab-btn ${activeSubTab === "data" ? "active" : ""}`}
+          onClick={() => setActiveSubTab("data")}
+        >
+          <span>📦</span> Data &amp; Storage
+        </button>
+        <button
+          type="button"
+          className={`profile-subtab-btn ${activeSubTab === "features" ? "active" : ""}`}
+          onClick={() => setActiveSubTab("features")}
+        >
+          <span>⚡</span> Features &amp; Portals
+        </button>
+      </nav>
+
+      {/* TAB 1: PROFILE DETAILS */}
+      {activeSubTab === "profile" && (
+        <form className="settings-section-card" onSubmit={saveProfile}>
+          <div className="settings-card-header">
+            <h3><span>👤</span> Personal Information</h3>
+            <p>Update your personal details, contact numbers, and emergency safety connections.</p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "14px" }}>
+            <label style={{ display: "grid", gap: "6px", fontSize: "11px", color: "#3e5243", fontWeight: 700 }}>
+              Full Name *
+              <input
+                type="text"
+                value={profile.fullName}
+                onChange={(e) => updateProfile("fullName", e.target.value)}
+                maxLength={80}
+                required
+                style={{ padding: "9px 12px", border: "1px solid #d3e0d5", borderRadius: "8px", fontSize: "12px" }}
+              />
+            </label>
+
+            <label style={{ display: "grid", gap: "6px", fontSize: "11px", color: "#3e5243", fontWeight: 700 }}>
+              Mobile Number (With WhatsApp) *
+              <div style={{ display: "flex", gap: "6px" }}>
+                <span style={{ padding: "9px 10px", background: "#f2f6f2", border: "1px solid #d3e0d5", borderRadius: "8px", fontSize: "12px", fontWeight: 700, color: "#284a32" }}>
+                  🇮🇳 +91
+                </span>
+                <input
+                  type="tel"
+                  value={profile.phone}
+                  onChange={(e) => updateProfile("phone", e.target.value)}
+                  maxLength={15}
+                  required
+                  style={{ flex: 1, padding: "9px 12px", border: "1px solid #d3e0d5", borderRadius: "8px", fontSize: "12px" }}
+                />
+              </div>
+            </label>
+
+            <label style={{ display: "grid", gap: "6px", fontSize: "11px", color: "#3e5243", fontWeight: 700 }}>
+              Email Address (For Tax Invoices &amp; Receipts)
+              <input
+                type="email"
+                value={profile.email}
+                onChange={(e) => updateProfile("email", e.target.value)}
+                maxLength={120}
+                style={{ padding: "9px 12px", border: "1px solid #d3e0d5", borderRadius: "8px", fontSize: "12px" }}
+              />
+            </label>
+
+            <label style={{ display: "grid", gap: "6px", fontSize: "11px", color: "#3e5243", fontWeight: 700 }}>
+              Avatar Color Theme
+              <select
+                value={profile.avatarBg || "#efc7aa"}
+                onChange={(e) => updateProfile("avatarBg", e.target.value)}
+                style={{ padding: "9px 12px", border: "1px solid #d3e0d5", borderRadius: "8px", fontSize: "12px", background: "#fff", cursor: "pointer" }}
+              >
+                <option value="#efc7aa">Warm Peach (Classic)</option>
+                <option value="#86efac">Emerald Sage</option>
+                <option value="#7dd3fc">Hosur Sky Blue</option>
+                <option value="#d8b4fe">Lavender Floral</option>
+                <option value="#fde047">Sun Gold</option>
+                <option value="#285536">Deep Forest Green</option>
+              </select>
+            </label>
+          </div>
+
+          <label style={{ display: "grid", gap: "6px", fontSize: "11px", color: "#3e5243", fontWeight: 700 }}>
+            Neighborhood Bio / Delivery Instructions
+            <textarea
+              rows={2}
+              value={profile.bio || ""}
+              onChange={(e) => updateProfile("bio", e.target.value)}
+              maxLength={240}
+              placeholder="e.g. Ring doorbell, contactless delivery preferred, leave package with security."
+              style={{ padding: "9px 12px", border: "1px solid #d3e0d5", borderRadius: "8px", fontSize: "12px", resize: "vertical" }}
+            />
+          </label>
+
+          {/* Hosur Address Form */}
+          <div className="settings-card-header" style={{ marginTop: "14px" }}>
+            <h3><span>📍</span> Residential / Delivery Address in Hosur</h3>
+            <p>Used to calculate accurate road distance and route navigation to local stores.</p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
+            <label style={{ display: "grid", gap: "6px", fontSize: "11px", color: "#3e5243", fontWeight: 700 }}>
+              Door / Flat No.
+              <input
+                type="text"
+                value={profile.doorNo || ""}
+                onChange={(e) => updateProfile("doorNo", e.target.value)}
+                placeholder="e.g. 14/B, Flat 201"
+                style={{ padding: "8px 12px", border: "1px solid #d3e0d5", borderRadius: "8px", fontSize: "12px" }}
+              />
+            </label>
+
+            <label style={{ display: "grid", gap: "6px", fontSize: "11px", color: "#3e5243", fontWeight: 700 }}>
+              Street / Landmark
+              <input
+                type="text"
+                value={profile.street || ""}
+                onChange={(e) => updateProfile("street", e.target.value)}
+                placeholder="e.g. Bagalur Main Road, Near Bustand"
+                style={{ padding: "8px 12px", border: "1px solid #d3e0d5", borderRadius: "8px", fontSize: "12px" }}
+              />
+            </label>
+
+            <label style={{ display: "grid", gap: "6px", fontSize: "11px", color: "#3e5243", fontWeight: 700 }}>
+              Hosur Locality / Area
+              <select
+                value={profile.locality || "Bagalur Road"}
+                onChange={(e) => updateProfile("locality", e.target.value)}
+                style={{ padding: "8px 12px", border: "1px solid #d3e0d5", borderRadius: "8px", fontSize: "12px", background: "#fff", cursor: "pointer" }}
+              >
+                {HOSUR_LOCALITIES.filter((l) => l !== "All Hosur").map((loc) => (
+                  <option key={loc} value={loc}>
+                    📍 {loc}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label style={{ display: "grid", gap: "6px", fontSize: "11px", color: "#3e5243", fontWeight: 700 }}>
+              Pincode
+              <input
+                type="text"
+                value={profile.pincode || "635109"}
+                onChange={(e) => updateProfile("pincode", e.target.value)}
+                maxLength={6}
+                style={{ padding: "8px 12px", border: "1px solid #d3e0d5", borderRadius: "8px", fontSize: "12px" }}
+              />
+            </label>
+          </div>
+
+          {/* GPS Pin Capture Section */}
+          <div style={{ background: "#f5f9f5", border: "1px solid #dce8dd", borderRadius: "10px", padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+            <div>
+              <strong style={{ fontSize: "12px", color: "#194225", display: "flex", alignItems: "center", gap: "6px" }}>
+                <span>🛰️</span> Precise GPS Location Pin
+              </strong>
+              <small style={{ display: "block", color: "#617766", marginTop: "2px", fontSize: "10.5px" }}>
+                {profile.capturedGps
+                  ? `Lat: ${profile.capturedGps.latitude}, Lng: ${profile.capturedGps.longitude} (±${profile.capturedGps.accuracy}m accuracy)`
+                  : "No device GPS pin captured yet. Capturing provides exact kilometer distance to stores."}
+              </small>
+              {gpsMessage && <div style={{ fontSize: "11px", color: "#15803d", marginTop: "4px", fontWeight: 600 }}>{gpsMessage}</div>}
+            </div>
+            <button
+              type="button"
+              onClick={captureGpsPin}
+              disabled={gpsFetching}
+              className="outline-button"
+              style={{ fontSize: "11px", padding: "7px 12px" }}
+            >
+              {gpsFetching ? "Fetching GPS..." : "📍 Capture Live GPS Pin"}
+            </button>
+          </div>
+
+          {/* Emergency SOS Contacts */}
+          <div className="settings-card-header" style={{ marginTop: "14px" }}>
+            <h3><span>🛡️</span> Emergency SOS Contacts (Hosur Safety Network)</h3>
+            <p>Saved contacts are included in your Super Admin emergency dispatch ticket when SOS is triggered.</p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "14px" }}>
+            <div style={{ background: "#fbfcfb", border: "1px solid #e1ebe2", borderRadius: "10px", padding: "12px 14px" }}>
+              <div style={{ fontSize: "11px", fontWeight: 800, color: "#1d4729", marginBottom: "8px" }}>
+                PRIMARY EMERGENCY CONTACT
+              </div>
+              <label style={{ display: "grid", gap: "4px", fontSize: "10.5px", color: "#4f6354", marginBottom: "8px" }}>
+                Contact Name
+                <input
+                  type="text"
+                  value={profile.emergencyNames?.[0] || ""}
+                  onChange={(e) => updateProfile("emergencyNames", [e.target.value, profile.emergencyNames?.[1] || ""])}
+                  placeholder="e.g. Priya Kumar"
+                  style={{ padding: "7px 10px", border: "1px solid #d5e2d6", borderRadius: "6px", fontSize: "11.5px" }}
+                />
+              </label>
+              <label style={{ display: "grid", gap: "4px", fontSize: "10.5px", color: "#4f6354", marginBottom: "8px" }}>
+                Relationship
+                <select
+                  value={profile.emergencyRelations?.[0] || "Spouse / Family"}
+                  onChange={(e) => updateProfile("emergencyRelations", [e.target.value, profile.emergencyRelations?.[1] || ""])}
+                  style={{ padding: "7px 10px", border: "1px solid #d5e2d6", borderRadius: "6px", fontSize: "11.5px", background: "#fff" }}
+                >
+                  <option value="Spouse / Family">Spouse / Family</option>
+                  <option value="Parent">Parent</option>
+                  <option value="Sibling">Sibling</option>
+                  <option value="Close Friend">Close Friend</option>
+                  <option value="Family Physician">Family Physician</option>
+                </select>
+              </label>
+              <label style={{ display: "grid", gap: "4px", fontSize: "10.5px", color: "#4f6354" }}>
+                Mobile Number *
+                <input
+                  type="tel"
+                  value={profile.emergencyPhones[0]}
+                  onChange={(e) => updateProfile("emergencyPhones", [e.target.value, profile.emergencyPhones[1]])}
+                  placeholder="e.g. 98432 10987"
+                  required
+                  style={{ padding: "7px 10px", border: "1px solid #d5e2d6", borderRadius: "6px", fontSize: "11.5px" }}
+                />
+              </label>
+            </div>
+
+            <div style={{ background: "#fbfcfb", border: "1px solid #e1ebe2", borderRadius: "10px", padding: "12px 14px" }}>
+              <div style={{ fontSize: "11px", fontWeight: 800, color: "#1d4729", marginBottom: "8px" }}>
+                SECONDARY EMERGENCY CONTACT
+              </div>
+              <label style={{ display: "grid", gap: "4px", fontSize: "10.5px", color: "#4f6354", marginBottom: "8px" }}>
+                Contact Name
+                <input
+                  type="text"
+                  value={profile.emergencyNames?.[1] || ""}
+                  onChange={(e) => updateProfile("emergencyNames", [profile.emergencyNames?.[0] || "", e.target.value])}
+                  placeholder="e.g. Dr. Rajesh Raman"
+                  style={{ padding: "7px 10px", border: "1px solid #d5e2d6", borderRadius: "6px", fontSize: "11.5px" }}
+                />
+              </label>
+              <label style={{ display: "grid", gap: "4px", fontSize: "10.5px", color: "#4f6354", marginBottom: "8px" }}>
+                Relationship
+                <select
+                  value={profile.emergencyRelations?.[1] || "Family Physician"}
+                  onChange={(e) => updateProfile("emergencyRelations", [profile.emergencyRelations?.[0] || "", e.target.value])}
+                  style={{ padding: "7px 10px", border: "1px solid #d5e2d6", borderRadius: "6px", fontSize: "11.5px", background: "#fff" }}
+                >
+                  <option value="Family Physician">Family Physician</option>
+                  <option value="Spouse / Family">Spouse / Family</option>
+                  <option value="Neighbor">Neighbor</option>
+                  <option value="Work Colleague">Work Colleague</option>
+                  <option value="Lawyer / Advocate">Lawyer / Advocate</option>
+                </select>
+              </label>
+              <label style={{ display: "grid", gap: "4px", fontSize: "10.5px", color: "#4f6354" }}>
+                Mobile Number *
+                <input
+                  type="tel"
+                  value={profile.emergencyPhones[1]}
+                  onChange={(e) => updateProfile("emergencyPhones", [profile.emergencyPhones[0], e.target.value])}
+                  placeholder="e.g. 94432 56789"
+                  required
+                  style={{ padding: "7px 10px", border: "1px solid #d5e2d6", borderRadius: "6px", fontSize: "11.5px" }}
+                />
+              </label>
+            </div>
+          </div>
+
+          {profileError && <p className="form-error" role="alert">{profileError}</p>}
+
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "10px", flexWrap: "wrap" }}>
+            <button className="primary-button" type="submit" style={{ padding: "10px 24px", fontSize: "12.5px" }}>
+              💾 Save Profile Details
+            </button>
+            <button
+              type="button"
+              className="outline-button"
+              onClick={() => {
+                setSosTested(true);
+                setTimeout(() => setSosTested(false), 3000);
+              }}
+              style={{ fontSize: "11.5px" }}
+            >
+              🚨 Test SOS Notification
+            </button>
+            {profileSaved && <span style={{ color: "#15803d", fontWeight: 700, fontSize: "12px" }}>✓ Profile details saved</span>}
+            {sosTested && (
+              <span style={{ color: "#b91c1c", fontWeight: 700, fontSize: "11.5px" }}>
+                ✓ SOS Alert test payload verified for {profile.emergencyPhones[0]} &amp; {profile.emergencyPhones[1]}
+              </span>
+            )}
+          </div>
+        </form>
+      )}
+
+      {/* TAB 2: GENERAL SETTINGS */}
+      {activeSubTab === "settings" && (
+        <div className="settings-section-card">
+          <div className="settings-card-header">
+            <h3><span>⚙️</span> Search, Neighborhood &amp; Display Preferences</h3>
+            <p>Customize discovery filters, language localization, and catalogue appearance.</p>
+          </div>
+
+          {/* Search Radius */}
+          <div className="settings-row-toggle">
+            <div className="settings-row-label">
+              <strong>Default Search Radius</strong>
+              <small>Businesses within this distance appear automatically when you open Discover.</small>
+            </div>
+            <div style={{ display: "inline-flex", gap: "6px" }}>
+              {[1, 3, 5, 10, 25].map((rad) => (
+                <button
+                  key={rad}
+                  type="button"
+                  onClick={() => updateSettings("defaultRadius", rad)}
+                  style={{
+                    padding: "6px 11px",
+                    borderRadius: "6px",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    border: "1px solid",
+                    borderColor: settings.defaultRadius === rad ? "#15803d" : "#d3dfd5",
+                    background: settings.defaultRadius === rad ? "#15803d" : "#fff",
+                    color: settings.defaultRadius === rad ? "#fff" : "#324838",
+                    cursor: "pointer",
+                  }}
+                >
+                  {rad} km
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Preferred Locality Filter */}
+          <div className="settings-row-toggle">
+            <div className="settings-row-label">
+              <strong>Default Locality Filter</strong>
+              <small>Pre-filter searches to your favorite Hosur neighborhood.</small>
+            </div>
+            <select
+              value={settings.preferredLocality}
+              onChange={(e) => updateSettings("preferredLocality", e.target.value)}
+              style={{ padding: "7px 12px", border: "1px solid #d3dfd5", borderRadius: "8px", fontSize: "11.5px", background: "#fff", cursor: "pointer" }}
+            >
+              {HOSUR_LOCALITIES.map((loc) => (
+                <option key={loc} value={loc}>
+                  {loc}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Auto Detect Location */}
+          <div className="settings-row-toggle">
+            <div className="settings-row-label">
+              <strong>Auto-detect Location on Launch</strong>
+              <small>Automatically query browser GPS to calculate real-time road distance to merchants.</small>
+            </div>
+            <label className="settings-toggle-switch">
+              <input
+                type="checkbox"
+                checked={settings.autoDetectLocation}
+                onChange={(e) => updateSettings("autoDetectLocation", e.target.checked)}
+              />
+              <span className="settings-slider" />
+            </label>
+          </div>
+
+          {/* Map Provider */}
+          <div className="settings-row-toggle">
+            <div className="settings-row-label">
+              <strong>Map Provider</strong>
+              <small>Choose between Google Maps directions or OpenStreetMap vector rendering.</small>
+            </div>
+            <div style={{ display: "inline-flex", gap: "6px" }}>
+              <button
+                type="button"
+                onClick={() => updateSettings("mapProvider", "google")}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "6px",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  border: "1px solid",
+                  borderColor: settings.mapProvider === "google" ? "#1e40af" : "#cbd5e1",
+                  background: settings.mapProvider === "google" ? "#1e40af" : "#fff",
+                  color: settings.mapProvider === "google" ? "#fff" : "#334155",
+                  cursor: "pointer",
+                }}
+              >
+                🗺️ Google Maps
+              </button>
+              <button
+                type="button"
+                onClick={() => updateSettings("mapProvider", "osm")}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "6px",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  border: "1px solid",
+                  borderColor: settings.mapProvider === "osm" ? "#047857" : "#cbd5e1",
+                  background: settings.mapProvider === "osm" ? "#047857" : "#fff",
+                  color: settings.mapProvider === "osm" ? "#fff" : "#334155",
+                  cursor: "pointer",
+                }}
+              >
+                🌍 OpenStreetMap
+              </button>
+            </div>
+          </div>
+
+          {/* Language Selector */}
+          <div className="settings-row-toggle">
+            <div className="settings-row-label">
+              <strong>Application Language</strong>
+              <small>Switch the interface across English, தமிழ், ಕನ್ನಡ, and తెలుగు.</small>
+            </div>
+            <div style={{ display: "inline-flex", gap: "6px" }}>
+              {(["en", "ta", "kn", "te"] as const).map((l) => (
+                <button
+                  key={l}
+                  type="button"
+                  onClick={() => {
+                    updateSettings("language", l);
+                    if (onLanguageChange) onLanguageChange(l);
+                  }}
+                  style={{
+                    padding: "6px 10px",
+                    borderRadius: "6px",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    border: "1px solid",
+                    borderColor: settings.language === l ? "#15803d" : "#d3dfd5",
+                    background: settings.language === l ? "#15803d" : "#fff",
+                    color: settings.language === l ? "#fff" : "#324838",
+                    cursor: "pointer",
+                  }}
+                >
+                  {l === "en" ? "EN" : l === "ta" ? "தமிழ்" : l === "kn" ? "ಕನ್ನಡ" : "తెలుగు"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Catalog Layout */}
+          <div className="settings-row-toggle">
+            <div className="settings-row-label">
+              <strong>Product Catalog Default Layout</strong>
+              <small>Choose between visual product grid cards or compact list view.</small>
+            </div>
+            <div style={{ display: "inline-flex", gap: "6px" }}>
+              <button
+                type="button"
+                onClick={() => updateSettings("catalogView", "grid")}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "6px",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  border: "1px solid",
+                  borderColor: settings.catalogView === "grid" ? "#15803d" : "#d3dfd5",
+                  background: settings.catalogView === "grid" ? "#15803d" : "#fff",
+                  color: settings.catalogView === "grid" ? "#fff" : "#324838",
+                  cursor: "pointer",
+                }}
+              >
+                ▦ Grid Cards
+              </button>
+              <button
+                type="button"
+                onClick={() => updateSettings("catalogView", "list")}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "6px",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  border: "1px solid",
+                  borderColor: settings.catalogView === "list" ? "#15803d" : "#d3dfd5",
+                  background: settings.catalogView === "list" ? "#15803d" : "#fff",
+                  color: settings.catalogView === "list" ? "#fff" : "#324838",
+                  cursor: "pointer",
+                }}
+              >
+                ≡ List Rows
+              </button>
+            </div>
+          </div>
+
+          {settingsSaved && <span style={{ color: "#15803d", fontWeight: 700, fontSize: "12px" }}>✓ Settings updated</span>}
+        </div>
+      )}
+
+      {/* TAB 3: NOTIFICATIONS & ALERTS */}
+      {activeSubTab === "notifications" && (
+        <div className="settings-section-card">
+          <div className="settings-card-header">
+            <h3><span>🔔</span> Notification &amp; Alert Preferences</h3>
+            <p>Control what notifications you receive for customer orders, safety alerts, and neighborhood updates.</p>
+          </div>
+
+          <div className="settings-row-toggle">
+            <div className="settings-row-label">
+              <strong>Order Status Alerts</strong>
+              <small>Receive instant popovers when your order is placed, accepted, prepared, or ready.</small>
+            </div>
+            <label className="settings-toggle-switch">
+              <input
+                type="checkbox"
+                checked={settings.orderStatusAlerts}
+                onChange={(e) => updateSettings("orderStatusAlerts", e.target.checked)}
+              />
+              <span className="settings-slider" />
+            </label>
+          </div>
+
+          <div className="settings-row-toggle">
+            <div className="settings-row-label">
+              <strong>SMS &amp; WhatsApp Order Tracking</strong>
+              <small>Simulated order tracking messages dispatched to your registered mobile number.</small>
+            </div>
+            <label className="settings-toggle-switch">
+              <input
+                type="checkbox"
+                checked={settings.smsOrderUpdates}
+                onChange={(e) => updateSettings("smsOrderUpdates", e.target.checked)}
+              />
+              <span className="settings-slider" />
+            </label>
+          </div>
+
+          <div className="settings-row-toggle">
+            <div className="settings-row-label">
+              <strong>Community SOS Safety Broadcasts</strong>
+              <small>High-priority municipal announcements, weather advisories, and emergency alerts.</small>
+            </div>
+            <label className="settings-toggle-switch">
+              <input
+                type="checkbox"
+                checked={settings.communityBroadcasts}
+                onChange={(e) => updateSettings("communityBroadcasts", e.target.checked)}
+              />
+              <span className="settings-slider" />
+            </label>
+          </div>
+
+          <div className="settings-row-toggle">
+            <div className="settings-row-label">
+              <strong>Local Deals &amp; Merchant Offers</strong>
+              <small>Weekly curated discounts and special launches from Hosur neighborhood makers.</small>
+            </div>
+            <label className="settings-toggle-switch">
+              <input
+                type="checkbox"
+                checked={settings.merchantOffers}
+                onChange={(e) => updateSettings("merchantOffers", e.target.checked)}
+              />
+              <span className="settings-slider" />
+            </label>
+          </div>
+
+          <div className="settings-row-toggle">
+            <div className="settings-row-label">
+              <strong>Sound &amp; Chime Feedback</strong>
+              <small>Play subtle audio tone when an incoming alert or order update is received.</small>
+            </div>
+            <label className="settings-toggle-switch">
+              <input
+                type="checkbox"
+                checked={settings.soundAlerts}
+                onChange={(e) => updateSettings("soundAlerts", e.target.checked)}
+              />
+              <span className="settings-slider" />
+            </label>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 4: SECURITY & PRIVACY */}
+      {activeSubTab === "security" && (
+        <div className="settings-section-card">
+          <div className="settings-card-header">
+            <h3><span>🔒</span> Security, Privacy &amp; Passcode</h3>
+            <p>Manage authentication controls, local location sharing, and privacy protections.</p>
+          </div>
+
+          {/* Passcode Update Form */}
+          <form onSubmit={updatePasscode} style={{ background: "#fbfcfb", border: "1px solid #e1eee2", borderRadius: "10px", padding: "16px", display: "grid", gap: "10px", maxWidth: "480px" }}>
+            <strong style={{ fontSize: "12px", color: "#194023" }}>Change Account Passcode / PIN</strong>
+            <label style={{ display: "grid", gap: "4px", fontSize: "10.5px", color: "#526857" }}>
+              New Passcode / PIN
+              <input
+                type="password"
+                value={passcodeNew}
+                onChange={(e) => setPasscodeNew(e.target.value)}
+                placeholder="Enter 4-8 digit passcode"
+                minLength={4}
+                maxLength={20}
+                required
+                style={{ padding: "8px 12px", border: "1px solid #d0dfd3", borderRadius: "6px", fontSize: "12px" }}
+              />
+            </label>
+            <label style={{ display: "grid", gap: "4px", fontSize: "10.5px", color: "#526857" }}>
+              Confirm New Passcode
+              <input
+                type="password"
+                value={passcodeConfirm}
+                onChange={(e) => setPasscodeConfirm(e.target.value)}
+                placeholder="Re-enter passcode"
+                minLength={4}
+                maxLength={20}
+                required
+                style={{ padding: "8px 12px", border: "1px solid #d0dfd3", borderRadius: "6px", fontSize: "12px" }}
+              />
+            </label>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <button type="submit" className="primary-button" style={{ padding: "8px 16px", fontSize: "11.5px" }}>
+                Update Passcode
+              </button>
+              {passcodeStatus && <small style={{ fontWeight: 700, color: passcodeStatus.startsWith("✓") ? "#15803d" : "#b91c1c" }}>{passcodeStatus}</small>}
+            </div>
+          </form>
+
+          {/* Two-Factor Authentication */}
+          <div className="settings-row-toggle">
+            <div className="settings-row-label">
+              <strong>Two-Factor OTP Verification</strong>
+              <small>Require 6-digit one-time password verification when signing into your account.</small>
+            </div>
+            <label className="settings-toggle-switch">
+              <input
+                type="checkbox"
+                checked={settings.twoFactorAuth}
+                onChange={(e) => updateSettings("twoFactorAuth", e.target.checked)}
+              />
+              <span className="settings-slider" />
+            </label>
+          </div>
+
+          {/* Location Sharing */}
+          <div className="settings-row-toggle">
+            <div className="settings-row-label">
+              <strong>Share Approximate Distance with Merchants</strong>
+              <small>Allows local shops to estimate travel time without revealing your exact street number.</small>
+            </div>
+            <label className="settings-toggle-switch">
+              <input
+                type="checkbox"
+                checked={settings.shareLocationWithShops}
+                onChange={(e) => updateSettings("shareLocationWithShops", e.target.checked)}
+              />
+              <span className="settings-slider" />
+            </label>
+          </div>
+
+          {/* Search History Toggle */}
+          <div className="settings-row-toggle">
+            <div className="settings-row-label">
+              <strong>Save Search History on Device</strong>
+              <small>Caches your frequent keyword searches for instant 1-click recall.</small>
+            </div>
+            <label className="settings-toggle-switch">
+              <input
+                type="checkbox"
+                checked={settings.saveSearchHistory}
+                onChange={(e) => updateSettings("saveSearchHistory", e.target.checked)}
+              />
+              <span className="settings-slider" />
+            </label>
+          </div>
+
+          {/* Active Device Session */}
+          <div style={{ background: "#f8faf8", border: "1px solid #dfe9e1", borderRadius: "10px", padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
+            <div>
+              <strong style={{ fontSize: "12px", color: "#193f25", display: "flex", alignItems: "center", gap: "6px" }}>
+                <span>💻</span> Current Device &amp; Session
+              </strong>
+              <small style={{ display: "block", color: "#667a6a", marginTop: "2px" }}>
+                Windows Desktop · Local Network IP: <code>192.168.1.6</code> · Active via Wi-Fi
+              </small>
+            </div>
+            <span style={{ fontSize: "10.5px", background: "#edf8ef", color: "#166534", padding: "4px 10px", borderRadius: "12px", fontWeight: 700 }}>
+              ● Secure &amp; Verified
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 5: DATA & STORAGE MANAGEMENT */}
+      {activeSubTab === "data" && (
+        <div className="settings-section-card">
+          <div className="settings-card-header">
+            <h3><span>📦</span> Data Storage, Backups &amp; Privacy Exports</h3>
+            <p>Inspect local storage statistics, download GDPR-compliant JSON backups, or export order spreadsheets.</p>
+          </div>
+
+          {/* Live Stats */}
+          <div className="data-stats-grid">
+            <div className="data-stat-card">
+              <div className="data-stat-icon">🛍️</div>
+              <div className="data-stat-info">
+                <strong>{data?.orders?.length || 0}</strong>
+                <small>Order Records</small>
+              </div>
+            </div>
+            <div className="data-stat-card">
+              <div className="data-stat-icon">❤️</div>
+              <div className="data-stat-info">
+                <strong>{data?.favorites.length || 0}</strong>
+                <small>Saved Places</small>
+              </div>
+            </div>
+            <div className="data-stat-card">
+              <div className="data-stat-icon">🔍</div>
+              <div className="data-stat-info">
+                <strong>{data?.recentSearches.length || 0}</strong>
+                <small>Cached Searches</small>
+              </div>
+            </div>
+            <div className="data-stat-card">
+              <div className="data-stat-icon">💾</div>
+              <div className="data-stat-info">
+                <strong>~14 KB</strong>
+                <small>Local Storage Used</small>
+              </div>
+            </div>
+          </div>
+
+          {/* Export Actions */}
+          <div style={{ display: "flex", gap: "12px", marginTop: "10px", flexWrap: "wrap" }}>
+            <button
+              type="button"
+              className="primary-button"
+              onClick={downloadBackupJson}
+              style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "10px 18px", fontSize: "12px" }}
+            >
+              <span>📥</span> Download My Data (JSON Backup)
+            </button>
+            <button
+              type="button"
+              className="outline-button"
+              onClick={exportOrdersCsv}
+              style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "10px 18px", fontSize: "12px" }}
+            >
+              <span>📊</span> Export Order Receipts (CSV)
+            </button>
+          </div>
+
+          <div className="form-note" style={{ margin: "6px 0 0" }}>
+            <strong>Local data portability</strong>
+            <span>
+              Your profile, saved places, order invoices, and emergency contacts are encrypted in your local browser sandbox.
+              Exporting provides an offline, permanent copy of your records.
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 6: CONNECTED FEATURES & PORTALS */}
+      {activeSubTab === "features" && (
+        <div className="settings-section-card">
+          <div className="settings-card-header">
+            <h3><span>⚡</span> Platform Workspace Switcher &amp; Features</h3>
+            <p>Quick access to all Bizearch ecosystem portals, merchant management, and emergency response lines.</p>
+          </div>
+
+          <div className="portal-jump-grid">
+            <button
+              type="button"
+              className="portal-jump-card"
+              onClick={() => onOpenPortal && onOpenPortal("Discover")}
+            >
+              <h4>🛍️ Discover Marketplace</h4>
+              <p>Explore Hosur shops, interactive map, live category directories, and menus.</p>
+              <span>Open Discover →</span>
+            </button>
+
+            <button
+              type="button"
+              className="portal-jump-card"
+              onClick={() => onOpenPortal && onOpenPortal("Account")}
+            >
+              <h4>👤 Customer Account Portal</h4>
+              <p>Active order fulfillment tracking, saved shortlisted favorites, and enquiries.</p>
+              <span>Open Customer Portal →</span>
+            </button>
+
+            <button
+              type="button"
+              className="portal-jump-card"
+              onClick={() => onOpenPortal && onOpenPortal("Business")}
+            >
+              <h4>🏪 Business Partner Portal</h4>
+              <p>Manage business profile, catalogue items, order prep, and Plans &amp; Billing checkout.</p>
+              <span>Open Business Portal →</span>
+            </button>
+
+            <button
+              type="button"
+              className="portal-jump-card"
+              onClick={() => onOpenPortal && onOpenPortal("Agent")}
+            >
+              <h4>🤝 Field Agent Portal</h4>
+              <p>Agent referral codes, commission tracking, and local business onboarding.</p>
+              <span>Open Agent Portal →</span>
+            </button>
+
+            <button
+              type="button"
+              className="portal-jump-card"
+              onClick={() => {
+                if (typeof window !== "undefined") window.location.href = "/company-login";
+              }}
+            >
+              <h4>🏢 Company Administration</h4>
+              <p>Ad manager, taxonomy controls, SOS emergency logs, and platform operations.</p>
+              <span>Company Login →</span>
+            </button>
+          </div>
+
+          {/* Hosur Emergency & Support Lines */}
+          <div className="settings-card-header" style={{ marginTop: "14px" }}>
+            <h3><span>📞</span> Hosur City Emergency &amp; Support Directory</h3>
+            <p>Immediate phone numbers for emergency response and Bizearch Hosur help desk.</p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "10px" }}>
+            <a
+              href="tel:100"
+              style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "8px", padding: "10px 14px", textDecoration: "none", color: "#991b1b" }}
+            >
+              <strong style={{ display: "block", fontSize: "12px" }}>🚔 Police Emergency</strong>
+              <span style={{ fontSize: "14px", fontWeight: 800 }}>Dial 100 / 112</span>
+            </a>
+            <a
+              href="tel:108"
+              style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "8px", padding: "10px 14px", textDecoration: "none", color: "#991b1b" }}
+            >
+              <strong style={{ display: "block", fontSize: "12px" }}>🚑 Medical Ambulance</strong>
+              <span style={{ fontSize: "14px", fontWeight: 800 }}>Dial 108</span>
+            </a>
+            <a
+              href="tel:101"
+              style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: "8px", padding: "10px 14px", textDecoration: "none", color: "#92400e" }}
+            >
+              <strong style={{ display: "block", fontSize: "12px" }}>🚒 Fire &amp; Rescue</strong>
+              <span style={{ fontSize: "14px", fontWeight: 800 }}>Dial 101</span>
+            </a>
+            <a
+              href="tel:9489521482"
+              style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "8px", padding: "10px 14px", textDecoration: "none", color: "#166534" }}
+            >
+              <strong style={{ display: "block", fontSize: "12px" }}>💬 Bizearch Hosur Help Desk</strong>
+              <span style={{ fontSize: "14px", fontWeight: 800 }}>+91 94895 21482</span>
+            </a>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Backwards-compatible alias for existing dialogs and code
+function ProfilePanel(props: { role: "Account" | "Business" | "Agent" | "Company"; label: string; identity?: string }) {
+  return <ProfileAndSettingsPanel {...props} initialSubTab="profile" />;
 }
 
 const CATALOGUE_IMAGE_PRESETS = [
@@ -17675,7 +19068,10 @@ function CompanyPortal({
   enquiries,
   events,
   checkouts,
+  initialTab = "Overview",
   locationEnabled,
+  onOpenPortal,
+  onLanguageChange,
   showNotice,
   accessLevel,
   identity,
@@ -17686,11 +19082,24 @@ function CompanyPortal({
   enquiries: DemoEnquiry[];
   events: DemoEvent[];
   checkouts: CheckoutRequest[];
+  initialTab?: string;
   locationEnabled: boolean;
+  onOpenPortal?: (role: Role) => void;
+  onLanguageChange?: (lang: "en" | "ta" | "kn" | "te") => void;
   showNotice: (message: string) => void;
 }) {
-  const [activeTab, setActiveTab] = useState("Overview");
-  useEffect(() => { const openProfile = () => setActiveTab("Profile"); window.addEventListener("neighborly-open-profile", openProfile); return () => window.removeEventListener("neighborly-open-profile", openProfile); }, []);
+  const [activeTab, setActiveTab] = useState(initialTab || "Overview");
+  useEffect(() => {
+    if (initialTab && initialTab !== "Overview") setActiveTab(initialTab);
+  }, [initialTab]);
+  useEffect(() => {
+    const openProfile = (e: Event) => {
+      const customEvent = e as CustomEvent<{ tab?: string }>;
+      setActiveTab(customEvent.detail?.tab || "Profile details");
+    };
+    window.addEventListener("neighborly-open-profile", openProfile);
+    return () => window.removeEventListener("neighborly-open-profile", openProfile);
+  }, []);
   const [admins, setAdmins] = useState<ManagedCompanyAdmin[]>([]);
   const [registrationConfig, setRegistrationConfig] = useState<RegistrationFormConfig>(defaultRegistrationFormConfig);
   const [customerRegistrations, setCustomerRegistrations] = useState<CustomerRegistrationLocation[]>([]);
@@ -17701,7 +19110,7 @@ function CompanyPortal({
   const [sosError, setSosError] = useState("");
   const [adminError, setAdminError] = useState("");
   const [adminLoading, setAdminLoading] = useState(false);
-  const tabNames = accessLevel === "Super Admin" ? ["Overview", "Businesses", "Categories", "Registration forms", "Customer locations", "Advertisements", "Admins", "Activity log", "Billing", "Safety", "Profile"] : ["Overview", "Businesses", "Categories", "Customer locations", "Advertisements", "Activity log", "Billing", "Safety", "Profile"];
+  const tabNames = accessLevel === "Super Admin" ? ["Overview", "Businesses", "Categories", "Registration forms", "Customer locations", "Advertisements", "Admins", "Activity log", "Billing", "Safety", "Profile details", "Settings"] : ["Overview", "Businesses", "Categories", "Customer locations", "Advertisements", "Activity log", "Billing", "Safety", "Profile details", "Settings"];
 
   useEffect(() => {
     if (accessLevel !== "Super Admin") return;
@@ -17820,7 +19229,30 @@ function CompanyPortal({
     {activeTab === "Activity log" && <section className="panel tab-panel"><div className="panel-heading"><div><div className="eyebrow">LOCAL DEMO AUDIT</div><h2>Recent activity</h2></div><span className="status-pill pending">Browser only</span></div><p>Events are stored locally in this browser and are not sent to the company.</p>{events.length ? events.map((event) => <div className="activity-row" key={event.id}><span className="activity-dot" /><strong>{event.action}</strong><small>{new Date(event.createdAt).toLocaleString()}</small></div>) : <EmptyState title="No activity recorded" text="Searches and selections will appear here as local demo events." />}</section>}
     {activeTab === "Billing" && <section className="panel tab-panel"><div className="eyebrow">SUBSCRIPTIONS & CHECKOUT</div><h2>Payment previews</h2><p>These previews never create a payment or activate a subscription.</p>{checkouts.length ? checkouts.map((item, index) => <div className="listing-row" key={`${item.createdAt}-${index}`}><span className="listing-icon lavender">₹</span><span className="listing-name"><strong>{item.businessName} · {item.plan}</strong><small>{item.paymentMethod} · {new Date(item.createdAt).toLocaleString()}</small></span><span className="status-pill pending">{item.status}</span></div>) : <EmptyState title="No checkout previews" text="Business plan selections will be listed here in this browser." />}</section>}
     {activeTab === "Safety" && <section className="panel tab-panel"><div className="eyebrow">SAFETY & ESCALATION</div><h2>Emergency response setup</h2>{accessLevel === "Super Admin" ? <><p>Recent SOS alerts are recorded on this server and restricted to Super Admins. Alert details include personal contacts and precise coordinates; handle them as sensitive information. Bizearch does not place calls or send messages.</p><button className="outline-button" type="button" disabled={sosLoading} onClick={() => { setSosLoading(true); setSosError(""); fetch("/api/company/sos", { cache: "no-store" }).then(async (response) => { const result = await response.json() as { alerts?: SosAlert[]; error?: string }; if (!response.ok) throw new Error(result.error || "Could not load SOS alerts."); setSosAlerts(result.alerts || []); }).catch((reason) => setSosError(reason instanceof Error ? reason.message : "Could not load SOS alerts.")).finally(() => setSosLoading(false)); }}>Refresh alerts</button>{sosLoading && <p role="status">Loading SOS alerts...</p>}{sosError && <p className="form-error" role="alert">{sosError}</p>}{!sosLoading && !sosError && sosAlerts.length === 0 && <EmptyState title="No SOS alerts" text="Customer SOS alerts will appear here when submitted." />}{sosAlerts.map((alert) => <article className="sos-alert-card" key={alert.id}><div className="sos-alert-heading"><div><strong>{alert.customerName} · {alert.profileRole === "Account" ? "Customer" : alert.profileRole}</strong><small>{emergencyTypes.find((item) => item.id === alert.emergencyType)?.title ?? alert.emergencyType} · dial {alert.serviceNumber} · {new Date(alert.createdAt).toLocaleString()}</small><small>Account: {alert.identity || "Identity not available on this legacy alert"}</small><small>Mobile: {alert.customerPhone || `ending ${alert.customerPhoneLast4}`}</small></div><span className={`status-pill ${alert.locationStatus === "shared" ? "verified" : "pending"}`}>{alert.locationStatus === "shared" ? "Location shared" : "Location unavailable"}</span></div>{alert.latitude !== null && alert.longitude !== null ? <p><strong>Exact coordinates:</strong> {alert.latitude.toFixed(6)}, {alert.longitude.toFixed(6)}{alert.accuracyMeters !== null ? ` · accuracy ±${Math.round(alert.accuracyMeters)} m` : ""}</p> : <p>Customer location was unavailable when the SOS was submitted.</p>}<div className="sos-alert-contacts">{alert.emergencyPhones.map((phone, index) => <a key={`${alert.id}-${index}`} className="outline-button" href={`tel:${phone}`}>Call emergency contact {index + 1}</a>)}</div><small className="sos-alert-status">{alert.deliveryStatus}</small></article>)}</> : <p>SOS alert details and exact customer coordinates are available to Super Admins only. This demo does not dispatch emergency calls.</p>}</section>}
-    {activeTab === "Profile" && <ProfilePanel role="Company" label={accessLevel} identity={identity} />}
+    {(activeTab === "Profile details" || activeTab === "Profile") && (
+      <ProfileAndSettingsPanel
+        role="Company"
+        label={accessLevel}
+        identity={identity}
+        initialSubTab="profile"
+        onNavigateTab={(t) => setActiveTab(t)}
+        onOpenPortal={onOpenPortal}
+        onLanguageChange={onLanguageChange}
+        showNotice={showNotice}
+      />
+    )}
+    {activeTab === "Settings" && (
+      <ProfileAndSettingsPanel
+        role="Company"
+        label={accessLevel}
+        identity={identity}
+        initialSubTab="settings"
+        onNavigateTab={(t) => setActiveTab(t)}
+        onOpenPortal={onOpenPortal}
+        onLanguageChange={onLanguageChange}
+        showNotice={showNotice}
+      />
+    )}
   </div>;
 }
 
