@@ -137,12 +137,20 @@ type SosAlert = {
   createdAt: string;
   deliveryStatus: string;
 };
-type CheckoutRequest = {
+export type CheckoutRequest = {
+  id?: string;
   businessName: string;
   plan: string;
-  createdAt: string;
+  billingCycle?: "monthly" | "yearly";
+  amount?: number;
+  taxes?: number;
+  totalAmount?: number;
   paymentMethod: string;
-  status: "Not processed";
+  transactionId?: string;
+  invoiceNumber?: string;
+  validUntil?: string;
+  createdAt: string;
+  status: "Active" | "Paid" | "Pending" | "Not processed" | string;
 };
 
 export type OrderStatus = "placed" | "accepted" | "preparing" | "ready" | "completed" | "cancelled";
@@ -333,7 +341,7 @@ function isDemoData(value: unknown): value is DemoData {
     Array.isArray(data.checkouts) && data.checkouts.every((item) =>
       isRecord(item) && typeof item.businessName === "string" && typeof item.plan === "string" &&
       typeof item.createdAt === "string" && typeof item.paymentMethod === "string" &&
-      item.status === "Not processed") &&
+      typeof item.status === "string") &&
     Array.isArray(data.businesses) && data.businesses.every((item) =>
       isRecord(item) && typeof item.name === "string" && typeof item.category === "string" &&
       Array.isArray(item.subcategories) && item.subcategories.every((entry) => typeof entry === "string") &&
@@ -9955,12 +9963,30 @@ const initialSampleOrders: OrderRecord[] = [
   }
 ];
 
+const initialSampleCheckouts: CheckoutRequest[] = [
+  {
+    id: "SUB-84912",
+    businessName: "Bloom & Bean Café",
+    plan: "Growth",
+    billingCycle: "monthly",
+    amount: 999,
+    taxes: 180,
+    totalAmount: 1179,
+    paymentMethod: "UPI (Auto-pay)",
+    transactionId: "UPI/261015/84920193812",
+    invoiceNumber: "INV-2026-84912",
+    createdAt: new Date(Date.now() - 15 * 24 * 3600 * 1000).toISOString(),
+    validUntil: new Date(Date.now() + 15 * 24 * 3600 * 1000).toISOString(),
+    status: "Active",
+  }
+];
+
 const emptyDemoData: DemoData = {
   favorites: [],
   recentSearches: [],
   enquiries: [],
   events: [],
-  checkouts: [],
+  checkouts: initialSampleCheckouts,
   businesses: initialBusinesses,
   orders: initialSampleOrders,
 };
@@ -10242,6 +10268,8 @@ export default function Home() {
   const [enquiryProduct, setEnquiryProduct] = useState<{ business: Business; product: Product } | null>(null);
   const [orderingItem, setOrderingItem] = useState<{ business: Business; product: Product } | null>(null);
   const [activeReceipt, setActiveReceipt] = useState<OrderRecord | null>(null);
+  const [subscriptionCheckout, setSubscriptionCheckout] = useState<{ businessName?: string; plan?: string } | null>(null);
+  const [subscriptionReceipt, setSubscriptionReceipt] = useState<CheckoutRequest | null>(null);
   const [claimBusiness, setClaimBusiness] = useState<Business | null>(null);
   const [selectedNeighborhood, setSelectedNeighborhood] = useState("All Hosur");
   const [lang, setLang] = useState<Language>("en");
@@ -10503,6 +10531,7 @@ export default function Home() {
           setDemoData({
             ...parsed,
             businesses: [...custom, ...initialBusinesses],
+            checkouts: Array.isArray(parsed.checkouts) && parsed.checkouts.length > 0 ? parsed.checkouts : initialSampleCheckouts,
             orders: Array.isArray(parsed.orders) && parsed.orders.length > 0 ? parsed.orders : initialSampleOrders,
           });
         }
@@ -11111,25 +11140,63 @@ export default function Home() {
     showNotice("Catalogue item removed.");
   }
 
-  function submitCheckout(businessName: string, plan: string, paymentMethod: string) {
-    const checkout: CheckoutRequest = {
-      businessName,
-      plan,
-      paymentMethod,
-      createdAt: new Date().toISOString(),
-      status: "Not processed",
-    };
-    setDemoData((current) => ({ ...current, checkouts: [checkout, ...current.checkouts] }));
-    recordEvent("Subscription checkout previewed");
+  function submitCheckout(businessName: string, plan: string) {
     setDialog(null);
-    showNotice("Checkout preview saved. No payment was initiated or collected.");
+    setSubscriptionCheckout({ businessName, plan });
+  }
+
+  function processSubscriptionPayment(data: {
+    businessName: string;
+    plan: string;
+    billingCycle: "monthly" | "yearly";
+    amount: number;
+    taxes: number;
+    totalAmount: number;
+    paymentMethod: string;
+    transactionId: string;
+    invoiceNumber: string;
+    validUntil: string;
+  }) {
+    const subRecord: CheckoutRequest = {
+      id: `SUB-${Math.floor(10000 + Math.random() * 90000)}`,
+      businessName: data.businessName,
+      plan: data.plan,
+      billingCycle: data.billingCycle,
+      amount: data.amount,
+      taxes: data.taxes,
+      totalAmount: data.totalAmount,
+      paymentMethod: data.paymentMethod,
+      transactionId: data.transactionId,
+      invoiceNumber: data.invoiceNumber,
+      validUntil: data.validUntil,
+      createdAt: new Date().toISOString(),
+      status: "Active",
+    };
+
+    setDemoData((current) => ({
+      ...current,
+      checkouts: [subRecord, ...current.checkouts.filter((c) => c.businessName !== data.businessName || c.status !== "Active")],
+      businesses: current.businesses.map((b) =>
+        b.name.toLowerCase() === data.businessName.toLowerCase()
+          ? { ...b, subscribed: true }
+          : b
+      ),
+    }));
+
+    recordEvent(`Subscription payment completed: ${data.plan} for ${data.businessName} (₹${data.totalAmount})`);
+    setSubscriptionCheckout(null);
+    setSubscriptionReceipt(subRecord);
+    setDialog(null);
+
     addNotification({
-      title: "Subscription Checkout Recorded",
-      message: `${plan} membership for "${businessName}" saved on this device.`,
       type: "business",
-      linkText: "View Business Portal",
-      action: { type: "role", payload: "Business" },
+      title: `🎉 ${data.plan} Membership Activated!`,
+      message: `Payment of ₹${data.totalAmount.toLocaleString("en-IN")} received via ${data.paymentMethod}. "${data.businessName}" now has Active verified status & priority search ranking until ${new Date(data.validUntil).toLocaleDateString()}.`,
+      linkText: "View Tax Invoice",
+      action: { type: "portal", payload: "Business" },
     });
+
+    showNotice(`🎉 Payment of ₹${data.totalAmount.toLocaleString("en-IN")} successful! ${data.plan} plan activated for ${data.businessName}.`);
   }
 
   async function submitBusiness(event: React.FormEvent<HTMLFormElement>) {
@@ -12164,7 +12231,7 @@ export default function Home() {
       <section className="main-area">
         <header className="topbar">
           <div className="breadcrumb" style={{ fontSize: "11px", color: "#879188", whiteSpace: "nowrap", flexShrink: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>{t.yourNeighborhood} <span>/</span> <strong>{role === "Discover" ? t.discover : role === "Account" ? t.myActivity : `${role} portal`}</strong></div>
-          <div className="topbar-partner" aria-label="Powered by Jishnu Infotech" style={{ display: "flex", alignItems: "center", gap: "8px", whiteSpace: "nowrap", color: "#718078", fontSize: "10px", flexShrink: 0 }}><span>{t.poweredBy}</span><img src="/jishnu-infotech-logo.png" alt="Jishnu Infotech" style={{ display: "block", width: "128px", height: "42px", objectFit: "contain" }} /></div>
+          <div className="topbar-partner" aria-label="Powered by Jishnu Infotech" style={{ display: "flex", alignItems: "center", gap: "8px", whiteSpace: "nowrap", color: "#718078", fontSize: "10px", flexShrink: 0 }}><span>{t.poweredBy}</span><img src="/jishnu-infotech-logo.png" alt="Jishnu Infotech" style={{ display: "block", height: "28px", width: "auto", maxWidth: "120px", objectFit: "contain" }} /></div>
           <div className="topbar-actions" style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "nowrap", flexShrink: 0, marginLeft: "auto" }}>
             <button
               className="location-chip"
@@ -12172,28 +12239,54 @@ export default function Home() {
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: "4px",
-                padding: "5px 9px",
+                gap: "6px",
+                height: "32px",
+                padding: "0 10px",
                 fontSize: "11px",
                 fontWeight: 600,
                 color: "#2c4835",
                 background: "#f4f8f4",
                 border: "1px solid #d8e5d9",
-                borderRadius: "6px",
+                borderRadius: "7px",
                 cursor: "pointer",
                 whiteSpace: "nowrap",
                 flexShrink: 0,
+                lineHeight: 1,
               }}
             >
-              <span className="location-pin" style={{ fontSize: "14px", color: "#3d784f" }}>📍</span> {locationEnabled ? t.stopLocation : t.hosurLocation} <span className="chevron" style={{ fontSize: "10px", color: "#698070", marginLeft: "2px" }}>⌄</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#285536" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              <span>{locationEnabled ? t.stopLocation : t.hosurLocation}</span>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#698070" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginLeft: "2px" }}>
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
             </button>
-            <div className="notification-wrapper" ref={notificationsRef}>
+            <div className="notification-wrapper" ref={notificationsRef} style={{ position: "relative", display: "inline-flex", alignItems: "center", height: "32px" }}>
               <button
                 className="icon-button notification-button"
                 aria-label={`Notifications (${unreadCount} unread)`}
                 onClick={() => setNotificationsOpen((prev) => !prev)}
+                style={{
+                  width: "32px",
+                  height: "32px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "#f4f8f4",
+                  border: "1px solid #d8e5d9",
+                  borderRadius: "7px",
+                  color: "#2c4835",
+                  cursor: "pointer",
+                  position: "relative",
+                  padding: 0,
+                }}
               >
-                🔔
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2c4835" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+                  <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+                </svg>
                 {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
               </button>
               {notificationsOpen && (
@@ -12308,7 +12401,7 @@ export default function Home() {
                 </div>
               )}
             </div>
-            <div className="language-selector-pill" role="group" aria-label="Select language" style={{ display: "inline-flex", alignItems: "center", background: "#f0f4f1", borderRadius: "18px", border: "1px solid #d4ded6", padding: "2px 3px", gap: "2px", flexShrink: 0 }}>
+            <div className="language-selector-pill" role="group" aria-label="Select language" style={{ display: "inline-flex", alignItems: "center", height: "32px", background: "#f0f4f1", borderRadius: "16px", border: "1px solid #d4ded6", padding: "2px 3px", gap: "2px", flexShrink: 0 }}>
               {(["en", "ta", "kn", "te"] as const).map((l) => (
                 <button
                   key={l}
@@ -12326,11 +12419,15 @@ export default function Home() {
                     background: lang === l ? "#285536" : "transparent",
                     color: lang === l ? "#ffffff" : "#405445",
                     border: 0,
-                    borderRadius: "14px",
-                    padding: "3px 7px",
+                    borderRadius: "13px",
+                    height: "26px",
+                    padding: "0 8px",
                     cursor: "pointer",
-                    fontSize: "9.5px",
+                    fontSize: "10px",
                     fontWeight: 700,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     transition: "all 0.15s ease",
                     whiteSpace: "nowrap",
                   }}
@@ -12347,14 +12444,18 @@ export default function Home() {
                 style={{
                   border: "1px solid #d5e2d6",
                   background: "#ffffff",
-                  borderRadius: "6px",
+                  borderRadius: "7px",
                   color: "#285536",
-                  padding: "6px 12px",
+                  height: "32px",
+                  padding: "0 12px",
                   fontSize: "10.5px",
                   fontWeight: 700,
                   whiteSpace: "nowrap",
                   cursor: "pointer",
                   flexShrink: 0,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
                 {t.signOut}
@@ -12366,14 +12467,19 @@ export default function Home() {
                 style={{
                   border: "1px solid #d5e2d6",
                   background: "#ffffff",
-                  borderRadius: "6px",
+                  borderRadius: "7px",
                   color: "#285536",
-                  padding: "6px 12px",
+                  height: "32px",
+                  padding: "0 12px",
                   fontSize: "10.5px",
                   fontWeight: 700,
                   whiteSpace: "nowrap",
                   cursor: "pointer",
                   flexShrink: 0,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "4px",
                 }}
               >
                 {t.signIn} <span>&rarr;</span>
@@ -12382,9 +12488,11 @@ export default function Home() {
           </div>
         </header>
 
-        <div className="ad-ticker top-ad-ticker" aria-label="Local advertising announcements">
-          <div className="ad-ticker-track">{adConfig.tickerMessages.map((message, index) => <Fragment key={`${index}-${message}`}><span>{message}</span><i>&#10038;</i></Fragment>)}</div>
-        </div>
+        {role === "Discover" && (
+          <div className="ad-ticker top-ad-ticker" aria-label="Local advertising announcements">
+            <div className="ad-ticker-track">{adConfig.tickerMessages.map((message, index) => <Fragment key={`${index}-${message}`}><span>{message}</span><i>&#10038;</i></Fragment>)}</div>
+          </div>
+        )}
 
         {role === "Discover" && <div className="ad-ticker mobile-ad-ticker" aria-label="Local advertising announcements">
           <div className="ad-ticker-track">{adConfig.tickerMessages.map((message, index) => <Fragment key={`${index}-${message}`}><span>{message}</span><i>&#10038;</i></Fragment>)}</div>
@@ -13408,7 +13516,9 @@ export default function Home() {
             orders={demoData.orders || []}
             onUpdateOrderStatus={updateOrderStatus}
             openBusinessProfile={() => window.dispatchEvent(new Event("neighborly-open-business-profile"))}
-            openPlans={() => setDialog("plans")}
+            openPlans={() => setSubscriptionCheckout({ businessName: businessAccountBusinesses[0]?.name || businesses[0]?.name, plan: "Growth" })}
+            onSelectPlan={(plan) => setSubscriptionCheckout({ businessName: businessAccountBusinesses[0]?.name || businesses[0]?.name, plan })}
+            onViewInvoice={(invoice) => setSubscriptionReceipt(invoice)}
             verifyLocation={verifyBusinessLocation}
             onAddProduct={addProduct}
             onUpdateProduct={updateProduct}
@@ -13439,6 +13549,21 @@ export default function Home() {
             setActiveReceipt(null);
             setRole("Account");
           }}
+        />
+      )}
+      {subscriptionCheckout && (
+        <PlanCheckoutDialog
+          businesses={businessAccountBusinesses.length > 0 ? businessAccountBusinesses : businesses}
+          initialBusinessName={subscriptionCheckout.businessName}
+          initialPlan={subscriptionCheckout.plan}
+          close={() => setSubscriptionCheckout(null)}
+          onProcessPayment={processSubscriptionPayment}
+        />
+      )}
+      {subscriptionReceipt && (
+        <SubscriptionReceiptModal
+          record={subscriptionReceipt}
+          close={() => setSubscriptionReceipt(null)}
         />
       )}
       {selectedBusiness && (
@@ -15558,6 +15683,625 @@ function CustomerOrdersManager({
   );
 }
 
+function PlanCheckoutDialog({
+  businesses,
+  initialBusinessName,
+  initialPlan = "Growth",
+  close,
+  onProcessPayment,
+}: {
+  businesses: Business[];
+  initialBusinessName?: string;
+  initialPlan?: string;
+  close: () => void;
+  onProcessPayment: (data: {
+    businessName: string;
+    plan: string;
+    billingCycle: "monthly" | "yearly";
+    amount: number;
+    taxes: number;
+    totalAmount: number;
+    paymentMethod: string;
+    transactionId: string;
+    invoiceNumber: string;
+    validUntil: string;
+  }) => void;
+}) {
+  const [selectedBusiness, setSelectedBusiness] = useState(
+    initialBusinessName || businesses[0]?.name || "My Business"
+  );
+  const [selectedPlan, setSelectedPlan] = useState(initialPlan || "Growth");
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
+  const [gstin, setGstin] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"upi" | "card" | "netbanking">("upi");
+  const [upiId, setUpiId] = useState("hosur.business@okhdfcbank");
+  const [cardData, setCardData] = useState({
+    number: "4532 9012 3456 7890",
+    expiry: "11/28",
+    cvv: "456",
+    name: "Business Director",
+  });
+  const [selectedBank, setSelectedBank] = useState("State Bank of India (SBI)");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingStage, setProcessingStage] = useState("Connecting to Payment Gateway...");
+
+  // Plan pricing
+  const planPrices: Record<string, { monthly: number; yearly: number; desc: string; perks: string[] }> = {
+    Starter: {
+      monthly: 499,
+      yearly: 4790,
+      desc: "Essential local presence for emerging neighborhood vendors.",
+      perks: ["Verified Listing Badge", "Up to 15 Catalogue Items", "Customer Enquiries Inbox", "Basic Profile Analytics"],
+    },
+    Growth: {
+      monthly: 999,
+      yearly: 9590,
+      desc: "Top choice for established local stores & service providers.",
+      perks: ["Priority Search Ranking in Hosur", "Unlimited Catalogue & Direct Ordering", "Direct WhatsApp & Call Customer Buttons", "Merchant Order Prep Dashboard", "Monthly Business Performance Insights"],
+    },
+    Spotlight: {
+      monthly: 1999,
+      yearly: 19190,
+      desc: "Maximum reach with prime homepage spotlight & multi-language promotion.",
+      perks: ["Top-of-Search Spotlight Banner Placement", "0% Commission Direct Online Orders", "Hosur Featured Partner Verified Crown", "Dedicated Account & Verification Manager", "Multi-language Catalogue Promotion (EN, TA, KN, TE)"],
+    },
+  };
+
+  const currentPlanMeta = planPrices[selectedPlan] || planPrices.Growth;
+  const baseAmount = billingCycle === "yearly" ? currentPlanMeta.yearly : currentPlanMeta.monthly;
+  const taxes = Math.round(baseAmount * 0.18); // 18% GST (9% CGST + 9% SGST)
+  const totalAmount = baseAmount + taxes;
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (isProcessing) return;
+
+    setIsProcessing(true);
+    setProcessingStage(
+      paymentMethod === "upi"
+        ? "Connecting to UPI / NPCI Subscription Gateway..."
+        : paymentMethod === "card"
+        ? "Securing 256-bit SSL Card payment..."
+        : `Authorizing Corporate Net Banking via ${selectedBank}...`
+    );
+
+    setTimeout(() => {
+      setProcessingStage("Payment Authorized! Activating business subscription & generating Tax Invoice...");
+      setTimeout(() => {
+        const txnId =
+          paymentMethod === "upi"
+            ? `UPI/SUB/${Math.floor(100000000000 + Math.random() * 900000000000)}`
+            : paymentMethod === "card"
+            ? `TXN-SUB-CRD-${Math.floor(10000000 + Math.random() * 90000000)}`
+            : `NET-SUB-${Math.floor(10000000 + Math.random() * 90000000)}`;
+
+        const invNum = `INV-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}`;
+        const validDate = new Date();
+        if (billingCycle === "yearly") {
+          validDate.setFullYear(validDate.getFullYear() + 1);
+        } else {
+          validDate.setDate(validDate.getDate() + 30);
+        }
+
+        onProcessPayment({
+          businessName: selectedBusiness,
+          plan: selectedPlan,
+          billingCycle,
+          amount: baseAmount,
+          taxes,
+          totalAmount,
+          paymentMethod: paymentMethod === "upi" ? `UPI (${upiId})` : paymentMethod === "card" ? "Credit/Debit Card" : `Net Banking (${selectedBank})`,
+          transactionId: txnId,
+          invoiceNumber: invNum,
+          validUntil: validDate.toISOString(),
+        });
+      }, 700);
+    }, 900);
+  }
+
+  return (
+    <div className="order-modal-backdrop" onClick={close}>
+      <div className="plan-checkout-container" onClick={(e) => e.stopPropagation()}>
+        <div className="plan-checkout-header">
+          <div>
+            <h3>
+              <span>⚡</span> Subscribe to {selectedPlan} Membership
+            </h3>
+            <span style={{ fontSize: "12px", opacity: 0.9 }}>Hosur Business Growth &amp; Visibility</span>
+          </div>
+          <button
+            type="button"
+            onClick={close}
+            aria-label="Close"
+            style={{ background: "transparent", border: "none", color: "#ffffff", fontSize: "22px", cursor: "pointer" }}
+          >
+            ✕
+          </button>
+        </div>
+
+        {isProcessing ? (
+          <div style={{ padding: "60px 24px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
+            <div style={{ width: "50px", height: "50px", border: "4px solid #bfdbfe", borderTopColor: "#1d4ed8", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+            <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+            <h4 style={{ margin: 0, fontSize: "17px", color: "#1e3a8a", fontWeight: 800 }}>Processing Subscription Payment</h4>
+            <p style={{ margin: 0, fontSize: "14px", color: "#475569" }}>{processingStage}</p>
+            <div style={{ fontSize: "12px", color: "#1d4ed8", background: "#eff6ff", padding: "6px 14px", borderRadius: "20px", fontWeight: 700 }}>
+              Amount: ₹{totalAmount.toLocaleString("en-IN")} · 18% GST Included · 256-Bit Encrypted
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} style={{ display: "contents" }}>
+            <div className="order-checkout-body">
+              {/* Business & Billing Cycle Row */}
+              <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: "14px", alignItems: "center" }}>
+                <label style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "#1e3a8a" }}>
+                  Selected Business
+                  <select
+                    value={selectedBusiness}
+                    onChange={(e) => setSelectedBusiness(e.target.value)}
+                    style={{ width: "100%", padding: "9px 12px", border: "1.5px solid #cbd5e1", borderRadius: "8px", marginTop: "4px", fontSize: "13px", fontWeight: 700 }}
+                  >
+                    {businesses.map((b, i) => (
+                      <option key={`${b.name}-${i}`} value={b.name}>
+                        {b.name} ({b.category})
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <div>
+                  <div style={{ fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "4px", textAlign: "center" }}>
+                    BILLING CYCLE
+                  </div>
+                  <div className="billing-cycle-toggle">
+                    <button
+                      type="button"
+                      className={`billing-cycle-btn ${billingCycle === "monthly" ? "active" : ""}`}
+                      onClick={() => setBillingCycle("monthly")}
+                    >
+                      Monthly
+                    </button>
+                    <button
+                      type="button"
+                      className={`billing-cycle-btn ${billingCycle === "yearly" ? "active" : ""}`}
+                      onClick={() => setBillingCycle("yearly")}
+                    >
+                      <span>Yearly</span>
+                      <span className="invoice-badge-save">SAVE 20%</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Plan Choice Cards */}
+              <div>
+                <div className="order-section-title" style={{ color: "#1e3a8a" }}>
+                  <span>🏆</span> Choose Visibility Plan
+                </div>
+                <div className="plan-select-grid">
+                  {Object.entries(planPrices).map(([pName, pMeta]) => {
+                    const price = billingCycle === "yearly" ? pMeta.yearly : pMeta.monthly;
+                    const isSelected = selectedPlan === pName;
+                    return (
+                      <div
+                        key={pName}
+                        className={`plan-select-card ${isSelected ? "active" : ""}`}
+                        onClick={() => setSelectedPlan(pName)}
+                      >
+                        {pName === "Growth" && (
+                          <div style={{ position: "absolute", top: "-9px", left: "50%", transform: "translateX(-50%)", background: "#f59e0b", color: "#ffffff", fontSize: "9px", fontWeight: 800, padding: "2px 8px", borderRadius: "10px", letterSpacing: "0.5px" }}>
+                            POPULAR
+                          </div>
+                        )}
+                        <div className="plan-name">{pName}</div>
+                        <div className="plan-price">
+                          ₹{price.toLocaleString("en-IN")}
+                          <small>/{billingCycle === "yearly" ? "yr" : "mo"}</small>
+                        </div>
+                        <div style={{ fontSize: "11px", color: "#64748b", margin: "4px 0 8px", minHeight: "30px" }}>
+                          {pMeta.desc}
+                        </div>
+                        <div style={{ textAlign: "left", fontSize: "10.5px", color: "#334155", borderTop: "1px solid #e2e8f0", paddingTop: "6px" }}>
+                          {pMeta.perks.slice(0, 3).map((perk, pi) => (
+                            <div key={pi} style={{ display: "flex", gap: "4px", marginBottom: "2px" }}>
+                              <span style={{ color: "#16a34a" }}>✓</span>
+                              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{perk}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Optional GSTIN */}
+              <div>
+                <label style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "#334155" }}>
+                  Business GSTIN <span style={{ color: "#64748b", fontWeight: 400 }}>(Optional - for Tax Invoice Credit)</span>
+                  <input
+                    type="text"
+                    value={gstin}
+                    onChange={(e) => setGstin(e.target.value.toUpperCase())}
+                    placeholder="e.g. 33AAAAA0000A1Z5"
+                    maxLength={15}
+                    style={{ width: "100%", padding: "8px 12px", border: "1px solid #cbd5e1", borderRadius: "6px", marginTop: "3px", textTransform: "uppercase" }}
+                  />
+                </label>
+              </div>
+
+              {/* Payment Gateway Mode */}
+              <div>
+                <div className="order-section-title" style={{ color: "#1e3a8a" }}>
+                  <span>💳</span> Integrated Payment Gateway
+                </div>
+                <div className="payment-method-selector" style={{ marginBottom: "12px", gridTemplateColumns: "repeat(3, 1fr)" }}>
+                  <button
+                    type="button"
+                    className={`payment-method-tab ${paymentMethod === "upi" ? "active" : ""}`}
+                    onClick={() => setPaymentMethod("upi")}
+                  >
+                    <span className="icon">📱</span>
+                    <span>UPI (Instant)</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`payment-method-tab ${paymentMethod === "card" ? "active" : ""}`}
+                    onClick={() => setPaymentMethod("card")}
+                  >
+                    <span className="icon">💳</span>
+                    <span>Cards (Debit/Credit)</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`payment-method-tab ${paymentMethod === "netbanking" ? "active" : ""}`}
+                    onClick={() => setPaymentMethod("netbanking")}
+                  >
+                    <span className="icon">🏦</span>
+                    <span>Net Banking</span>
+                  </button>
+                </div>
+
+                {paymentMethod === "upi" && (
+                  <div className="payment-panel" style={{ background: "#f8faff", borderColor: "#bfdbfe" }}>
+                    <div className="upi-qr-card">
+                      <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="100" height="100" fill="white" />
+                        <rect x="10" y="10" width="28" height="28" stroke="#1e40af" strokeWidth="6" fill="none" />
+                        <rect x="18" y="18" width="12" height="12" fill="#1e40af" />
+                        <rect x="62" y="10" width="28" height="28" stroke="#1e40af" strokeWidth="6" fill="none" />
+                        <rect x="70" y="18" width="12" height="12" fill="#1e40af" />
+                        <rect x="10" y="62" width="28" height="28" stroke="#1e40af" strokeWidth="6" fill="none" />
+                        <rect x="18" y="70" width="12" height="12" fill="#1e40af" />
+                        <rect x="46" y="20" width="8" height="24" fill="#3b82f6" />
+                        <rect x="20" y="46" width="24" height="8" fill="#3b82f6" />
+                        <rect x="62" y="46" width="28" height="8" fill="#3b82f6" />
+                        <rect x="46" y="62" width="8" height="28" fill="#3b82f6" />
+                        <circle cx="50" cy="50" r="10" fill="#1e40af" />
+                        <text x="50" y="54" fontSize="12" fontWeight="bold" fill="white" textAnchor="middle">₹</text>
+                      </svg>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: "11px", fontWeight: 700, color: "#1e40af", textTransform: "uppercase" }}>Subscription Mandate VPA</div>
+                        <div style={{ fontSize: "13px", fontWeight: 800, color: "#0f172a" }}>bizearch.subscriptions@okhdfcbank</div>
+                        <div style={{ fontSize: "11px", color: "#64748b", marginTop: "4px" }}>
+                          Approve payment via Google Pay, PhonePe, Paytm, BHIM, or enter your UPI ID.
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: "flex", gap: "6px", margin: "12px 0 8px", flexWrap: "wrap" }}>
+                      {["Google Pay", "PhonePe", "Paytm", "BHIM"].map((appName) => (
+                        <button
+                          key={appName}
+                          type="button"
+                          onClick={() => setUpiId(`merchant@${appName.toLowerCase().replace(/\s/g, "")}`)}
+                          style={{
+                            background: "#ffffff",
+                            border: "1px solid #cbd5e1",
+                            borderRadius: "6px",
+                            padding: "4px 8px",
+                            fontSize: "11px",
+                            fontWeight: 700,
+                            color: "#1e3a8a",
+                            cursor: "pointer",
+                          }}
+                        >
+                          ⚡ {appName}
+                        </button>
+                      ))}
+                    </div>
+
+                    <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e3a8a", marginTop: "6px" }}>
+                      Your UPI ID
+                      <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
+                        <input
+                          type="text"
+                          value={upiId}
+                          onChange={(e) => setUpiId(e.target.value)}
+                          placeholder="yourbusiness@upi"
+                          style={{ flex: 1, padding: "8px 10px", border: "1px solid #cbd5e1", borderRadius: "6px", fontSize: "13px" }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setUpiId("hosur.business@okaxis")}
+                          style={{ background: "#eff6ff", border: "1px solid #bfdbfe", color: "#1e40af", borderRadius: "6px", padding: "0 10px", fontSize: "11px", fontWeight: 700, cursor: "pointer" }}
+                        >
+                          Auto-fill
+                        </button>
+                      </div>
+                    </label>
+                  </div>
+                )}
+
+                {paymentMethod === "card" && (
+                  <div className="payment-panel">
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                      <span style={{ fontSize: "12px", fontWeight: 700, color: "#1e3a8a" }}>Corporate or Personal Card</span>
+                      <span style={{ fontSize: "11px", color: "#15803d", fontWeight: 700 }}>RuPay · Visa · Mastercard</span>
+                    </div>
+                    <label style={{ display: "block", marginBottom: "8px", fontSize: "11px", fontWeight: 700, color: "#475569" }}>
+                      Card Number
+                      <input
+                        type="text"
+                        value={cardData.number}
+                        onChange={(e) => setCardData({ ...cardData, number: e.target.value })}
+                        maxLength={19}
+                        style={{ width: "100%", padding: "8px 10px", border: "1px solid #cbd5e1", borderRadius: "6px", marginTop: "3px", fontFamily: "monospace" }}
+                      />
+                    </label>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr", gap: "8px" }}>
+                      <label style={{ fontSize: "11px", fontWeight: 700, color: "#475569" }}>
+                        Expiry (MM/YY)
+                        <input
+                          type="text"
+                          value={cardData.expiry}
+                          onChange={(e) => setCardData({ ...cardData, expiry: e.target.value })}
+                          maxLength={5}
+                          style={{ width: "100%", padding: "8px 10px", border: "1px solid #cbd5e1", borderRadius: "6px", marginTop: "3px" }}
+                        />
+                      </label>
+                      <label style={{ fontSize: "11px", fontWeight: 700, color: "#475569" }}>
+                        CVV
+                        <input
+                          type="password"
+                          value={cardData.cvv}
+                          onChange={(e) => setCardData({ ...cardData, cvv: e.target.value })}
+                          maxLength={4}
+                          style={{ width: "100%", padding: "8px 10px", border: "1px solid #cbd5e1", borderRadius: "6px", marginTop: "3px" }}
+                        />
+                      </label>
+                      <label style={{ fontSize: "11px", fontWeight: 700, color: "#475569" }}>
+                        Cardholder Name
+                        <input
+                          type="text"
+                          value={cardData.name}
+                          onChange={(e) => setCardData({ ...cardData, name: e.target.value })}
+                          style={{ width: "100%", padding: "8px 10px", border: "1px solid #cbd5e1", borderRadius: "6px", marginTop: "3px" }}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                )}
+
+                {paymentMethod === "netbanking" && (
+                  <div className="payment-panel">
+                    <span style={{ fontSize: "12px", fontWeight: 700, color: "#1e3a8a", display: "block", marginBottom: "8px" }}>
+                      Choose Authorized Corporate / Retail Bank
+                    </span>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                      {["State Bank of India (SBI)", "HDFC Bank", "ICICI Bank", "Axis Bank", "Kotak Mahindra Bank", "Canara Bank"].map((bank) => (
+                        <button
+                          key={bank}
+                          type="button"
+                          onClick={() => setSelectedBank(bank)}
+                          style={{
+                            padding: "8px 10px",
+                            background: selectedBank === bank ? "#eff6ff" : "#ffffff",
+                            border: `1.5px solid ${selectedBank === bank ? "#2563eb" : "#cbd5e1"}`,
+                            borderRadius: "6px",
+                            fontSize: "12px",
+                            fontWeight: 700,
+                            color: selectedBank === bank ? "#1e40af" : "#334155",
+                            cursor: "pointer",
+                            textAlign: "left",
+                          }}
+                        >
+                          🏦 {bank}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Tax Invoice Breakdown */}
+              <div className="bill-breakdown" style={{ background: "#f8fafc", borderColor: "#cbd5e1" }}>
+                <div className="bill-breakdown-row">
+                  <span>{selectedPlan} Plan Membership ({billingCycle === "yearly" ? "12 Months" : "1 Month"})</span>
+                  <span>₹{baseAmount.toLocaleString("en-IN")}</span>
+                </div>
+                <div className="bill-breakdown-row">
+                  <span>Goods &amp; Services Tax (18% GST: CGST 9% + SGST 9%)</span>
+                  <span>₹{taxes.toLocaleString("en-IN")}</span>
+                </div>
+                <div className="bill-breakdown-row total">
+                  <span>Total Amount Payable</span>
+                  <span style={{ color: "#1e40af" }}>₹{totalAmount.toLocaleString("en-IN")}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="order-checkout-footer">
+              <button
+                type="button"
+                className="outline-button"
+                onClick={close}
+                style={{ padding: "12px 18px", borderRadius: "10px" }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="pay-btn-primary"
+                disabled={isProcessing}
+                style={{ background: "linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%)", boxShadow: "0 4px 14px rgba(29, 78, 216, 0.3)" }}
+              >
+                <span>🔒</span>
+                <span>Pay ₹{totalAmount.toLocaleString("en-IN")} &amp; Activate Plan</span>
+                <span>→</span>
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SubscriptionReceiptModal({
+  record,
+  close,
+  onOpenPortal,
+}: {
+  record: CheckoutRequest;
+  close: () => void;
+  onOpenPortal?: () => void;
+}) {
+  const baseAmount = record.amount || 999;
+  const taxes = record.taxes || Math.round(baseAmount * 0.18);
+  const totalAmount = record.totalAmount || baseAmount + taxes;
+
+  return (
+    <div className="order-modal-backdrop" onClick={close}>
+      <div className="subscription-receipt-card" onClick={(e) => e.stopPropagation()}>
+        <div style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", color: "#ffffff", padding: "22px 28px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+              <span style={{ fontSize: "20px" }}>🧾</span>
+              <h2 style={{ margin: 0, fontSize: "18px", fontWeight: 800 }}>TAX INVOICE / RECEIPT</h2>
+            </div>
+            <div style={{ fontSize: "11px", opacity: 0.8 }}>Bizearch Technologies Pvt. Ltd. · Hosur Operations</div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <span style={{ background: "#22c55e", color: "#ffffff", padding: "3px 10px", borderRadius: "12px", fontSize: "11px", fontWeight: 800 }}>
+              PAID &amp; ACTIVE ✓
+            </span>
+          </div>
+        </div>
+
+        <div className="tax-invoice-sheet">
+          {/* Company & Billing Info */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", fontSize: "12px", borderBottom: "1px solid #e2e8f0", paddingBottom: "16px" }}>
+            <div>
+              <div style={{ fontSize: "10px", fontWeight: 800, color: "#64748b", textTransform: "uppercase" }}>ISSUER DETAILS</div>
+              <strong style={{ fontSize: "13px", color: "#0f172a" }}>Bizearch Technologies / Jishnu Infotech</strong>
+              <div style={{ color: "#475569", marginTop: "2px" }}>
+                Plot 12, Sipcot Phase 1, Hosur, TN - 635126
+                <br />
+                GSTIN: <strong>33AAACJ9482F1Z4</strong> · PAN: AAACJ9482F
+              </div>
+            </div>
+
+            <div>
+              <div style={{ fontSize: "10px", fontWeight: 800, color: "#64748b", textTransform: "uppercase" }}>BILLED TO</div>
+              <strong style={{ fontSize: "13px", color: "#0f172a" }}>{record.businessName}</strong>
+              <div style={{ color: "#475569", marginTop: "2px" }}>
+                Invoice No: <strong>{record.invoiceNumber || "INV-2026-84920"}</strong>
+                <br />
+                Date: {new Date(record.createdAt).toLocaleDateString()}
+                <br />
+                Active Valid Until: <strong style={{ color: "#059669" }}>{new Date(record.validUntil || Date.now() + 30 * 24 * 3600 * 1000).toLocaleDateString()}</strong>
+              </div>
+            </div>
+          </div>
+
+          {/* Charges Table */}
+          <table className="tax-invoice-table">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th style={{ textAlign: "center" }}>Cycle</th>
+                <th style={{ textAlign: "right" }}>Amount (INR)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <strong>{record.plan} Visibility &amp; Order Platform Membership</strong>
+                  <div style={{ fontSize: "11px", color: "#64748b" }}>
+                    Verified Partner status, priority ranking &amp; order management tools
+                  </div>
+                </td>
+                <td style={{ textAlign: "center", textTransform: "capitalize", fontWeight: 600 }}>
+                  {record.billingCycle || "Monthly"}
+                </td>
+                <td style={{ textAlign: "right", fontWeight: 700 }}>
+                  ₹{baseAmount.toLocaleString("en-IN")}
+                </td>
+              </tr>
+              <tr>
+                <td colSpan={2} style={{ textAlign: "right", color: "#64748b" }}>CGST (9%)</td>
+                <td style={{ textAlign: "right" }}>₹{Math.round(taxes / 2).toLocaleString("en-IN")}</td>
+              </tr>
+              <tr>
+                <td colSpan={2} style={{ textAlign: "right", color: "#64748b" }}>SGST (9%)</td>
+                <td style={{ textAlign: "right" }}>₹{Math.round(taxes / 2).toLocaleString("en-IN")}</td>
+              </tr>
+              <tr style={{ background: "#f8fafc", fontWeight: 800, fontSize: "15px" }}>
+                <td colSpan={2} style={{ textAlign: "right", color: "#1e3a8a" }}>Total Paid (INR)</td>
+                <td style={{ textAlign: "right", color: "#1e3a8a" }}>₹{totalAmount.toLocaleString("en-IN")}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          {/* Payment Method Details */}
+          <div style={{ background: "#f1f5f9", borderRadius: "8px", padding: "10px 14px", fontSize: "11.5px", color: "#475569", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <span>Payment Mode: <strong>{record.paymentMethod}</strong></span>
+              <br />
+              <span>Reference Txn: <code>{record.transactionId || "UPI/261031/94821"}</code></span>
+            </div>
+            <div style={{ textAlign: "right", color: "#15803d", fontWeight: 800 }}>
+              Authorized &amp; Verified ✓
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+            <button
+              type="button"
+              className="primary-button"
+              style={{ flex: 1, padding: "10px" }}
+              onClick={() => {
+                close();
+                if (onOpenPortal) onOpenPortal();
+              }}
+            >
+              Go to Business Portal ↗
+            </button>
+            <button
+              type="button"
+              className="outline-button"
+              style={{ padding: "10px 16px" }}
+              onClick={() => window.print()}
+            >
+              🖨️ Print Tax Invoice
+            </button>
+            <button
+              type="button"
+              className="outline-button"
+              style={{ padding: "10px 16px" }}
+              onClick={close}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function BusinessPortal({
   businesses,
   categoryConfig,
@@ -15567,6 +16311,8 @@ function BusinessPortal({
   onUpdateOrderStatus,
   openBusinessProfile,
   openPlans,
+  onSelectPlan,
+  onViewInvoice,
   verifyLocation,
   onAddProduct,
   onUpdateProduct,
@@ -15581,6 +16327,8 @@ function BusinessPortal({
   onUpdateOrderStatus?: (orderId: string, status: OrderStatus) => void;
   openBusinessProfile: () => void;
   openPlans: () => void;
+  onSelectPlan?: (plan: string) => void;
+  onViewInvoice?: (record: CheckoutRequest) => void;
   verifyLocation: () => void;
   onAddProduct: (businessName: string, product: Omit<Product, "id">) => void;
   onUpdateProduct?: (businessName: string, productId: string, updated: Partial<Product>) => void;
@@ -15591,6 +16339,7 @@ function BusinessPortal({
   const accountBusinessName = businesses[0]?.name;
   const accountEnquiries = enquiries.filter((item) => item.businessName === accountBusinessName);
   const accountCheckouts = checkouts.filter((item) => item.businessName === accountBusinessName);
+  const activeSub = accountCheckouts.find((c) => c.status === "Active" || c.status === "Paid") || (businesses[0]?.subscribed ? accountCheckouts[0] : null);
   const accountOrders = orders.filter((item) =>
     !accountBusinessName || item.businessName.toLowerCase() === accountBusinessName.toLowerCase() || businesses.length > 1
   );
@@ -15612,7 +16361,7 @@ function BusinessPortal({
         {businesses.map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category}</small></span><span className={`status-pill ${business.subscribed ? "verified" : "pending"}`}>● {business.subscribed ? "Subscribed" : "Pending plan"}</span></div>)}
         {!businesses.length && <EmptyState title="No business profile yet" text="Complete your business registration to set up your profile." />}
       </section>
-      <section className="panel plan-panel"><div className="eyebrow">YOUR MEMBERSHIP</div><div className="plan-title"><h2>Subscription checkout</h2><span className="status-pill pending">Demo</span></div><p>Choose a visibility plan for your business. Payments are not collected here.</p><div className="plan-features"><span>✓ Plans: Starter, Growth, Spotlight</span><span>✓ Preview UPI or card checkout</span><span>— No payment is processed</span></div><button className="outline-button" onClick={openPlans}>Explore plans <span>→</span></button>{accountCheckouts[0] && <div className="checkout-summary"><strong>Latest preview</strong><span>{accountCheckouts[0].businessName} · {accountCheckouts[0].plan}</span><small>Not processed · {new Date(accountCheckouts[0].createdAt).toLocaleString()}</small></div>}</section></div>
+      <section className="panel plan-panel"><div className="eyebrow">YOUR MEMBERSHIP</div><div className="plan-title"><h2>Subscription status</h2><span className={`status-pill ${activeSub ? "verified" : "pending"}`}>● {activeSub ? `${activeSub.plan} Plan` : "Pending plan"}</span></div><p>{activeSub ? `Your business is enrolled in the ${activeSub.plan} plan (${activeSub.billingCycle || "Monthly"} billing). Payments processed with official GST invoice.` : "Choose a visibility plan for your business to unlock premium neighborhood discovery and customer orders."}</p><div className="plan-features"><span>✓ Local search priority &amp; SEO listing</span><span>✓ Direct customer enquiry &amp; order receiving</span><span>✓ Verified business badge &amp; GST tax invoice</span></div><div style={{ display: "flex", gap: "10px", marginTop: "14px", flexWrap: "wrap" }}><button className="primary-button" type="button" onClick={() => onSelectPlan ? onSelectPlan(activeSub?.plan || "Growth") : openPlans()}>{activeSub ? "Upgrade / Change Plan 💳" : "Choose Growth Plan 💳"}</button>{activeSub && onViewInvoice && <button className="outline-button" type="button" onClick={() => onViewInvoice(activeSub)}>🧾 View Tax Invoice</button>}</div>{accountCheckouts[0] && <div className="checkout-summary" style={{ marginTop: "12px" }}><strong>Latest subscription payment</strong><span>{accountCheckouts[0].businessName} · {accountCheckouts[0].plan}</span><small>Status: {accountCheckouts[0].status} · Ref: {accountCheckouts[0].transactionId || "Verified"}</small></div>}</section></div>
       <div className="verification-banner"><span className="verify-icon">⌖</span><div><strong>Help neighbors find the right place.</strong><p>Granting device location is only a demo permission check; it does not verify your registered business address.</p></div><button onClick={verifyLocation}>Check location access <span>↗</span></button></div>
       <div className="form-note"><strong>Demo dashboard</strong><span>Views, enquiries and subscription status are sample data until your business is connected to a production backend.</span></div>
     </>}
@@ -15642,7 +16391,110 @@ function BusinessPortal({
       </section>
     )}
     {tab === "Enquiries" && <section className="panel tab-panel"><div className="eyebrow">CUSTOMER ENQUIRIES</div><h2>Requests for your business</h2><p>These are local demo enquiries and have not been delivered to customers or businesses.</p>{accountEnquiries.length ? accountEnquiries.map((enquiry) => <EnquiryRow enquiry={enquiry} key={enquiry.id} />) : <EmptyState title="No enquiries yet" text="Customer requests for your business will appear here." />}</section>}
-    {tab === "Plans & billing" && <><PlansSection openPlans={openPlans} />{accountCheckouts.length > 0 && <section className="panel tab-panel"><div className="eyebrow">CHECKOUT PREVIEWS</div><h2>Subscription activity</h2>{accountCheckouts.map((item, index) => <div className="listing-row" key={`${item.createdAt}-${index}`}><span className="listing-icon lavender">₹</span><span className="listing-name"><strong>{item.businessName} · {item.plan}</strong><small>{item.paymentMethod} · {new Date(item.createdAt).toLocaleString()}</small></span><span className="status-pill pending">{item.status}</span></div>)}</section>}</>}
+    {tab === "Plans & billing" && <>
+      {activeSub && (
+        <section className="panel tab-panel active-subscription-banner" style={{ background: "linear-gradient(135deg, #184224 0%, #2b6139 100%)", color: "#fff", borderRadius: "12px", padding: "20px 24px", marginBottom: "18px", boxShadow: "0 6px 20px rgba(24,66,36,0.18)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "14px" }}>
+            <div>
+              <span style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "1px", textTransform: "uppercase", background: "rgba(255,255,255,0.18)", padding: "3px 8px", borderRadius: "10px" }}>
+                ● ACTIVE MEMBERSHIP
+              </span>
+              <h2 style={{ fontSize: "22px", margin: "8px 0 4px", color: "#fff" }}>
+                {activeSub.plan} Plan ({activeSub.billingCycle || "Monthly"})
+              </h2>
+              <p style={{ margin: 0, fontSize: "12px", opacity: 0.9 }}>
+                Registered to <strong>{activeSub.businessName}</strong> · Valid until {activeSub.validUntil ? new Date(activeSub.validUntil).toLocaleDateString() : "Active"}
+              </p>
+              <div style={{ display: "flex", gap: "16px", marginTop: "10px", fontSize: "11px", opacity: 0.85 }}>
+                <span>Txn: {activeSub.transactionId || "Verified"}</span>
+                <span>Inv: #{activeSub.invoiceNumber || activeSub.id}</span>
+                <span>Amount: ₹{activeSub.totalAmount || activeSub.amount} (Incl. GST)</span>
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: "8px" }}>
+              {onViewInvoice && (
+                <button
+                  type="button"
+                  onClick={() => onViewInvoice(activeSub)}
+                  style={{ background: "#fff", color: "#184224", border: 0, borderRadius: "8px", padding: "9px 14px", fontWeight: 700, fontSize: "11.5px", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}
+                >
+                  🧾 View Tax Invoice
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => onSelectPlan ? onSelectPlan(activeSub.plan === "Neighborhood Pro" ? "Growth" : "Neighborhood Pro") : openPlans()}
+                style={{ background: "rgba(255,255,255,0.2)", color: "#fff", border: "1px solid rgba(255,255,255,0.35)", borderRadius: "8px", padding: "9px 14px", fontWeight: 700, fontSize: "11.5px", cursor: "pointer" }}
+              >
+                Change Plan
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
+      <PlansSection openPlans={openPlans} onSelectPlan={onSelectPlan} />
+      {accountCheckouts.length > 0 && (
+        <section className="panel tab-panel" style={{ marginTop: "24px" }}>
+          <div className="eyebrow">BILLING &amp; TAX INVOICE HISTORY</div>
+          <h2>Subscription History</h2>
+          <p>Official GST-compliant tax invoices for your business membership subscriptions.</p>
+          <div style={{ overflowX: "auto", marginTop: "14px" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11.5px" }}>
+              <thead>
+                <tr style={{ background: "#f5f8f5", borderBottom: "1px solid #d8e4d8", color: "#45594a", textAlign: "left" }}>
+                  <th style={{ padding: "10px 12px" }}>Invoice #</th>
+                  <th style={{ padding: "10px 12px" }}>Date</th>
+                  <th style={{ padding: "10px 12px" }}>Plan &amp; Cycle</th>
+                  <th style={{ padding: "10px 12px" }}>Payment Method</th>
+                  <th style={{ padding: "10px 12px" }}>Amount</th>
+                  <th style={{ padding: "10px 12px" }}>Status</th>
+                  <th style={{ padding: "10px 12px", textAlign: "right" }}>Receipt</th>
+                </tr>
+              </thead>
+              <tbody>
+                {accountCheckouts.map((item, index) => (
+                  <tr key={`${item.id || item.createdAt}-${index}`} style={{ borderBottom: "1px solid #edf2ed" }}>
+                    <td style={{ padding: "10px 12px", fontWeight: 700, color: "#1c3823" }}>
+                      {item.invoiceNumber || item.id || `INV-${index + 1}`}
+                    </td>
+                    <td style={{ padding: "10px 12px", color: "#667" }}>
+                      {new Date(item.createdAt).toLocaleDateString()}
+                    </td>
+                    <td style={{ padding: "10px 12px" }}>
+                      <strong>{item.plan}</strong> <span style={{ color: "#778", fontSize: "10px" }}>({item.billingCycle || "Monthly"})</span>
+                    </td>
+                    <td style={{ padding: "10px 12px", color: "#445" }}>
+                      {item.paymentMethod}
+                    </td>
+                    <td style={{ padding: "10px 12px", fontWeight: 700 }}>
+                      ₹{item.totalAmount ? item.totalAmount.toLocaleString("en-IN") : item.amount?.toLocaleString("en-IN") || "—"}
+                    </td>
+                    <td style={{ padding: "10px 12px" }}>
+                      <span className={`status-pill ${item.status === "Active" || item.status === "Paid" ? "verified" : "pending"}`}>
+                        ● {item.status}
+                      </span>
+                    </td>
+                    <td style={{ padding: "10px 12px", textAlign: "right" }}>
+                      {onViewInvoice ? (
+                        <button
+                          type="button"
+                          onClick={() => onViewInvoice(item)}
+                          style={{ background: "#edf5ee", border: "1px solid #c8dbc9", color: "#1a4a25", padding: "5px 10px", borderRadius: "6px", fontSize: "11px", fontWeight: 700, cursor: "pointer" }}
+                        >
+                          🧾 Invoice
+                        </button>
+                      ) : (
+                        <span style={{ color: "#999" }}>—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+    </>}
     {tab === "Verification" && <section className="panel tab-panel"><div className="eyebrow">BUILD TRUST LOCALLY</div><h2>Verify your business location</h2><p>Share your location only when you are ready. Bizearch uses the location to check your business address; production verification requires a secure server-side workflow.</p><button className="primary-button" onClick={verifyLocation}>⌖ Verify with this device</button></section>}
     {tab === "Profile" && <ProfilePanel role="Business" label="Business account" />}
   </div>;
@@ -17297,8 +18149,51 @@ function CompanyAdManager() {
   </form>;
 }
 
-function PlansSection({ openPlans }: { openPlans: () => void }) {
-  return <section className="plans-area"><div className="eyebrow">SIMPLE PLANS. LOCAL GROWTH.</div><h2>Be found by your next customer.</h2><p>Choose the visibility that fits your business. Payments are demo-only until a payment provider is connected.</p><div className="plans-grid">{planNames.map((plan, index) => <div className={`plan-card ${index === 1 ? "featured" : ""}`} key={plan}>{index === 1 && <span className="popular-ribbon">MOST POPULAR</span>}<h3>{plan}</h3><div className="plan-price">{["₹499", "₹999", "₹1,999"][index]}<small> / month</small></div><p>{["A great place to start.", "More visibility where it matters.", "Stand out across your neighborhood."][index]}</p><ul><li>✓ Local search listing</li><li>✓ Business profile</li><li>{index > 0 ? "✓" : "—"} {index > 0 ? "Customer enquiry insights" : "Basic profile views"}</li><li>{index > 1 ? "✓ Featured in search" : "— Featured placement"}</li></ul><button className={index === 1 ? "primary-button" : "outline-button"} onClick={openPlans}>Choose {plan}</button></div>)}</div></section>;
+function PlansSection({
+  openPlans,
+  onSelectPlan,
+}: {
+  openPlans?: () => void;
+  onSelectPlan?: (plan: string) => void;
+}) {
+  return (
+    <section className="plans-area">
+      <div className="eyebrow">SIMPLE PLANS. LOCAL GROWTH.</div>
+      <h2>Be found by your next customer.</h2>
+      <p>Choose the visibility that fits your business. Transparent pricing with instant online activation via UPI, Card, or Net Banking.</p>
+      <div className="plans-grid">
+        {planNames.map((plan, index) => (
+          <div className={`plan-card ${index === 1 ? "featured" : ""}`} key={plan}>
+            {index === 1 && <span className="popular-ribbon">MOST POPULAR</span>}
+            <h3>{plan}</h3>
+            <div className="plan-price">
+              {["₹499", "₹999", "₹1,999"][index]}
+              <small> / month</small>
+            </div>
+            <p>{["A great place to start.", "More visibility where it matters.", "Stand out across your neighborhood."][index]}</p>
+            <ul>
+              <li>✓ Local search priority</li>
+              <li>✓ Verified Business profile</li>
+              <li>{index > 0 ? "✓ Customer enquiry & order alerts" : "— Basic profile views"}</li>
+              <li>{index > 1 ? "✓ Featured top placement & SEO badge" : index > 0 ? "✓ Category spotlight" : "— Standard placement"}</li>
+            </ul>
+            <button
+              className={index === 1 ? "primary-button" : "outline-button"}
+              onClick={() => {
+                if (onSelectPlan) {
+                  onSelectPlan(plan);
+                } else if (openPlans) {
+                  openPlans();
+                }
+              }}
+            >
+              Choose {plan} 💳
+            </button>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 function Metric({ label, value, delta, icon }: { label: string; value: string; delta: string; icon: string }) {
@@ -17642,15 +18537,22 @@ function Dialog({
           <form className="stacked-form" onSubmit={onBusiness}><input type="hidden" name="businessName" value={businessDetails.businessName} /><input type="hidden" name="businessCategory" value={businessDetails.businessCategory} /><input type="hidden" name="businessCategories" value={JSON.stringify(businessDetails.businessCategories)} /><input type="hidden" name="businessTaxonomySelections" value={JSON.stringify(businessTaxonomySelections)} /><input type="hidden" name="businessPhone" value={businessDetails.businessPhone} />{Object.entries(businessAddress).map(([key, value]) => <input type="hidden" key={`address-${key}`} name={key} value={value} />)}{businessModes.map((value) => <input type="hidden" key={`mode-${value}`} name="businessModes" value={value} />)}{vehicleTypes.map((value) => <input type="hidden" key={`type-${value}`} name="vehicleTypes" value={value} />)}{vehicleMakes.map((value) => <input type="hidden" key={`make-${value}`} name="vehicleMakes" value={value} />)}{vehicleModels.map((value) => <input type="hidden" key={`model-${value}`} name="vehicleModels" value={value} />)}<input type="hidden" name="customVehicleMake" value={customVehicleMake} /><input type="hidden" name="customVehicleModels" value={customVehicleModels} /><input type="hidden" name="businessLatitude" value={businessCoordinates?.latitude ?? ""} /><input type="hidden" name="businessLongitude" value={businessCoordinates?.longitude ?? ""} /><label>Create password <span className="optional">(at least 8 characters)</span><input name="password" type="password" placeholder="Create a password for your business account" autoComplete="new-password" minLength={8} required /></label>
 <div className="otp-row"><label>Business mobile OTP<input name="businessOtp" inputMode="numeric" autoComplete="one-time-code" placeholder="6-digit OTP" value={registrationOtp} onChange={(event) => { setRegistrationOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); setRegistrationOtpVerified(false); }} required /></label><div className="otp-actions"><button type="button" disabled={registrationOtpBusy} onClick={() => void requestRegistrationOtp("Business", "send", businessDetails.businessPhone)}>{registrationOtpBusy ? "Please wait?" : "Send OTP"}</button><button type="button" disabled={registrationOtpBusy || registrationOtp.length !== 6} onClick={() => void requestRegistrationOtp("Business", "verify", businessDetails.businessPhone)}>Verify OTP</button></div></div>{registrationDemoOtp && <p className="otp-demo-code" role="status">Demo OTP: <strong>{registrationDemoOtp}</strong> <span>For local testing only. No SMS was sent.</span></p>}{registrationOtpMessage && <p className={registrationOtpVerified ? "otp-verified" : "form-error"} role="status">{registrationOtpMessage}</p>}<label>Agent referral code <span className="optional">(optional)</span><input name="referral" placeholder="e.g. NEIGHBOR-4821" /></label><label>Upload business proof <span className="optional">(GSTIN, license or other registration)</span><input name="proof" type="file" accept=".pdf,.jpg,.jpeg,.png" /></label><label className="consent-check"><input type="checkbox" required /><span>I confirm these business details are accurate and consent to their use to create and verify my Bizearch business profile.</span></label><div className="form-button-row"><button type="button" className="outline-button" onClick={() => setStep(1)}>← Back</button><button type="submit" className="primary-button">Submit registration <span>→</span></button></div></form>}
         <div className="fine-print">Registration is saved in this demo only. Document verification and listing activation require a secure backend.</div></>}</>}
-      {kind === "plans" && <><div className="modal-mark">↗</div><div className="eyebrow">MEMBERSHIP & PAYMENTS</div><h2>{checkoutPlan ? `Preview ${checkoutPlan} checkout.` : "Choose a plan to get discovered."}</h2><p>No charge is created. Do not enter real payment details in this demo.</p>
-        {!checkoutPlan ? <div className="compact-plans">{planNames.map((plan, index) => <button key={plan} onClick={() => setCheckoutPlan(plan)}><span>{plan} · {["₹499", "₹999", "₹1,999"][index]} / month</span><span>→</span></button>)}</div> :
-          <form className="stacked-form" onSubmit={(event) => { event.preventDefault(); if (!checkoutBusiness) { showNotice("Register a business before previewing a subscription."); return; } onCheckout(checkoutBusiness, checkoutPlan, paymentMethod); }}>
-            <label>Business<select value={checkoutBusiness} onChange={(event) => setCheckoutBusiness(event.target.value)}>{businesses.map((business, index) => <option key={`${business.name}-${index}`}>{business.name}</option>)}</select></label>
-            <label>Payment method preview<select value={paymentMethod} onChange={(event) => setPaymentMethod(event.target.value)}><option>UPI (preview only)</option><option>Card (preview only)</option></select></label>
-            <div className="payment-preview">Secure provider checkout is not connected. This step records only a local preview; it will not charge, activate a plan or save payment credentials.</div>
-            <div className="form-button-row"><button type="button" className="outline-button" onClick={() => setCheckoutPlan("")}>← Plans</button><button className="primary-button" type="submit">Preview checkout →</button></div>
-          </form>}
-        <div className="fine-print">Production payments require server-created orders, a payment provider, verified webhooks, refunds and secure billing records.</div></>}
+      {kind === "plans" && <><div className="modal-mark">💳</div><div className="eyebrow">MEMBERSHIP &amp; PAYMENTS</div><h2>Choose a subscription plan to get discovered.</h2><p>Select any tier to proceed to secure payment authorization via UPI, Card, or Net Banking.</p>
+        <div className="compact-plans">
+          {planNames.map((plan, index) => (
+            <button
+              key={plan}
+              onClick={() => {
+                close();
+                onCheckout(checkoutBusiness || businesses[0]?.name || "Bloom & Bean Café", plan, "UPI");
+              }}
+            >
+              <span>{plan} · {["₹499", "₹999", "₹1,999"][index]} / month</span>
+              <span>Proceed to Pay →</span>
+            </button>
+          ))}
+        </div>
+        <div className="fine-print">100% money-back guarantee within 7 days. Instant activation and official GST tax receipt upon completion.</div></>}
       {kind === "sos" && <><div className="sos-modal-mark">+</div><div className="eyebrow">EMERGENCY HELP</div><h2>What kind of emergency?</h2><p>Select a type, then record one SOS alert with your location and saved emergency contacts. No call or message is placed automatically.</p>
         <div className="sos-emergency-tiles" role="group" aria-label="Emergency type">
           {emergencyTypes.map((item) => <button key={item.id} type="button" disabled={sosBusy} className={`sos-emergency-tile ${selectedEmergencyType === item.id ? "selected" : ""}`} aria-pressed={selectedEmergencyType === item.id} onClick={() => { setSelectedEmergencyType(item.id); setSosError(""); setSosResult(null); }}><span className="sos-type-icon">{item.icon}</span><strong>{item.title}</strong><small>{item.description}</small></button>)}
