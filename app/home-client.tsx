@@ -691,6 +691,48 @@ function updateCatalogueSelections(current: CatalogueSelection[], activity: Cata
   ];
 }
 
+function getBusinessWorkingStatus(business: Business): { isOpen: boolean; label: string } {
+  // Use Indian Standard Time (UTC+5:30)
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const istDate = new Date(utc + 3600000 * 5.5);
+  const currentHour = istDate.getHours();
+  const currentMinute = istDate.getMinutes();
+  const timeNum = currentHour + currentMinute / 60;
+
+  // Most businesses in Hosur / India operate from 9:00 AM to 8:30 PM (20.5)
+  // Food & dining operates 7:30 AM to 10:30 PM (22.5)
+  // Health & wellness / pharmacies 8:00 AM to 10:00 PM (22)
+  const cat = (business.category || "").toLowerCase();
+  let openHour = 9.0;
+  let closeHour = 20.5;
+  let closeTimeStr = "8:30 PM";
+  let openTimeStr = "9:00 AM";
+
+  if (/food|dining|restaurant|baker/.test(cat)) {
+    openHour = 7.5;
+    closeHour = 22.5;
+    closeTimeStr = "10:30 PM";
+    openTimeStr = "7:30 AM";
+  } else if (/health|pharmacy|clinic|medical/.test(cat)) {
+    openHour = 8.0;
+    closeHour = 22.0;
+    closeTimeStr = "10:00 PM";
+    openTimeStr = "8:00 AM";
+  } else if (/heavy|machiner|industrial/.test(cat)) {
+    openHour = 8.5;
+    closeHour = 19.5;
+    closeTimeStr = "7:30 PM";
+    openTimeStr = "8:30 AM";
+  }
+
+  const isOpen = timeNum >= openHour && timeNum < closeHour;
+  return {
+    isOpen,
+    label: isOpen ? `Open · Closes ${closeTimeStr}` : `Closed · Opens ${openTimeStr}`,
+  };
+}
+
 function businessPhoneFor(business: Business): string {
   if (business.phone) return business.phone;
   let hash = 0;
@@ -9427,6 +9469,8 @@ export default function Home() {
   const [locationCoordinates, setLocationCoordinates] = useState<Coordinates | null>(null);
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
   const [businessModalTab, setBusinessModalTab] = useState<"products" | "navigation">("products");
+  const [reviewBusiness, setReviewBusiness] = useState<Business | null>(null);
+  const [isListening, setIsListening] = useState(false);
   const [enquiryProduct, setEnquiryProduct] = useState<{ business: Business; product: Product } | null>(null);
   const [dialog, setDialog] = useState<"login" | "business" | "sos" | "plans" | null>(null);
   const [notice, setNotice] = useState("");
@@ -10869,6 +10913,46 @@ export default function Home() {
                       ✕
                     </button>
                   )}
+                  <button
+                    type="button"
+                    className={`search-voice-btn ${isListening ? "active" : ""}`}
+                    onClick={() => {
+                      if (typeof window === "undefined") return;
+                      const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+                      if (!SpeechRec) {
+                        showNotice("Voice search is not supported by your browser. Please use Chrome, Edge or Safari.");
+                        return;
+                      }
+                      try {
+                        const rec = new SpeechRec();
+                        rec.lang = "en-IN";
+                        rec.interimResults = false;
+                        rec.maxAlternatives = 1;
+                        rec.onstart = () => setIsListening(true);
+                        rec.onend = () => setIsListening(false);
+                        rec.onerror = () => {
+                          setIsListening(false);
+                          showNotice("Voice recognition error or permission denied.");
+                        };
+                        rec.onresult = (evt: any) => {
+                          const transcript = evt.results[0][0].transcript;
+                          if (transcript) {
+                            setQuery(transcript);
+                            searchNearby(transcript);
+                            showNotice(`Voice search: "${transcript}"`);
+                          }
+                        };
+                        rec.start();
+                      } catch {
+                        setIsListening(false);
+                        showNotice("Could not start voice search.");
+                      }
+                    }}
+                    title={isListening ? "Listening to your voice..." : "Voice search (tap to speak)"}
+                    aria-label="Voice search"
+                  >
+                    {isListening ? "🔴" : "🎙️"}
+                  </button>
                   <button className="search-submit" onClick={() => searchNearby()}>
                     Find nearby <span>↗</span>
                   </button>
@@ -11376,11 +11460,59 @@ export default function Home() {
                             <button className="save-button" aria-label={`${demoData.favorites.includes(business.name) ? "Remove saved" : "Save"} ${business.name}`} aria-pressed={demoData.favorites.includes(business.name)} onClick={() => toggleFavorite(business.name)}>{demoData.favorites.includes(business.name) ? "♥" : "♡"}</button>
                           </div>
                           <div className="business-info">
-                            <div className="business-meta"><span>{business.category}</span><span className="distance">⌖ {businessDistance(business).toFixed(1)} km{locationEnabled ? "" : " sample"}</span></div>
-                            <h3>{highlightMatch(business.name, query)}</h3>
+                            <div className="business-meta">
+                              <span>{business.category}</span>
+                              <span className="distance">⌖ {businessDistance(business).toFixed(1)} km{locationEnabled ? "" : " sample"}</span>
+                            </div>
+                            <div className="business-title-row" style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "8px" }}>
+                              <h3 style={{ margin: "3px 0 0" }}>{highlightMatch(business.name, query)}</h3>
+                              {(() => {
+                                const st = getBusinessWorkingStatus(business);
+                                return (
+                                  <span
+                                    className={`business-hours-badge ${st.isOpen ? "open" : "closed"}`}
+                                    title={st.label}
+                                    style={{
+                                      fontSize: "8.5px",
+                                      fontWeight: 800,
+                                      padding: "2px 6px",
+                                      borderRadius: "10px",
+                                      whiteSpace: "nowrap",
+                                      background: st.isOpen ? "#eaf6ec" : "#fbf0ef",
+                                      color: st.isOpen ? "#1a6e35" : "#a83e33",
+                                      border: `1px solid ${st.isOpen ? "#c3e6cb" : "#f3d0cc"}`,
+                                      flexShrink: 0,
+                                    }}
+                                  >
+                                    ● {st.isOpen ? "Open" : "Closed"}
+                                  </span>
+                                );
+                              })()}
+                            </div>
                             <p>{highlightMatch(business.description, query)}</p>
-                            <div className="business-footer"><span className="rating">★ <b>{business.rating.toFixed(1)}</b> <small>({business.reviews})</small></span>
-                              <span className="price">{business.price}</span></div>
+                            <div className="business-footer">
+                              <button
+                                type="button"
+                                className="rating-trigger-btn"
+                                onClick={() => setReviewBusiness(business)}
+                                title={`Rate & review ${business.name}`}
+                                style={{
+                                  background: "transparent",
+                                  border: 0,
+                                  padding: 0,
+                                  cursor: "pointer",
+                                  font: "inherit",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "3px",
+                                  color: "#275934",
+                                }}
+                              >
+                                <span className="rating">★ <b>{business.rating.toFixed(1)}</b> <small>({business.reviews} reviews)</small></span>
+                                <span style={{ fontSize: "9px", color: "#366e47", textDecoration: "underline", marginLeft: "4px" }}>Rate</span>
+                              </button>
+                              <span className="price">{business.price}</span>
+                            </div>
                             <div className="business-card-action-bar">
                               <button
                                 type="button"
@@ -11524,6 +11656,31 @@ export default function Home() {
         />
       )}
       {enquiryProduct && <EnquiryDialog business={enquiryProduct.business} product={enquiryProduct.product} close={() => setEnquiryProduct(null)} submit={submitEnquiry} />}
+      {reviewBusiness && (
+        <ReviewDialog
+          business={reviewBusiness}
+          close={() => setReviewBusiness(null)}
+          onSubmit={(stars, comment) => {
+            const currentRating = reviewBusiness.rating || 4.5;
+            const currentReviews = reviewBusiness.reviews || 1;
+            const nextReviews = currentReviews + 1;
+            const nextRating = Number((((currentRating * currentReviews) + stars) / nextReviews).toFixed(1));
+
+            setDemoData((prev) => ({
+              ...prev,
+              businesses: prev.businesses.map((b) =>
+                b.name === reviewBusiness.name
+                  ? { ...b, rating: nextRating, reviews: nextReviews }
+                  : b
+              ),
+            }));
+
+            showNotice(`Thank you! Your ${stars}-star rating for "${reviewBusiness.name}" was recorded.`);
+            recordEvent(`Customer rated ${reviewBusiness.name} ${stars} stars`);
+            setReviewBusiness(null);
+          }}
+        />
+      )}
     </main>
   );
 }
@@ -11660,7 +11817,28 @@ function BusinessDetailDialog({
     <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
       <section className="modal catalog-modal" role="dialog" aria-modal="true">
         <button className="modal-close" onClick={close} aria-label="Close">×</button>
-        <div className="eyebrow">{business.category.toUpperCase()} · {distanceKm.toFixed(1)} KM {isDeviceDistance ? "FROM DEVICE" : "SAMPLE DISTANCE"}</div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px", marginBottom: "6px" }}>
+          <div className="eyebrow" style={{ margin: 0 }}>{business.category.toUpperCase()} · {distanceKm.toFixed(1)} KM {isDeviceDistance ? "FROM DEVICE" : "SAMPLE DISTANCE"}</div>
+          {(() => {
+            const st = getBusinessWorkingStatus(business);
+            return (
+              <span
+                className={`business-hours-badge ${st.isOpen ? "open" : "closed"}`}
+                style={{
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  padding: "3px 8px",
+                  borderRadius: "12px",
+                  background: st.isOpen ? "#eaf6ec" : "#fbf0ef",
+                  color: st.isOpen ? "#1a6e35" : "#a83e33",
+                  border: `1px solid ${st.isOpen ? "#c3e6cb" : "#f3d0cc"}`,
+                }}
+              >
+                ● {st.label}
+              </span>
+            );
+          })()}
+        </div>
         <h2>{business.name}</h2>
         <p>{business.description}</p>
 
@@ -11977,6 +12155,130 @@ function EnquiryDialog({
       <div className="fine-print">Your message stays in this browser. It is not delivered to the business in this demo.</div>
     </section>
   </div>;
+}
+
+function ReviewDialog({
+  business,
+  close,
+  onSubmit,
+}: {
+  business: Business;
+  close: () => void;
+  onSubmit: (rating: number, review: string) => void;
+}) {
+  const [stars, setStars] = useState(5);
+  const [hoverStars, setHoverStars] = useState(0);
+  const [comment, setComment] = useState("");
+  const [userName, setUserName] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(stars, comment);
+  };
+
+  const ratingLabels = [
+    "",
+    "⭐ Needs Improvement",
+    "⭐⭐ Fair",
+    "⭐⭐⭐ Average Experience",
+    "⭐⭐⭐⭐ Great Experience",
+    "⭐⭐⭐⭐⭐ Outstanding & Highly Recommended",
+  ];
+
+  return (
+    <div
+      className="modal-backdrop"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) close();
+      }}
+    >
+      <section className="modal review-modal" role="dialog" aria-modal="true" style={{ maxWidth: "460px" }}>
+        <button className="modal-close" onClick={close} aria-label="Close">
+          ×
+        </button>
+        <div className="eyebrow">CUSTOMER FEEDBACK · RATINGS & REVIEWS</div>
+        <h2 style={{ marginTop: "4px", marginBottom: "4px" }}>Rate {business.name}</h2>
+        <p style={{ margin: "0 0 16px", color: "#68766b", fontSize: "13px" }}>
+          {business.category} · Hosur {business.address?.area ? `· ${business.address.area}` : ""}
+        </p>
+
+        <form onSubmit={handleSubmit} className="stacked-form" style={{ marginTop: "12px" }}>
+          <div style={{ textAlign: "center", padding: "16px 12px", background: "#f8faf8", borderRadius: "10px", border: "1px solid #e5ebe4", marginBottom: "16px" }}>
+            <div style={{ fontSize: "13px", fontWeight: 700, color: "#2d4a36", marginBottom: "8px" }}>
+              How was your experience?
+            </div>
+            <div
+              className="star-rating-selector"
+              style={{ display: "flex", justifyContent: "center", gap: "10px", margin: "6px 0" }}
+            >
+              {[1, 2, 3, 4, 5].map((star) => {
+                const activeVal = hoverStars || stars;
+                const isSelected = activeVal >= star;
+                return (
+                  <button
+                    key={star}
+                    type="button"
+                    onMouseEnter={() => setHoverStars(star)}
+                    onMouseLeave={() => setHoverStars(0)}
+                    onClick={() => setStars(star)}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      fontSize: "36px",
+                      lineHeight: "1",
+                      cursor: "pointer",
+                      color: isSelected ? "#f59e0b" : "#cbd5e1",
+                      transition: "transform 0.15s ease, color 0.15s ease",
+                      transform: activeVal === star ? "scale(1.2)" : "scale(1)",
+                      padding: "2px",
+                    }}
+                    title={`${star} Star${star > 1 ? "s" : ""}`}
+                    aria-label={`${star} star`}
+                  >
+                    ★
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ marginTop: "8px", fontSize: "12px", fontWeight: 700, color: "#386b4b" }}>
+              {ratingLabels[hoverStars || stars]}
+            </div>
+          </div>
+
+          <label>
+            Your Name (Optional)
+            <input
+              type="text"
+              placeholder="e.g. Anand Kumar"
+              value={userName}
+              onChange={(e) => setUserName(e.target.value)}
+              maxLength={60}
+            />
+          </label>
+
+          <label>
+            Your Review / Comments
+            <textarea
+              rows={3}
+              placeholder="Share details of your experience, service quality, product variety, or value..."
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              maxLength={400}
+            />
+          </label>
+
+          <div className="form-button-row" style={{ marginTop: "14px" }}>
+            <button type="button" className="outline-button" onClick={close}>
+              Cancel
+            </button>
+            <button type="submit" className="primary-button">
+              Submit Review ★
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  );
 }
 
 function BusinessPortal({

@@ -1447,3 +1447,81 @@ h1 em{font-family:var(--serif);font-weight:400;color:#507959;letter-spacing:-1px
     width: 100%;
   }
 }
+
+/* ==========================================================================
+   Voice Search, Working Hours Badge, Customer Star Ratings & Reviews
+   ========================================================================== */
+.search-voice-btn {
+  background: #f0f4f1;
+  border: 1px solid #d8e2da;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-right: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.search-voice-btn:hover {
+  background: #e2ede5;
+  border-color: #386b4b;
+  transform: scale(1.05);
+}
+
+.search-voice-btn.active {
+  background: #fee2e2;
+  border-color: #ef4444;
+  animation: voicePulse 1s infinite alternate;
+}
+
+@keyframes voicePulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  100% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+}
+
+.business-hours-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.business-hours-badge.open {
+  background: #eaf6ec;
+  color: #1a6e35;
+  border: 1px solid #c3e6cb;
+}
+
+.business-hours-badge.closed {
+  background: #fbf0ef;
+  color: #a83e33;
+  border: 1px solid #f3d0cc;
+}
+
+.rating-trigger-btn {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.rating-trigger-btn:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+.rating-trigger-btn:hover span:last-child {
+  text-decoration: underline;
+  font-weight: 700;
+}
+
+.review-modal {
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
