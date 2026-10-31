@@ -10371,6 +10371,10 @@ export default function Home() {
   const [subscriptionReceipt, setSubscriptionReceipt] = useState<CheckoutRequest | null>(null);
   const [claimBusiness, setClaimBusiness] = useState<Business | null>(null);
   const [selectedNeighborhood, setSelectedNeighborhood] = useState("All Hosur");
+  const [mobileLocalitySheetOpen, setMobileLocalitySheetOpen] = useState(false);
+  const [mobileLangSheetOpen, setMobileLangSheetOpen] = useState(false);
+  const [mobileCategorySheetOpen, setMobileCategorySheetOpen] = useState(false);
+  const [localitySearchInput, setLocalitySearchInput] = useState("");
   const [lang, setLang] = useState<Language>("en");
   const t = TRANSLATIONS[lang];
   const [filterOpenNow, setFilterOpenNow] = useState(false);
@@ -10399,6 +10403,8 @@ export default function Home() {
     () => (notificationFilter === "unread" ? notifications.filter((n) => !n.read) : notifications),
     [notifications, notificationFilter]
   );
+  const activeOrdersCount = useMemo(() => (demoData.orders || []).filter((o) => o.status !== "completed" && o.status !== "cancelled").length, [demoData.orders]);
+  const savedCount = demoData.favorites.length;
 
   useEffect(() => {
     try {
@@ -12251,6 +12257,201 @@ export default function Home() {
           background: #173b22;
         }
       `}</style>
+
+      {/* Interactive Mobile Slide-Out App Drawer */}
+      <div
+        className={`mobile-drawer-overlay ${mobileMenuOpen ? "open" : ""}`}
+        onClick={() => setMobileMenuOpen(false)}
+        aria-hidden={!mobileMenuOpen}
+      />
+      <div
+        className={`mobile-drawer-panel ${mobileMenuOpen ? "open" : ""}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Mobile Navigation Menu"
+      >
+        <div className="mobile-drawer-header">
+          <button
+            type="button"
+            className="mobile-drawer-close"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-label="Close menu"
+          >
+            ✕
+          </button>
+          <div className="mobile-drawer-user-info">
+            <div className="mobile-drawer-avatar">N</div>
+            <div>
+              <strong style={{ fontSize: "14px", display: "block" }}>
+                {role === "Discover" ? t.yourBizearchActivity : `${role === "Account" ? "Customer" : role} Account`}
+              </strong>
+              <small style={{ fontSize: "11px", opacity: 0.85 }}>Hosur, Tamil Nadu · Connected</small>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="mobile-drawer-profile-btn"
+            onClick={() => {
+              setMobileMenuOpen(false);
+              openProfileView("Profile details");
+            }}
+          >
+            <span>👤 View Profile &amp; Settings</span>
+            <span>→</span>
+          </button>
+        </div>
+
+        <div className="mobile-drawer-body">
+          <div>
+            <div className="mobile-drawer-section-title">Language / மொழி / ಭಾಷೆ / భాష</div>
+            <div className="mobile-drawer-lang-grid">
+              {[
+                { code: "en", label: "English" },
+                { code: "ta", label: "தமிழ்" },
+                { code: "kn", label: "ಕನ್ನಡ" },
+                { code: "te", label: "తెలుగు" },
+              ].map((item) => (
+                <button
+                  key={item.code}
+                  type="button"
+                  className={`mobile-drawer-lang-btn ${lang === item.code ? "active" : ""}`}
+                  onClick={() => {
+                    setLang(item.code as Language);
+                    showNotice(
+                      item.code === "ta" ? "மொழி: தமிழ் தேர்ந்தெடுக்கப்பட்டது" :
+                      item.code === "kn" ? "ಭಾಷೆ: ಕನ್ನಡ ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ" :
+                      item.code === "te" ? "భాష: తెలుగు ఎంపిక చేయబడింది" :
+                      "Language: English selected"
+                    );
+                  }}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div className="mobile-drawer-section-title">Workspaces &amp; Portals</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              {[
+                { r: "Discover" as Role, label: t.discover, icon: "⌕" },
+                { r: "Account" as Role, label: `${t.myActivity} & Orders`, icon: "🛍️" },
+                { r: "Business" as Role, label: t.businessPortal, icon: "🏢" },
+                { r: "Agent" as Role, label: t.agentPortal, icon: "♧" },
+                { r: "Company" as Role, label: t.companyPortal, icon: "⚙" },
+              ].map((w) => (
+                <button
+                  key={w.r}
+                  type="button"
+                  className={`mobile-drawer-nav-item ${role === w.r ? "active" : ""}`}
+                  onClick={() => {
+                    openPortal(w.r);
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <span style={{ fontSize: "16px", width: "22px", textAlign: "center" }}>{w.icon}</span>
+                  <span>{w.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div className="mobile-drawer-section-title">Browse Sectors ({categories.length - 1})</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
+              {categories.slice(1).map((cat) => (
+                <button
+                  key={cat.name}
+                  type="button"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    padding: "7px 8px",
+                    borderRadius: "7px",
+                    border: "1px solid #e2ebe1",
+                    background: category === cat.name && browseMode === "sectors" ? "#e9f4eb" : "#fbfdfb",
+                    color: category === cat.name && browseMode === "sectors" ? "#1b5528" : "#3b4f41",
+                    fontSize: "11px",
+                    fontWeight: category === cat.name && browseMode === "sectors" ? 700 : 500,
+                    cursor: "pointer",
+                    textAlign: "left",
+                  }}
+                  onClick={() => {
+                    setBrowseMode("sectors");
+                    setCategory(cat.name);
+                    setCategoryPath([]);
+                    setQuery("");
+                    setRole("Discover");
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <span style={{ fontSize: "13px" }}><CategoryIcon name={cat.name} sector={cat.name} /></span>
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {translateCategory(cat.name, lang)}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ background: "#fef3f2", border: "1px solid #fee4e2", borderRadius: "10px", padding: "12px", marginTop: "4px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#b42318", fontWeight: 700, fontSize: "12px" }}>
+              <span>🚨</span>
+              <span>Hosur Emergency Help</span>
+            </div>
+            <p style={{ margin: "4px 0 8px", fontSize: "10px", color: "#7a271a" }}>
+              Immediate emergency contacts: Police (100), Ambulance (108), Fire (101).
+            </p>
+            <button
+              type="button"
+              style={{
+                width: "100%",
+                background: "#b42318",
+                color: "#ffffff",
+                border: 0,
+                borderRadius: "6px",
+                padding: "8px",
+                fontSize: "11px",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                setMobileMenuOpen(false);
+                setDialog("sos");
+              }}
+            >
+              Open Emergency SOS ↗
+            </button>
+          </div>
+        </div>
+
+        <div className="mobile-drawer-footer">
+          <span>Powered by Jishnu Infotech</span>
+          {authenticatedPortals.length > 0 ? (
+            <button
+              type="button"
+              style={{ border: 0, background: "transparent", color: "#b42318", fontWeight: 700, cursor: "pointer", fontSize: "11px" }}
+              onClick={() => void logOut()}
+            >
+              Sign out
+            </button>
+          ) : (
+            <button
+              type="button"
+              style={{ border: 0, background: "transparent", color: "#285536", fontWeight: 700, cursor: "pointer", fontSize: "11px" }}
+              onClick={() => {
+                setMobileMenuOpen(false);
+                setDialog("login");
+              }}
+            >
+              Sign in ↗
+            </button>
+          )}
+        </div>
+      </div>
+
       <aside className={`sidebar ${mobileMenuOpen ? "mobile-menu-open" : ""}`}>
         <a className="brand" href="#" onClick={(event) => { event.preventDefault(); openPortal("Discover"); }} aria-label="Bizearch home">
           <img className="brand-mark" src="/bizearch-mark.svg" alt="" />
@@ -12345,6 +12546,84 @@ export default function Home() {
       </aside>
 
       <section className="main-area">
+        <header className="mobile-app-header">
+          <div className="mobile-header-main">
+            <div className="mobile-header-left">
+              <button
+                type="button"
+                className="mobile-drawer-btn"
+                aria-label="Open navigation menu"
+                onClick={() => setMobileMenuOpen(true)}
+              >
+                ☰
+              </button>
+              <a
+                href="#"
+                className="mobile-brand"
+                onClick={(e) => {
+                  e.preventDefault();
+                  openPortal("Discover");
+                }}
+                aria-label="Bizearch home"
+              >
+                <img src="/bizearch-mark.svg" alt="" style={{ width: "24px", height: "24px", objectFit: "contain" }} />
+                <span>bizearch<span className="brand-period">.</span></span>
+              </a>
+              <button
+                type="button"
+                className="mobile-locality-pill"
+                onClick={() => setMobileLocalitySheetOpen(true)}
+                title="Change locality in Hosur"
+              >
+                <span>📍</span>
+                <span>{selectedNeighborhood === "All Hosur" ? "Hosur" : selectedNeighborhood}</span>
+                <span style={{ fontSize: "8px", opacity: 0.7 }}>▾</span>
+              </button>
+            </div>
+            <div className="mobile-header-right">
+              <button
+                type="button"
+                className="mobile-lang-chip"
+                onClick={() => setMobileLangSheetOpen(true)}
+                title="Change language"
+              >
+                <span>🌐</span>
+                <span>{lang === "ta" ? "தமிழ்" : lang === "kn" ? "ಕನ್ನಡ" : lang === "te" ? "తెలుగు" : "EN"}</span>
+                <span style={{ fontSize: "8px", opacity: 0.7 }}>▾</span>
+              </button>
+              <button
+                type="button"
+                className="mobile-notif-btn"
+                aria-label={`Notifications (${unreadCount} unread)`}
+                onClick={() => setNotificationsOpen((prev) => !prev)}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2c4835" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+                  <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+                </svg>
+                {unreadCount > 0 && <span className="notification-badge" style={{ top: "-2px", right: "-2px" }}>{unreadCount}</span>}
+              </button>
+              <button
+                type="button"
+                className="mobile-avatar-btn"
+                onClick={() => openProfileView("Profile details")}
+                title="My Profile & Settings"
+              >
+                N
+              </button>
+            </div>
+          </div>
+          <div className="mobile-header-substrip">
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+              <span>{t.poweredBy}</span>
+              <img src="/jishnu-infotech-logo.png" alt="Jishnu Infotech" />
+            </span>
+            <span style={{ fontWeight: 700, color: "#225a33" }}>
+              {role === "Discover" ? "Explore Hosur" : role === "Account" ? "Customer Portal" : `${role} Portal`}
+            </span>
+          </div>
+        </header>
+
         <header className="topbar">
           <div className="breadcrumb" style={{ fontSize: "11px", color: "#879188", whiteSpace: "nowrap", flexShrink: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>{t.yourNeighborhood} <span>/</span> <strong>{role === "Discover" ? t.discover : role === "Account" ? t.myActivity : `${role} portal`}</strong></div>
           <div className="topbar-partner" aria-label="Powered by Jishnu Infotech" style={{ display: "flex", alignItems: "center", gap: "8px", whiteSpace: "nowrap", color: "#718078", fontSize: "10px", flexShrink: 0 }}><span>{t.poweredBy}</span><img src="/jishnu-infotech-logo.png" alt="Jishnu Infotech" style={{ display: "block", height: "28px", width: "auto", maxWidth: "120px", objectFit: "contain" }} /></div>
@@ -13400,6 +13679,50 @@ export default function Home() {
                   )}
                 </div>
 
+                {/* Mobile Horizontal Category Pills Carousel */}
+                <div className="mobile-category-carousel" role="region" aria-label="Category Quick Filter">
+                  <button
+                    type="button"
+                    className={`mobile-cat-pill ${browseMode === "sectors" && category === "All" ? "active" : ""}`}
+                    onClick={() => {
+                      setBrowseMode("sectors");
+                      setCategory("All");
+                      setCategoryPath([]);
+                      showNotice(t.allCategories);
+                    }}
+                  >
+                    <span>✨</span>
+                    <span>All ({businesses.length})</span>
+                  </button>
+                  {categories.slice(1).map((cat) => (
+                    <button
+                      key={cat.name}
+                      type="button"
+                      className={`mobile-cat-pill ${browseMode === "sectors" && category === cat.name ? "active" : ""}`}
+                      onClick={() => {
+                        setBrowseMode("sectors");
+                        setCategory(cat.name);
+                        setCategoryPath([]);
+                        showNotice(`${translateCategory(cat.name, lang)} selected`);
+                      }}
+                    >
+                      <span><CategoryIcon name={cat.name} sector={cat.name} /></span>
+                      <span>{translateCategory(cat.name, lang)}</span>
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    className={`mobile-cat-pill ${browseMode === "atoz" ? "active" : ""}`}
+                    onClick={() => {
+                      setBrowseMode("atoz");
+                      document.getElementById("atoz-directory")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                  >
+                    <span>🔤</span>
+                    <span>A–Z Directory</span>
+                  </button>
+                </div>
+
                 {displayedBusinesses.length ? (
                   <>
                     <div className="business-grid">
@@ -13774,6 +14097,362 @@ export default function Home() {
             setClaimBusiness(null);
           }}
         />
+      )}
+
+      {/* Interactive Mobile Sticky Bottom Navigation Bar */}
+      <nav className="mobile-bottom-nav" aria-label="Mobile Navigation Bar">
+        <button
+          type="button"
+          className={`mobile-bottom-tab ${role === "Discover" ? "active" : ""}`}
+          onClick={() => {
+            setRole("Discover");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+        >
+          <span className="tab-icon">🧭</span>
+          <span>{t.discover}</span>
+          {role === "Discover" && <span className="mobile-bottom-tab-dot" />}
+        </button>
+
+        <button
+          type="button"
+          className={`mobile-bottom-tab ${mobileCategorySheetOpen ? "active" : ""}`}
+          onClick={() => setMobileCategorySheetOpen(true)}
+        >
+          <span className="tab-icon">🏷️</span>
+          <span>Categories</span>
+        </button>
+
+        <button
+          type="button"
+          className={`mobile-bottom-tab ${role === "Account" && portalActiveTab === "Orders" ? "active" : ""}`}
+          onClick={() => {
+            setRole("Account");
+            setPortalActiveTab("Orders");
+            window.setTimeout(() => {
+              window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Orders" } }));
+            }, 30);
+          }}
+        >
+          <span className="tab-icon">🛍️</span>
+          <span>Orders</span>
+          {activeOrdersCount > 0 && <span className="mobile-bottom-tab-badge">{activeOrdersCount}</span>}
+          {role === "Account" && portalActiveTab === "Orders" && <span className="mobile-bottom-tab-dot" />}
+        </button>
+
+        <button
+          type="button"
+          className={`mobile-bottom-tab ${role === "Account" && portalActiveTab === "Saved" ? "active" : ""}`}
+          onClick={() => {
+            setRole("Account");
+            setPortalActiveTab("Saved");
+            window.setTimeout(() => {
+              window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Saved" } }));
+            }, 30);
+          }}
+        >
+          <span className="tab-icon">♡</span>
+          <span>Saved</span>
+          {savedCount > 0 && <span className="mobile-bottom-tab-badge">{savedCount}</span>}
+          {role === "Account" && portalActiveTab === "Saved" && <span className="mobile-bottom-tab-dot" />}
+        </button>
+
+        <button
+          type="button"
+          className={`mobile-bottom-tab ${portalActiveTab === "Profile details" || portalActiveTab === "Settings" ? "active" : ""}`}
+          onClick={() => openProfileView("Profile details")}
+        >
+          <span className="tab-icon">👤</span>
+          <span>Profile</span>
+          {(portalActiveTab === "Profile details" || portalActiveTab === "Settings") && <span className="mobile-bottom-tab-dot" />}
+        </button>
+      </nav>
+
+      {/* Mobile Locality Bottom Sheet */}
+      {mobileLocalitySheetOpen && (
+        <div className="mobile-sheet-overlay" onClick={() => setMobileLocalitySheetOpen(false)}>
+          <div className="mobile-sheet-container" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Select Locality in Hosur">
+            <div className="mobile-sheet-handle" />
+            <div className="mobile-sheet-head">
+              <div>
+                <h3>📍 {t.nearLocality} in Hosur</h3>
+                <small style={{ color: "#697b6e", fontSize: "11px" }}>Find nearby shops &amp; services</small>
+              </div>
+              <button
+                type="button"
+                className="mobile-sheet-close-btn"
+                onClick={() => setMobileLocalitySheetOpen(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ marginBottom: "12px" }}>
+              <input
+                type="text"
+                placeholder="Filter Hosur neighborhood..."
+                value={localitySearchInput}
+                onChange={(e) => setLocalitySearchInput(e.target.value)}
+                style={{
+                  width: "100%",
+                  boxSizing: "border-box",
+                  padding: "10px 12px",
+                  borderRadius: "8px",
+                  border: "1px solid #d4ded4",
+                  fontSize: "12.5px",
+                  outline: "none",
+                }}
+              />
+            </div>
+
+            <button
+              type="button"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                padding: "10px",
+                borderRadius: "8px",
+                border: "1px solid #a8c8ad",
+                background: "#eaf5ec",
+                color: "#184f27",
+                fontSize: "12px",
+                fontWeight: 700,
+                cursor: "pointer",
+                marginBottom: "12px",
+                width: "100%",
+              }}
+              onClick={() => {
+                toggleDeviceLocation();
+                setMobileLocalitySheetOpen(false);
+              }}
+            >
+              <span>🎯</span>
+              <span>{locationEnabled ? "GPS Active (Tap to Refresh)" : "Use My Live Device GPS Location"}</span>
+            </button>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px", maxHeight: "50vh", overflowY: "auto" }}>
+              {HOSUR_NEIGHBORHOODS.filter((nh) =>
+                !localitySearchInput || nh.toLowerCase().includes(localitySearchInput.toLowerCase()) || translateNeighborhood(nh, lang).toLowerCase().includes(localitySearchInput.toLowerCase())
+              ).map((nh) => (
+                <button
+                  key={nh}
+                  type="button"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "10px 12px",
+                    borderRadius: "8px",
+                    border: "1px solid",
+                    borderColor: selectedNeighborhood === nh ? "#285536" : "#e6ece5",
+                    background: selectedNeighborhood === nh ? "#edf6ee" : "#ffffff",
+                    color: selectedNeighborhood === nh ? "#174825" : "#334538",
+                    fontSize: "12.5px",
+                    fontWeight: selectedNeighborhood === nh ? 700 : 500,
+                    cursor: "pointer",
+                    textAlign: "left",
+                  }}
+                  onClick={() => {
+                    setSelectedNeighborhood(nh);
+                    setMobileLocalitySheetOpen(false);
+                    setLocalitySearchInput("");
+                    showNotice(nh === "All Hosur" ? "Viewing all Hosur listings" : `Filtered to ${translateNeighborhood(nh, lang)}`);
+                  }}
+                >
+                  <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span>📍</span>
+                    <span>{translateNeighborhood(nh, lang)}</span>
+                  </span>
+                  {selectedNeighborhood === nh && <span style={{ color: "#285536", fontWeight: 800 }}>✓</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Language Bottom Sheet */}
+      {mobileLangSheetOpen && (
+        <div className="mobile-sheet-overlay" onClick={() => setMobileLangSheetOpen(false)}>
+          <div className="mobile-sheet-container" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Select Language">
+            <div className="mobile-sheet-handle" />
+            <div className="mobile-sheet-head">
+              <div>
+                <h3>🌐 Choose Language</h3>
+                <small style={{ color: "#697b6e", fontSize: "11px" }}>மொழியைத் தேர்ந்தெடுக்கவும் / ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ</small>
+              </div>
+              <button
+                type="button"
+                className="mobile-sheet-close-btn"
+                onClick={() => setMobileLangSheetOpen(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {[
+                { code: "en" as const, label: "English", sub: "English (Default)" },
+                { code: "ta" as const, label: "தமிழ்", sub: "Tamil (தமிழ்)" },
+                { code: "kn" as const, label: "ಕನ್ನಡ", sub: "Kannada (ಕನ್ನಡ)" },
+                { code: "te" as const, label: "తెలుగు", sub: "Telugu (తెలుగు)" },
+              ].map((item) => (
+                <button
+                  key={item.code}
+                  type="button"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "12px 14px",
+                    borderRadius: "10px",
+                    border: "1.5px solid",
+                    borderColor: lang === item.code ? "#285536" : "#e4eae3",
+                    background: lang === item.code ? "#edf5ee" : "#ffffff",
+                    color: lang === item.code ? "#174825" : "#314235",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    transition: "all 0.15s",
+                  }}
+                  onClick={() => {
+                    setLang(item.code);
+                    setMobileLangSheetOpen(false);
+                    showNotice(
+                      item.code === "ta" ? "மொழி: தமிழ் தேர்ந்தெடுக்கப்பட்டது" :
+                      item.code === "kn" ? "ಭಾಷೆ: ಕನ್ನಡ ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ" :
+                      item.code === "te" ? "భాష: తెలుగు ఎంపిక చేయబడింది" :
+                      "Language: English selected"
+                    );
+                  }}
+                >
+                  <div>
+                    <strong style={{ fontSize: "14px", display: "block" }}>{item.label}</strong>
+                    <small style={{ fontSize: "11px", color: "#697d6e" }}>{item.sub}</small>
+                  </div>
+                  {lang === item.code && (
+                    <span style={{ fontSize: "14px", color: "#285536", fontWeight: 800 }}>● Active</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Category Bottom Sheet */}
+      {mobileCategorySheetOpen && (
+        <div className="mobile-sheet-overlay" onClick={() => setMobileCategorySheetOpen(false)}>
+          <div className="mobile-sheet-container" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Browse Categories">
+            <div className="mobile-sheet-handle" />
+            <div className="mobile-sheet-head">
+              <div>
+                <h3>🏷️ All Categories &amp; Sectors</h3>
+                <small style={{ color: "#697b6e", fontSize: "11px" }}>Browse Hosur manufacturers, shops &amp; services</small>
+              </div>
+              <button
+                type="button"
+                className="mobile-sheet-close-btn"
+                onClick={() => setMobileCategorySheetOpen(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", maxHeight: "55vh", overflowY: "auto", marginBottom: "12px" }}>
+              <button
+                type="button"
+                style={{
+                  gridColumn: "1 / -1",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "10px 14px",
+                  borderRadius: "9px",
+                  border: "1px solid #c8ddca",
+                  background: category === "All" && browseMode === "sectors" ? "#e9f4eb" : "#f7faf7",
+                  color: "#184926",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+                onClick={() => {
+                  setBrowseMode("sectors");
+                  setCategory("All");
+                  setCategoryPath([]);
+                  setRole("Discover");
+                  setMobileCategorySheetOpen(false);
+                }}
+              >
+                <span>✨ View All Categories</span>
+                <span>({businesses.length} places) →</span>
+              </button>
+
+              {categories.slice(1).map((cat) => {
+                const count = businesses.filter((b) => b.category.toLowerCase().includes(cat.name.toLowerCase())).length;
+                return (
+                  <button
+                    key={cat.name}
+                    type="button"
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      justifyContent: "space-between",
+                      gap: "6px",
+                      padding: "10px",
+                      borderRadius: "9px",
+                      border: "1px solid",
+                      borderColor: category === cat.name && browseMode === "sectors" ? "#285536" : "#e3ebe2",
+                      background: category === cat.name && browseMode === "sectors" ? "#edf5ee" : "#ffffff",
+                      cursor: "pointer",
+                      textAlign: "left",
+                    }}
+                    onClick={() => {
+                      setBrowseMode("sectors");
+                      setCategory(cat.name);
+                      setCategoryPath([]);
+                      setRole("Discover");
+                      setMobileCategorySheetOpen(false);
+                    }}
+                  >
+                    <span style={{ fontSize: "18px" }}><CategoryIcon name={cat.name} sector={cat.name} /></span>
+                    <strong style={{ fontSize: "11px", color: "#1f3b27", lineHeight: 1.25 }}>
+                      {translateCategory(cat.name, lang)}
+                    </strong>
+                    <small style={{ fontSize: "9.5px", color: "#748679" }}>{count} places</small>
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              style={{
+                width: "100%",
+                padding: "12px",
+                borderRadius: "9px",
+                background: "#285536",
+                color: "#ffffff",
+                border: 0,
+                fontSize: "12px",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                setBrowseMode("atoz");
+                setRole("Discover");
+                setMobileCategorySheetOpen(false);
+                window.setTimeout(() => {
+                  document.getElementById("atoz-directory")?.scrollIntoView({ behavior: "smooth" });
+                }, 100);
+              }}
+            >
+              🔤 Open Full A–Z Directory ↗
+            </button>
+          </div>
+        </div>
       )}
     </main>
   );
