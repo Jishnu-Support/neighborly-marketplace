@@ -1282,6 +1282,112 @@ h1 em{font-family:var(--serif);font-weight:400;color:#507959;letter-spacing:-1px
   background: #e5eee3;
 }
 
+.business-card-wa-btn {
+  border: 1px solid #99dfb8;
+  color: #12753f;
+  background: #edf9f2;
+  padding: 8px 11px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: Manrope, sans-serif;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  border-radius: 6px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.business-card-wa-btn:hover {
+  background: #d4f3e1;
+  border-color: #6ed099;
+  color: #0b582e;
+}
+
+.business-card-share-btn {
+  border: 1px solid #d2ded1;
+  color: #4b6651;
+  background: #f7faf6;
+  padding: 8px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: Manrope, sans-serif;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.business-card-share-btn:hover {
+  background: #e8f0e7;
+  color: #214328;
+}
+
+.business-contact-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.business-wa-button-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #25d366;
+  color: #ffffff !important;
+  font-family: Manrope, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 9px 15px;
+  border-radius: 7px;
+  text-decoration: none;
+  box-shadow: 0 2px 7px rgba(37, 211, 102, 0.28);
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.business-wa-button-primary:hover {
+  background: #1eb957;
+  transform: translateY(-1px);
+}
+
+.business-share-button-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #ffffff;
+  color: #2d5a37;
+  border: 1px solid #c7dcc4;
+  font-family: Manrope, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 8px 13px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.business-share-button-primary:hover {
+  background: #eef6ed;
+}
+
+.catalog-action-btn.wa {
+  background: #edf9f2;
+  color: #12753f;
+  border: 1px solid #a6e5c2;
+}
+
+.catalog-action-btn.wa:hover {
+  background: #d6f4e2;
+}
+
 @media (max-width: 600px) {
   .catalog-modal {
     padding: 18px 14px !important;
@@ -1301,9 +1407,17 @@ h1 em{font-family:var(--serif);font-weight:400;color:#507959;letter-spacing:-1px
     align-items: stretch;
     gap: 10px;
   }
-  .business-call-button-primary {
+  .business-contact-btn-group {
+    flex-direction: column;
+    width: 100%;
+    gap: 6px;
+  }
+  .business-call-button-primary,
+  .business-wa-button-primary,
+  .business-share-button-primary {
     justify-content: center;
     width: 100%;
+    text-align: center;
   }
   .catalog-grid {
     grid-template-columns: 1fr;
@@ -1326,7 +1440,9 @@ h1 em{font-family:var(--serif);font-weight:400;color:#507959;letter-spacing:-1px
     min-width: 0;
   }
   .business-card-nav-btn,
-  .business-card-call-btn {
+  .business-card-call-btn,
+  .business-card-wa-btn,
+  .business-card-share-btn {
     justify-content: center;
     width: 100%;
   }

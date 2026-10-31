@@ -721,6 +721,44 @@ function businessRawPhone(phone: string): string {
   return phone.replace(/[^\d+]/g, "");
 }
 
+function businessWhatsAppUrl(business: Business, product?: Product): string {
+  const phone = businessPhoneFor(business);
+  // Extract 10 digits for Indian numbers
+  const digits = phone.replace(/\D/g, "");
+  const normalizedPhone = digits.length === 10 ? `91${digits}` : digits.startsWith("91") ? digits : `91${digits.slice(-10)}`;
+  const text = product
+    ? `Hello ${business.name}, I found your listing on Bizearch (bizearch.co) and would like to inquire about "${product.name}". Is it currently available?`
+    : `Hello ${business.name}, I found your listing on Bizearch (bizearch.co) and would like to inquire about your products and services.`;
+  return `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(text)}`;
+}
+
+async function shareBusiness(business: Business, product?: Product, onNotice?: (msg: string) => void) {
+  const title = product ? `${product.name} at ${business.name} | Bizearch` : `${business.name} | Bizearch Hosur`;
+  const text = product
+    ? `Check out ${product.name} (${product.price > 0 ? `₹${product.price.toLocaleString("en-IN")}` : ""} ${product.unit || ""}) at ${business.name} on Bizearch:`
+    : `Check out ${business.name} (${business.category}) on Bizearch Hosur:`;
+  const url = typeof window !== "undefined" ? window.location.href : "https://bizearch.co";
+
+  if (typeof navigator !== "undefined" && navigator.share) {
+    try {
+      await navigator.share({ title, text, url });
+      return;
+    } catch {
+      // User dismissed share dialog or cancelled
+    }
+  }
+
+  // Fallback to clipboard
+  if (typeof navigator !== "undefined" && navigator.clipboard) {
+    try {
+      await navigator.clipboard.writeText(`${title}\n${text}\n${url}`);
+      onNotice?.("✓ Link and business details copied to clipboard!");
+    } catch {
+      onNotice?.("Could not copy link.");
+    }
+  }
+}
+
 function productImageFor(product: Product, business?: Business): string {
   if (product.image) return product.image;
   const name = (product.name || "").toLowerCase();
@@ -11377,6 +11415,29 @@ export default function Home() {
                               >
                                 📞 Call
                               </a>
+                              <a
+                                className="business-card-wa-btn"
+                                href={businessWhatsAppUrl(business)}
+                                target="_blank"
+                                rel="noreferrer"
+                                onClick={() => {
+                                  recordEvent(`Business WhatsApp clicked: ${business.name}`);
+                                }}
+                                title={`Chat with ${business.name} on WhatsApp`}
+                              >
+                                💬 WhatsApp
+                              </a>
+                              <button
+                                type="button"
+                                className="business-card-share-btn"
+                                onClick={() => {
+                                  shareBusiness(business, undefined, showNotice);
+                                  recordEvent(`Business shared: ${business.name}`);
+                                }}
+                                title={`Share ${business.name}`}
+                              >
+                                ↗ Share
+                              </button>
                             </div>
                           </div>
                         </article>
@@ -11603,20 +11664,39 @@ function BusinessDetailDialog({
         <h2>{business.name}</h2>
         <p>{business.description}</p>
 
-        {/* Business Contact Call Banner */}
+        {/* Business Contact Call & Action Banner */}
         <div className="business-contact-banner">
           <div className="business-contact-info">
             <span className="business-contact-badge">DIRECT BUSINESS CONTACT</span>
             <strong className="business-contact-phone">📞 {phone}</strong>
-            <span className="business-contact-hint">Call directly for instant stock availability, quotes & bookings</span>
+            <span className="business-contact-hint">Call or WhatsApp directly for instant stock availability, quotes & bookings</span>
           </div>
-          <a
-            href={`tel:${rawPhone}`}
-            className="business-call-button-primary"
-            title={`Call ${business.name}`}
-          >
-            📞 Call Now ({phone})
-          </a>
+          <div className="business-contact-btn-group">
+            <a
+              href={`tel:${rawPhone}`}
+              className="business-call-button-primary"
+              title={`Call ${business.name}`}
+            >
+              📞 Call Now
+            </a>
+            <a
+              href={businessWhatsAppUrl(business)}
+              target="_blank"
+              rel="noreferrer"
+              className="business-wa-button-primary"
+              title={`Chat with ${business.name} on WhatsApp`}
+            >
+              💬 WhatsApp
+            </a>
+            <button
+              type="button"
+              className="business-share-button-primary"
+              onClick={() => shareBusiness(business, undefined, () => alert("✓ Business details copied to clipboard!"))}
+              title={`Share ${business.name}`}
+            >
+              ↗ Share
+            </button>
+          </div>
         </div>
 
         {/* Modal Tab Switcher */}
@@ -11692,6 +11772,15 @@ function BusinessDetailDialog({
                             title={`Call ${business.name} about ${product.name}`}
                           >
                             📞 Call
+                          </a>
+                          <a
+                            className="catalog-action-btn wa"
+                            href={businessWhatsAppUrl(business, product)}
+                            target="_blank"
+                            rel="noreferrer"
+                            title={`WhatsApp ${business.name} about ${product.name}`}
+                          >
+                            💬 WhatsApp
                           </a>
                           <button
                             type="button"
