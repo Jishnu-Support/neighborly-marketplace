@@ -11980,11 +11980,29 @@ export default function Home() {
 
       <section className="main-area">
         <header className="topbar">
-          <div className="breadcrumb">{t.yourNeighborhood} <span>/</span> <strong>{role === "Discover" ? t.discover : role === "Account" ? t.myActivity : `${role} portal`}</strong></div>
-          <div className="topbar-partner" aria-label="Powered by Jishnu Infotech"><span>{t.poweredBy}</span><img src="/jishnu-infotech-logo.png" alt="Jishnu Infotech" /></div>
-          <div className="topbar-actions" style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-            <button className="location-chip" onClick={toggleDeviceLocation}>
-              <span className="location-pin">📍</span> {locationEnabled ? t.stopLocation : t.hosurLocation} <span className="chevron">⌄</span>
+          <div className="breadcrumb" style={{ fontSize: "11px", color: "#879188", whiteSpace: "nowrap", flexShrink: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>{t.yourNeighborhood} <span>/</span> <strong>{role === "Discover" ? t.discover : role === "Account" ? t.myActivity : `${role} portal`}</strong></div>
+          <div className="topbar-partner" aria-label="Powered by Jishnu Infotech" style={{ display: "flex", alignItems: "center", gap: "8px", whiteSpace: "nowrap", color: "#718078", fontSize: "10px", flexShrink: 0 }}><span>{t.poweredBy}</span><img src="/jishnu-infotech-logo.png" alt="Jishnu Infotech" style={{ display: "block", width: "128px", height: "42px", objectFit: "contain" }} /></div>
+          <div className="topbar-actions" style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "nowrap", flexShrink: 0, marginLeft: "auto" }}>
+            <button
+              className="location-chip"
+              onClick={toggleDeviceLocation}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "4px",
+                padding: "5px 9px",
+                fontSize: "11px",
+                fontWeight: 600,
+                color: "#2c4835",
+                background: "#f4f8f4",
+                border: "1px solid #d8e5d9",
+                borderRadius: "6px",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                flexShrink: 0,
+              }}
+            >
+              <span className="location-pin" style={{ fontSize: "14px", color: "#3d784f" }}>📍</span> {locationEnabled ? t.stopLocation : t.hosurLocation} <span className="chevron" style={{ fontSize: "10px", color: "#698070", marginLeft: "2px" }}>⌄</span>
             </button>
             <div className="notification-wrapper" ref={notificationsRef}>
               <button
@@ -12107,7 +12125,7 @@ export default function Home() {
                 </div>
               )}
             </div>
-            <div className="language-selector-pill" role="group" aria-label="Select language" style={{ display: "inline-flex", alignItems: "center", background: "#f0f4f1", borderRadius: "20px", border: "1px solid #d4ded6", padding: "2px 4px", gap: "2px" }}>
+            <div className="language-selector-pill" role="group" aria-label="Select language" style={{ display: "inline-flex", alignItems: "center", background: "#f0f4f1", borderRadius: "18px", border: "1px solid #d4ded6", padding: "2px 3px", gap: "2px", flexShrink: 0 }}>
               {(["en", "ta", "kn", "te"] as const).map((l) => (
                 <button
                   key={l}
@@ -12122,11 +12140,11 @@ export default function Home() {
                     );
                   }}
                   style={{
-                    background: lang === l ? "#386b4b" : "transparent",
-                    color: lang === l ? "#ffffff" : "#455a4b",
+                    background: lang === l ? "#285536" : "transparent",
+                    color: lang === l ? "#ffffff" : "#405445",
                     border: 0,
                     borderRadius: "14px",
-                    padding: "3px 8px",
+                    padding: "3px 7px",
                     cursor: "pointer",
                     fontSize: "9.5px",
                     fontWeight: 700,
@@ -12139,9 +12157,45 @@ export default function Home() {
                 </button>
               ))}
             </div>
-            {authenticatedPortals.length > 0 && (role === "Discover" || authenticatedPortals.includes(role)) ?
-              <button className="sign-in-button" onClick={() => void logOut()}>{t.signOut}</button> :
-              <button className="sign-in-button" onClick={() => openPortal("Account")}>{t.signIn} <span>&rarr;</span></button>}
+            {authenticatedPortals.length > 0 && (role === "Discover" || authenticatedPortals.includes(role)) ? (
+              <button
+                className="sign-in-button"
+                onClick={() => void logOut()}
+                style={{
+                  border: "1px solid #d5e2d6",
+                  background: "#ffffff",
+                  borderRadius: "6px",
+                  color: "#285536",
+                  padding: "6px 12px",
+                  fontSize: "10.5px",
+                  fontWeight: 700,
+                  whiteSpace: "nowrap",
+                  cursor: "pointer",
+                  flexShrink: 0,
+                }}
+              >
+                {t.signOut}
+              </button>
+            ) : (
+              <button
+                className="sign-in-button"
+                onClick={() => openPortal("Account")}
+                style={{
+                  border: "1px solid #d5e2d6",
+                  background: "#ffffff",
+                  borderRadius: "6px",
+                  color: "#285536",
+                  padding: "6px 12px",
+                  fontSize: "10.5px",
+                  fontWeight: 700,
+                  whiteSpace: "nowrap",
+                  cursor: "pointer",
+                  flexShrink: 0,
+                }}
+              >
+                {t.signIn} <span>&rarr;</span>
+              </button>
+            )}
           </div>
         </header>
 
