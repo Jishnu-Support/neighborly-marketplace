@@ -5,6 +5,7 @@ import {
   updateAdBooking,
 } from "@/app/lib/ad-bookings";
 import { type AdFormat, type AdSlotTiming, AD_TIME_SLOTS } from "@/app/lib/ad-booking.shared";
+import { recordPlatformTransaction } from "@/app/lib/transactions";
 
 export async function GET(request: Request) {
   try {
@@ -91,6 +92,32 @@ export async function POST(request: Request) {
       notes,
     });
 
+    if (booking.status === "Paid") {
+      try {
+        await recordPlatformTransaction({
+          id: `TXN-${booking.id}`,
+          type: "ad_booking",
+          typeLabel: "Ad Campaign Booking",
+          businessName: booking.businessName,
+          customerName: booking.contactName,
+          customerPhone: booking.contactPhone,
+          itemSummary: `${booking.format.toUpperCase()} Ad (${booking.slotLabel || booking.slotTiming}, ${booking.durationDays} Days)`,
+          grossAmount: booking.totalAmount,
+          taxAmount: booking.gstAmount,
+          netAmount: booking.subtotal,
+          platformFee: booking.totalAmount,
+          status: "Paid",
+          paymentMethod: booking.paymentMethod || paymentMethod || "UPI",
+          referenceId: booking.transactionId || transactionId,
+          notes: `Ad booking verified & activated: ${booking.id}`,
+          recordedBy: "Automated Gateway (Ad Booking)",
+          receiptNumber: `INV-${booking.id}`,
+        });
+      } catch (e) {
+        console.warn("Could not log ad transaction:", e);
+      }
+    }
+
     return NextResponse.json({ booking }, { status: 201 });
   } catch (err) {
     return NextResponse.json(
@@ -111,6 +138,32 @@ export async function PATCH(request: Request) {
     const updated = await updateAdBooking(id, updates);
     if (!updated) {
       return NextResponse.json({ error: "Booking not found." }, { status: 404 });
+    }
+
+    if (updated.status === "Paid") {
+      try {
+        await recordPlatformTransaction({
+          id: `TXN-${updated.id}`,
+          type: "ad_booking",
+          typeLabel: "Ad Campaign Booking",
+          businessName: updated.businessName,
+          customerName: updated.contactName,
+          customerPhone: updated.contactPhone,
+          itemSummary: `${updated.format.toUpperCase()} Ad (${updated.slotLabel || updated.slotTiming}, ${updated.durationDays} Days)`,
+          grossAmount: updated.totalAmount,
+          taxAmount: updated.gstAmount,
+          netAmount: updated.subtotal,
+          platformFee: updated.totalAmount,
+          status: "Paid",
+          paymentMethod: updated.paymentMethod || "Company Admin Approval",
+          referenceId: updated.transactionId || `ADMIN-AUTH-${Date.now().toString(36).toUpperCase()}`,
+          notes: `Ad booking activated by Company Admin: ${updated.id}`,
+          recordedBy: "Company Super Admin",
+          receiptNumber: `INV-${updated.id}`,
+        });
+      } catch (e) {
+        console.warn("Could not log ad transaction in PATCH:", e);
+      }
     }
 
     return NextResponse.json({ booking: updated });
