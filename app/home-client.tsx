@@ -1848,9 +1848,9 @@ const initialBusinesses: Business[] = [
     "tag": "Authorized dealer",
     "phone": "04344 262821",
     "address": {
-      "doorNumber": "Shop #3",
+      "doorNumber": "No. 128/2",
       "street": "Bagalur Main Road",
-      "area": "Bagalur Circle / Avalapalli",
+      "area": "Near Avalapalli Hudco Circle",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -1895,8 +1895,8 @@ const initialBusinesses: Business[] = [
     "description": "TVS Motors authorized showroom on Bagalur Road, Hosur. Sales, service and spare parts for all TVS two-wheelers.",
     "distance": 1.2,
     "demoCoordinates": {
-      "latitude": 12.7341,
-      "longitude": 77.8293
+      "latitude": 12.7332,
+      "longitude": 77.8288
     },
     "rating": 4.7,
     "reviews": 241,
@@ -1920,9 +1920,9 @@ const initialBusinesses: Business[] = [
     "tag": "Verified business",
     "phone": "+91 98420 37553",
     "address": {
-      "doorNumber": "Shop #10",
+      "doorNumber": "TVS Tower, No. 42/1-A",
       "street": "Bagalur Main Road",
-      "area": "Bagalur Circle / Avalapalli",
+      "area": "Avalapalli Hudco Circle",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -1930,8 +1930,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.7341,
-      "longitude": 77.8293
+      "latitude": 12.7332,
+      "longitude": 77.8288
     }
   },
   {
@@ -1967,8 +1967,8 @@ const initialBusinesses: Business[] = [
     "description": "Maruti Suzuki ARENA authorized dealership on NH-7, Hosur. Full sales, exchange, finance and after-sales service.",
     "distance": 3.4,
     "demoCoordinates": {
-      "latitude": 12.727,
-      "longitude": 77.835
+      "latitude": 12.7425,
+      "longitude": 77.8315
     },
     "rating": 4.5,
     "reviews": 309,
@@ -1993,18 +1993,18 @@ const initialBusinesses: Business[] = [
     "tag": "Authorized dealer",
     "phone": "+91 97890 29947",
     "address": {
-      "doorNumber": "Shop #17",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Plot No. 14, ARENA Campus",
+      "street": "Bangalore - Salem NH 44 Bypass",
+      "area": "Opp. MGR Central Bus Stand",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635109"
+      "pincode": "635126"
     },
     "coordinates": {
-      "latitude": 12.727,
-      "longitude": 77.835
+      "latitude": 12.7425,
+      "longitude": 77.8315
     }
   },
   {
@@ -2040,8 +2040,8 @@ const initialBusinesses: Business[] = [
     "description": "Authorized Hyundai dealership on Krishnagiri Road, Hosur. Sales, test drives, trade-in and full workshop service.",
     "distance": 2.9,
     "demoCoordinates": {
-      "latitude": 12.731,
-      "longitude": 77.841
+      "latitude": 12.7565,
+      "longitude": 77.813
     },
     "rating": 4.6,
     "reviews": 178,
@@ -2066,18 +2066,18 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 90800 61015",
     "address": {
-      "doorNumber": "Shop #24",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Survey No. 89/1B",
+      "street": "NH 44 Bangalore - Salem Highway",
+      "area": "Near SIPCOT Phase 1 Entrance",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635109"
+      "pincode": "635126"
     },
     "coordinates": {
-      "latitude": 12.731,
-      "longitude": 77.841
+      "latitude": 12.7565,
+      "longitude": 77.813
     }
   },
   {
@@ -2134,8 +2134,8 @@ const initialBusinesses: Business[] = [
     "description": "Multi-brand car repair and electrical workshop on Bagalur Road. Specialist in AC, wiring, battery and engine diagnostics.",
     "distance": 2.2,
     "demoCoordinates": {
-      "latitude": 12.7355,
-      "longitude": 77.826
+      "latitude": 12.7295,
+      "longitude": 77.821
     },
     "rating": 4.8,
     "reviews": 134,
@@ -2159,9 +2159,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 229955",
     "address": {
-      "doorNumber": "Shop #31",
-      "street": "Bagalur Main Road",
-      "area": "Bagalur Circle / Avalapalli",
+      "doorNumber": "Shed No. 18",
+      "street": "SIDCO Industrial Estate Road",
+      "area": "Near Old ASTC Hudco",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -2169,8 +2169,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.7355,
-      "longitude": 77.826
+      "latitude": 12.7295,
+      "longitude": 77.821
     }
   },
   {
@@ -2236,8 +2236,8 @@ const initialBusinesses: Business[] = [
     "description": "Tata-owned Croma electronics superstore in Hosur. Large floor with phones, laptops, TVs, appliances and extended warranty service.",
     "distance": 1.6,
     "demoCoordinates": {
-      "latitude": 12.7318,
-      "longitude": 77.8301
+      "latitude": 12.7418,
+      "longitude": 77.8335
     },
     "rating": 4.5,
     "reviews": 412,
@@ -2265,9 +2265,9 @@ const initialBusinesses: Business[] = [
     "tag": "Popular nearby",
     "phone": "+91 99440 59410",
     "address": {
-      "doorNumber": "Shop #38",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Ground & 1st Floor, Croma Landmark",
+      "street": "Bangalore - Salem NH 44 Highway",
+      "area": "Near MGR Central Bus Stand Flyover",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -2275,8 +2275,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.7318,
-      "longitude": 77.8301
+      "latitude": 12.7418,
+      "longitude": 77.8335
     }
   },
   {
@@ -2312,8 +2312,8 @@ const initialBusinesses: Business[] = [
     "description": "Computer hardware, custom PC builds, laptop repair and CCTV installation on Bagalur Road, Hosur.",
     "distance": 2.3,
     "demoCoordinates": {
-      "latitude": 12.7345,
-      "longitude": 77.8278
+      "latitude": 12.735,
+      "longitude": 77.8292
     },
     "rating": 4.7,
     "reviews": 98,
@@ -2337,9 +2337,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94432 53776",
     "address": {
-      "doorNumber": "Shop #45",
+      "doorNumber": "No. 18, 1st Floor, Sri Balaji Complex",
       "street": "Bagalur Main Road",
-      "area": "Bagalur Circle / Avalapalli",
+      "area": "Avalapalli HUDCO Signal",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -2347,8 +2347,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.7345,
-      "longitude": 77.8278
+      "latitude": 12.735,
+      "longitude": 77.8292
     }
   },
   {
@@ -2398,8 +2398,8 @@ const initialBusinesses: Business[] = [
     "description": "Iconic South Indian breakfast spot in Hosur. Famous for crispy masala dosas, rava idlis and filter coffee — open from 6 AM.",
     "distance": 0.8,
     "demoCoordinates": {
-      "latitude": 12.733,
-      "longitude": 77.8335
+      "latitude": 12.7371,
+      "longitude": 77.8272
     },
     "rating": 4.8,
     "reviews": 563,
@@ -2422,9 +2422,9 @@ const initialBusinesses: Business[] = [
     "tag": "Local favourite",
     "phone": "+91 94880 17597",
     "address": {
-      "doorNumber": "Shop #24",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "No. 45",
+      "street": "MG Road (Mahatma Gandhi Road)",
+      "area": "Gandhi Statue Circle, Bazaar",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -2432,8 +2432,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.733,
-      "longitude": 77.8335
+      "latitude": 12.7371,
+      "longitude": 77.8272
     }
   },
   {
@@ -2483,8 +2483,8 @@ const initialBusinesses: Business[] = [
     "description": "Hosur's most-loved bakery — famous city-wide for paal khova puffs, cream buns and dilpasands. Open daily from 7 AM.",
     "distance": 1.1,
     "demoCoordinates": {
-      "latitude": 12.7322,
-      "longitude": 77.8318
+      "latitude": 12.7412,
+      "longitude": 77.8265
     },
     "rating": 4.9,
     "reviews": 871,
@@ -2507,9 +2507,9 @@ const initialBusinesses: Business[] = [
     "tag": "Hosur favourite",
     "phone": "04344 257370",
     "address": {
-      "doorNumber": "Shop #31",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "No. 72",
+      "street": "Old Bangalore Road",
+      "area": "Taluk Office Circle, Court Area",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -2517,8 +2517,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.7322,
-      "longitude": 77.8318
+      "latitude": 12.7412,
+      "longitude": 77.8265
     }
   },
   {
@@ -2554,7 +2554,7 @@ const initialBusinesses: Business[] = [
     "description": "Popular Andhra-style restaurant in Hosur famous for fiery biryanis and unlimited Rayalaseema meals. Perfect for non-veg lovers.",
     "distance": 1.4,
     "demoCoordinates": {
-      "latitude": 12.7315,
+      "latitude": 12.738,
       "longitude": 77.8295
     },
     "rating": 4.7,
@@ -2576,9 +2576,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94880 73085",
     "address": {
-      "doorNumber": "Shop #38",
+      "doorNumber": "2nd Floor, Grand Plaza",
       "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "area": "Near Municipal Corporation Office",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -2586,7 +2586,7 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.7315,
+      "latitude": 12.738,
       "longitude": 77.8295
     }
   },
@@ -2630,8 +2630,8 @@ const initialBusinesses: Business[] = [
     "description": "Famous Kongunadu-style non-veg restaurant in Hosur. Beloved for authentic mutton biryani, kuzhambu meals and event catering.",
     "distance": 1.9,
     "demoCoordinates": {
-      "latitude": 12.7302,
-      "longitude": 77.827
+      "latitude": 12.751,
+      "longitude": 77.821
     },
     "rating": 4.8,
     "reviews": 692,
@@ -2653,18 +2653,18 @@ const initialBusinesses: Business[] = [
     "tag": "Local favourite",
     "phone": "+91 94880 67701",
     "address": {
-      "doorNumber": "Shop #45",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Oasis Highway Plaza",
+      "street": "Bangalore - Salem NH 44 Highway",
+      "area": "Opp. Ashok Leyland Unit 1",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635109"
+      "pincode": "635126"
     },
     "coordinates": {
-      "latitude": 12.7302,
-      "longitude": 77.827
+      "latitude": 12.751,
+      "longitude": 77.821
     }
   },
   {
@@ -2700,8 +2700,8 @@ const initialBusinesses: Business[] = [
     "description": "A2B (Adyar Ananda Bhavan) Hosur branch. Pure vegetarian restaurant and sweet shop — family meals, sweets and festive orders.",
     "distance": 1.3,
     "demoCoordinates": {
-      "latitude": 12.7337,
-      "longitude": 77.8308
+      "latitude": 12.7518,
+      "longitude": 77.8205
     },
     "rating": 4.6,
     "reviews": 531,
@@ -2723,18 +2723,18 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 98420 82097",
     "address": {
-      "doorNumber": "Shop #52",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Highway Food Court Campus",
+      "street": "NH 44 Bangalore - Salem Highway",
+      "area": "Opp. Ashok Leyland Unit 1, SIPCOT",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635109"
+      "pincode": "635126"
     },
     "coordinates": {
-      "latitude": 12.7337,
-      "longitude": 77.8308
+      "latitude": 12.7518,
+      "longitude": 77.8205
     }
   },
   {
@@ -2790,8 +2790,8 @@ const initialBusinesses: Business[] = [
     "description": "Government-run Uzhavar Santhai (Farmers Market) in Hosur. Buy fresh vegetables, fruits and flowers directly from local farmers at below-market prices.",
     "distance": 0.9,
     "demoCoordinates": {
-      "latitude": 12.7335,
-      "longitude": 77.8355
+      "latitude": 12.734,
+      "longitude": 77.8248
     },
     "rating": 4.5,
     "reviews": 631,
@@ -2812,9 +2812,9 @@ const initialBusinesses: Business[] = [
     "tag": "Government market",
     "phone": "04344 252877",
     "address": {
-      "doorNumber": "Shop #59",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Uzhavar Santhai Complex",
+      "street": "Denkanikottai Main Road",
+      "area": "Near Old Bus Stand & Sub-Jail Ground",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -2822,8 +2822,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.7335,
-      "longitude": 77.8355
+      "latitude": 12.734,
+      "longitude": 77.8248
     }
   },
   {
@@ -2865,7 +2865,7 @@ const initialBusinesses: Business[] = [
     "description": "Apollo Pharmacy on Bagalur Road, Hosur. Extended hours, prescription refills, online ordering and free in-store health check-ups.",
     "distance": 1,
     "demoCoordinates": {
-      "latitude": 12.7348,
+      "latitude": 12.736,
       "longitude": 77.8285
     },
     "rating": 4.7,
@@ -2886,9 +2886,9 @@ const initialBusinesses: Business[] = [
     "tag": "Verified business",
     "phone": "+91 94432 99400",
     "address": {
-      "doorNumber": "Shop #66",
+      "doorNumber": "No. 84, Ground Floor",
       "street": "Bagalur Main Road",
-      "area": "Bagalur Circle / Avalapalli",
+      "area": "Opp. Avalapalli HUDCO Police Station",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -2896,7 +2896,7 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.7348,
+      "latitude": 12.736,
       "longitude": 77.8285
     }
   },
@@ -2940,8 +2940,8 @@ const initialBusinesses: Business[] = [
     "description": "Established multi-specialty hospital on Bagalur Road, Hosur. General medicine, dental, paediatrics, diagnostics and pharmacy under one roof.",
     "distance": 2.1,
     "demoCoordinates": {
-      "latitude": 12.7325,
-      "longitude": 77.8265
+      "latitude": 12.7345,
+      "longitude": 77.8235
     },
     "rating": 4.6,
     "reviews": 215,
@@ -2963,9 +2963,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 99440 26290",
     "address": {
-      "doorNumber": "Shop #45",
-      "street": "Bagalur Main Road",
-      "area": "Bagalur Circle / Avalapalli",
+      "doorNumber": "No. 1, Hospital Road",
+      "street": "Denkanikottai Main Road",
+      "area": "Near Old Bus Stand",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -2973,8 +2973,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.7325,
-      "longitude": 77.8265
+      "latitude": 12.7345,
+      "longitude": 77.8235
     }
   },
   {
@@ -3038,8 +3038,8 @@ const initialBusinesses: Business[] = [
     "description": "Specialist skin, hair and laser clinic on Bagalur Road, Hosur. Dermatology, laser therapy, PRP hair treatment and cosmetology.",
     "distance": 1.7,
     "demoCoordinates": {
-      "latitude": 12.7358,
-      "longitude": 77.829
+      "latitude": 12.7335,
+      "longitude": 77.8305
     },
     "rating": 4.8,
     "reviews": 167,
@@ -3060,9 +3060,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94880 31565",
     "address": {
-      "doorNumber": "Shop #52",
-      "street": "Bagalur Main Road",
-      "area": "Bagalur Circle / Avalapalli",
+      "doorNumber": "No. 14, 1st Floor",
+      "street": "Kamaraj Colony 2nd Cross",
+      "area": "Near Railway Station Road",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -3070,8 +3070,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.7358,
-      "longitude": 77.829
+      "latitude": 12.7335,
+      "longitude": 77.8305
     }
   },
   {
@@ -3107,8 +3107,8 @@ const initialBusinesses: Business[] = [
     "description": "Popular fashion retail store on Nethaji Road, Hosur. Men's, women's and kids' clothing with latest trends and festive collections.",
     "distance": 1.5,
     "demoCoordinates": {
-      "latitude": 12.7332,
-      "longitude": 77.8327
+      "latitude": 12.7358,
+      "longitude": 77.826
     },
     "rating": 4.5,
     "reviews": 143,
@@ -3130,7 +3130,7 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 281001",
     "address": {
-      "doorNumber": "Shop #59",
+      "doorNumber": "Instyle Tower, No. 34",
       "street": "Nethaji Road",
       "area": "Gandhi Nagar / Bazaar",
       "cityTown": "Hosur",
@@ -3140,8 +3140,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.7332,
-      "longitude": 77.8327
+      "latitude": 12.7358,
+      "longitude": 77.826
     }
   },
   {
@@ -3190,8 +3190,8 @@ const initialBusinesses: Business[] = [
     "description": "Trusted GRT Jewellers showroom in Hosur. Wide range of gold, diamond and platinum jewellery with BIS hallmark and easy exchange.",
     "distance": 2,
     "demoCoordinates": {
-      "latitude": 12.732,
-      "longitude": 77.834
+      "latitude": 12.7392,
+      "longitude": 77.8305
     },
     "rating": 4.7,
     "reviews": 386,
@@ -3212,9 +3212,9 @@ const initialBusinesses: Business[] = [
     "tag": "Trusted brand",
     "phone": "+91 82480 45238",
     "address": {
-      "doorNumber": "Shop #66",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "GRT Landmark, No. 110",
+      "street": "MG Road (Mahatma Gandhi Road)",
+      "area": "Near MGR Central Bus Stand Incline",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -3222,8 +3222,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.732,
-      "longitude": 77.834
+      "latitude": 12.7392,
+      "longitude": 77.8305
     }
   },
   {
@@ -3266,8 +3266,8 @@ const initialBusinesses: Business[] = [
     "description": "Nilgiris supermarket in Hosur — trusted for groceries, fresh produce, kitchenware, personal care and household daily needs.",
     "distance": 1.1,
     "demoCoordinates": {
-      "latitude": 12.734,
-      "longitude": 77.832
+      "latitude": 12.7328,
+      "longitude": 77.8255
     },
     "rating": 4.4,
     "reviews": 324,
@@ -3289,9 +3289,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94432 95728",
     "address": {
-      "doorNumber": "Shop #73",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Nilgiris Building, No. 19/2",
+      "street": "Denkanikottai Main Road",
+      "area": "Kamaraj Colony Junction",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -3299,8 +3299,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.734,
-      "longitude": 77.832
+      "latitude": 12.7328,
+      "longitude": 77.8255
     }
   },
   {
@@ -3336,7 +3336,7 @@ const initialBusinesses: Business[] = [
     "description": "One of Hosur's top gyms with modern strength equipment, CrossFit zone and personal training. Open 5 AM – 11 PM every day.",
     "distance": 1.6,
     "demoCoordinates": {
-      "latitude": 12.7352,
+      "latitude": 12.7345,
       "longitude": 77.831
     },
     "rating": 4.7,
@@ -3359,9 +3359,9 @@ const initialBusinesses: Business[] = [
     "tag": "Top rated nearby",
     "phone": "+91 98420 18041",
     "address": {
-      "doorNumber": "Shop #80",
+      "doorNumber": "3rd Floor, Empire Fitness Plaza",
       "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "area": "Near Avalapalli Ring Road Circle",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -3369,7 +3369,7 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.7352,
+      "latitude": 12.7345,
       "longitude": 77.831
     }
   },
@@ -3406,8 +3406,8 @@ const initialBusinesses: Business[] = [
     "description": "Leading badminton coaching academy and court facility in Hosur. BWF-certified coaches, indoor courts and monthly training programs.",
     "distance": 2.4,
     "demoCoordinates": {
-      "latitude": 12.7298,
-      "longitude": 77.8268
+      "latitude": 12.729,
+      "longitude": 77.836
     },
     "rating": 4.8,
     "reviews": 176,
@@ -3427,9 +3427,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 239806",
     "address": {
-      "doorNumber": "Shop #87",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Survey No. 44",
+      "street": "Avalapalli Ring Road",
+      "area": "Near CSI Church, Avalapalli",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -3437,8 +3437,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.7298,
-      "longitude": 77.8268
+      "latitude": 12.729,
+      "longitude": 77.836
     }
   },
   {
@@ -3474,7 +3474,7 @@ const initialBusinesses: Business[] = [
     "description": "Pranava Nature Cure & Yoga Clinic in Hosur. Holistic wellness center offering yoga, naturopathy, weight management and rejuvenation therapies.",
     "distance": 3.1,
     "demoCoordinates": {
-      "latitude": 12.728,
+      "latitude": 12.731,
       "longitude": 77.835
     },
     "rating": 4.9,
@@ -3494,9 +3494,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94880 51149",
     "address": {
-      "doorNumber": "Shop #66",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "No. 12, Pranava Villa",
+      "street": "Shanthi Nagar 4th Cross",
+      "area": "Near Hosur Railway Station",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -3504,7 +3504,7 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.728,
+      "latitude": 12.731,
       "longitude": 77.835
     }
   },
@@ -3541,8 +3541,8 @@ const initialBusinesses: Business[] = [
     "description": "Multi-sport turf facility in Hosur with 5-a-side football, box cricket and badminton courts. Floodlights, changing rooms and parking.",
     "distance": 2.8,
     "demoCoordinates": {
-      "latitude": 12.7305,
-      "longitude": 77.8387
+      "latitude": 12.7095,
+      "longitude": 77.8465
     },
     "rating": 4.6,
     "reviews": 198,
@@ -3562,18 +3562,18 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 96290 96524",
     "address": {
-      "doorNumber": "Shop #73",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "GameX Sports Arena",
+      "street": "Mathigiri Main Road",
+      "area": "Near Titan Township",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635109"
+      "pincode": "635110"
     },
     "coordinates": {
-      "latitude": 12.7305,
-      "longitude": 77.8387
+      "latitude": 12.7095,
+      "longitude": 77.8465
     }
   },
   {
@@ -3623,8 +3623,8 @@ const initialBusinesses: Business[] = [
     "description": "Fortune Hosur — premium ITC Hotels property. Business and leisure hotel with spa, restaurant, conference rooms and modern amenities.",
     "distance": 3.2,
     "demoCoordinates": {
-      "latitude": 12.7275,
-      "longitude": 77.832
+      "latitude": 12.7602,
+      "longitude": 77.8085
     },
     "rating": 4.8,
     "reviews": 522,
@@ -3646,18 +3646,18 @@ const initialBusinesses: Business[] = [
     "tag": "Premium stay",
     "phone": "+91 82480 17262",
     "address": {
-      "doorNumber": "Shop #80",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Plot No. 115/1",
+      "street": "Bangalore - Salem Highway NH 44",
+      "area": "SIPCOT Industrial Complex Phase 1",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635109"
+      "pincode": "635126"
     },
     "coordinates": {
-      "latitude": 12.7275,
-      "longitude": 77.832
+      "latitude": 12.7602,
+      "longitude": 77.8085
     }
   },
   {
@@ -3685,8 +3685,8 @@ const initialBusinesses: Business[] = [
     "description": "TGI Grand Fortuna — top-rated upscale hotel in Hosur. Popular with corporate and leisure travelers. Restaurant, banquet and gym on-site.",
     "distance": 2.6,
     "demoCoordinates": {
-      "latitude": 12.7292,
-      "longitude": 77.8305
+      "latitude": 12.7585,
+      "longitude": 77.8095
     },
     "rating": 4.7,
     "reviews": 298,
@@ -3705,18 +3705,18 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 256555",
     "address": {
-      "doorNumber": "Shop #87",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Plot No. 98-A",
+      "street": "SIPCOT Phase 1 Main Avenue",
+      "area": "Near Kauvery Hospital, SIPCOT",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635109"
+      "pincode": "635126"
     },
     "coordinates": {
-      "latitude": 12.7292,
-      "longitude": 77.8305
+      "latitude": 12.7585,
+      "longitude": 77.8095
     }
   },
   {
@@ -3783,8 +3783,8 @@ const initialBusinesses: Business[] = [
     "description": "Trusted electrician and plumber in Hosur — same-day home visits. Licensed professionals covering all major residential areas.",
     "distance": 0.7,
     "demoCoordinates": {
-      "latitude": 12.7344,
-      "longitude": 77.83
+      "latitude": 12.7385,
+      "longitude": 77.8268
     },
     "rating": 4.8,
     "reviews": 219,
@@ -3811,9 +3811,9 @@ const initialBusinesses: Business[] = [
     "tag": "Same-day service",
     "phone": "+91 82480 99422",
     "address": {
-      "doorNumber": "Shop #94",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "No. 58",
+      "street": "MG Road",
+      "area": "Near Taluk Office Circle",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -3821,8 +3821,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.7344,
-      "longitude": 77.83
+      "latitude": 12.7385,
+      "longitude": 77.8268
     }
   },
   {
@@ -3895,8 +3895,8 @@ const initialBusinesses: Business[] = [
     "description": "Specialist AC repair, deep cleaning, gas recharge and installation in Hosur. Covers all brands — Daikin, Voltas, LG, Samsung, Hitachi.",
     "distance": 1.3,
     "demoCoordinates": {
-      "latitude": 12.736,
-      "longitude": 77.8265
+      "latitude": 12.7365,
+      "longitude": 77.828
     },
     "rating": 4.7,
     "reviews": 181,
@@ -3922,9 +3922,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 82480 47758",
     "address": {
-      "doorNumber": "Shop #101",
+      "doorNumber": "No. 23/1",
       "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "area": "Near HUDCO 1st Stage",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -3932,8 +3932,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.736,
-      "longitude": 77.8265
+      "latitude": 12.7365,
+      "longitude": 77.828
     }
   },
   {
@@ -4034,8 +4034,8 @@ const initialBusinesses: Business[] = [
     "description": "Full-service home care in Hosur — deep cleaning, pest control, sofa shampooing, plumbing, electrical and local movers.",
     "distance": 1.8,
     "demoCoordinates": {
-      "latitude": 12.7315,
-      "longitude": 77.833
+      "latitude": 12.733,
+      "longitude": 77.8312
     },
     "rating": 4.6,
     "reviews": 267,
@@ -4063,9 +4063,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 97890 10859",
     "address": {
-      "doorNumber": "Shop #108",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "No. 9",
+      "street": "Kamaraj Colony 3rd Cross",
+      "area": "Near Railway Station Road",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -4073,8 +4073,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.7315,
-      "longitude": 77.833
+      "latitude": 12.733,
+      "longitude": 77.8312
     }
   },
   {
@@ -4109,8 +4109,8 @@ const initialBusinesses: Business[] = [
     "description": "Authorized Hero MotoCorp dealership near RC Church, Denkanikottai Main Road, Mathigiri. Sales of Splendor, HF Deluxe, Vida V1 EV and full service.",
     "distance": 1.2,
     "demoCoordinates": {
-      "latitude": 12.722,
-      "longitude": 77.831
+      "latitude": 12.7085,
+      "longitude": 77.848
     },
     "rating": 4.5,
     "reviews": 203,
@@ -4134,18 +4134,18 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 283890",
     "address": {
-      "doorNumber": "Shop #87",
-      "street": "Denkanikottai Main Road",
-      "area": "Hamumanth Nagar",
+      "doorNumber": "No. 88",
+      "street": "Mathigiri Main Road",
+      "area": "Opp. State Bank of India Mathigiri",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635109"
+      "pincode": "635110"
     },
     "coordinates": {
-      "latitude": 12.722,
-      "longitude": 77.831
+      "latitude": 12.7085,
+      "longitude": 77.848
     }
   },
   {
@@ -4180,8 +4180,8 @@ const initialBusinesses: Business[] = [
     "description": "Authorized Honda two-wheeler dealership on Denkanikotta Road near Railway Station, Hosur. Activa, Shine, Unicorn, CB350 sales and service.",
     "distance": 0.9,
     "demoCoordinates": {
-      "latitude": 12.724,
-      "longitude": 77.832
+      "latitude": 12.728,
+      "longitude": 77.822
     },
     "rating": 4.6,
     "reviews": 156,
@@ -4206,9 +4206,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 97890 15107",
     "address": {
-      "doorNumber": "Shop #94",
-      "street": "Railway Station Road",
-      "area": "Shanthi Nagar / Station Area",
+      "doorNumber": "Velan Complex, No. 104",
+      "street": "Denkanikottai Main Road",
+      "area": "Near Old ASTC HUDCO Colony",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -4216,8 +4216,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.724,
-      "longitude": 77.832
+      "latitude": 12.728,
+      "longitude": 77.822
     }
   },
   {
@@ -4252,8 +4252,8 @@ const initialBusinesses: Business[] = [
     "description": "Authorized Royal Enfield dealer in Hosur. Full range — Classic 350, Hunter 350, Bullet, Meteor, Himalayan. Test rides available daily.",
     "distance": 1.5,
     "demoCoordinates": {
-      "latitude": 12.726,
-      "longitude": 77.834
+      "latitude": 12.754,
+      "longitude": 77.816
     },
     "rating": 4.7,
     "reviews": 312,
@@ -4277,18 +4277,18 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 98420 54145",
     "address": {
-      "doorNumber": "Shop #101",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Saravana Arcade, Plot No. 5",
+      "street": "Bangalore - Salem Highway NH 44",
+      "area": "Near SIPCOT Phase 1",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635109"
+      "pincode": "635126"
     },
     "coordinates": {
-      "latitude": 12.726,
-      "longitude": 77.834
+      "latitude": 12.754,
+      "longitude": 77.816
     }
   },
   {
@@ -4324,8 +4324,8 @@ const initialBusinesses: Business[] = [
     "description": "Authorized Tata Motors passenger vehicle dealer in Hosur. Nexon, Punch, Tiago, Harrier, Safari — sales, test drives and full service.",
     "distance": 2,
     "demoCoordinates": {
-      "latitude": 12.728,
-      "longitude": 77.82
+      "latitude": 12.7445,
+      "longitude": 77.829
     },
     "rating": 4.4,
     "reviews": 187,
@@ -4349,18 +4349,18 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94880 82437",
     "address": {
-      "doorNumber": "Shop #108",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Plot No. 25, Automobile Hub",
+      "street": "NH 44 Bangalore - Salem Highway",
+      "area": "Opp. Central Bus Stand Bypass",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635109"
+      "pincode": "635126"
     },
     "coordinates": {
-      "latitude": 12.728,
-      "longitude": 77.82
+      "latitude": 12.7445,
+      "longitude": 77.829
     }
   },
   {
@@ -4395,8 +4395,8 @@ const initialBusinesses: Business[] = [
     "description": "Bajaj and Chetak EV authorized dealer near Krishnagiri Main Road, Hosur. EV test rides, finance and after-sales support.",
     "distance": 1.8,
     "demoCoordinates": {
-      "latitude": 12.73,
-      "longitude": 77.824
+      "latitude": 12.7355,
+      "longitude": 77.8285
     },
     "rating": 4.5,
     "reviews": 142,
@@ -4419,9 +4419,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 263884",
     "address": {
-      "doorNumber": "Shop #115",
+      "doorNumber": "No. 76",
       "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "area": "Avalapalli Hudco",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -4429,8 +4429,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.73,
-      "longitude": 77.824
+      "latitude": 12.7355,
+      "longitude": 77.8285
     }
   },
   {
@@ -4465,8 +4465,8 @@ const initialBusinesses: Business[] = [
     "description": "Multi-brand tyre and battery shop on Bagalur Road. MRF, Apollo, CEAT tyres; Amaron, Exide, Luminous batteries. Free wheel balancing and alignment.",
     "distance": 2.3,
     "demoCoordinates": {
-      "latitude": 12.732,
-      "longitude": 77.826
+      "latitude": 12.7405,
+      "longitude": 77.83
     },
     "rating": 4.7,
     "reviews": 198,
@@ -4485,9 +4485,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 98420 84105",
     "address": {
-      "doorNumber": "Shop #122",
-      "street": "Bagalur Main Road",
-      "area": "Bagalur Circle / Avalapalli",
+      "doorNumber": "No. 15",
+      "street": "Old Bangalore Road",
+      "area": "Near Central Bus Stand Incline",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -4495,8 +4495,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.732,
-      "longitude": 77.826
+      "latitude": 12.7405,
+      "longitude": 77.83
     }
   },
   {
@@ -4545,8 +4545,8 @@ const initialBusinesses: Business[] = [
     "description": "Professional car wash and auto detailing studio in Hosur. Foam wash, interior sanitization, ceramic coating and PPF available.",
     "distance": 1.6,
     "demoCoordinates": {
-      "latitude": 12.734,
-      "longitude": 77.828
+      "latitude": 12.7305,
+      "longitude": 77.833
     },
     "rating": 4.8,
     "reviews": 176,
@@ -4567,9 +4567,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 96290 17492",
     "address": {
-      "doorNumber": "Shop #129",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Site No. 4",
+      "street": "Avalapalli Ring Road",
+      "area": "Near Muneeswara Nagar",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -4577,8 +4577,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.734,
-      "longitude": 77.828
+      "latitude": 12.7305,
+      "longitude": 77.833
     }
   },
   {
@@ -4615,8 +4615,8 @@ const initialBusinesses: Business[] = [
     "description": "Reliance Digital large-format electronics store on Bagalur Road, Hosur. TVs, ACs, washing machines, phones, laptops and audio systems with EMI options.",
     "distance": 2.5,
     "demoCoordinates": {
-      "latitude": 12.736,
-      "longitude": 77.822
+      "latitude": 12.7375,
+      "longitude": 77.829
     },
     "rating": 4.4,
     "reviews": 387,
@@ -4640,9 +4640,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 98420 75865",
     "address": {
-      "doorNumber": "Shop #108",
+      "doorNumber": "Reliance Digital Complex, No. 54",
       "street": "Bagalur Main Road",
-      "area": "Bagalur Circle / Avalapalli",
+      "area": "Near Sub-Collector Office / ASTC",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -4650,8 +4650,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.736,
-      "longitude": 77.822
+      "latitude": 12.7375,
+      "longitude": 77.829
     }
   },
   {
@@ -4687,8 +4687,8 @@ const initialBusinesses: Business[] = [
     "description": "Authorized Samsung Experience Store on Bagalur Road, Hosur. Full range of Samsung phones, tablets, TVs, appliances and official service.",
     "distance": 2.6,
     "demoCoordinates": {
-      "latitude": 12.738,
-      "longitude": 77.823
+      "latitude": 12.7382,
+      "longitude": 77.8288
     },
     "rating": 4.6,
     "reviews": 219,
@@ -4711,9 +4711,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 238915",
     "address": {
-      "doorNumber": "Shop #115",
+      "doorNumber": "Samsung SmartPlaza, No. 32",
       "street": "Bagalur Main Road",
-      "area": "Bagalur Circle / Avalapalli",
+      "area": "Opp. Hosur City Municipal Corporation",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -4721,8 +4721,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.738,
-      "longitude": 77.823
+      "latitude": 12.7382,
+      "longitude": 77.8288
     }
   },
   {
@@ -4757,8 +4757,8 @@ const initialBusinesses: Business[] = [
     "description": "Authorized Samsung service center in Indira Nagar, Hosur. Genuine spare parts, warranty repairs and software troubleshooting for all Samsung models.",
     "distance": 1.4,
     "demoCoordinates": {
-      "latitude": 12.727,
-      "longitude": 77.833
+      "latitude": 12.7368,
+      "longitude": 77.8275
     },
     "rating": 4.7,
     "reviews": 143,
@@ -4780,9 +4780,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 97890 66787",
     "address": {
-      "doorNumber": "Shop #122",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "1st Floor, Sri Mithuna Complex",
+      "street": "MG Road (Mahatma Gandhi Road)",
+      "area": "Above Canara Bank, Bazaar",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -4790,8 +4790,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.727,
-      "longitude": 77.833
+      "latitude": 12.7368,
+      "longitude": 77.8275
     }
   },
   {
@@ -4826,8 +4826,8 @@ const initialBusinesses: Business[] = [
     "description": "Computer hardware store and service center in Hosur. Custom builds, gaming rigs, laptop repair, CCTV, networking and printer solutions.",
     "distance": 1.7,
     "demoCoordinates": {
-      "latitude": 12.729,
-      "longitude": 77.821
+      "latitude": 12.7362,
+      "longitude": 77.8264
     },
     "rating": 4.6,
     "reviews": 89,
@@ -4852,9 +4852,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 98420 85313",
     "address": {
-      "doorNumber": "Shop #129",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "No. 41",
+      "street": "Netaji Road",
+      "area": "Opp. Old Municipality Building",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -4862,8 +4862,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.729,
-      "longitude": 77.821
+      "latitude": 12.7362,
+      "longitude": 77.8264
     }
   },
   {
@@ -4898,8 +4898,8 @@ const initialBusinesses: Business[] = [
     "description": "Tanishq by Tata — India's most trusted jewellery brand. Showroom on By-Pass Road, Hosur. Certified gold, diamond and platinum jewellery.",
     "distance": 1.9,
     "demoCoordinates": {
-      "latitude": 12.731,
-      "longitude": 77.836
+      "latitude": 12.741,
+      "longitude": 77.833
     },
     "rating": 4.8,
     "reviews": 489,
@@ -4920,18 +4920,18 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 96290 25212",
     "address": {
-      "doorNumber": "Shop #136",
-      "street": "NH 44 Bangalore-Salem Bypass Road",
-      "area": "Mookandapalli / Zuzuvadi",
+      "doorNumber": "Tanishq Boutique Landmark",
+      "street": "NH 44 Bangalore - Salem Bypass Road",
+      "area": "Near Central Bus Stand Flyover",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635126"
+      "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.731,
-      "longitude": 77.836
+      "latitude": 12.741,
+      "longitude": 77.833
     }
   },
   {
@@ -4967,8 +4967,8 @@ const initialBusinesses: Business[] = [
     "description": "Raymond showroom in Hosur. Premium men's suiting fabric, readymade formals and custom tailoring. Corporate and ethnic wear collections.",
     "distance": 2.1,
     "demoCoordinates": {
-      "latitude": 12.733,
-      "longitude": 77.825
+      "latitude": 12.7373,
+      "longitude": 77.827
     },
     "rating": 4.6,
     "reviews": 178,
@@ -4990,9 +4990,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 248256",
     "address": {
-      "doorNumber": "Shop #143",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "No. 27",
+      "street": "MG Road",
+      "area": "Near Gandhi Statue Circle",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -5000,8 +5000,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.733,
-      "longitude": 77.825
+      "latitude": 12.7373,
+      "longitude": 77.827
     }
   },
   {
@@ -5036,8 +5036,8 @@ const initialBusinesses: Business[] = [
     "description": "Planet Fashion multi-brand apparel store near Post Office Road, Hosur. Top national brands for men, women and kids — casual, formal and ethnic wear.",
     "distance": 1.3,
     "demoCoordinates": {
-      "latitude": 12.723,
-      "longitude": 77.829
+      "latitude": 12.737,
+      "longitude": 77.8271
     },
     "rating": 4.5,
     "reviews": 231,
@@ -5059,9 +5059,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94432 36560",
     "address": {
-      "doorNumber": "Shop #150",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "No. 39",
+      "street": "MG Road",
+      "area": "Opp. Vasavi Cafe, Gandhi Nagar",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -5069,8 +5069,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.723,
-      "longitude": 77.829
+      "latitude": 12.737,
+      "longitude": 77.8271
     }
   },
   {
@@ -5105,8 +5105,8 @@ const initialBusinesses: Business[] = [
     "description": "Bata footwear store on MG Road, Hosur. Affordable everyday shoes, formal footwear, sandals, slippers and school shoes for the whole family.",
     "distance": 1.1,
     "demoCoordinates": {
-      "latitude": 12.725,
-      "longitude": 77.83
+      "latitude": 12.7365,
+      "longitude": 77.8273
     },
     "rating": 4.4,
     "reviews": 312,
@@ -5127,9 +5127,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94880 55941",
     "address": {
-      "doorNumber": "Shop #129",
-      "street": "Mahatma Gandhi Road",
-      "area": "Central Hosur",
+      "doorNumber": "No. 62",
+      "street": "MG Road",
+      "area": "Gandhi Nagar Bazaar",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -5137,8 +5137,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.725,
-      "longitude": 77.83
+      "latitude": 12.7365,
+      "longitude": 77.8273
     }
   },
   {
@@ -5174,8 +5174,8 @@ const initialBusinesses: Business[] = [
     "description": "Hosur's go-to saree store on Nethaji Road. Vast collection of cotton, silk and handloom sarees for daily wear, festivals and weddings.",
     "distance": 0.8,
     "demoCoordinates": {
-      "latitude": 12.721,
-      "longitude": 77.828
+      "latitude": 12.7354,
+      "longitude": 77.8262
     },
     "rating": 4.6,
     "reviews": 267,
@@ -5197,9 +5197,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 97890 39187",
     "address": {
-      "doorNumber": "Shop #136",
+      "doorNumber": "No. 19",
       "street": "Nethaji Road",
-      "area": "Gandhi Nagar / Bazaar",
+      "area": "Textile Market Street, Bazaar",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -5207,8 +5207,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.721,
-      "longitude": 77.828
+      "latitude": 12.7354,
+      "longitude": 77.8262
     }
   },
   {
@@ -5244,8 +5244,8 @@ const initialBusinesses: Business[] = [
     "description": "Godrej Interio showroom on Bagalur Road, Hosur. Modular kitchens, wardrobes, beds, sofas and ergonomic office furniture with installation.",
     "distance": 2.8,
     "demoCoordinates": {
-      "latitude": 12.737,
-      "longitude": 77.827
+      "latitude": 12.7348,
+      "longitude": 77.829
     },
     "rating": 4.6,
     "reviews": 203,
@@ -5268,9 +5268,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 245073",
     "address": {
-      "doorNumber": "Shop #143",
+      "doorNumber": "Godrej Showroom, No. 102",
       "street": "Bagalur Main Road",
-      "area": "Bagalur Circle / Avalapalli",
+      "area": "Near Avalapalli Hudco Signal",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -5278,8 +5278,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.737,
-      "longitude": 77.827
+      "latitude": 12.7348,
+      "longitude": 77.829
     }
   },
   {
@@ -5315,8 +5315,8 @@ const initialBusinesses: Business[] = [
     "description": "Royaloak large-format furniture showroom near Hosur. Wide range of living room, bedroom and dining furniture with free delivery and installation.",
     "distance": 3,
     "demoCoordinates": {
-      "latitude": 12.739,
-      "longitude": 77.829
+      "latitude": 12.7432,
+      "longitude": 77.832
     },
     "rating": 4.5,
     "reviews": 318,
@@ -5338,18 +5338,18 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 82480 22054",
     "address": {
-      "doorNumber": "Shop #150",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Royaloak Mall",
+      "street": "NH 44 Bangalore - Salem Highway",
+      "area": "Near MGR Central Bus Stand",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635109"
+      "pincode": "635126"
     },
     "coordinates": {
-      "latitude": 12.739,
-      "longitude": 77.829
+      "latitude": 12.7432,
+      "longitude": 77.832
     }
   },
   {
@@ -5392,8 +5392,8 @@ const initialBusinesses: Business[] = [
     "description": "Full-home interior design studio in Hosur. False ceilings, modular furniture, lighting, wall paneling and 3D design planning from ₹0 consultation.",
     "distance": 2.2,
     "demoCoordinates": {
-      "latitude": 12.735,
-      "longitude": 77.832
+      "latitude": 12.7325,
+      "longitude": 77.825
     },
     "rating": 4.8,
     "reviews": 142,
@@ -5416,9 +5416,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 96290 64100",
     "address": {
-      "doorNumber": "Shop #157",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "No. 44",
+      "street": "Denkanikottai Main Road",
+      "area": "Near Kamaraj Colony",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -5426,8 +5426,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.735,
-      "longitude": 77.832
+      "latitude": 12.7325,
+      "longitude": 77.825
     }
   },
   {
@@ -5463,8 +5463,8 @@ const initialBusinesses: Business[] = [
     "description": "Nilkamal Homes store near Hosur. Affordable plastic and wooden furniture, storage solutions, kids furniture and home essentials.",
     "distance": 3.2,
     "demoCoordinates": {
-      "latitude": 12.74,
-      "longitude": 77.82
+      "latitude": 12.739,
+      "longitude": 77.8282
     },
     "rating": 4.3,
     "reviews": 187,
@@ -5486,9 +5486,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 98420 64305",
     "address": {
-      "doorNumber": "Shop #164",
+      "doorNumber": "No. 81",
       "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "area": "Opp. Taluk Office Ground",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -5496,8 +5496,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.74,
-      "longitude": 77.82
+      "latitude": 12.739,
+      "longitude": 77.8282
     }
   },
   {
@@ -5534,8 +5534,8 @@ const initialBusinesses: Business[] = [
     "description": "NABH-accredited 125-bed multi-specialty Kauvery Hospital in Shanthi Nagar, Hosur. Emergency, dental, ophthalmology, physiotherapy, orthopaedics and ICU.",
     "distance": 1.5,
     "demoCoordinates": {
-      "latitude": 12.726,
-      "longitude": 77.835
+      "latitude": 12.7315,
+      "longitude": 77.8335
     },
     "rating": 4.7,
     "reviews": 423,
@@ -5559,9 +5559,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 223179",
     "address": {
-      "doorNumber": "Shop #171",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Kauvery Hospital Campus",
+      "street": "7th Cross, Station Road",
+      "area": "Shanthi Nagar, Near Railway Station",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -5569,8 +5569,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.726,
-      "longitude": 77.835
+      "latitude": 12.7315,
+      "longitude": 77.8335
     }
   },
   {
@@ -5606,8 +5606,8 @@ const initialBusinesses: Business[] = [
     "description": "SBS Hospital Pvt. Ltd. on Tank Street, Hosur. Multi-specialty care with orthopaedic specialization, emergency, general surgery and rehabilitation.",
     "distance": 1,
     "demoCoordinates": {
-      "latitude": 12.722,
-      "longitude": 77.83
+      "latitude": 12.7415,
+      "longitude": 77.8295
     },
     "rating": 4.6,
     "reviews": 287,
@@ -5628,9 +5628,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 96290 41724",
     "address": {
-      "doorNumber": "Shop #150",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "SBS Hospital Tower",
+      "street": "Old Bangalore Road",
+      "area": "Near Central Bus Stand",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -5638,8 +5638,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.722,
-      "longitude": 77.83
+      "latitude": 12.7415,
+      "longitude": 77.8295
     }
   },
   {
@@ -5674,8 +5674,8 @@ const initialBusinesses: Business[] = [
     "description": "Apollo Dental Clinic on Krishnagiri Bypass Road, Hosur. Implants, root canals, orthodontics, whitening and complete dental care under the Apollo brand.",
     "distance": 2.4,
     "demoCoordinates": {
-      "latitude": 12.734,
-      "longitude": 77.84
+      "latitude": 12.7352,
+      "longitude": 77.8288
     },
     "rating": 4.7,
     "reviews": 198,
@@ -5693,18 +5693,18 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94880 82165",
     "address": {
-      "doorNumber": "Shop #157",
-      "street": "NH 44 Bangalore-Salem Bypass Road",
-      "area": "Mookandapalli / Zuzuvadi",
+      "doorNumber": "No. 63, 1st Floor",
+      "street": "Bagalur Main Road",
+      "area": "Near Avalapalli Hudco Circle",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635126"
+      "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.734,
-      "longitude": 77.84
+      "latitude": 12.7352,
+      "longitude": 77.8288
     }
   },
   {
@@ -5739,8 +5739,8 @@ const initialBusinesses: Business[] = [
     "description": "Specialized respiratory and lungs care clinic near Avalapalli Hudco, Hosur. Treating asthma, COPD, bronchitis, sleep apnoea and lung infections.",
     "distance": 1.8,
     "demoCoordinates": {
-      "latitude": 12.73,
-      "longitude": 77.837
+      "latitude": 12.7338,
+      "longitude": 77.8242
     },
     "rating": 4.8,
     "reviews": 89,
@@ -5759,9 +5759,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 98420 50897",
     "address": {
-      "doorNumber": "Shop #164",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "No. 18",
+      "street": "Denkanikottai Road",
+      "area": "Opp. Uzhavar Santhai",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -5769,8 +5769,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.73,
-      "longitude": 77.837
+      "latitude": 12.7338,
+      "longitude": 77.8242
     }
   },
   {
@@ -5806,8 +5806,8 @@ const initialBusinesses: Business[] = [
     "description": "Ketone Fitness gym in Shanthi Nagar, Denkanikottai Road, Hosur. Modern equipment, personal training and body transformation programs.",
     "distance": 1.4,
     "demoCoordinates": {
-      "latitude": 12.727,
-      "longitude": 77.838
+      "latitude": 12.7312,
+      "longitude": 77.8345
     },
     "rating": 4.7,
     "reviews": 198,
@@ -5827,9 +5827,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 280586",
     "address": {
-      "doorNumber": "Shop #171",
-      "street": "Denkanikottai Main Road",
-      "area": "Hamumanth Nagar",
+      "doorNumber": "No. 51, 2nd Floor",
+      "street": "Railway Station Road",
+      "area": "Shanthi Nagar",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -5837,8 +5837,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.727,
-      "longitude": 77.838
+      "latitude": 12.7312,
+      "longitude": 77.8345
     }
   },
   {
@@ -5873,8 +5873,8 @@ const initialBusinesses: Business[] = [
     "description": "H&T Fitness — popular unisex gym on Denkanikottai Main Road, Navadhi, Hosur. Free weights, machines, cardio and group fitness sessions.",
     "distance": 2,
     "demoCoordinates": {
-      "latitude": 12.732,
-      "longitude": 77.839
+      "latitude": 12.768,
+      "longitude": 77.802
     },
     "rating": 4.6,
     "reviews": 154,
@@ -5894,9 +5894,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 98420 71425",
     "address": {
-      "doorNumber": "Shop #178",
-      "street": "SIPCOT Industrial Complex, Phase I & II",
-      "area": "SIPCOT Industrial Area",
+      "doorNumber": "Plot No. 8",
+      "street": "Navadhi Road",
+      "area": "Near SIPCOT Phase 2",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -5904,8 +5904,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635126"
     },
     "coordinates": {
-      "latitude": 12.732,
-      "longitude": 77.839
+      "latitude": 12.768,
+      "longitude": 77.802
     }
   },
   {
@@ -5941,8 +5941,8 @@ const initialBusinesses: Business[] = [
     "description": "Royal Wellfit Health Club near Kumudepalli, Hosur. Full-scale gym, heated swimming pool, steam room and multi-purpose sports hall.",
     "distance": 3.5,
     "demoCoordinates": {
-      "latitude": 12.741,
-      "longitude": 77.824
+      "latitude": 12.711,
+      "longitude": 77.845
     },
     "rating": 4.8,
     "reviews": 267,
@@ -5962,18 +5962,18 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 82480 43094",
     "address": {
-      "doorNumber": "Shop #185",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Royal Wellfit Sports Club",
+      "street": "Mathigiri Main Road",
+      "area": "Near Titan Township",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635109"
+      "pincode": "635110"
     },
     "coordinates": {
-      "latitude": 12.741,
-      "longitude": 77.824
+      "latitude": 12.711,
+      "longitude": 77.845
     }
   },
   {
@@ -6009,8 +6009,8 @@ const initialBusinesses: Business[] = [
     "description": "Eagles Sports Club near Bagalur Circle, Hosur. Professional volleyball, football and athletics coaching. Summer camps and inter-school tournaments.",
     "distance": 4,
     "demoCoordinates": {
-      "latitude": 12.743,
-      "longitude": 77.826
+      "latitude": 12.734,
+      "longitude": 77.83
     },
     "rating": 4.7,
     "reviews": 143,
@@ -6030,9 +6030,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 99440 59602",
     "address": {
-      "doorNumber": "Shop #192",
+      "doorNumber": "Survey No. 31",
       "street": "Bagalur Main Road",
-      "area": "Bagalur Circle / Avalapalli",
+      "area": "Near Avalapalli Circle",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -6040,8 +6040,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.743,
-      "longitude": 77.826
+      "latitude": 12.734,
+      "longitude": 77.83
     }
   },
   {
@@ -6077,8 +6077,8 @@ const initialBusinesses: Business[] = [
     "description": "Little England Badminton Academy — well-lit indoor courts and professional coaches for kids and adults in Hosur. Flexible batch timings.",
     "distance": 2.7,
     "demoCoordinates": {
-      "latitude": 12.738,
-      "longitude": 77.835
+      "latitude": 12.7275,
+      "longitude": 77.826
     },
     "rating": 4.7,
     "reviews": 128,
@@ -6098,9 +6098,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 253375",
     "address": {
-      "doorNumber": "Shop #171",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Little England Sports Arena",
+      "street": "Thally Main Road",
+      "area": "Near Avalapalli",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -6108,8 +6108,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.738,
-      "longitude": 77.835
+      "latitude": 12.7275,
+      "longitude": 77.826
     }
   },
   {
@@ -6144,8 +6144,8 @@ const initialBusinesses: Business[] = [
     "description": "24/7 multi-sport turf facility in Hosur. Synthetic football, box cricket and kabaddi courts available round the clock with floodlights.",
     "distance": 3.1,
     "demoCoordinates": {
-      "latitude": 12.74,
-      "longitude": 77.833
+      "latitude": 12.715,
+      "longitude": 77.838
     },
     "rating": 4.5,
     "reviews": 221,
@@ -6164,18 +6164,18 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94880 75957",
     "address": {
-      "doorNumber": "Shop #178",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Prabhu's Sports Park",
+      "street": "Denkanikottai Road",
+      "area": "Near Mathigiri Circle",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635109"
+      "pincode": "635110"
     },
     "coordinates": {
-      "latitude": 12.74,
-      "longitude": 77.833
+      "latitude": 12.715,
+      "longitude": 77.838
     }
   },
   {
@@ -6210,8 +6210,8 @@ const initialBusinesses: Business[] = [
     "description": "Orien Fitness unisex gym near Muneeswara Nagar, Hosur. Strength training, Zumba, aerobics and yoga — all under one roof.",
     "distance": 1.6,
     "demoCoordinates": {
-      "latitude": 12.729,
-      "longitude": 77.836
+      "latitude": 12.7298,
+      "longitude": 77.8325
     },
     "rating": 4.5,
     "reviews": 109,
@@ -6231,9 +6231,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 82480 73798",
     "address": {
-      "doorNumber": "Shop #185",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "No. 29",
+      "street": "Muneeswara Nagar Main Road",
+      "area": "Muneeswara Nagar",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -6241,8 +6241,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.729,
-      "longitude": 77.836
+      "latitude": 12.7298,
+      "longitude": 77.8325
     }
   },
   {
@@ -6277,8 +6277,8 @@ const initialBusinesses: Business[] = [
     "description": "A1 Call Taxi — 24/7 reliable cab service in Hosur. Airport drops to Bengaluru KIA, outstation tours, corporate travel and local rides.",
     "distance": 0.7,
     "demoCoordinates": {
-      "latitude": 12.721,
-      "longitude": 77.827
+      "latitude": 12.732,
+      "longitude": 77.833
     },
     "rating": 4.7,
     "reviews": 398,
@@ -6300,9 +6300,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94432 43064",
     "address": {
-      "doorNumber": "Shop #192",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "No. 11",
+      "street": "Railway Station Road",
+      "area": "Near Central Bus Stand",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -6310,8 +6310,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.721,
-      "longitude": 77.827
+      "latitude": 12.732,
+      "longitude": 77.833
     }
   },
   {
@@ -6346,8 +6346,8 @@ const initialBusinesses: Business[] = [
     "description": "Red Taxi fleet service in Hosur. Sedans, mini cars and tempo travellers. Unique Pink Taxi option with women drivers for women passengers.",
     "distance": 0.9,
     "demoCoordinates": {
-      "latitude": 12.723,
-      "longitude": 77.832
+      "latitude": 12.741,
+      "longitude": 77.8318
     },
     "rating": 4.6,
     "reviews": 287,
@@ -6367,9 +6367,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 262485",
     "address": {
-      "doorNumber": "Shop #199",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Travel Hub Office",
+      "street": "Bangalore - Salem Highway NH 44",
+      "area": "Near Central Bus Stand",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -6377,8 +6377,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.723,
-      "longitude": 77.832
+      "latitude": 12.741,
+      "longitude": 77.8318
     }
   },
   {
@@ -6428,8 +6428,8 @@ const initialBusinesses: Business[] = [
     "description": "Grand Royal Tours in Hosur. Domestic and international holiday packages, visa assistance, hotel bookings and corporate travel management.",
     "distance": 1.2,
     "demoCoordinates": {
-      "latitude": 12.724,
-      "longitude": 77.826
+      "latitude": 12.738,
+      "longitude": 77.827
     },
     "rating": 4.6,
     "reviews": 156,
@@ -6451,9 +6451,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 96290 86028",
     "address": {
-      "doorNumber": "Shop #206",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "No. 37",
+      "street": "MG Road",
+      "area": "Near Taluk Office Circle",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -6461,8 +6461,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.724,
-      "longitude": 77.826
+      "latitude": 12.738,
+      "longitude": 77.827
     }
   },
   {
@@ -6498,8 +6498,8 @@ const initialBusinesses: Business[] = [
     "description": "Nanban Tours and Travels in Hosur. Pilgrimage tours, family holiday packages, bus and train ticket booking and group travel coordination.",
     "distance": 1.4,
     "demoCoordinates": {
-      "latitude": 12.726,
-      "longitude": 77.833
+      "latitude": 12.7342,
+      "longitude": 77.824
     },
     "rating": 4.5,
     "reviews": 198,
@@ -6520,9 +6520,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 82480 42534",
     "address": {
-      "doorNumber": "Shop #213",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "No. 5",
+      "street": "Denkanikottai Road",
+      "area": "Near Old Bus Stand",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -6530,8 +6530,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.726,
-      "longitude": 77.833
+      "latitude": 12.7342,
+      "longitude": 77.824
     }
   },
   {
@@ -6566,8 +6566,8 @@ const initialBusinesses: Business[] = [
     "description": "Grand Continent Hosur — Sarovar Portico affiliated hotel. Centrally located, ideal for corporate and family travelers. Restaurant, conference and banquet facilities.",
     "distance": 1.7,
     "demoCoordinates": {
-      "latitude": 12.729,
-      "longitude": 77.834
+      "latitude": 12.7595,
+      "longitude": 77.809
     },
     "rating": 4.6,
     "reviews": 341,
@@ -6587,18 +6587,18 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 82480 58822",
     "address": {
-      "doorNumber": "Shop #192",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Grand Continent Hotel",
+      "street": "NH 44 Bangalore - Salem Highway",
+      "area": "SIPCOT Industrial Complex Phase 1",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635109"
+      "pincode": "635126"
     },
     "coordinates": {
-      "latitude": 12.729,
-      "longitude": 77.834
+      "latitude": 12.7595,
+      "longitude": 77.809
     }
   },
   {
@@ -6633,8 +6633,8 @@ const initialBusinesses: Business[] = [
     "description": "Hotel Hills — reliable mid-range hotel near Hosur Bus Stand. Clean rooms, in-house restaurant and easy access to all major commercial areas.",
     "distance": 0.5,
     "demoCoordinates": {
-      "latitude": 12.72,
-      "longitude": 77.828
+      "latitude": 12.758,
+      "longitude": 77.81
     },
     "rating": 4.3,
     "reviews": 224,
@@ -6653,18 +6653,18 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 222824",
     "address": {
-      "doorNumber": "Shop #199",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Plot No. 97",
+      "street": "SIPCOT Phase 1 Main Road",
+      "area": "Opp. Kauvery Hospital, SIPCOT",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635109"
+      "pincode": "635126"
     },
     "coordinates": {
-      "latitude": 12.72,
-      "longitude": 77.828
+      "latitude": 12.758,
+      "longitude": 77.81
     }
   },
   {
@@ -6699,8 +6699,8 @@ const initialBusinesses: Business[] = [
     "description": "Lakshmi Cinemas in Hosur — Phase VII NHS. RGB Laser projection, QSC Dolby Atmos sound. Screening latest Tamil, Telugu, Hindi and English films.",
     "distance": 1.3,
     "demoCoordinates": {
-      "latitude": 12.725,
-      "longitude": 77.831
+      "latitude": 12.7315,
+      "longitude": 77.8245
     },
     "rating": 4.6,
     "reviews": 534,
@@ -6720,9 +6720,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94880 55413",
     "address": {
-      "doorNumber": "Shop #206",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Lakshmi Multiplex Complex",
+      "street": "Appavu Nagar Main Road",
+      "area": "Denkanikottai Road Junction",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -6730,8 +6730,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.725,
-      "longitude": 77.831
+      "latitude": 12.7315,
+      "longitude": 77.8245
     }
   },
   {
@@ -6766,8 +6766,8 @@ const initialBusinesses: Business[] = [
     "description": "Grand Cinemas near Karnur Bus Stop, Thally Road, Hosur. 4K projection, Dolby Atmos and recliner seating for a premium movie experience.",
     "distance": 2.9,
     "demoCoordinates": {
-      "latitude": 12.739,
-      "longitude": 77.831
+      "latitude": 12.727,
+      "longitude": 77.8255
     },
     "rating": 4.7,
     "reviews": 412,
@@ -6783,9 +6783,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94432 16632",
     "address": {
-      "doorNumber": "Shop #213",
-      "street": "Thally Road",
-      "area": "Near Ring Road",
+      "doorNumber": "Grand Cine Mall",
+      "street": "Thally Main Road",
+      "area": "Near Avalapalli Junction",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -6793,8 +6793,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.739,
-      "longitude": 77.831
+      "latitude": 12.727,
+      "longitude": 77.8255
     }
   },
   {
@@ -6858,8 +6858,8 @@ const initialBusinesses: Business[] = [
     "description": "Music and arts learning center in Hosur. Carnatic vocal, keyboard, guitar, tabla, drawing and painting classes for kids and adults.",
     "distance": 1.6,
     "demoCoordinates": {
-      "latitude": 12.728,
-      "longitude": 77.84
+      "latitude": 12.7305,
+      "longitude": 77.834
     },
     "rating": 4.8,
     "reviews": 87,
@@ -6882,9 +6882,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 99440 24146",
     "address": {
-      "doorNumber": "Shop #220",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "No. 24",
+      "street": "Shanthi Nagar 2nd Cross",
+      "area": "Near Railway Station",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -6892,8 +6892,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.728,
-      "longitude": 77.84
+      "latitude": 12.7305,
+      "longitude": 77.834
     }
   },
   {
@@ -6950,8 +6950,8 @@ const initialBusinesses: Business[] = [
     "description": "Community-run events platform in Hosur. Weekend haats, cultural workshops, local artisan expos and corporate team events coordination.",
     "distance": 2.1,
     "demoCoordinates": {
-      "latitude": 12.733,
-      "longitude": 77.827
+      "latitude": 12.7388,
+      "longitude": 77.829
     },
     "rating": 4.6,
     "reviews": 76,
@@ -6975,9 +6975,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 220046",
     "address": {
-      "doorNumber": "Shop #227",
+      "doorNumber": "Municipal Exhibition Grounds",
       "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "area": "Near Municipal Corporation",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -6985,8 +6985,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.733,
-      "longitude": 77.827
+      "latitude": 12.7388,
+      "longitude": 77.829
     }
   },
   {
@@ -7029,8 +7029,8 @@ const initialBusinesses: Business[] = [
     "description": "Indoor gaming and arcade zone in Hosur. VR headset games, racing simulators, arcade machines and skill games for kids and adults.",
     "distance": 2.4,
     "demoCoordinates": {
-      "latitude": 12.735,
-      "longitude": 77.836
+      "latitude": 12.7346,
+      "longitude": 77.8291
     },
     "rating": 4.5,
     "reviews": 198,
@@ -7050,18 +7050,18 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94880 12973",
     "address": {
-      "doorNumber": "Shop #234",
-      "street": "SIPCOT Industrial Complex, Phase I & II",
-      "area": "SIPCOT Industrial Area",
+      "doorNumber": "2nd Floor, Sri Balaji Arcade",
+      "street": "Bagalur Main Road",
+      "area": "Near Avalapalli Signal",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635126"
+      "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.735,
-      "longitude": 77.836
+      "latitude": 12.7346,
+      "longitude": 77.8291
     }
   },
   {
@@ -7105,8 +7105,8 @@ const initialBusinesses: Business[] = [
     "description": "Hope Home Care — multi-skilled home service professionals in Hosur. Plumbing, electrical, painting, carpentry and general home maintenance.",
     "distance": 1.1,
     "demoCoordinates": {
-      "latitude": 12.723,
-      "longitude": 77.834
+      "latitude": 12.7328,
+      "longitude": 77.8315
     },
     "rating": 4.6,
     "reviews": 189,
@@ -7128,9 +7128,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94432 57112",
     "address": {
-      "doorNumber": "Shop #213",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "No. 17",
+      "street": "Kamaraj Colony 4th Cross",
+      "area": "Kamaraj Colony",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -7138,8 +7138,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.723,
-      "longitude": 77.834
+      "latitude": 12.7328,
+      "longitude": 77.8315
     }
   },
   {
@@ -7175,8 +7175,8 @@ const initialBusinesses: Business[] = [
     "description": "Vijay Home Services — doorstep appliance repair and home cleaning in Hosur. Washing machines, fridges, chimneys, RO filters and microwave repair.",
     "distance": 1.3,
     "demoCoordinates": {
-      "latitude": 12.725,
-      "longitude": 77.836
+      "latitude": 12.7285,
+      "longitude": 77.823
     },
     "rating": 4.7,
     "reviews": 234,
@@ -7198,18 +7198,18 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94432 99920",
     "address": {
-      "doorNumber": "Shop #220",
-      "street": "SIPCOT Industrial Complex, Phase I & II",
-      "area": "SIPCOT Industrial Area",
+      "doorNumber": "No. 34",
+      "street": "Old ASTC Hudco Colony Main Road",
+      "area": "Old ASTC Hudco",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635126"
+      "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.725,
-      "longitude": 77.836
+      "latitude": 12.7285,
+      "longitude": 77.823
     }
   },
   {
@@ -7260,7 +7260,7 @@ const initialBusinesses: Business[] = [
     "distance": 1.9,
     "demoCoordinates": {
       "latitude": 12.731,
-      "longitude": 77.838
+      "longitude": 77.8342
     },
     "rating": 4.7,
     "reviews": 312,
@@ -7280,9 +7280,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 254642",
     "address": {
-      "doorNumber": "Shop #227",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "No. 21",
+      "street": "Station Road",
+      "area": "Shanthi Nagar",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -7291,7 +7291,7 @@ const initialBusinesses: Business[] = [
     },
     "coordinates": {
       "latitude": 12.731,
-      "longitude": 77.838
+      "longitude": 77.8342
     }
   },
   {
@@ -7327,8 +7327,8 @@ const initialBusinesses: Business[] = [
     "description": "Professional painters, carpenters and false ceiling contractors in Hosur. Home painting, furniture repair, false ceilings and waterproofing.",
     "distance": 2.3,
     "demoCoordinates": {
-      "latitude": 12.733,
-      "longitude": 77.822
+      "latitude": 12.726,
+      "longitude": 77.827
     },
     "rating": 4.5,
     "reviews": 143,
@@ -7349,9 +7349,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94880 36645",
     "address": {
-      "doorNumber": "Shop #234",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "No. 56",
+      "street": "Denkanikottai Road",
+      "area": "Near Hamumanth Nagar",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -7359,8 +7359,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.733,
-      "longitude": 77.822
+      "latitude": 12.726,
+      "longitude": 77.827
     }
   },
   {
@@ -7395,7 +7395,7 @@ const initialBusinesses: Business[] = [
     "description": "Chartered accountants and tax consultants in Hosur. ITR filing, GST registration, business accounting, audit and company registration services.",
     "distance": 0.8,
     "demoCoordinates": {
-      "latitude": 12.721,
+      "latitude": 12.7408,
       "longitude": 77.826
     },
     "rating": 4.8,
@@ -7415,9 +7415,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 96290 57724",
     "address": {
-      "doorNumber": "Shop #241",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "1st Floor, Sri Ram Complex",
+      "street": "Taluk Office Road",
+      "area": "Opp. Sub-Registrar Office, Court Area",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -7425,7 +7425,7 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.721,
+      "latitude": 12.7408,
       "longitude": 77.826
     }
   },
@@ -7461,8 +7461,8 @@ const initialBusinesses: Business[] = [
     "description": "Professional photography and videography services in Hosur. Wedding, corporate events, product shoots, baby photography and drone videography.",
     "distance": 1.5,
     "demoCoordinates": {
-      "latitude": 12.727,
-      "longitude": 77.822
+      "latitude": 12.736,
+      "longitude": 77.8265
     },
     "rating": 4.9,
     "reviews": 198,
@@ -7480,9 +7480,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94432 75840",
     "address": {
-      "doorNumber": "Shop #248",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "No. 49",
+      "street": "Netaji Road",
+      "area": "Near Gandhi Statue Circle",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -7490,8 +7490,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.727,
-      "longitude": 77.822
+      "latitude": 12.736,
+      "longitude": 77.8265
     }
   },
   {
@@ -7548,8 +7548,8 @@ const initialBusinesses: Business[] = [
     "description": "Hosur's landmark bookstore on Netaji Road. Complete school & college textbooks, NCERT guides, competitive exam books, Classmate notebooks, and Camlin art materials.",
     "distance": 0.9,
     "demoCoordinates": {
-      "latitude": 12.7335,
-      "longitude": 77.8288
+      "latitude": 12.7355,
+      "longitude": 77.8261
     },
     "rating": 4.8,
     "reviews": 342,
@@ -7572,9 +7572,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 236961",
     "address": {
-      "doorNumber": "Shop #255",
-      "street": "Nethaji Road",
-      "area": "Gandhi Nagar / Bazaar",
+      "doorNumber": "No. 22",
+      "street": "Netaji Road",
+      "area": "Gandhi Nagar Bazaar",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -7582,8 +7582,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.7335,
-      "longitude": 77.8288
+      "latitude": 12.7355,
+      "longitude": 77.8261
     }
   },
   {
@@ -7626,8 +7626,8 @@ const initialBusinesses: Business[] = [
     "description": "Iconic bookstore chain near Station Road, Hosur. Bestselling English fiction, Tamil literature classics, self-help books, children's storybooks, and magazines.",
     "distance": 1.2,
     "demoCoordinates": {
-      "latitude": 12.729,
-      "longitude": 77.8315
+      "latitude": 12.7302,
+      "longitude": 77.8342
     },
     "rating": 4.7,
     "reviews": 215,
@@ -7648,9 +7648,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 99440 43018",
     "address": {
-      "doorNumber": "Shop #234",
-      "street": "Railway Station Road",
-      "area": "Shanthi Nagar / Station Area",
+      "doorNumber": "Platform 1 Entrance Concourse",
+      "street": "Hosur Railway Station Road",
+      "area": "Shanthi Nagar",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -7658,8 +7658,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.729,
-      "longitude": 77.8315
+      "latitude": 12.7302,
+      "longitude": 77.8342
     }
   },
   {
@@ -7709,8 +7709,8 @@ const initialBusinesses: Business[] = [
     "description": "Complete stationery, digital xerox and student project binding center on Bagalur Road, Hosur. Color printouts, lamination, thesis binding, and corporate office supplies.",
     "distance": 1.6,
     "demoCoordinates": {
-      "latitude": 12.738,
-      "longitude": 77.834
+      "latitude": 12.7358,
+      "longitude": 77.8286
     },
     "rating": 4.6,
     "reviews": 189,
@@ -7731,9 +7731,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94432 65616",
     "address": {
-      "doorNumber": "Shop #241",
+      "doorNumber": "No. 67",
       "street": "Bagalur Main Road",
-      "area": "Bagalur Circle / Avalapalli",
+      "area": "Opp. Adhiyamaan Polytech",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -7741,8 +7741,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.738,
-      "longitude": 77.834
+      "latitude": 12.7358,
+      "longitude": 77.8286
     }
   },
   {
@@ -7784,8 +7784,8 @@ const initialBusinesses: Business[] = [
     "description": "All-in-one stationery and fine art depot on MG Road, Hosur. Acrylics, oil paints, drawing boards, engineering drafting instruments, fountain pens, and school project accessories.",
     "distance": 0.8,
     "demoCoordinates": {
-      "latitude": 12.7312,
-      "longitude": 77.827
+      "latitude": 12.7366,
+      "longitude": 77.8271
     },
     "rating": 4.6,
     "reviews": 164,
@@ -7804,9 +7804,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94432 49432",
     "address": {
-      "doorNumber": "Shop #248",
-      "street": "Mahatma Gandhi Road",
-      "area": "Central Hosur",
+      "doorNumber": "No. 53",
+      "street": "MG Road",
+      "area": "Near Old Bus Stand",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -7814,8 +7814,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.7312,
-      "longitude": 77.827
+      "latitude": 12.7366,
+      "longitude": 77.8271
     }
   },
   {
@@ -7872,8 +7872,8 @@ const initialBusinesses: Business[] = [
     "description": "Hosur's most renowned fancy and bridal gift showroom on MG Road. Premium glass bangles, imitation jewellery, branded cosmetics, hair accessories, luxury perfumes, and customized gifts.",
     "distance": 0.7,
     "demoCoordinates": {
-      "latitude": 12.7318,
-      "longitude": 77.8265
+      "latitude": 12.737,
+      "longitude": 77.827
     },
     "rating": 4.8,
     "reviews": 388,
@@ -7896,9 +7896,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 220145",
     "address": {
-      "doorNumber": "Shop #255",
-      "street": "Mahatma Gandhi Road",
-      "area": "Central Hosur",
+      "doorNumber": "No. 38",
+      "street": "MG Road",
+      "area": "Gandhi Nagar Bazaar",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -7906,8 +7906,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.7318,
-      "longitude": 77.8265
+      "latitude": 12.737,
+      "longitude": 77.827
     }
   },
   {
@@ -7957,8 +7957,8 @@ const initialBusinesses: Business[] = [
     "description": "Largest toy showroom in Hosur on Netaji Road. Remote control cars, drones, educational STEM building blocks, board games, Hot Wheels tracks, and baby developmental toys.",
     "distance": 1,
     "demoCoordinates": {
-      "latitude": 12.734,
-      "longitude": 77.8295
+      "latitude": 12.7352,
+      "longitude": 77.826
     },
     "rating": 4.7,
     "reviews": 275,
@@ -7979,9 +7979,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94880 74765",
     "address": {
-      "doorNumber": "Shop #262",
-      "street": "Nethaji Road",
-      "area": "Gandhi Nagar / Bazaar",
+      "doorNumber": "No. 15",
+      "street": "Netaji Road",
+      "area": "Gandhi Nagar Bazaar",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -7989,8 +7989,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.734,
-      "longitude": 77.8295
+      "latitude": 12.7352,
+      "longitude": 77.826
     }
   },
   {
@@ -8033,8 +8033,8 @@ const initialBusinesses: Business[] = [
     "description": "Specialized kids toys and battery ride-on showroom on Denkanikottai Road, Hosur. Electric cars, bikes, tricycles, soft plush toys, baby walkers, and school accessories.",
     "distance": 1.5,
     "demoCoordinates": {
-      "latitude": 12.726,
-      "longitude": 77.829
+      "latitude": 12.732,
+      "longitude": 77.8248
     },
     "rating": 4.7,
     "reviews": 198,
@@ -8054,9 +8054,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 98420 68369",
     "address": {
-      "doorNumber": "Shop #269",
-      "street": "Denkanikottai Main Road",
-      "area": "Hamumanth Nagar",
+      "doorNumber": "No. 71",
+      "street": "Denkanikottai Road",
+      "area": "Near Kamaraj Colony Junction",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -8064,8 +8064,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.726,
-      "longitude": 77.829
+      "latitude": 12.732,
+      "longitude": 77.8248
     }
   },
   {
@@ -8108,8 +8108,8 @@ const initialBusinesses: Business[] = [
     "description": "Friendly neighbourhood fancy store and party decoration hub near Bagalur Circle. Helium balloons, party supplies, return gifts for kids, hair accessories, cosmetics, and seasonal decor.",
     "distance": 2.1,
     "demoCoordinates": {
-      "latitude": 12.742,
-      "longitude": 77.836
+      "latitude": 12.7335,
+      "longitude": 77.8285
     },
     "rating": 4.5,
     "reviews": 172,
@@ -8129,9 +8129,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 99440 56322",
     "address": {
-      "doorNumber": "Shop #276",
+      "doorNumber": "No. 29",
       "street": "Bagalur Main Road",
-      "area": "Bagalur Circle / Avalapalli",
+      "area": "Avalapalli Hudco Signal",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -8139,8 +8139,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.742,
-      "longitude": 77.836
+      "latitude": 12.7335,
+      "longitude": 77.8285
     }
   },
   {
@@ -8182,8 +8182,8 @@ const initialBusinesses: Business[] = [
     "description": "Hosur's main government bus terminus situated at the NH 44 junction. 24/7 bus connectivity to Bengaluru, Chennai, Salem, Coimbatore, Krishnagiri, and surrounding rural villages.",
     "distance": 0.6,
     "demoCoordinates": {
-      "latitude": 12.7302,
-      "longitude": 77.8248
+      "latitude": 12.7395,
+      "longitude": 77.832
     },
     "rating": 4.3,
     "reviews": 1250,
@@ -8202,18 +8202,18 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 242463",
     "address": {
-      "doorNumber": "Shop #255",
-      "street": "NH 44 Bangalore-Salem Bypass Road",
-      "area": "Mookandapalli / Zuzuvadi",
+      "doorNumber": "MGR Central Bus Terminal Complex",
+      "street": "Bangalore - Salem Highway NH 44 Bypass",
+      "area": "Central Bus Stand Area",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635126"
+      "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.7302,
-      "longitude": 77.8248
+      "latitude": 12.7395,
+      "longitude": 77.832
     }
   },
   {
@@ -8248,8 +8248,8 @@ const initialBusinesses: Business[] = [
     "description": "South Western Railway station connecting Hosur with Bengaluru, Salem, Tiruchirappalli, and Kerala. Equipped with passenger waiting rooms, ticket counters, and auto-rickshaw stand.",
     "distance": 1.4,
     "demoCoordinates": {
-      "latitude": 12.7238,
-      "longitude": 77.8312
+      "latitude": 12.7302,
+      "longitude": 77.8342
     },
     "rating": 4.4,
     "reviews": 890,
@@ -8267,9 +8267,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 99440 35026",
     "address": {
-      "doorNumber": "Shop #262",
+      "doorNumber": "HSRA Railway Station Junction",
       "street": "Railway Station Road",
-      "area": "Shanthi Nagar / Station Area",
+      "area": "Shanthi Nagar",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -8277,8 +8277,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.7238,
-      "longitude": 77.8312
+      "latitude": 12.7302,
+      "longitude": 77.8342
     }
   },
   {
@@ -8320,8 +8320,8 @@ const initialBusinesses: Business[] = [
     "description": "Ancient and sacred Shiva hill temple dating back to the Chola dynasty, perched on an elevation overlooking all of Hosur. Famous for Rajagopuram, car festival, and panoramic views.",
     "distance": 2.2,
     "demoCoordinates": {
-      "latitude": 12.716,
-      "longitude": 77.83
+      "latitude": 12.721,
+      "longitude": 77.828
     },
     "rating": 4.9,
     "reviews": 2180,
@@ -8340,9 +8340,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 97890 66379",
     "address": {
-      "doorNumber": "Shop #269",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Hilltop Temple Complex",
+      "street": "Hill Temple Road",
+      "area": "Malai Kovil Hilltop",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -8350,8 +8350,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.716,
-      "longitude": 77.83
+      "latitude": 12.721,
+      "longitude": 77.828
     }
   },
   {
@@ -8386,8 +8386,8 @@ const initialBusinesses: Business[] = [
     "description": "Picturesque dam and reservoir across the Ponniyar River located 10 km from Hosur. Features lush landscaped gardens, children's amusement playground, and picnic meadows.",
     "distance": 4.8,
     "demoCoordinates": {
-      "latitude": 12.785,
-      "longitude": 77.85
+      "latitude": 12.798,
+      "longitude": 77.8395
     },
     "rating": 4.5,
     "reviews": 940,
@@ -8405,18 +8405,18 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 97890 62403",
     "address": {
-      "doorNumber": "Shop #276",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "PWD Dam Administration Office",
+      "street": "Kelavarapalli Dam Road",
+      "area": "Kelavarapalli",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635109"
+      "pincode": "635103"
     },
     "coordinates": {
-      "latitude": 12.785,
-      "longitude": 77.85
+      "latitude": 12.798,
+      "longitude": 77.8395
     }
   },
   {
@@ -8452,8 +8452,8 @@ const initialBusinesses: Business[] = [
     "description": "Historic memorial dedicated to C. Rajagopalachari (Rajaji) combined with a scenic eco park. Walking trails, medicinal trees, children's play equipment, and memorial gallery.",
     "distance": 3.5,
     "demoCoordinates": {
-      "latitude": 12.705,
-      "longitude": 77.842
+      "latitude": 12.698,
+      "longitude": 77.876
     },
     "rating": 4.6,
     "reviews": 410,
@@ -8472,9 +8472,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 255417",
     "address": {
-      "doorNumber": "Shop #283",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Rajaji Memorial Complex",
+      "street": "Thorapalli Heritage Village Road",
+      "area": "Thorapalli",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -8482,8 +8482,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.705,
-      "longitude": 77.842
+      "latitude": 12.698,
+      "longitude": 77.876
     }
   },
   {
@@ -8518,8 +8518,8 @@ const initialBusinesses: Business[] = [
     "description": "Official municipal civic headquarters of Hosur on Bagalur Road. Handles town planning, sanitation, water supply, trade licenses, property tax, and public grievances.",
     "distance": 1.1,
     "demoCoordinates": {
-      "latitude": 12.736,
-      "longitude": 77.832
+      "latitude": 12.7385,
+      "longitude": 77.8285
     },
     "rating": 4.2,
     "reviews": 320,
@@ -8537,9 +8537,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 90800 34343",
     "address": {
-      "doorNumber": "Shop #290",
+      "doorNumber": "Municipal Corporation Headquarters",
       "street": "Bagalur Main Road",
-      "area": "Bagalur Circle / Avalapalli",
+      "area": "Administrative Zone, Near Sub-Collector Office",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -8547,8 +8547,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.736,
-      "longitude": 77.832
+      "latitude": 12.7385,
+      "longitude": 77.8285
     }
   },
   {
@@ -8583,8 +8583,8 @@ const initialBusinesses: Business[] = [
     "description": "Main postal and courier hub of Hosur located near Taluk office complex. Offers Speed Post, international EMS, registered parcel, Aadhaar services, and postal savings banking.",
     "distance": 0.8,
     "demoCoordinates": {
-      "latitude": 12.731,
-      "longitude": 77.828
+      "latitude": 12.7405,
+      "longitude": 77.8262
     },
     "rating": 4.3,
     "reviews": 430,
@@ -8601,9 +8601,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 98420 54977",
     "address": {
-      "doorNumber": "Shop #297",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "HPO Building",
+      "street": "Taluk Office Road",
+      "area": "Court & Taluk Complex",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -8611,8 +8611,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.731,
-      "longitude": 77.828
+      "latitude": 12.7405,
+      "longitude": 77.8262
     }
   },
   {
@@ -8647,8 +8647,8 @@ const initialBusinesses: Business[] = [
     "description": "Government branch library near Taluk office, Hosur. Quiet study atmosphere with over 20,000 Tamil and English books, historical journals, and student exam preparation materials.",
     "distance": 0.9,
     "demoCoordinates": {
-      "latitude": 12.7325,
-      "longitude": 77.8275
+      "latitude": 12.7348,
+      "longitude": 77.8245
     },
     "rating": 4.7,
     "reviews": 280,
@@ -8665,9 +8665,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94432 64680",
     "address": {
-      "doorNumber": "Shop #276",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Public Library Building",
+      "street": "Library Street",
+      "area": "Near Old Bus Stand",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -8675,8 +8675,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.7325,
-      "longitude": 77.8275
+      "latitude": 12.7348,
+      "longitude": 77.8245
     }
   },
   {
@@ -8711,8 +8711,8 @@ const initialBusinesses: Business[] = [
     "description": "District government headquarters hospital on Denkanikottai Road, Hosur. 24/7 casualty, emergency trauma care, maternity & neonatal wing, public blood bank, and free medicine dispensary.",
     "distance": 1.3,
     "demoCoordinates": {
-      "latitude": 12.727,
-      "longitude": 77.8285
+      "latitude": 12.7335,
+      "longitude": 77.8238
     },
     "rating": 4.2,
     "reviews": 580,
@@ -8730,9 +8730,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 272683",
     "address": {
-      "doorNumber": "Shop #283",
+      "doorNumber": "District Headquarters Govt Hospital Campus",
       "street": "Denkanikottai Main Road",
-      "area": "Hamumanth Nagar",
+      "area": "GH Colony, Near Old Bus Stand",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -8740,8 +8740,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.727,
-      "longitude": 77.8285
+      "latitude": 12.7335,
+      "longitude": 77.8238
     }
   },
   {
@@ -8783,8 +8783,8 @@ const initialBusinesses: Business[] = [
     "description": "Premier leather goods, luggage and handbag showroom on MG Road, Hosur. Handbags, backpacks, laptop bags, wallets, belts, luggage repair and zip restoration.",
     "distance": 0.9,
     "demoCoordinates": {
-      "latitude": 12.7315,
-      "longitude": 77.8275
+      "latitude": 12.7369,
+      "longitude": 77.8271
     },
     "rating": 4.7,
     "reviews": 185,
@@ -8803,9 +8803,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94880 47677",
     "address": {
-      "doorNumber": "Shop #290",
-      "street": "Mahatma Gandhi Road",
-      "area": "Central Hosur",
+      "doorNumber": "No. 48",
+      "street": "MG Road",
+      "area": "Gandhi Nagar Bazaar",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -8813,8 +8813,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.7315,
-      "longitude": 77.8275
+      "latitude": 12.7369,
+      "longitude": 77.8271
     }
   },
   {
@@ -8881,8 +8881,8 @@ const initialBusinesses: Business[] = [
     "description": "Tamil Nadu's trusted home appliances showroom on Bagalur Road, Hosur. Refrigerators, front/top load washing machines, inverter air conditioners, kitchen chimneys, water purifiers, and microwave ovens.",
     "distance": 1.1,
     "demoCoordinates": {
-      "latitude": 12.735,
-      "longitude": 77.831
+      "latitude": 12.7381,
+      "longitude": 77.8286
     },
     "rating": 4.8,
     "reviews": 420,
@@ -8902,9 +8902,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 98420 73089",
     "address": {
-      "doorNumber": "Shop #297",
+      "doorNumber": "Vasanth & Co Plaza, No. 37",
       "street": "Bagalur Main Road",
-      "area": "Bagalur Circle / Avalapalli",
+      "area": "Near Hosur City Municipal Corporation",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -8912,8 +8912,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.735,
-      "longitude": 77.831
+      "latitude": 12.7381,
+      "longitude": 77.8286
     }
   },
   {
@@ -8957,8 +8957,8 @@ const initialBusinesses: Business[] = [
     "description": "Leading consumer electronics and home appliances destination on Netaji Road, Hosur. Top brands including Daikin, Voltas, Samsung, LG, IFB, and Whirlpool with warranty and EMI.",
     "distance": 0.8,
     "demoCoordinates": {
-      "latitude": 12.732,
-      "longitude": 77.828
+      "latitude": 12.7364,
+      "longitude": 77.8266
     },
     "rating": 4.7,
     "reviews": 360,
@@ -8975,9 +8975,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 82480 81942",
     "address": {
-      "doorNumber": "Shop #304",
-      "street": "Nethaji Road",
-      "area": "Gandhi Nagar / Bazaar",
+      "doorNumber": "Sathya Towers, No. 56",
+      "street": "Netaji Road",
+      "area": "Near Gandhi Statue Circle",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -8985,8 +8985,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.732,
-      "longitude": 77.828
+      "latitude": 12.7364,
+      "longitude": 77.8266
     }
   },
   {
@@ -9031,8 +9031,8 @@ const initialBusinesses: Business[] = [
     "description": "Authorized distributor of Havells, Polycab, Anchor, Legrand and Crompton electrical goods on Bagalur Road, Hosur. Complete residential and commercial electrification solutions.",
     "distance": 1.4,
     "demoCoordinates": {
-      "latitude": 12.737,
-      "longitude": 77.833
+      "latitude": 12.7342,
+      "longitude": 77.8288
     },
     "rating": 4.8,
     "reviews": 310,
@@ -9050,9 +9050,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 241191",
     "address": {
-      "doorNumber": "Shop #311",
+      "doorNumber": "No. 112",
       "street": "Bagalur Main Road",
-      "area": "Bagalur Circle / Avalapalli",
+      "area": "Avalapalli Hudco Signal",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -9060,8 +9060,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.737,
-      "longitude": 77.833
+      "latitude": 12.7342,
+      "longitude": 77.8288
     }
   },
   {
@@ -9111,8 +9111,8 @@ const initialBusinesses: Business[] = [
     "description": "Complete power backup and rooftop solar installation center on Station Road, Hosur. Luminous, Exide, Microtek inverters, tubular batteries, and solar hybrid UPS solutions.",
     "distance": 1.3,
     "demoCoordinates": {
-      "latitude": 12.728,
-      "longitude": 77.832
+      "latitude": 12.7314,
+      "longitude": 77.8338
     },
     "rating": 4.7,
     "reviews": 215,
@@ -9128,9 +9128,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 96290 90772",
     "address": {
-      "doorNumber": "Shop #318",
+      "doorNumber": "No. 33",
       "street": "Railway Station Road",
-      "area": "Shanthi Nagar / Station Area",
+      "area": "Shanthi Nagar",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -9138,8 +9138,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.728,
-      "longitude": 77.832
+      "latitude": 12.7314,
+      "longitude": 77.8338
     }
   },
   {
@@ -9190,8 +9190,8 @@ const initialBusinesses: Business[] = [
     "description": "Hosur's leading industrial and construction hardware depot on Bagalur Road. Bosch, Makita power tools, hand tools, drill machines, welding rods, safety equipment, and fasteners.",
     "distance": 1.6,
     "demoCoordinates": {
-      "latitude": 12.738,
-      "longitude": 77.834
+      "latitude": 12.7338,
+      "longitude": 77.8283
     },
     "rating": 4.8,
     "reviews": 310,
@@ -9208,9 +9208,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 99440 50074",
     "address": {
-      "doorNumber": "Shop #297",
+      "doorNumber": "No. 95",
       "street": "Bagalur Main Road",
-      "area": "Bagalur Circle / Avalapalli",
+      "area": "Near Avalapalli Hudco Circle",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -9218,8 +9218,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.738,
-      "longitude": 77.834
+      "latitude": 12.7338,
+      "longitude": 77.8283
     }
   },
   {
@@ -9284,8 +9284,8 @@ const initialBusinesses: Business[] = [
     "description": "One-stop destination for plumbing hardware, sanitaryware, water tanks, pumps and architectural locks on MG Road, Hosur. Ashirvad, Supreme, Texmo, Jaquar and Godrej products.",
     "distance": 0.8,
     "demoCoordinates": {
-      "latitude": 12.731,
-      "longitude": 77.826
+      "latitude": 12.7382,
+      "longitude": 77.8269
     },
     "rating": 4.7,
     "reviews": 275,
@@ -9302,9 +9302,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 99440 21266",
     "address": {
-      "doorNumber": "Shop #304",
-      "street": "Mahatma Gandhi Road",
-      "area": "Central Hosur",
+      "doorNumber": "No. 82",
+      "street": "MG Road",
+      "area": "Near Taluk Office Road Junction",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -9312,8 +9312,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.731,
-      "longitude": 77.826
+      "latitude": 12.7382,
+      "longitude": 77.8269
     }
   },
   {
@@ -9356,8 +9356,8 @@ const initialBusinesses: Business[] = [
     "description": "Authorized Asian Paints dealer and construction hardware supply store on Denkanikottai Road, Hosur. Waterproofing solutions, exterior/interior paints, Godrej locks, and builder hardware.",
     "distance": 1.4,
     "demoCoordinates": {
-      "latitude": 12.726,
-      "longitude": 77.828
+      "latitude": 12.7322,
+      "longitude": 77.8249
     },
     "rating": 4.6,
     "reviews": 195,
@@ -9372,9 +9372,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 266979",
     "address": {
-      "doorNumber": "Shop #311",
+      "doorNumber": "Asian Paints Colour Idea Store, No. 64",
       "street": "Denkanikottai Main Road",
-      "area": "Hamumanth Nagar",
+      "area": "Near Kamaraj Colony",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -9382,8 +9382,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.726,
-      "longitude": 77.828
+      "latitude": 12.7322,
+      "longitude": 77.8249
     }
   },
   {
@@ -9422,8 +9422,8 @@ const initialBusinesses: Business[] = [
     "description": "Trusted property consultancy and house rental portal in Hosur. Verified residential plots, family rental houses, apartments and commercial showroom spaces.",
     "distance": 1.2,
     "demoCoordinates": {
-      "latitude": 12.729,
-      "longitude": 77.825
+      "latitude": 12.7331,
+      "longitude": 77.8308
     },
     "rating": 4.8,
     "reviews": 142,
@@ -9438,9 +9438,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 98420 73665",
     "address": {
-      "doorNumber": "Shop #318",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "No. 16, 1st Floor",
+      "street": "Kamaraj Colony Main Road",
+      "area": "Kamaraj Colony",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -9448,8 +9448,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.729,
-      "longitude": 77.825
+      "latitude": 12.7331,
+      "longitude": 77.8308
     }
   },
   {
@@ -9488,8 +9488,8 @@ const initialBusinesses: Business[] = [
     "description": "Industrial real estate specialists for SIPCOT Phase 1 & 2, Hosur. Manufacturing sheds, heavy logistics warehouses, factory land and cold storage godowns.",
     "distance": 3.8,
     "demoCoordinates": {
-      "latitude": 12.756,
-      "longitude": 77.801
+      "latitude": 12.771,
+      "longitude": 77.7985
     },
     "rating": 4.7,
     "reviews": 88,
@@ -9504,9 +9504,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 97890 76395",
     "address": {
-      "doorNumber": "Shop #325",
-      "street": "SIPCOT Industrial Complex, Phase I & II",
-      "area": "SIPCOT Industrial Area",
+      "doorNumber": "Plot No. 204",
+      "street": "Phase 2 Main Avenue",
+      "area": "SIPCOT Industrial Complex Phase 2",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -9514,8 +9514,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635126"
     },
     "coordinates": {
-      "latitude": 12.756,
-      "longitude": 77.801
+      "latitude": 12.771,
+      "longitude": 77.7985
     }
   },
   {
@@ -9555,8 +9555,8 @@ const initialBusinesses: Business[] = [
     "description": "Premier building construction contractor and architectural planning studio on Netaji Road, Hosur. HNTDA approvals, turnkey home building, and building material supplies.",
     "distance": 0.9,
     "demoCoordinates": {
-      "latitude": 12.736,
-      "longitude": 77.832
+      "latitude": 12.7352,
+      "longitude": 77.8284
     },
     "rating": 4.9,
     "reviews": 164,
@@ -9572,9 +9572,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 82480 16718",
     "address": {
-      "doorNumber": "Shop #332",
-      "street": "Nethaji Road",
-      "area": "Gandhi Nagar / Bazaar",
+      "doorNumber": "No. 47",
+      "street": "Bagalur Main Road",
+      "area": "Avalapalli Hudco",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -9582,8 +9582,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.736,
-      "longitude": 77.832
+      "latitude": 12.7352,
+      "longitude": 77.8284
     }
   },
   {
@@ -9643,8 +9643,8 @@ const initialBusinesses: Business[] = [
     "description": "Authorized heavy earthmovers sales, hire and genuine spare parts center in SIPCOT Phase-II, Hosur. New & certified used excavators, backhoe loaders and quarry equipment.",
     "distance": 2.1,
     "demoCoordinates": {
-      "latitude": 12.7214,
-      "longitude": 77.8112
+      "latitude": 12.757,
+      "longitude": 77.8115
     },
     "rating": 4.8,
     "reviews": 142,
@@ -9661,9 +9661,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 234491",
     "address": {
-      "doorNumber": "Shop #339",
-      "street": "SIPCOT Industrial Complex, Phase I & II",
-      "area": "SIPCOT Industrial Area",
+      "doorNumber": "Heavy Yard No. 7",
+      "street": "Bangalore - Salem Highway NH 44",
+      "area": "Near SIPCOT Phase 1",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -9671,8 +9671,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635126"
     },
     "coordinates": {
-      "latitude": 12.7214,
-      "longitude": 77.8112
+      "latitude": 12.757,
+      "longitude": 77.8115
     }
   },
   {
@@ -9731,8 +9731,8 @@ const initialBusinesses: Business[] = [
     "description": "Premier material handling, hydraulic mobile cranes and industrial forklift dealership on NH-44, Moranapalli, Hosur. Crane rental services and warehouse equipment.",
     "distance": 3.4,
     "demoCoordinates": {
-      "latitude": 12.7538,
-      "longitude": 77.8421
+      "latitude": 12.762,
+      "longitude": 77.807
     },
     "rating": 4.9,
     "reviews": 98,
@@ -9749,9 +9749,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 82480 77102",
     "address": {
-      "doorNumber": "Shop #318",
-      "street": "SIPCOT Industrial Complex, Phase I & II",
-      "area": "SIPCOT Industrial Area",
+      "doorNumber": "Plot No. 84, Crane Yard",
+      "street": "SIPCOT Phase 1 Main Avenue",
+      "area": "Near TVS Factory, SIPCOT Phase 1",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -9759,8 +9759,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635126"
     },
     "coordinates": {
-      "latitude": 12.7538,
-      "longitude": 77.8421
+      "latitude": 12.762,
+      "longitude": 77.807
     }
   },
   {
@@ -9817,8 +9817,8 @@ const initialBusinesses: Business[] = [
     "description": "Industrial heavy CNC machine tool distributor and engineering showroom in SIPCOT Phase-I, Hosur. Vertical machining centers, CNC turning lathes, fiber lasers and automated press brakes.",
     "distance": 1.7,
     "demoCoordinates": {
-      "latitude": 12.7382,
-      "longitude": 77.8095
+      "latitude": 12.7635,
+      "longitude": 77.806
     },
     "rating": 4.9,
     "reviews": 116,
@@ -9834,9 +9834,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 96290 38068",
     "address": {
-      "doorNumber": "Shop #325",
-      "street": "SIPCOT Industrial Complex, Phase I & II",
-      "area": "SIPCOT Industrial Area",
+      "doorNumber": "Plot No. 120",
+      "street": "Phase 1 Industrial Corridor",
+      "area": "SIPCOT Phase 1",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -9844,8 +9844,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635126"
     },
     "coordinates": {
-      "latitude": 12.7382,
-      "longitude": 77.8095
+      "latitude": 12.7635,
+      "longitude": 77.806
     }
   },
   {
@@ -9902,8 +9902,8 @@ const initialBusinesses: Business[] = [
     "description": "Authorized industrial air compressor and heavy diesel generator dealership in Mookandapalli, Hosur. Plant compressed air piping, backup power solutions and 24/7 service.",
     "distance": 1.4,
     "demoCoordinates": {
-      "latitude": 12.7475,
-      "longitude": 77.8188
+      "latitude": 12.7725,
+      "longitude": 77.796
     },
     "rating": 4.8,
     "reviews": 84,
@@ -9919,9 +9919,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 99440 86970",
     "address": {
-      "doorNumber": "Shop #332",
-      "street": "SIPCOT Industrial Complex, Phase I & II",
-      "area": "SIPCOT Industrial Area",
+      "doorNumber": "Plot No. 165",
+      "street": "Phase 2 Industrial Corridor",
+      "area": "SIPCOT Phase 2 Industrial Complex",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -9929,8 +9929,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635126"
     },
     "coordinates": {
-      "latitude": 12.7475,
-      "longitude": 77.8188
+      "latitude": 12.7725,
+      "longitude": 77.796
     }
   },
   {
@@ -9987,8 +9987,8 @@ const initialBusinesses: Business[] = [
     "description": "Concrete equipment, batching plants, transit mixers and road compaction machinery hub on Thally Road, Hosur. Sales, erection and genuine replacement parts.",
     "distance": 2.8,
     "demoCoordinates": {
-      "latitude": 12.7291,
-      "longitude": 77.8285
+      "latitude": 12.778,
+      "longitude": 77.791
     },
     "rating": 4.7,
     "reviews": 72,
@@ -10004,9 +10004,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 280752",
     "address": {
-      "doorNumber": "Shop #339",
-      "street": "SIPCOT Industrial Complex, Phase I & II",
-      "area": "SIPCOT Industrial Area",
+      "doorNumber": "Facility No. 3",
+      "street": "NH 44 Industrial Corridor",
+      "area": "Near Moranapalli, Hosur Highway",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -10014,8 +10014,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635126"
     },
     "coordinates": {
-      "latitude": 12.7291,
-      "longitude": 77.8285
+      "latitude": 12.778,
+      "longitude": 77.791
     }
   },
   {
@@ -10072,8 +10072,8 @@ const initialBusinesses: Business[] = [
     "description": "Heavy earthmoving and industrial machinery hydraulic workshop near Bagalur Road Gate, Hosur. Cylinder reconditioning, undercarriage track pressing, rock breaker tools and mobile hose crimping.",
     "distance": 1.2,
     "demoCoordinates": {
-      "latitude": 12.7441,
-      "longitude": 77.8398
+      "latitude": 12.753,
+      "longitude": 77.818
     },
     "rating": 4.9,
     "reviews": 128,
@@ -10089,18 +10089,18 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94432 35456",
     "address": {
-      "doorNumber": "Shop #346",
-      "street": "Bagalur Main Road",
-      "area": "Bagalur Circle / Avalapalli",
+      "doorNumber": "Shed No. 29",
+      "street": "SIDCO Industrial Estate Road",
+      "area": "SIDCO Phase 1",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635109"
+      "pincode": "635126"
     },
     "coordinates": {
-      "latitude": 12.7441,
-      "longitude": 77.8398
+      "latitude": 12.753,
+      "longitude": 77.818
     }
   },
   {
@@ -10138,7 +10138,7 @@ const initialBusinesses: Business[] = [
     "description": "ISO 9001 certified CNC and VMC precision machining unit in SIDCO Industrial Estate, Hosur. Specialized in automotive turning, milling fixtures and carbide tooling.",
     "distance": 3.4,
     "demoCoordinates": {
-      "latitude": 12.751,
+      "latitude": 12.761,
       "longitude": 77.808
     },
     "rating": 4.9,
@@ -10153,9 +10153,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 90800 42087",
     "address": {
-      "doorNumber": "Shop #353",
-      "street": "SIPCOT Industrial Complex, Phase I & II",
-      "area": "SIPCOT Industrial Area",
+      "doorNumber": "Plot No. 52",
+      "street": "SIPCOT Phase 1 Main Road",
+      "area": "SIPCOT Phase 1 Industrial Complex",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -10163,7 +10163,7 @@ const initialBusinesses: Business[] = [
       "pincode": "635126"
     },
     "coordinates": {
-      "latitude": 12.751,
+      "latitude": 12.761,
       "longitude": 77.808
     }
   },
@@ -10203,8 +10203,8 @@ const initialBusinesses: Business[] = [
     "description": "Complete sheet metal fabrication and CNC fiber laser cutting facility in Moranapalli, Hosur. CNC press brake bending, robotic welding and conveyorized powder coating.",
     "distance": 4.2,
     "demoCoordinates": {
-      "latitude": 12.768,
-      "longitude": 77.795
+      "latitude": 12.7695,
+      "longitude": 77.8005
     },
     "rating": 4.8,
     "reviews": 96,
@@ -10219,9 +10219,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94432 93152",
     "address": {
-      "doorNumber": "Shop #360",
-      "street": "SIPCOT Industrial Complex, Phase I & II",
-      "area": "SIPCOT Industrial Area",
+      "doorNumber": "Plot No. 182",
+      "street": "Phase 2 Main Road",
+      "area": "SIPCOT Phase 2 Industrial Complex",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -10229,8 +10229,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635126"
     },
     "coordinates": {
-      "latitude": 12.768,
-      "longitude": 77.795
+      "latitude": 12.7695,
+      "longitude": 77.8005
     }
   },
   {
@@ -10269,8 +10269,8 @@ const initialBusinesses: Business[] = [
     "description": "Leading B2B supplier of industrial export packaging, wooden pallets, safety PPE gear, and genuine SKF industrial bearings near Sipcot Ring Road, Hosur.",
     "distance": 2.8,
     "demoCoordinates": {
-      "latitude": 12.744,
-      "longitude": 77.815
+      "latitude": 12.765,
+      "longitude": 77.804
     },
     "rating": 4.7,
     "reviews": 138,
@@ -10285,9 +10285,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 277806",
     "address": {
-      "doorNumber": "Shop #339",
-      "street": "SIPCOT Industrial Complex, Phase I & II",
-      "area": "SIPCOT Industrial Area",
+      "doorNumber": "Plot No. 41",
+      "street": "Mookandapalli Industrial Corridor",
+      "area": "SIPCOT Mookandapalli",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -10295,8 +10295,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635126"
     },
     "coordinates": {
-      "latitude": 12.744,
-      "longitude": 77.815
+      "latitude": 12.765,
+      "longitude": 77.804
     }
   },
   {
@@ -10335,8 +10335,8 @@ const initialBusinesses: Business[] = [
     "description": "Premier engineering institution in Hosur established in 1987. Autonomous college accredited by NAAC and NBA, offering B.E., B.Tech, MBA, and MCA programs with top placements.",
     "distance": 5.1,
     "demoCoordinates": {
-      "latitude": 12.712,
-      "longitude": 77.868
+      "latitude": 12.7262,
+      "longitude": 77.8685
     },
     "rating": 4.6,
     "reviews": 380,
@@ -10350,18 +10350,18 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 82480 28926",
     "address": {
-      "doorNumber": "Shop #346",
-      "street": "SIPCOT Industrial Complex, Phase I & II",
-      "area": "SIPCOT Industrial Area",
+      "doorNumber": "Main Campus Administrative Block",
+      "street": "Dr. M.G.R. Nagar",
+      "area": "Kumudepalli / Achettipalli",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635126"
+      "pincode": "635130"
     },
     "coordinates": {
-      "latitude": 12.712,
-      "longitude": 77.868
+      "latitude": 12.7262,
+      "longitude": 77.8685
     }
   },
   {
@@ -10400,8 +10400,8 @@ const initialBusinesses: Business[] = [
     "description": "Specialized competitive entrance exam coaching institute on Old Bangalore Road, Hosur. Outstanding track record in NEET Medical, IIT-JEE engineering, and TNPSC coaching.",
     "distance": 1.1,
     "demoCoordinates": {
-      "latitude": 12.738,
-      "longitude": 77.829
+      "latitude": 12.727,
+      "longitude": 77.8225
     },
     "rating": 4.8,
     "reviews": 210,
@@ -10415,9 +10415,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 98420 94521",
     "address": {
-      "doorNumber": "Shop #353",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "Sri Chaitanya Campus",
+      "street": "Denkanikottai Main Road",
+      "area": "Near ASTC Hudco Colony",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -10425,8 +10425,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.738,
-      "longitude": 77.829
+      "latitude": 12.727,
+      "longitude": 77.8225
     }
   },
   {
@@ -10466,8 +10466,8 @@ const initialBusinesses: Business[] = [
     "description": "Government recognized driving school and certified IT computer skill training institute near Old Bus Stand, Hosur. Dual-control car training and corporate software courses.",
     "distance": 0.7,
     "demoCoordinates": {
-      "latitude": 12.733,
-      "longitude": 77.826
+      "latitude": 12.7402,
+      "longitude": 77.8265
     },
     "rating": 4.9,
     "reviews": 325,
@@ -10482,9 +10482,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 96290 13956",
     "address": {
-      "doorNumber": "Shop #360",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "No. 12",
+      "street": "Taluk Office Road",
+      "area": "Near Court Complex",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -10492,8 +10492,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.733,
-      "longitude": 77.826
+      "latitude": 12.7402,
+      "longitude": 77.8265
     }
   },
   {
@@ -10532,8 +10532,8 @@ const initialBusinesses: Business[] = [
     "description": "Luxurious air-conditioned wedding and reception destination on NH-44 Bangalore Highway, Hosur. 1,200 guest capacity, executive bridal suites, and sprawling parking lot.",
     "distance": 2.1,
     "demoCoordinates": {
-      "latitude": 12.748,
-      "longitude": 77.821
+      "latitude": 12.742,
+      "longitude": 77.831
     },
     "rating": 4.9,
     "reviews": 290,
@@ -10547,18 +10547,18 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 262782",
     "address": {
-      "doorNumber": "Shop #367",
-      "street": "NH 44 Bangalore-Salem Bypass Road",
-      "area": "Mookandapalli / Zuzuvadi",
+      "doorNumber": "Sri Krishna Convention Hall",
+      "street": "Bangalore - Salem Highway NH 44",
+      "area": "Near Central Bus Stand",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635126"
+      "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.748,
-      "longitude": 77.821
+      "latitude": 12.742,
+      "longitude": 77.831
     }
   },
   {
@@ -10597,8 +10597,8 @@ const initialBusinesses: Business[] = [
     "description": "Award-winning wedding catering service on Thally Road, Hosur. Renowned for authentic South Indian plantain leaf feasts, live breakfast tiffins, and grand evening banquet spreads.",
     "distance": 1.3,
     "demoCoordinates": {
-      "latitude": 12.728,
-      "longitude": 77.834
+      "latitude": 12.7375,
+      "longitude": 77.8268
     },
     "rating": 4.9,
     "reviews": 412,
@@ -10612,9 +10612,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 97890 18571",
     "address": {
-      "doorNumber": "Shop #374",
-      "street": "Thally Road",
-      "area": "Near Ring Road",
+      "doorNumber": "No. 89",
+      "street": "MG Road",
+      "area": "Gandhi Nagar Bazaar",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -10622,8 +10622,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.728,
-      "longitude": 77.834
+      "latitude": 12.7375,
+      "longitude": 77.8268
     }
   },
   {
@@ -10663,8 +10663,8 @@ const initialBusinesses: Business[] = [
     "description": "Full-service event management studio on Bagalur Road, Hosur. Exotic floral stage backdrops, cinematic wedding photography, aerial drone shoots, and high-power DJ setups.",
     "distance": 1.6,
     "demoCoordinates": {
-      "latitude": 12.742,
-      "longitude": 77.839
+      "latitude": 12.735,
+      "longitude": 77.8258
     },
     "rating": 4.8,
     "reviews": 178,
@@ -10680,9 +10680,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 82480 70374",
     "address": {
-      "doorNumber": "Shop #381",
-      "street": "Bagalur Main Road",
-      "area": "Bagalur Circle / Avalapalli",
+      "doorNumber": "No. 63",
+      "street": "Netaji Road",
+      "area": "Near Old Bus Stand",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -10690,8 +10690,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.742,
-      "longitude": 77.839
+      "latitude": 12.735,
+      "longitude": 77.8258
     }
   },
   {
@@ -10730,8 +10730,8 @@ const initialBusinesses: Business[] = [
     "description": "Hosur's premier flower nursery on Bagalur Main Road. Authentic Hosur cut-flower roses, greenhouse saplings, indoor air-purifying plants, and certified hybrid vegetable seeds.",
     "distance": 3.9,
     "demoCoordinates": {
-      "latitude": 12.765,
-      "longitude": 77.852
+      "latitude": 12.731,
+      "longitude": 77.838
     },
     "rating": 4.9,
     "reviews": 340,
@@ -10746,9 +10746,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94880 40365",
     "address": {
-      "doorNumber": "Shop #360",
+      "doorNumber": "Flora Rose Farm Greenhouse",
       "street": "Bagalur Main Road",
-      "area": "Bagalur Circle / Avalapalli",
+      "area": "Avalapalli Rose Farm Corridor",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -10756,8 +10756,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.765,
-      "longitude": 77.852
+      "latitude": 12.731,
+      "longitude": 77.838
     }
   },
   {
@@ -10796,8 +10796,8 @@ const initialBusinesses: Business[] = [
     "description": "Complete pet care clinic and accessories store on Rayakottai Road, Hosur. Premium Royal Canin & Drools pet foods, dog grooming spa, and 24/7 emergency veterinary doctor.",
     "distance": 1.2,
     "demoCoordinates": {
-      "latitude": 12.73,
-      "longitude": 77.831
+      "latitude": 12.734,
+      "longitude": 77.8287
     },
     "rating": 4.9,
     "reviews": 256,
@@ -10812,9 +10812,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 241982",
     "address": {
-      "doorNumber": "Shop #367",
-      "street": "Rayakottai Road",
-      "area": "Old Bus Stand Vicinity",
+      "doorNumber": "No. 40",
+      "street": "Bagalur Main Road",
+      "area": "Near Avalapalli Circle",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -10822,8 +10822,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.73,
-      "longitude": 77.831
+      "latitude": 12.734,
+      "longitude": 77.8287
     }
   },
   {
@@ -10863,8 +10863,8 @@ const initialBusinesses: Business[] = [
     "description": "Authorized agricultural inputs and cattle feed dealer at Gandhi Statue Circle, Hosur. Organic vermicompost, micro drip irrigation equipment, and dairy cattle feed pellets.",
     "distance": 0.8,
     "demoCoordinates": {
-      "latitude": 12.735,
-      "longitude": 77.827
+      "latitude": 12.7341,
+      "longitude": 77.8246
     },
     "rating": 4.8,
     "reviews": 198,
@@ -10880,9 +10880,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94432 14648",
     "address": {
-      "doorNumber": "Shop #374",
-      "street": "Bagalur Main Road",
-      "area": "Central Commercial Hub",
+      "doorNumber": "No. 14",
+      "street": "Denkanikottai Road",
+      "area": "Opp. Uzhavar Santhai",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -10890,8 +10890,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.735,
-      "longitude": 77.827
+      "latitude": 12.7341,
+      "longitude": 77.8246
     }
   }
 ];
@@ -15918,7 +15918,7 @@ export default function Home() {
                           </div>
                           <div className="business-info">
                             <div className="business-meta">
-                              <span>{translateCategory(business.category, lang)}</span>
+                              <span>{translateCategory(business.category, lang)}{business.address?.area ? ` · ${business.address.area}` : ""}</span>
                               <span className="distance">⌖ {businessDistance(business).toFixed(1)} km{locationEnabled ? "" : ` ${t.sampleDistance}`}</span>
                             </div>
                             <div className="business-title-row" style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "8px" }}>
@@ -16857,13 +16857,18 @@ function BusinessDetailDialog({
   const isLiveUserLocation = Boolean(userCoordinates);
 
   const address = business.address
-    ? [business.address.doorNumber, business.address.street, business.address.area, business.address.cityTown, business.address.taluka, business.address.district, business.address.state, business.address.pincode].filter(Boolean).join(", ")
+    ? [business.address.doorNumber, business.address.street, business.address.area, "Hosur", business.address.pincode].filter(Boolean).join(", ")
     : "Hosur, Tamil Nadu";
+
+  // Destination query for Google Maps matching the genuine Hosur place
+  const destinationQuery = encodeURIComponent(
+    `${business.name}, ${[business.address?.doorNumber, business.address?.street, business.address?.area, "Hosur", "Tamil Nadu " + (business.address?.pincode || "635109")].filter(Boolean).join(", ")}`
+  );
 
   // Google Maps directions embed showing route between Origin and Destination
   const googleRouteEmbedUrl = coordinates
-    ? `https://maps.google.com/maps?saddr=${origin.latitude},${origin.longitude}&daddr=${coordinates.latitude},${coordinates.longitude}&output=embed`
-    : "";
+    ? `https://maps.google.com/maps?saddr=${origin.latitude},${origin.longitude}&daddr=${destinationQuery}&output=embed`
+    : `https://maps.google.com/maps?q=${destinationQuery}&output=embed`;
 
   // OpenStreetMap embed fallback
   const osmEmbedUrl = coordinates ? (() => {
@@ -16882,9 +16887,13 @@ function BusinessDetailDialog({
   const activeMapUrl = mapProvider === "google" ? googleRouteEmbedUrl : osmEmbedUrl;
 
   // Google Maps external turn-by-turn navigation URL
-  const googleDirectionsUrl = coordinates
-    ? `https://www.google.com/maps/dir/?api=1&origin=${origin.latitude},${origin.longitude}&destination=${coordinates.latitude},${coordinates.longitude}&travelmode=${travelMode === "walking" ? "walking" : travelMode === "two-wheeler" ? "two-wheeler" : "driving"}`
-    : "";
+  // Omitting origin when device GPS is used allows Google Maps app to route from the user's real location
+  const googleDirectionsUrl = isLiveUserLocation
+    ? `https://www.google.com/maps/dir/?api=1&origin=${origin.latitude},${origin.longitude}&destination=${destinationQuery}&travelmode=${travelMode === "walking" ? "walking" : travelMode === "two-wheeler" ? "two-wheeler" : "driving"}`
+    : `https://www.google.com/maps/dir/?api=1&destination=${destinationQuery}&travelmode=${travelMode === "walking" ? "walking" : travelMode === "two-wheeler" ? "two-wheeler" : "driving"}`;
+
+  // Direct Google Maps place pin search URL
+  const googleMapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${destinationQuery}`;
 
   // OpenStreetMap directions external URL
   const osmDirectionsUrl = coordinates
@@ -17404,7 +17413,12 @@ function BusinessDetailDialog({
                   <span className="live-indicator-dot" /> LIVE ROUTE NAVIGATION
                 </div>
                 <strong>Navigate to {business.name}</strong>
-                <p className="navigation-address">📍 {address}</p>
+                <p className="navigation-address" style={{ fontSize: "12.5px", lineHeight: "1.45", margin: "4px 0", color: "#1e3a24" }}>
+                  📍 <strong>{business.address?.doorNumber ? `${business.address.doorNumber}, ` : ""}{business.address?.street || "Hosur"}</strong>
+                  <span style={{ display: "block", color: "#475569", fontSize: "11.5px", marginTop: "2px" }}>
+                    {[business.address?.area, "Hosur, Tamil Nadu", business.address?.pincode ? `PIN: ${business.address.pincode}` : ""].filter(Boolean).join(", ")}
+                  </span>
+                </p>
               </div>
               <div className="navigation-stats-pill">
                 <span className="stats-time">~{estimatedMinutes} min</span>
@@ -17438,8 +17452,15 @@ function BusinessDetailDialog({
                 <div className="point-info">
                   <span className="point-label">Destination</span>
                   <strong className="point-name">{business.name}</strong>
+                  <span className="point-sub" style={{ display: "block", color: "#475569", fontSize: "11px", marginTop: "2px" }}>
+                    {[business.address?.doorNumber, business.address?.street, business.address?.area, "Hosur - " + (business.address?.pincode || "635109")].filter(Boolean).join(", ")}
+                  </span>
                 </div>
-                {coordinates && <span className="destination-coords-tag">{coordinates.latitude.toFixed(4)}, {coordinates.longitude.toFixed(4)}</span>}
+                {coordinates && (
+                  <span className="destination-coords-tag" title="Verified GPS coordinates">
+                    📍 {coordinates.latitude.toFixed(4)}° N, {coordinates.longitude.toFixed(4)}° E
+                  </span>
+                )}
               </div>
             </div>
 
@@ -17520,8 +17541,20 @@ function BusinessDetailDialog({
                   href={googleDirectionsUrl}
                   target="_blank"
                   rel="noreferrer"
+                  title="Open live turn-by-turn routing in Google Maps app"
                 >
-                  Open in Google Maps App ↗
+                  🧭 Start Navigation in Maps ↗
+                </a>
+              )}
+              {googleMapsSearchUrl && (
+                <a
+                  className="quick-nav-link"
+                  href={googleMapsSearchUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  title="View store pin on Google Maps"
+                >
+                  📍 View Store Pin on Map ↗
                 </a>
               )}
               {osmDirectionsUrl && (
