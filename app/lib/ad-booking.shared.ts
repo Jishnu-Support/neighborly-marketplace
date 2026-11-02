@@ -180,6 +180,22 @@ export interface AdBookingRequest {
   };
   lastViewedAt?: string;
   viewRecords?: AdViewRecord[];
+  clickRecords?: AdClickRecord[];
+}
+
+export interface AdClickRecord {
+  id: string;
+  adBookingId: string;
+  customerId: string; // e.g. "CUST-HSR-21482"
+  action: "call" | "whatsapp" | "view_store" | "navigate";
+  actionLabel: string;
+  viewerName: string;
+  viewerPhone?: string;
+  clickedAt: string;
+  clickedDate: string;
+  clickedTime: string;
+  locality?: string;
+  device?: string;
 }
 
 export interface AdViewRecord {
@@ -743,6 +759,59 @@ export function createSampleViewRecords(
       viewedAt: time,
       viewedDate: viewDateObj.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
       viewedTime: viewDateObj.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true }),
+      locality: user.locality,
+      device: devices[i % devices.length],
+    });
+  }
+
+  return records;
+}
+
+export function createSampleClickRecords(
+  adBookingId: string,
+  totalClicks: number = 6
+): AdClickRecord[] {
+  const sampleUsers = [
+    { customerId: "CUST-HSR-21482", name: "Naveen Kumar", phone: "•••• 21482", locality: "Bagalur Road, Hosur" },
+    { customerId: "CUST-HSR-43210", name: "Asha Rao", phone: "•••• 43210", locality: "Gandhi Road, Hosur" },
+    { customerId: "CUST-HSR-87654", name: "Karthik Raja", phone: "•••• 87654", locality: "Rayakottai Road, Hosur" },
+    { customerId: "CUST-HSR-10987", name: "Priya Raman", phone: "•••• 10987", locality: "SIPCOT Phase 1, Hosur" },
+    { customerId: "CUST-HSR-65432", name: "Suresh Babu", phone: "•••• 65432", locality: "Mathigiri, Hosur" },
+  ];
+
+  const actions: Array<{ action: "call" | "whatsapp" | "view_store" | "navigate"; label: string }> = [
+    { action: "whatsapp", label: "WhatsApp Inquiry" },
+    { action: "call", label: "Phone Call Placed" },
+    { action: "view_store", label: "Visited Business Profile" },
+    { action: "navigate", label: "Directions / Map Route" },
+  ];
+
+  const devices = [
+    "Mobile (Android / Chrome)",
+    "Mobile (iOS / Safari)",
+    "Desktop (Windows / Chrome)",
+  ];
+
+  const records: AdClickRecord[] = [];
+  const count = Math.min(15, Math.max(3, Math.round(totalClicks)));
+
+  for (let i = 0; i < count; i++) {
+    const user = sampleUsers[i % sampleUsers.length];
+    const act = actions[i % actions.length];
+    const minutesAgo = i * 28 + 12;
+    const clickDateObj = new Date(Date.now() - minutesAgo * 60 * 1000);
+
+    records.push({
+      id: `click_${adBookingId}_${i + 1}`,
+      adBookingId,
+      customerId: user.customerId,
+      action: act.action,
+      actionLabel: act.label,
+      viewerName: user.name,
+      viewerPhone: user.phone,
+      clickedAt: clickDateObj.toISOString(),
+      clickedDate: clickDateObj.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+      clickedTime: clickDateObj.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true }),
       locality: user.locality,
       device: devices[i % devices.length],
     });

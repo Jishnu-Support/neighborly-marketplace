@@ -4,13 +4,15 @@ import {
   type AdBookingRequest,
   type AdSlotTiming,
   type AdViewRecord,
+  type AdClickRecord,
   AD_TIME_SLOTS,
   calculateAdPricing,
   createSampleViewRecords,
+  createSampleClickRecords,
   isAdActiveAt,
   resolveScheduledAds,
 } from "./ad-booking.shared";
-export { resolveScheduledAds, createSampleViewRecords };
+export { resolveScheduledAds, createSampleViewRecords, createSampleClickRecords };
 import { type AdConfig } from "./ad-config.shared";
 
 const bookingsFilePath =
@@ -183,6 +185,10 @@ export async function readAdBookings(): Promise<AdBookingRequest[]> {
               backfilled = true;
             }
           }
+        }
+        if (!b.clickRecords || b.clickRecords.length === 0) {
+          b.clickRecords = createSampleClickRecords(b.id, b.clicksCount || 8);
+          backfilled = true;
         }
       }
       if (backfilled) {
@@ -377,4 +383,75 @@ export async function recordAdImpression(
 
   await saveAdBookings(bookings);
   return { success: true, viewsCount: booking.viewsCount, booking, record: newRecord };
+}
+
+export async function recordAdClick(
+  adBookingId: string,
+  action: "call" | "whatsapp" | "view_store" | "navigate",
+  viewerDetails?: {
+    customerId?: string;
+    viewerName?: string;
+    viewerPhone?: string;
+    locality?: string;
+    device?: string;
+  }
+): Promise<{ success: boolean; clicksCount: number; booking: AdBookingRequest; record?: AdClickRecord } | null> {
+  const bookings = await readAdBookings();
+  const booking = bookings.find((b) => b.id === adBookingId);
+  if (!booking) return null;
+
+  booking.clicksCount = (booking.clicksCount || 0) + 1;
+  const now = new Date();
+  const isoNow = now.toISOString();
+
+  const dateStr = now.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+  const timeStr = now.toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+
+  const actionLabels: Record<string, string> = {
+    call: "Phone Call Placed",
+    whatsapp: "WhatsApp Lead",
+    view_store: "Visited Business Profile",
+    navigate: "Directions / Map Route",
+  };
+
+  const customerId =
+    viewerDetails?.customerId ||
+    (viewerDetails?.viewerPhone
+      ? `CUST-HSR-${viewerDetails.viewerPhone.replace(/\D/g, "").slice(-5) || "001"}`
+      : `CUST-HSR-${Math.floor(10000 + Math.random() * 90000)}`);
+
+  const newRecord: AdClickRecord = {
+    id: `click_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    adBookingId,
+    customerId,
+    action,
+    actionLabel: actionLabels[action] || "Customer Ad Interaction",
+    viewerName: viewerDetails?.viewerName || "Hosur Customer",
+    viewerPhone: viewerDetails?.viewerPhone || "",
+    clickedAt: isoNow,
+    clickedDate: dateStr,
+    clickedTime: timeStr,
+    locality: viewerDetails?.locality || "Hosur, Tamil Nadu",
+    device: viewerDetails?.device || "Mobile / Web",
+  };
+
+  if (!booking.clickRecords) {
+    booking.clickRecords = [];
+  }
+  booking.clickRecords.unshift(newRecord);
+  if (booking.clickRecords.length > 200) {
+    booking.clickRecords = booking.clickRecords.slice(0, 200);
+  }
+
+  await saveAdBookings(bookings);
+  return { success: true, clicksCount: booking.clicksCount, booking, record: newRecord };
 }

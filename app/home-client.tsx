@@ -11300,6 +11300,67 @@ export default function Home() {
     setDemoData((current) => ({ ...current, events: [event, ...current.events].slice(0, 100) }));
   }
 
+  const handleAdAction = (
+    currentAd: { adBookingId?: string; businessName?: string; title?: string },
+    action: "call" | "whatsapp" | "view_store" | "navigate"
+  ) => {
+    const bizName = currentAd.businessName || "";
+    const targetBiz = businesses.find(
+      (b) =>
+        (bizName && b.name.toLowerCase() === bizName.toLowerCase()) ||
+        (bizName && b.name.toLowerCase().includes(bizName.toLowerCase())) ||
+        (bizName && bizName.toLowerCase().includes(b.name.toLowerCase()))
+    );
+
+    if (currentAd.adBookingId) {
+      const viewer = getViewerInfo();
+      fetch("/api/ads/click", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          adBookingId: currentAd.adBookingId,
+          action,
+          ...viewer,
+        }),
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.booking) {
+            setAdBookings((prev) =>
+              prev.map((b) => (b.id === data.booking.id ? data.booking : b))
+            );
+          }
+        })
+        .catch(() => {});
+    }
+
+    if (action === "view_store") {
+      if (targetBiz) {
+        viewBusiness(targetBiz, "products");
+        recordEvent(`Ad lead - Store profile: ${targetBiz.name}`);
+      } else {
+        showNotice(`Opening ad: ${currentAd.title || currentAd.businessName || "Special Offer"}`);
+        recordEvent(`Ad lead clicked: ${currentAd.businessName || "Ad"}`);
+      }
+    } else if (action === "call") {
+      const phone = targetBiz?.phone || "+91 98765 43210";
+      recordEvent(`Ad lead - Phone call: ${targetBiz?.name || currentAd.businessName || "Store"}`);
+      window.open(`tel:${phone.replace(/\s+/g, "")}`, "_self");
+    } else if (action === "whatsapp") {
+      const phone = (targetBiz?.phone || "9876543210").replace(/\D/g, "");
+      const msg = encodeURIComponent(
+        `Hi! I saw your ad on Bizearch Hosur (${currentAd.businessName || targetBiz?.name || "Store"}). I would like to inquire about your products and current promotions!`
+      );
+      recordEvent(`Ad lead - WhatsApp: ${targetBiz?.name || currentAd.businessName || "Store"}`);
+      window.open(`https://wa.me/91${phone.slice(-10)}?text=${msg}`, "_blank");
+    } else if (action === "navigate") {
+      if (targetBiz) {
+        viewBusiness(targetBiz, "navigation");
+        recordEvent(`Ad lead - Navigation: ${targetBiz.name}`);
+      }
+    }
+  };
+
   function handleAtoZSelect(itemQuery: string, itemSector?: string) {
     setQuery(itemQuery);
     if (itemSector && itemSector !== "All") {
@@ -13549,6 +13610,92 @@ export default function Home() {
                             {currentImageAd?.distanceKm !== undefined ? ` (${currentImageAd.distanceKm} km)` : ""}
                           </small>
                           <strong>{currentImageAd?.title}</strong>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "6px",
+                              marginTop: "8px",
+                              flexWrap: "wrap",
+                              zIndex: 3,
+                              position: "relative",
+                            }}
+                          >
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAdAction(currentImageAd, "view_store");
+                              }}
+                              style={{
+                                flex: "1 1 auto",
+                                background: "#15803d",
+                                color: "#ffffff",
+                                border: "none",
+                                padding: "6px 10px",
+                                borderRadius: "6px",
+                                fontSize: "11px",
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: "4px",
+                                boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
+                              }}
+                            >
+                              <span>🛍️</span> View Store
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAdAction(currentImageAd, "whatsapp");
+                              }}
+                              style={{
+                                background: "#25D366",
+                                color: "#ffffff",
+                                border: "none",
+                                padding: "6px 9px",
+                                borderRadius: "6px",
+                                fontSize: "11px",
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: "4px",
+                                boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
+                              }}
+                              title="Chat with business on WhatsApp"
+                            >
+                              <span>💬</span> WhatsApp
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAdAction(currentImageAd, "call");
+                              }}
+                              style={{
+                                background: "rgba(255, 255, 255, 0.95)",
+                                color: "#166534",
+                                border: "1px solid #bbf7d0",
+                                padding: "6px 9px",
+                                borderRadius: "6px",
+                                fontSize: "11px",
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: "4px",
+                                boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+                              }}
+                              title="Call store directly"
+                            >
+                              <span>📞</span> Call
+                            </button>
+                          </div>
                         </div>
                       </div>
                       <div className="ad-dots" aria-label={`Advertisement ${activeAd + 1} of ${adConfig.imageAds.length}`}>
@@ -13702,6 +13849,92 @@ export default function Home() {
                           {currentImageAd.distanceKm !== undefined ? ` (${currentImageAd.distanceKm} km)` : ""}
                         </small>
                         <strong>{currentImageAd.title}</strong>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "6px",
+                            marginTop: "8px",
+                            flexWrap: "wrap",
+                            zIndex: 3,
+                            position: "relative",
+                          }}
+                        >
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAdAction(currentImageAd, "view_store");
+                            }}
+                            style={{
+                              flex: "1 1 auto",
+                              background: "#15803d",
+                              color: "#ffffff",
+                              border: "none",
+                              padding: "6px 10px",
+                              borderRadius: "6px",
+                              fontSize: "11px",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: "4px",
+                              boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
+                            }}
+                          >
+                            <span>🛍️</span> View Store
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAdAction(currentImageAd, "whatsapp");
+                            }}
+                            style={{
+                              background: "#25D366",
+                              color: "#ffffff",
+                              border: "none",
+                              padding: "6px 9px",
+                              borderRadius: "6px",
+                              fontSize: "11px",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: "4px",
+                              boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
+                            }}
+                            title="Chat with business on WhatsApp"
+                          >
+                            <span>💬</span> WhatsApp
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAdAction(currentImageAd, "call");
+                            }}
+                            style={{
+                              background: "rgba(255, 255, 255, 0.95)",
+                              color: "#166534",
+                              border: "1px solid #bbf7d0",
+                              padding: "6px 9px",
+                              borderRadius: "6px",
+                              fontSize: "11px",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: "4px",
+                              boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+                            }}
+                            title="Call store directly"
+                          >
+                            <span>📞</span> Call
+                          </button>
+                        </div>
                       </div>
                     </div>
                     <div className="ad-dots" aria-label={`Advertisement ${activeAd + 1} of ${adConfig.imageAds.length}`}>
@@ -13777,7 +14010,49 @@ export default function Home() {
             >
               Your browser does not support embedded video.
             </video>
-            <div className="video-ad-caption"><strong>{adConfig.videoAd.title}</strong><p>{adConfig.videoAd.description}</p><button onClick={() => openPortal("Business")}>{t.promoteYourBusiness} <span>&#8594;</span></button></div>
+            <div className="video-ad-caption">
+              <strong>{adConfig.videoAd.title}</strong>
+              <p>{adConfig.videoAd.description}</p>
+              <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "8px" }}>
+                {adConfig.videoAd.businessName && (
+                  <button
+                    type="button"
+                    onClick={() => handleAdAction(adConfig.videoAd, "view_store")}
+                    style={{
+                      background: "#15803d",
+                      color: "#ffffff",
+                      border: "none",
+                      padding: "5px 10px",
+                      borderRadius: "6px",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                  >
+                    🛍️ View Sponsor
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => openPortal("Business")}
+                  style={{
+                    background: "transparent",
+                    color: "#166534",
+                    border: "1px solid #86efac",
+                    padding: "5px 10px",
+                    borderRadius: "6px",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  {t.promoteYourBusiness} <span>&#8594;</span>
+                </button>
+              </div>
+            </div>
             {adConfig.audioAd.sourceUrl && <div className="audio-ad-content"><strong>{adConfig.audioAd.title}</strong><p>{adConfig.audioAd.description}</p><audio controls preload="none" src={adConfig.audioAd.sourceUrl}>Your browser does not support embedded audio.</audio></div>}
           </section>
         </aside>
@@ -14121,6 +14396,83 @@ export default function Home() {
                 <div className="range-captions"><span>1 km</span><span>25 km</span></div>
               </div>
             </div>
+
+            {/* Smart Ad Targeting & Locality Indicator Banner */}
+            {adConfig.targetingSummary && (adConfig.targetingSummary.isLocationTargeted || adConfig.targetingSummary.isSearchTargeted) && (
+              <div
+                style={{
+                  margin: "14px 0 8px",
+                  padding: "10px 14px",
+                  borderRadius: "10px",
+                  background: "linear-gradient(90deg, #f0fdf4 0%, #f7fee7 100%)",
+                  border: "1px solid #bbf7d0",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  flexWrap: "wrap",
+                  gap: "10px",
+                  boxShadow: "0 2px 6px rgba(22, 101, 52, 0.05)",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: "16px" }}>🎯</span>
+                  <div style={{ fontSize: "12px", color: "#166534", fontWeight: 600 }}>
+                    {adConfig.targetingSummary.isSearchTargeted && (
+                      <span style={{ marginRight: "8px" }}>
+                        Search Matched: <strong style={{ color: "#065f46" }}>"{query.trim()}"</strong>
+                      </span>
+                    )}
+                    {adConfig.targetingSummary.isLocationTargeted && (
+                      <span>
+                        Surrounding Locality: <strong style={{ color: "#065f46" }}>📍 {selectedNeighborhood} ({radius} km radius)</strong>
+                      </span>
+                    )}
+                    <span style={{ marginLeft: "6px", color: "#65a30d", fontSize: "11px", fontWeight: 500 }}>
+                      • {adConfig.targetingSummary.matchingAdsCount} matching ad{adConfig.targetingSummary.matchingAdsCount !== 1 ? "s" : ""} prioritized
+                    </span>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", gap: "6px" }}>
+                  {selectedNeighborhood !== "All Hosur" && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedNeighborhood("All Hosur")}
+                      style={{
+                        background: "#ffffff",
+                        border: "1px solid #86efac",
+                        color: "#166534",
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        padding: "4px 9px",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Show All Hosur
+                    </button>
+                  )}
+                  {query.trim() && (
+                    <button
+                      type="button"
+                      onClick={() => setQuery("")}
+                      style={{
+                        background: "#ffffff",
+                        border: "1px solid #86efac",
+                        color: "#166534",
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        padding: "4px 9px",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Clear Search
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Mode Switcher: Browse by Sector vs A–Z Directory */}
             <div className="browse-mode-tabs" role="tablist" aria-label="Browse modes">
@@ -14788,7 +15140,49 @@ export default function Home() {
             <section className="video-ad-panel mobile-video-ad" aria-label="Video advertisement">
               <div className="video-ad-heading"><span>{t.videoAd}</span><small>{t.localSpotlight}</small></div>
               <video key={adConfig.videoAd.sourceUrl} className="video-ad-player" controls muted loop playsInline poster={adConfig.videoAd.posterUrl || undefined} src={adConfig.videoAd.sourceUrl}>Your browser does not support embedded video.</video>
-              <div className="video-ad-caption"><strong>{adConfig.videoAd.title}</strong><p>{adConfig.videoAd.description}</p><button onClick={() => openPortal("Business")}>{t.promoteYourBusiness} <span>&#8594;</span></button></div>
+              <div className="video-ad-caption">
+              <strong>{adConfig.videoAd.title}</strong>
+              <p>{adConfig.videoAd.description}</p>
+              <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "8px" }}>
+                {adConfig.videoAd.businessName && (
+                  <button
+                    type="button"
+                    onClick={() => handleAdAction(adConfig.videoAd, "view_store")}
+                    style={{
+                      background: "#15803d",
+                      color: "#ffffff",
+                      border: "none",
+                      padding: "5px 10px",
+                      borderRadius: "6px",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                  >
+                    🛍️ View Sponsor
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => openPortal("Business")}
+                  style={{
+                    background: "transparent",
+                    color: "#166534",
+                    border: "1px solid #86efac",
+                    padding: "5px 10px",
+                    borderRadius: "6px",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  {t.promoteYourBusiness} <span>&#8594;</span>
+                </button>
+              </div>
+            </div>
               {adConfig.audioAd.sourceUrl && <div className="audio-ad-content"><strong>{adConfig.audioAd.title}</strong><p>{adConfig.audioAd.description}</p><audio controls preload="none" src={adConfig.audioAd.sourceUrl}>Your browser does not support embedded audio.</audio></div>}
             </section>
             <div className="trust-strip"><span className="trust-icon">✳</span><div><strong>{t.localFirst}</strong><p>{t.localFirstDesc}</p></div><span className="trust-arrow">↗</span></div>

@@ -6,10 +6,12 @@ import {
   type AdFormat,
   type AdSlotTiming,
   type AdViewRecord,
+  type AdClickRecord,
   AD_FORMAT_PRICING,
   AD_TIME_SLOTS,
   calculateAdPricing,
   createSampleViewRecords,
+  createSampleClickRecords,
   isAdActiveAt,
 } from "./lib/ad-booking.shared";
 import { type AdConfig } from "./lib/ad-config.shared";
@@ -2111,6 +2113,7 @@ export function AdAudienceLogModal({
 }) {
   const [search, setSearch] = useState("");
   const [filterSurface, setFilterSurface] = useState<"all" | "poster" | "content" | "video">("all");
+  const [modalTab, setModalTab] = useState<"views" | "clicks">("views");
 
   const records: AdViewRecord[] = useMemo(() => {
     if (booking.viewRecords && booking.viewRecords.length > 0) {
@@ -2125,6 +2128,13 @@ export function AdAudienceLogModal({
         ? ["content"]
         : ["poster"];
     return createSampleViewRecords(booking.id, booking.viewsCount || 20, allowed);
+  }, [booking]);
+
+  const clickRecords: AdClickRecord[] = useMemo(() => {
+    if (booking.clickRecords && booking.clickRecords.length > 0) {
+      return booking.clickRecords;
+    }
+    return createSampleClickRecords(booking.id, booking.clicksCount || 8);
   }, [booking]);
 
   const uniqueViewers = useMemo(() => {
@@ -2150,7 +2160,61 @@ export function AdAudienceLogModal({
     });
   }, [records, filterSurface, search]);
 
+  const filteredClicks = useMemo(() => {
+    return clickRecords.filter((c) => {
+      if (search.trim()) {
+        const query = search.toLowerCase();
+        const matchCustomerId = c.customerId?.toLowerCase().includes(query);
+        const matchName = c.viewerName?.toLowerCase().includes(query);
+        const matchPhone = c.viewerPhone?.toLowerCase().includes(query);
+        const matchAction = c.actionLabel?.toLowerCase().includes(query);
+        const matchLocality = c.locality?.toLowerCase().includes(query);
+        if (!matchCustomerId && !matchName && !matchPhone && !matchAction && !matchLocality) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [clickRecords, search]);
+
   const exportCsv = () => {
+    if (modalTab === "clicks") {
+      const headers = [
+        "Customer ID",
+        "Click ID",
+        "Ad Booking ID",
+        "Business Name",
+        "Action Taken",
+        "Customer Name",
+        "Phone / Contact",
+        "Click Date",
+        "Click Time",
+        "Timestamp (ISO)",
+        "Locality",
+        "Device",
+      ];
+      const rows = filteredClicks.map((c) => [
+        `"${c.customerId}"`,
+        c.id,
+        c.adBookingId,
+        `"${booking.businessName}"`,
+        `"${c.actionLabel}"`,
+        `"${c.viewerName}"`,
+        `"${c.viewerPhone || "N/A"}"`,
+        `"${c.clickedDate}"`,
+        `"${c.clickedTime}"`,
+        c.clickedAt,
+        `"${c.locality || "Hosur, Tamil Nadu"}"`,
+        `"${c.device || "Mobile / Web"}"`,
+      ]);
+      const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
+      const a = document.createElement("a");
+      a.href = encodeURI(csvContent);
+      a.download = `ad_lead_clicks_${booking.businessName.toLowerCase().replace(/[^a-z0-9]+/g, "_")}.csv`;
+      a.click();
+      return;
+    }
+
     const headers = [
       "Customer ID",
       "View ID",
@@ -2316,28 +2380,27 @@ export function AdAudienceLogModal({
 
             <div style={{ background: "#ffffff", padding: "14px 16px", borderRadius: "10px", border: "1px solid #d9e6da" }}>
               <span style={{ fontSize: "11px", color: "#617d68", fontWeight: 700, textTransform: "uppercase" }}>
-                UNIQUE VIEWERS
+                DIRECT LEADS &amp; CLICKS
               </span>
               <div style={{ fontSize: "22px", fontWeight: 800, color: "#163a23", marginTop: "4px" }}>
-                👥 {uniqueViewers.toLocaleString("en-IN")}
+                🎯 {(booking.clicksCount || clickRecords.length).toLocaleString("en-IN")}
               </div>
-              <small style={{ color: "#546e5c" }}>Distinct neighbors in Hosur</small>
+              <small style={{ color: "#546e5c" }}>Calls, WhatsApp &amp; store visits</small>
             </div>
 
             <div style={{ background: "#ffffff", padding: "14px 16px", borderRadius: "10px", border: "1px solid #d9e6da" }}>
               <span style={{ fontSize: "11px", color: "#617d68", fontWeight: 700, textTransform: "uppercase" }}>
-                FORMAT BREAKDOWN
+                CLICK-THROUGH RATE (CTR)
               </span>
-              <div style={{ fontSize: "12px", fontWeight: 700, color: "#1c4a2c", marginTop: "6px", display: "flex", flexDirection: "column", gap: "2px" }}>
-                <span>🖼️ Poster: {booking.impressionsBySurface?.poster || 0}</span>
-                <span>📢 Ticker: {booking.impressionsBySurface?.content || 0}</span>
-                <span>🎬 Video: {booking.impressionsBySurface?.video || 0}</span>
+              <div style={{ fontSize: "22px", fontWeight: 800, color: "#163a23", marginTop: "4px" }}>
+                📈 {(((booking.clicksCount || clickRecords.length) / Math.max(1, (booking.viewsCount || records.length))) * 100).toFixed(1)}%
               </div>
+              <small style={{ color: "#546e5c" }}>Audience engagement ratio</small>
             </div>
 
             <div style={{ background: "#ffffff", padding: "14px 16px", borderRadius: "10px", border: "1px solid #d9e6da" }}>
               <span style={{ fontSize: "11px", color: "#617d68", fontWeight: 700, textTransform: "uppercase" }}>
-                LAST ACTIVE VIEW
+                LAST ACTIVE INTERACTION
               </span>
               <div style={{ fontSize: "16px", fontWeight: 800, color: "#163a23", marginTop: "6px" }}>
                 🕒 {booking.lastViewedAt ? formatRelativeTime(booking.lastViewedAt) : "Recently active"}
@@ -2346,6 +2409,48 @@ export function AdAudienceLogModal({
                 {booking.lastViewedAt ? new Date(booking.lastViewedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Today"}
               </small>
             </div>
+          </div>
+
+          {/* Sub-tab Switcher: Impressions vs Direct Leads */}
+          <div style={{ display: "flex", gap: "8px", marginBottom: "12px", borderBottom: "1px solid #d8e5d9", paddingBottom: "10px" }}>
+            <button
+              type="button"
+              onClick={() => setModalTab("views")}
+              style={{
+                padding: "8px 16px",
+                borderRadius: "8px",
+                border: 0,
+                background: modalTab === "views" ? "#245233" : "#edf3ee",
+                color: modalTab === "views" ? "#ffffff" : "#324e39",
+                fontSize: "12px",
+                fontWeight: 800,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+            >
+              <span>👁️</span> Verified Impressions ({filteredRecords.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setModalTab("clicks")}
+              style={{
+                padding: "8px 16px",
+                borderRadius: "8px",
+                border: 0,
+                background: modalTab === "clicks" ? "#245233" : "#edf3ee",
+                color: modalTab === "clicks" ? "#ffffff" : "#324e39",
+                fontSize: "12px",
+                fontWeight: 800,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+            >
+              <span>🎯</span> Direct Customer Leads &amp; Clicks ({filteredClicks.length})
+            </button>
           </div>
 
           {/* Search, Filter & Export Toolbar */}
@@ -2369,7 +2474,7 @@ export function AdAudienceLogModal({
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by Customer ID (e.g. CUST-HSR), name, phone, locality..."
+                placeholder={modalTab === "views" ? "Search by Customer ID (e.g. CUST-HSR), name, phone, locality..." : "Search leads by Customer ID, name, or action..."}
                 style={{
                   width: "100%",
                   border: "1px solid #c9dacb",
@@ -2382,7 +2487,7 @@ export function AdAudienceLogModal({
             </div>
 
             <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
-              {(["all", "poster", "content", "video"] as const).map((s) => (
+              {modalTab === "views" && (["all", "poster", "content", "video"] as const).map((s) => (
                 <button
                   key={s}
                   type="button"
@@ -2419,14 +2524,14 @@ export function AdAudienceLogModal({
                   fontWeight: 700,
                   cursor: "pointer",
                 }}
-                title="Download CSV report of customer views"
+                title={modalTab === "views" ? "Download CSV report of customer views" : "Download CSV report of customer leads"}
               >
-                <span>📥</span> Export CSV
+                <span>📥</span> Export {modalTab === "views" ? "Views CSV" : "Leads CSV"}
               </button>
             </div>
           </div>
 
-          {/* Viewer Records List Table */}
+          {/* Table Container */}
           <div
             style={{
               background: "#ffffff",
@@ -2435,159 +2540,301 @@ export function AdAudienceLogModal({
               overflow: "hidden",
             }}
           >
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1.3fr 1.6fr 1.1fr 1.5fr 1.3fr",
-                padding: "10px 16px",
-                background: "#f3f8f4",
-                borderBottom: "1px solid #dce7dc",
-                fontSize: "11px",
-                fontWeight: 800,
-                color: "#466350",
-                textTransform: "uppercase",
-                letterSpacing: "0.4px",
-              }}
-            >
-              <span>Customer ID</span>
-              <span>User / Viewer</span>
-              <span>Ad Channel</span>
-              <span>View Date &amp; Time</span>
-              <span>Locality &amp; Device</span>
-            </div>
+            {modalTab === "views" ? (
+              <>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1.3fr 1.6fr 1.1fr 1.5fr 1.3fr",
+                    padding: "10px 16px",
+                    background: "#f3f8f4",
+                    borderBottom: "1px solid #dce7dc",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    color: "#466350",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.4px",
+                  }}
+                >
+                  <span>Customer ID</span>
+                  <span>User / Viewer</span>
+                  <span>Ad Channel</span>
+                  <span>View Date &amp; Time</span>
+                  <span>Locality &amp; Device</span>
+                </div>
 
-            {filteredRecords.length === 0 ? (
-              <div style={{ padding: "36px 20px", textAlign: "center", color: "#607a67" }}>
-                <div style={{ fontSize: "28px", marginBottom: "6px" }}>🔍</div>
-                <strong>No viewer records match your search filter.</strong>
-                <p style={{ margin: "4px 0 0", fontSize: "12px" }}>
-                  Try adjusting the surface filter or searching for another customer ID or term.
-                </p>
-              </div>
-            ) : (
-              <div style={{ maxHeight: "360px", overflowY: "auto" }}>
-                {filteredRecords.map((r, idx) => {
-                  const viewDate = new Date(r.viewedAt);
-                  const isRecent = Date.now() - viewDate.getTime() < 15 * 60 * 1000;
-                  const displayDate = r.viewedDate || viewDate.toLocaleDateString([], { day: "2-digit", month: "short", year: "numeric" });
-                  const displayTime = r.viewedTime || viewDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+                {filteredRecords.length === 0 ? (
+                  <div style={{ padding: "36px 20px", textAlign: "center", color: "#607a67" }}>
+                    <div style={{ fontSize: "28px", marginBottom: "6px" }}>🔍</div>
+                    <strong>No viewer records match your search filter.</strong>
+                    <p style={{ margin: "4px 0 0", fontSize: "12px" }}>
+                      Try adjusting the surface filter or searching for another customer ID or term.
+                    </p>
+                  </div>
+                ) : (
+                  <div style={{ maxHeight: "360px", overflowY: "auto" }}>
+                    {filteredRecords.map((r, idx) => {
+                      const viewDate = new Date(r.viewedAt);
+                      const isRecent = Date.now() - viewDate.getTime() < 15 * 60 * 1000;
+                      const displayDate = r.viewedDate || viewDate.toLocaleDateString([], { day: "2-digit", month: "short", year: "numeric" });
+                      const displayTime = r.viewedTime || viewDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
-                  return (
-                    <div
-                      key={r.id || idx}
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1.3fr 1.6fr 1.1fr 1.5fr 1.3fr",
-                        alignItems: "center",
-                        padding: "12px 16px",
-                        borderBottom: idx < filteredRecords.length - 1 ? "1px solid #edf4ee" : "none",
-                        background: isRecent ? "#fafefa" : "#ffffff",
-                        transition: "background 0.15s ease",
-                      }}
-                    >
-                      {/* Customer ID */}
-                      <div>
-                        <span
-                          style={{
-                            display: "inline-block",
-                            padding: "3px 8px",
-                            borderRadius: "6px",
-                            fontSize: "11px",
-                            fontWeight: 800,
-                            letterSpacing: "0.4px",
-                            background: "#e0f2fe",
-                            color: "#0369a1",
-                            border: "1px solid #bae6fd",
-                            fontFamily: "monospace",
-                          }}
-                        >
-                          🆔 {r.customerId || "CUST-HSR-GUEST"}
-                        </span>
-                      </div>
-
-                      {/* User Info */}
-                      <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
+                      return (
                         <div
+                          key={r.id || idx}
                           style={{
-                            width: "32px",
-                            height: "32px",
-                            borderRadius: "50%",
-                            background: "#e2efe4",
-                            color: "#1c522f",
-                            fontWeight: 800,
-                            fontSize: "13px",
-                            display: "flex",
+                            display: "grid",
+                            gridTemplateColumns: "1.3fr 1.6fr 1.1fr 1.5fr 1.3fr",
                             alignItems: "center",
-                            justifyContent: "center",
-                            flexShrink: 0,
+                            padding: "12px 16px",
+                            borderBottom: idx < filteredRecords.length - 1 ? "1px solid #edf4ee" : "none",
+                            background: isRecent ? "#fafefa" : "#ffffff",
+                            transition: "background 0.15s ease",
                           }}
                         >
-                          {(r.viewerName[0] || "N").toUpperCase()}
-                        </div>
-                        <div style={{ minWidth: 0 }}>
-                          <strong style={{ display: "block", fontSize: "12.5px", color: "#1a3c26", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                            {r.viewerName}
-                          </strong>
-                          <span style={{ fontSize: "10.5px", color: "#627d6b" }}>
-                            {r.viewerRole || "Customer"} {r.viewerPhone ? `• ${r.viewerPhone}` : ""}
-                          </span>
-                        </div>
-                      </div>
+                          <div>
+                            <span
+                              style={{
+                                display: "inline-block",
+                                padding: "3px 8px",
+                                borderRadius: "6px",
+                                fontSize: "11px",
+                                fontWeight: 800,
+                                letterSpacing: "0.4px",
+                                background: "#e0f2fe",
+                                color: "#0369a1",
+                                border: "1px solid #bae6fd",
+                                fontFamily: "monospace",
+                              }}
+                            >
+                              🆔 {r.customerId || "CUST-HSR-GUEST"}
+                            </span>
+                          </div>
 
-                      {/* Surface Format */}
-                      <div>
-                        <span
+                          <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
+                            <div
+                              style={{
+                                width: "32px",
+                                height: "32px",
+                                borderRadius: "50%",
+                                background: "#e2efe4",
+                                color: "#1c522f",
+                                fontWeight: 800,
+                                fontSize: "13px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                flexShrink: 0,
+                              }}
+                            >
+                              {(r.viewerName[0] || "N").toUpperCase()}
+                            </div>
+                            <div style={{ minWidth: 0 }}>
+                              <strong style={{ display: "block", fontSize: "12.5px", color: "#1a3c26", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                {r.viewerName}
+                              </strong>
+                              <span style={{ fontSize: "10.5px", color: "#627d6b" }}>
+                                {r.viewerRole || "Customer"} {r.viewerPhone ? `• ${r.viewerPhone}` : ""}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div>
+                            <span
+                              style={{
+                                display: "inline-block",
+                                padding: "3px 8px",
+                                borderRadius: "12px",
+                                fontSize: "10.5px",
+                                fontWeight: 700,
+                                background:
+                                  r.surface === "video"
+                                    ? "#fef3c7"
+                                    : r.surface === "content"
+                                    ? "#e0f2fe"
+                                    : "#dcfce7",
+                                color:
+                                  r.surface === "video"
+                                    ? "#92400e"
+                                    : r.surface === "content"
+                                    ? "#0369a1"
+                                    : "#15803d",
+                              }}
+                            >
+                              {r.surfaceLabel || r.surface}
+                            </span>
+                          </div>
+
+                          <div>
+                            <div style={{ fontSize: "12px", fontWeight: 700, color: "#1c3d28", display: "flex", alignItems: "center", gap: "4px" }}>
+                              <span>⏰</span> {displayTime}
+                            </div>
+                            <div style={{ fontSize: "11px", color: "#506f59", display: "flex", gap: "4px", alignItems: "center", marginTop: "2px" }}>
+                              <span>📅 {displayDate}</span>
+                              <span>•</span>
+                              <span style={{ fontWeight: 600, color: isRecent ? "#166534" : "#728a7a" }}>
+                                {formatRelativeTime(r.viewedAt)}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div>
+                            <div style={{ fontSize: "11.5px", fontWeight: 600, color: "#254430" }}>
+                              📍 {r.locality || "Hosur, Tamil Nadu"}
+                            </div>
+                            <small style={{ fontSize: "10px", color: "#748a7b" }}>
+                              💻 {r.device || "Mobile Browser"}
+                            </small>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1.3fr 1.6fr 1.3fr 1.5fr 1.3fr",
+                    padding: "10px 16px",
+                    background: "#f3f8f4",
+                    borderBottom: "1px solid #dce7dc",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    color: "#466350",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.4px",
+                  }}
+                >
+                  <span>Customer ID</span>
+                  <span>Customer Name</span>
+                  <span>Action Taken</span>
+                  <span>Click Date &amp; Time</span>
+                  <span>Locality &amp; Device</span>
+                </div>
+
+                {filteredClicks.length === 0 ? (
+                  <div style={{ padding: "36px 20px", textAlign: "center", color: "#607a67" }}>
+                    <div style={{ fontSize: "28px", marginBottom: "6px" }}>🎯</div>
+                    <strong>No customer clicks or leads recorded yet.</strong>
+                    <p style={{ margin: "4px 0 0", fontSize: "12px" }}>
+                      Direct calls, WhatsApp chats, and profile clicks will be recorded here.
+                    </p>
+                  </div>
+                ) : (
+                  <div style={{ maxHeight: "360px", overflowY: "auto" }}>
+                    {filteredClicks.map((c, idx) => {
+                      return (
+                        <div
+                          key={c.id || idx}
                           style={{
-                            display: "inline-block",
-                            padding: "3px 8px",
-                            borderRadius: "12px",
-                            fontSize: "10.5px",
-                            fontWeight: 700,
-                            background:
-                              r.surface === "video"
-                                ? "#fef3c7"
-                                : r.surface === "content"
-                                ? "#e0f2fe"
-                                : "#dcfce7",
-                            color:
-                              r.surface === "video"
-                                ? "#92400e"
-                                : r.surface === "content"
-                                ? "#0369a1"
-                                : "#15803d",
+                            display: "grid",
+                            gridTemplateColumns: "1.3fr 1.6fr 1.3fr 1.5fr 1.3fr",
+                            alignItems: "center",
+                            padding: "12px 16px",
+                            borderBottom: idx < filteredClicks.length - 1 ? "1px solid #edf4ee" : "none",
+                            background: "#ffffff",
                           }}
                         >
-                          {r.surfaceLabel || r.surface}
-                        </span>
-                      </div>
+                          <div>
+                            <span
+                              style={{
+                                display: "inline-block",
+                                padding: "3px 8px",
+                                borderRadius: "6px",
+                                fontSize: "11px",
+                                fontWeight: 800,
+                                letterSpacing: "0.4px",
+                                background: "#fef3c7",
+                                color: "#92400e",
+                                border: "1px solid #fde68a",
+                                fontFamily: "monospace",
+                              }}
+                            >
+                              🆔 {c.customerId}
+                            </span>
+                          </div>
 
-                      {/* View Date & Time */}
-                      <div>
-                        <div style={{ fontSize: "12px", fontWeight: 700, color: "#1c3d28", display: "flex", alignItems: "center", gap: "4px" }}>
-                          <span>⏰</span> {displayTime}
-                        </div>
-                        <div style={{ fontSize: "11px", color: "#506f59", display: "flex", gap: "4px", alignItems: "center", marginTop: "2px" }}>
-                          <span>📅 {displayDate}</span>
-                          <span>•</span>
-                          <span style={{ fontWeight: 600, color: isRecent ? "#166534" : "#728a7a" }}>
-                            {formatRelativeTime(r.viewedAt)}
-                          </span>
-                        </div>
-                      </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
+                            <div
+                              style={{
+                                width: "32px",
+                                height: "32px",
+                                borderRadius: "50%",
+                                background: "#e0f2fe",
+                                color: "#0369a1",
+                                fontWeight: 800,
+                                fontSize: "13px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                flexShrink: 0,
+                              }}
+                            >
+                              {(c.viewerName[0] || "C").toUpperCase()}
+                            </div>
+                            <div style={{ minWidth: 0 }}>
+                              <strong style={{ display: "block", fontSize: "12.5px", color: "#1a3c26", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                {c.viewerName}
+                              </strong>
+                              <span style={{ fontSize: "10.5px", color: "#627d6b" }}>
+                                {c.viewerPhone || "Customer Contact"}
+                              </span>
+                            </div>
+                          </div>
 
-                      {/* Locality & Device */}
-                      <div>
-                        <div style={{ fontSize: "11.5px", fontWeight: 600, color: "#254430" }}>
-                          📍 {r.locality || "Hosur, Tamil Nadu"}
+                          <div>
+                            <span
+                              style={{
+                                display: "inline-block",
+                                padding: "3px 8px",
+                                borderRadius: "12px",
+                                fontSize: "10.5px",
+                                fontWeight: 700,
+                                background:
+                                  c.action === "call"
+                                    ? "#dcfce7"
+                                    : c.action === "whatsapp"
+                                    ? "#d1fae5"
+                                    : "#e0f2fe",
+                                color:
+                                  c.action === "call"
+                                    ? "#166534"
+                                    : c.action === "whatsapp"
+                                    ? "#047857"
+                                    : "#0369a1",
+                              }}
+                            >
+                              {c.action === "call" ? "📞 " : c.action === "whatsapp" ? "💬 " : c.action === "navigate" ? "📍 " : "🛍️ "}
+                              {c.actionLabel}
+                            </span>
+                          </div>
+
+                          <div>
+                            <div style={{ fontSize: "12px", fontWeight: 700, color: "#1c3d28", display: "flex", alignItems: "center", gap: "4px" }}>
+                              <span>⏰</span> {c.clickedTime}
+                            </div>
+                            <div style={{ fontSize: "11px", color: "#506f59", display: "flex", gap: "4px", alignItems: "center", marginTop: "2px" }}>
+                              <span>📅 {c.clickedDate}</span>
+                            </div>
+                          </div>
+
+                          <div>
+                            <div style={{ fontSize: "11.5px", fontWeight: 600, color: "#254430" }}>
+                              📍 {c.locality || "Hosur, Tamil Nadu"}
+                            </div>
+                            <small style={{ fontSize: "10px", color: "#748a7b" }}>
+                              💻 {c.device || "Mobile Browser"}
+                            </small>
+                          </div>
                         </div>
-                        <small style={{ fontSize: "10px", color: "#748a7b" }}>
-                          💻 {r.device || "Mobile Browser"}
-                        </small>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -3102,6 +3349,22 @@ export function AdCampaignsManager({
                         >
                           👁️ {(b.viewsCount || 0).toLocaleString("en-IN")} Customer Views
                         </span>
+                        <span
+                          style={{
+                            background: "#eff6ff",
+                            color: "#1d4ed8",
+                            border: "1px solid #bfdbfe",
+                            borderRadius: "12px",
+                            padding: "2px 8px",
+                            fontSize: "11px",
+                            fontWeight: 700,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px",
+                          }}
+                        >
+                          🎯 {(b.clicksCount || (b.clickRecords ? b.clickRecords.length : (b.viewsCount ? Math.max(1, Math.round(b.viewsCount * 0.045)) : 0))).toLocaleString("en-IN")} Leads
+                        </span>
                         {b.impressionsBySurface && (
                           <span style={{ fontSize: "11px", color: "#52735d" }}>
                             (Poster: {b.impressionsBySurface.poster || 0} • Ticker: {b.impressionsBySurface.content || 0} • Video: {b.impressionsBySurface.video || 0})
@@ -3474,6 +3737,22 @@ export function CompanyAdBookingsManager({
                     }}
                   >
                     👁️ {(b.viewsCount || 0).toLocaleString("en-IN")} Views
+                  </span>
+                  <span
+                    style={{
+                      background: "#eff6ff",
+                      color: "#1d4ed8",
+                      border: "1px solid #bfdbfe",
+                      borderRadius: "12px",
+                      padding: "2px 8px",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                  >
+                    🎯 {(b.clicksCount || (b.clickRecords ? b.clickRecords.length : (b.viewsCount ? Math.max(1, Math.round(b.viewsCount * 0.045)) : 0))).toLocaleString("en-IN")} Leads
                   </span>
                   {b.impressionsBySurface && (
                     <span style={{ fontSize: "11px", color: "#546e5c" }}>
