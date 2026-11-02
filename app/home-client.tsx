@@ -195,6 +195,8 @@ type Business = {
   subscribed: boolean;
   taxonomyTags?: string[];
   tag?: string;
+  images?: string[];
+  image?: string;
 };
 type DemoEnquiry = {
   id: string;
@@ -11350,6 +11352,14 @@ export default function Home() {
     const latitude = Number(latitudeValue);
     const longitude = Number(longitudeValue);
     const coordinates = latitudeValue && longitudeValue && Number.isFinite(latitude) && Number.isFinite(longitude) ? { latitude, longitude } : null;
+    let uploadedImages: string[] = [];
+    try {
+      const rawImages = form.get("businessImages");
+      if (rawImages) {
+        const parsed = JSON.parse(String(rawImages));
+        if (Array.isArray(parsed)) uploadedImages = parsed.filter((img): img is string => typeof img === "string");
+      }
+    } catch { /* ignore */ }
     if (!name || !phone || !selectedCategory || !businessModes.length) return;
     if (!coordinates || coordinates.latitude < -90 || coordinates.latitude > 90 || coordinates.longitude < -180 || coordinates.longitude > 180) {
       showNotice("Capture the business location before submitting registration.");
@@ -11367,6 +11377,7 @@ export default function Home() {
       {
         name,
         category: selectedCategory,
+        phone,
         address,
         coordinates,
         demoCoordinates: coordinates,
@@ -11388,6 +11399,8 @@ export default function Home() {
         color: "peach",
         subscribed: false,
         tag: "Awaiting verification",
+        images: uploadedImages,
+        image: uploadedImages[0] || undefined,
       },
       ...current.businesses,
     ] }));
@@ -11402,6 +11415,16 @@ export default function Home() {
       linkText: "View in Discover",
       action: { type: "search", payload: name },
     });
+  }
+
+  function updateBusinessPhotos(businessName: string, images: string[]) {
+    setDemoData((prev) => ({
+      ...prev,
+      businesses: prev.businesses.map((b) =>
+        b.name === businessName ? { ...b, images, image: images[0] || undefined } : b
+      ),
+    }));
+    showNotice(`✓ Photos updated for "${businessName}"!`);
   }
 
   function verifyBusinessLocation() {
@@ -13746,7 +13769,15 @@ export default function Home() {
                     <div className="business-grid">
                       {displayedBusinesses.slice(0, visibleCount).map((business, index) => (
                         <article className="business-card" key={`${business.name}-${index}`}>
-                          <div className={`business-image ${business.color}`}><span className="business-emoji">{business.icon}</span>
+                          <div
+                            className={`business-image ${business.color}`}
+                            style={business.image || business.images?.[0] ? {
+                              backgroundImage: `url(${business.image || business.images?.[0]})`,
+                              backgroundSize: "cover",
+                              backgroundPosition: "center",
+                            } : undefined}
+                          >
+                            {!business.image && !business.images?.[0] && <span className="business-emoji">{business.icon}</span>}
                             {business.tag && <span className="business-tag">{business.tag}</span>}
                             <button className="save-button" aria-label={`${demoData.favorites.includes(business.name) ? "Remove saved" : "Save"} ${business.name}`} aria-pressed={demoData.favorites.includes(business.name)} onClick={() => toggleFavorite(business.name)}>{demoData.favorites.includes(business.name) ? "♥" : "♡"}</button>
                           </div>
@@ -13981,6 +14012,7 @@ export default function Home() {
             onSelectPlan={(plan) => setSubscriptionCheckout({ businessName: businessAccountBusinesses[0]?.name || businesses[0]?.name, plan })}
             onViewInvoice={(invoice) => setSubscriptionReceipt(invoice)}
             verifyLocation={verifyBusinessLocation}
+            onUpdateBusinessPhotos={updateBusinessPhotos}
             onAddProduct={addProduct}
             onUpdateProduct={updateProduct}
             onDeleteProduct={deleteProduct}
@@ -14698,6 +14730,48 @@ function BusinessDetailDialog({
         </div>
         <h2>{business.name}</h2>
         <p>{business.description}</p>
+
+        {business.images && business.images.length > 0 && (
+          <div className="business-detail-gallery" style={{ margin: "10px 0 14px" }}>
+            <div style={{ fontSize: "11px", fontWeight: 700, color: "#254e32", marginBottom: "6px" }}>
+              Storefront &amp; Business Gallery ({business.images.length} photos)
+            </div>
+            <div style={{ display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "6px", scrollbarWidth: "thin" }}>
+              {business.images.map((img, idx) => (
+                <div key={idx} style={{ position: "relative", flexShrink: 0 }}>
+                  <img
+                    src={img}
+                    alt={`${business.name} photo ${idx + 1}`}
+                    style={{
+                      width: "140px",
+                      height: "95px",
+                      objectFit: "cover",
+                      borderRadius: "8px",
+                      border: "1px solid #d4ded5",
+                      display: "block",
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.06)",
+                    }}
+                  />
+                  {idx === 0 && (
+                    <span style={{
+                      position: "absolute",
+                      bottom: "5px",
+                      left: "5px",
+                      background: "rgba(37,78,50,0.88)",
+                      color: "#fff",
+                      fontSize: "8.5px",
+                      fontWeight: 700,
+                      padding: "1px 5px",
+                      borderRadius: "4px",
+                    }}>
+                      Cover
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Business Contact Call & Action Banner */}
         <div className="business-contact-banner">
@@ -17194,6 +17268,7 @@ function BusinessPortal({
   onSelectPlan,
   onViewInvoice,
   verifyLocation,
+  onUpdateBusinessPhotos,
   onAddProduct,
   onUpdateProduct,
   onDeleteProduct,
@@ -17213,6 +17288,7 @@ function BusinessPortal({
   onSelectPlan?: (plan: string) => void;
   onViewInvoice?: (record: CheckoutRequest) => void;
   verifyLocation: () => void;
+  onUpdateBusinessPhotos?: (businessName: string, images: string[]) => void;
   onAddProduct: (businessName: string, product: Omit<Product, "id">) => void;
   onUpdateProduct?: (businessName: string, productId: string, updated: Partial<Product>) => void;
   onDeleteProduct?: (businessName: string, productId: string) => void;
@@ -17260,7 +17336,198 @@ function BusinessPortal({
       <div className="verification-banner"><span className="verify-icon">⌖</span><div><strong>Help neighbors find the right place.</strong><p>Granting device location is only a demo permission check; it does not verify your registered business address.</p></div><button onClick={verifyLocation}>Check location access <span>↗</span></button></div>
       <div className="form-note"><strong>Demo dashboard</strong><span>Views, enquiries and subscription status are sample data until your business is connected to a production backend.</span></div>
     </>}
-    {tab === "My business" && <section className="panel tab-panel"><div className="panel-heading"><div><div className="eyebrow">BUSINESS PROFILE</div><h2>Your business</h2></div></div>{businesses.length ? businesses.map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category} · {business.distance} km sample distance</small></span><span className={`status-pill ${business.subscribed ? "verified" : "pending"}`}>● {business.subscribed ? "Subscribed" : "Needs plan"}</span></div>) : <EmptyState title="No business profile yet" text="Complete your business registration to set up your profile." />}</section>}
+    {tab === "My business" && (
+      <section className="panel tab-panel">
+        <div className="panel-heading">
+          <div>
+            <div className="eyebrow">BUSINESS PROFILE</div>
+            <h2>Your business</h2>
+          </div>
+        </div>
+        {businesses.length ? (
+          businesses.map((business, index) => {
+            const currentImages = business.images || (business.image ? [business.image] : []);
+            return (
+              <div key={`${business.name}-${index}`} style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "22px" }}>
+                <div className="listing-row">
+                  <span
+                    className={`listing-icon ${business.color}`}
+                    style={business.image || currentImages[0] ? {
+                      backgroundImage: `url(${business.image || currentImages[0]})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                    } : undefined}
+                  >
+                    {!business.image && !currentImages[0] && business.icon}
+                  </span>
+                  <span className="listing-name">
+                    <strong>{business.name}</strong>
+                    <small>{business.category} · {business.distance} km sample distance</small>
+                  </span>
+                  <span className={`status-pill ${business.subscribed ? "verified" : "pending"}`}>
+                    ● {business.subscribed ? "Subscribed" : "Needs plan"}
+                  </span>
+                </div>
+
+                {/* Business Storefront & Photos Management Card */}
+                <div style={{ background: "#f8faf8", border: "1px solid #dce5dc", borderRadius: "10px", padding: "16px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px", marginBottom: "12px" }}>
+                    <div>
+                      <strong style={{ fontSize: "13px", color: "#254e32", display: "block" }}>
+                        📸 Storefront &amp; Business Photos ({currentImages.length})
+                      </strong>
+                      <span style={{ fontSize: "11px", color: "#6a7e70" }}>
+                        These photos appear to customers on your business card, map view, and profile.
+                      </span>
+                    </div>
+                    <label
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        background: "#285536",
+                        color: "#ffffff",
+                        padding: "7px 14px",
+                        borderRadius: "7px",
+                        fontSize: "11.5px",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      <span>+ Upload Photos</span>
+                      <input
+                        type="file"
+                        accept="image/png, image/jpeg, image/webp, image/gif"
+                        multiple
+                        style={{ display: "none" }}
+                        onChange={(e) => {
+                          const files = e.target.files;
+                          if (!files || !files.length || !onUpdateBusinessPhotos) return;
+                          const fileList = Array.from(files);
+                          const newImgs: string[] = [];
+                          let count = 0;
+                          fileList.forEach((file) => {
+                            const reader = new FileReader();
+                            reader.onload = (ev) => {
+                              const dataUrl = ev.target?.result as string;
+                              if (dataUrl) newImgs.push(dataUrl);
+                              count++;
+                              if (count === fileList.length) {
+                                onUpdateBusinessPhotos(business.name, [...currentImages, ...newImgs]);
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          });
+                          e.target.value = "";
+                        }}
+                      />
+                    </label>
+                  </div>
+
+                  {currentImages.length > 0 ? (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))", gap: "10px" }}>
+                      {currentImages.map((img, imgIdx) => (
+                        <div
+                          key={imgIdx}
+                          style={{
+                            position: "relative",
+                            aspectRatio: "1 / 1",
+                            borderRadius: "8px",
+                            overflow: "hidden",
+                            border: imgIdx === 0 ? "2px solid #285536" : "1px solid #d4ded6",
+                            boxShadow: "0 2px 5px rgba(0,0,0,0.06)",
+                          }}
+                        >
+                          <img
+                            src={img}
+                            alt={`${business.name} photo ${imgIdx + 1}`}
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          />
+                          {imgIdx === 0 ? (
+                            <span style={{
+                              position: "absolute",
+                              top: "3px",
+                              left: "3px",
+                              background: "#285536",
+                              color: "#fff",
+                              fontSize: "8.5px",
+                              fontWeight: 800,
+                              padding: "1px 5px",
+                              borderRadius: "3px",
+                            }}>
+                              Cover
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (!onUpdateBusinessPhotos) return;
+                                const reordered = [img, ...currentImages.filter((_, i) => i !== imgIdx)];
+                                onUpdateBusinessPhotos(business.name, reordered);
+                              }}
+                              style={{
+                                position: "absolute",
+                                bottom: "3px",
+                                left: "3px",
+                                background: "rgba(0,0,0,0.7)",
+                                color: "#fff",
+                                border: 0,
+                                fontSize: "8px",
+                                fontWeight: 700,
+                                padding: "2px 4px",
+                                borderRadius: "3px",
+                                cursor: "pointer",
+                              }}
+                              title="Make this the cover photo"
+                            >
+                              Make cover
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!onUpdateBusinessPhotos) return;
+                              const updated = currentImages.filter((_, i) => i !== imgIdx);
+                              onUpdateBusinessPhotos(business.name, updated);
+                            }}
+                            style={{
+                              position: "absolute",
+                              top: "3px",
+                              right: "3px",
+                              background: "rgba(0,0,0,0.7)",
+                              color: "#fff",
+                              border: 0,
+                              borderRadius: "50%",
+                              width: "18px",
+                              height: "18px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              cursor: "pointer",
+                              fontSize: "12px",
+                              lineHeight: 1,
+                            }}
+                            title="Delete photo"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ textAlign: "center", padding: "18px 12px", border: "1px dashed #c8d8cb", borderRadius: "8px", color: "#6e8273", fontSize: "12px" }}>
+                      No photos uploaded yet. Upload your storefront, showroom, or workspace photos to attract more neighbors!
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <EmptyState title="No business profile yet" text="Complete your business registration to set up your profile." />
+        )}
+      </section>
+    )}
     {tab === "Products & services" && (
       <ProductManager
         businesses={businesses}
@@ -20409,6 +20676,43 @@ function Dialog({
   const [customVehicleMake, setCustomVehicleMake] = useState("");
   const [customVehicleModels, setCustomVehicleModels] = useState("");
   const isAutomobileBusiness = businessSectors.includes("Automobiles") || businessDetails.businessCategories.includes("Automobiles");
+  const [businessImages, setBusinessImages] = useState<string[]>([]);
+  const [businessImageInputError, setBusinessImageInputError] = useState("");
+
+  function handleBusinessImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const files = event.target.files;
+    if (!files || !files.length) return;
+    setBusinessImageInputError("");
+    const fileList = Array.from(files);
+    let loadedCount = 0;
+    const newImgs: string[] = [];
+
+    fileList.forEach((file) => {
+      if (!file.type.startsWith("image/")) {
+        setBusinessImageInputError("Please select image files (PNG, JPG, WebP).");
+        return;
+      }
+      if (file.size > 8 * 1024 * 1024) {
+        setBusinessImageInputError("Image file size should be under 8MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target?.result as string;
+        if (dataUrl) newImgs.push(dataUrl);
+        loadedCount++;
+        if (loadedCount === fileList.length) {
+          setBusinessImages((prev) => [...prev, ...newImgs].slice(0, 10));
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+    event.target.value = "";
+  }
+
+  function removeBusinessImage(indexToRemove: number) {
+    setBusinessImages((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+  }
   const availableVehicleMakes = [...new Set(vehicleTypes.flatMap((type) => vehicleMakesByType[type] || []))].sort((a, b) => a.localeCompare(b));
   const availableVehicleModels = [...new Map(vehicleMakes.flatMap((make) => vehicleTypes.flatMap((type) => getVehicleModelsForType(type, make).map((model) => [`${make}::${model}`, { key: `${make}::${model}`, make, model }] as const))).map(([key, value]) => [key, value])).values()];
   function toggleBusinessSector(sector: string) {
@@ -20740,7 +21044,139 @@ function Dialog({
           <button className="primary-button full-button" type="submit">Continue to verification</button>
         </form> :
           <form className="stacked-form" onSubmit={onBusiness}><input type="hidden" name="businessName" value={businessDetails.businessName} /><input type="hidden" name="businessCategory" value={businessDetails.businessCategory} /><input type="hidden" name="businessCategories" value={JSON.stringify(businessDetails.businessCategories)} /><input type="hidden" name="businessTaxonomySelections" value={JSON.stringify(businessTaxonomySelections)} /><input type="hidden" name="businessPhone" value={businessDetails.businessPhone} />{Object.entries(businessAddress).map(([key, value]) => <input type="hidden" key={`address-${key}`} name={key} value={value} />)}{businessModes.map((value) => <input type="hidden" key={`mode-${value}`} name="businessModes" value={value} />)}{vehicleTypes.map((value) => <input type="hidden" key={`type-${value}`} name="vehicleTypes" value={value} />)}{vehicleMakes.map((value) => <input type="hidden" key={`make-${value}`} name="vehicleMakes" value={value} />)}{vehicleModels.map((value) => <input type="hidden" key={`model-${value}`} name="vehicleModels" value={value} />)}<input type="hidden" name="customVehicleMake" value={customVehicleMake} /><input type="hidden" name="customVehicleModels" value={customVehicleModels} /><input type="hidden" name="businessLatitude" value={businessCoordinates?.latitude ?? ""} /><input type="hidden" name="businessLongitude" value={businessCoordinates?.longitude ?? ""} /><label>Create password <span className="optional">(at least 8 characters)</span><input name="password" type="password" placeholder="Create a password for your business account" autoComplete="new-password" minLength={8} required /></label>
-<div className="otp-row"><label>Business mobile OTP<input name="businessOtp" inputMode="numeric" autoComplete="one-time-code" placeholder="6-digit OTP" value={registrationOtp} onChange={(event) => { setRegistrationOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); setRegistrationOtpVerified(false); }} required /></label><div className="otp-actions"><button type="button" disabled={registrationOtpBusy} onClick={() => void requestRegistrationOtp("Business", "send", businessDetails.businessPhone)}>{registrationOtpBusy ? "Please wait?" : "Send OTP"}</button><button type="button" disabled={registrationOtpBusy || registrationOtp.length !== 6} onClick={() => void requestRegistrationOtp("Business", "verify", businessDetails.businessPhone)}>Verify OTP</button></div></div>{registrationDemoOtp && <p className="otp-demo-code" role="status">Demo OTP: <strong>{registrationDemoOtp}</strong> <span>For local testing only. No SMS was sent.</span></p>}{registrationOtpMessage && <p className={registrationOtpVerified ? "otp-verified" : "form-error"} role="status">{registrationOtpMessage}</p>}<label>Agent referral code <span className="optional">(optional)</span><input name="referral" placeholder="e.g. NEIGHBOR-4821" /></label><label>Upload business proof <span className="optional">(GSTIN, license or other registration)</span><input name="proof" type="file" accept=".pdf,.jpg,.jpeg,.png" /></label><label className="consent-check"><input type="checkbox" required /><span>I confirm these business details are accurate and consent to their use to create and verify my Bizearch business profile.</span></label><div className="form-button-row"><button type="button" className="outline-button" onClick={() => setStep(1)}>← Back</button><button type="submit" className="primary-button">Submit registration <span>→</span></button></div></form>}
+<div className="otp-row"><label>Business mobile OTP<input name="businessOtp" inputMode="numeric" autoComplete="one-time-code" placeholder="6-digit OTP" value={registrationOtp} onChange={(event) => { setRegistrationOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); setRegistrationOtpVerified(false); }} required /></label><div className="otp-actions"><button type="button" disabled={registrationOtpBusy} onClick={() => void requestRegistrationOtp("Business", "send", businessDetails.businessPhone)}>{registrationOtpBusy ? "Please wait?" : "Send OTP"}</button><button type="button" disabled={registrationOtpBusy || registrationOtp.length !== 6} onClick={() => void requestRegistrationOtp("Business", "verify", businessDetails.businessPhone)}>Verify OTP</button></div></div>{registrationDemoOtp && <p className="otp-demo-code" role="status">Demo OTP: <strong>{registrationDemoOtp}</strong> <span>For local testing only. No SMS was sent.</span></p>}{registrationOtpMessage && <p className={registrationOtpVerified ? "otp-verified" : "form-error"} role="status">{registrationOtpMessage}</p>}<label>Agent referral code <span className="optional">(optional)</span><input name="referral" placeholder="e.g. NEIGHBOR-4821" /></label><label>Upload business proof <span className="optional">(GSTIN, license or other registration)</span><input name="proof" type="file" accept=".pdf,.jpg,.jpeg,.png" /></label>
+<div className="business-images-upload-field" style={{ margin: "14px 0" }}>
+  <label style={{ display: "block", marginBottom: "6px", fontWeight: 600, fontSize: "12px", color: "#25332c" }}>
+    Upload business images <span className="optional" style={{ fontWeight: 400, color: "#778179", fontSize: "11px" }}>(Storefront, interior, products, or showcase photos)</span>
+  </label>
+  <div
+    style={{
+      border: "2px dashed #b8cbbd",
+      borderRadius: "9px",
+      padding: "16px 14px",
+      textAlign: "center",
+      background: "#fafdface",
+      position: "relative",
+      cursor: "pointer",
+      transition: "border-color 0.15s, background 0.15s",
+    }}
+  >
+    <input
+      type="file"
+      id="business-reg-images-input"
+      accept="image/png, image/jpeg, image/webp, image/gif"
+      multiple
+      onChange={handleBusinessImageUpload}
+      style={{
+        position: "absolute",
+        inset: 0,
+        opacity: 0,
+        cursor: "pointer",
+        width: "100%",
+        height: "100%",
+      }}
+      title="Upload business photos"
+    />
+    <div style={{ fontSize: "26px", marginBottom: "3px" }}>📸</div>
+    <div style={{ fontWeight: 700, fontSize: "12.5px", color: "#254e32" }}>
+      Click or drag business photos here
+    </div>
+    <div style={{ fontSize: "11px", color: "#6a7e70", marginTop: "2px" }}>
+      PNG, JPG, WebP · Up to 10 photos · The 1st photo serves as your cover image
+    </div>
+  </div>
+
+  {businessImageInputError && (
+    <p className="form-error" role="alert" style={{ marginTop: "6px", fontSize: "11px", color: "#dc2626" }}>
+      {businessImageInputError}
+    </p>
+  )}
+
+  {businessImages.length > 0 && (
+    <div style={{ marginTop: "10px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+        <span style={{ fontSize: "11px", fontWeight: 700, color: "#2d5339" }}>
+          Selected business images ({businessImages.length})
+        </span>
+        <button
+          type="button"
+          onClick={() => setBusinessImages([])}
+          style={{ background: "none", border: 0, color: "#c2410c", fontSize: "11px", cursor: "pointer", textDecoration: "underline", padding: 0 }}
+        >
+          Clear all
+        </button>
+      </div>
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(72px, 1fr))",
+        gap: "8px",
+      }}>
+        {businessImages.map((img, idx) => (
+          <div
+            key={idx}
+            style={{
+              position: "relative",
+              aspectRatio: "1 / 1",
+              borderRadius: "7px",
+              overflow: "hidden",
+              border: idx === 0 ? "2px solid #285536" : "1px solid #d4ded6",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+            }}
+          >
+            <img
+              src={img}
+              alt={`Business image ${idx + 1}`}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+            {idx === 0 && (
+              <span style={{
+                position: "absolute",
+                top: "2px",
+                left: "2px",
+                background: "#285536",
+                color: "#ffffff",
+                fontSize: "8px",
+                fontWeight: 800,
+                padding: "1px 4px",
+                borderRadius: "3px",
+                letterSpacing: "0.2px",
+              }}>
+                Cover
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={() => removeBusinessImage(idx)}
+              style={{
+                position: "absolute",
+                top: "2px",
+                right: "2px",
+                background: "rgba(0,0,0,0.7)",
+                color: "#ffffff",
+                border: 0,
+                borderRadius: "50%",
+                width: "18px",
+                height: "18px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                fontSize: "12px",
+                lineHeight: 1,
+                padding: 0,
+              }}
+              title="Remove image"
+              aria-label="Remove image"
+            >
+              ×
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+</div>
+<input type="hidden" name="businessImages" value={JSON.stringify(businessImages)} /><label className="consent-check"><input type="checkbox" required /><span>I confirm these business details are accurate and consent to their use to create and verify my Bizearch business profile.</span></label><div className="form-button-row"><button type="button" className="outline-button" onClick={() => setStep(1)}>← Back</button><button type="submit" className="primary-button">Submit registration <span>→</span></button></div></form>}
         <div className="fine-print">Registration is saved in this demo only. Document verification and listing activation require a secure backend.</div></>}</>}
       {kind === "plans" && <><div className="modal-mark">💳</div><div className="eyebrow">MEMBERSHIP &amp; PAYMENTS</div><h2>Choose a subscription plan to get discovered.</h2><p>Select any tier to proceed to secure payment authorization via UPI, Card, or Net Banking.</p>
         <div className="compact-plans">
