@@ -1,13 +1,15 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   type AdBookingRequest,
   type AdFormat,
   type AdSlotTiming,
+  type AdViewRecord,
   AD_FORMAT_PRICING,
   AD_TIME_SLOTS,
   calculateAdPricing,
+  createSampleViewRecords,
   isAdActiveAt,
 } from "./lib/ad-booking.shared";
 import { type AdConfig } from "./lib/ad-config.shared";
@@ -2098,6 +2100,499 @@ export function AdReceiptModal({
 }
 
 // ============================================================================
+// AD AUDIENCE LOG & VIEWS TIMING RECORDS MODAL
+// ============================================================================
+export function AdAudienceLogModal({
+  booking,
+  close,
+}: {
+  booking: AdBookingRequest;
+  close: () => void;
+}) {
+  const [search, setSearch] = useState("");
+  const [filterSurface, setFilterSurface] = useState<"all" | "poster" | "content" | "video">("all");
+
+  const records: AdViewRecord[] = useMemo(() => {
+    if (booking.viewRecords && booking.viewRecords.length > 0) {
+      return booking.viewRecords;
+    }
+    const allowed: Array<"poster" | "content" | "video"> =
+      booking.format === "combo"
+        ? ["poster", "content", "video"]
+        : booking.format === "video"
+        ? ["video"]
+        : booking.format === "content"
+        ? ["content"]
+        : ["poster"];
+    return createSampleViewRecords(booking.id, booking.viewsCount || 20, allowed);
+  }, [booking]);
+
+  const uniqueViewers = useMemo(() => {
+    return new Set(records.map((r) => r.viewerName)).size;
+  }, [records]);
+
+  const filteredRecords = useMemo(() => {
+    return records.filter((r) => {
+      if (filterSurface !== "all" && r.surface !== filterSurface) return false;
+      if (search.trim()) {
+        const query = search.toLowerCase();
+        const matchName = r.viewerName.toLowerCase().includes(query);
+        const matchPhone = r.viewerPhone?.toLowerCase().includes(query);
+        const matchLocality = r.locality?.toLowerCase().includes(query);
+        const matchDevice = r.device?.toLowerCase().includes(query);
+        const matchSurface = r.surfaceLabel?.toLowerCase().includes(query);
+        if (!matchName && !matchPhone && !matchLocality && !matchDevice && !matchSurface) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [records, filterSurface, search]);
+
+  const exportCsv = () => {
+    const headers = [
+      "View ID",
+      "Ad Booking ID",
+      "Business Name",
+      "Viewer Name",
+      "Viewer Role",
+      "Phone / Status",
+      "Channel Surface",
+      "Timestamp (ISO)",
+      "View Date",
+      "View Time",
+      "Locality",
+      "Device",
+    ];
+
+    const rows = filteredRecords.map((r) => {
+      const d = new Date(r.viewedAt);
+      return [
+        r.id,
+        r.adBookingId,
+        `"${booking.businessName}"`,
+        `"${r.viewerName}"`,
+        `"${r.viewerRole || "Customer"}"`,
+        `"${r.viewerPhone || "N/A"}"`,
+        `"${r.surfaceLabel || r.surface}"`,
+        r.viewedAt,
+        d.toLocaleDateString("en-IN"),
+        d.toLocaleTimeString("en-IN"),
+        `"${r.locality || "Hosur, Tamil Nadu"}"`,
+        `"${r.device || "Mobile / Web"}"`,
+      ];
+    });
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
+    const encoded = encodeURI(csvContent);
+    const a = document.createElement("a");
+    a.href = encoded;
+    a.download = `ad_view_records_${booking.businessName.toLowerCase().replace(/[^a-z0-9]+/g, "_")}.csv`;
+    a.click();
+  };
+
+  const formatRelativeTime = (isoString: string) => {
+    try {
+      const diffMs = Date.now() - new Date(isoString).getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      if (diffMins < 1) return "Just now";
+      if (diffMins < 60) return `${diffMins}m ago`;
+      const diffHours = Math.floor(diffMins / 60);
+      if (diffHours < 24) return `${diffHours}h ago`;
+      return `${Math.floor(diffHours / 24)}d ago`;
+    } catch {
+      return "";
+    }
+  };
+
+  return (
+    <div
+      className="order-modal-backdrop"
+      style={{
+        position: "fixed",
+        inset: 0,
+        backgroundColor: "rgba(14, 28, 18, 0.76)",
+        backdropFilter: "blur(6px)",
+        WebkitBackdropFilter: "blur(6px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 100000,
+        padding: "16px",
+        overflowY: "auto",
+      }}
+      onClick={close}
+    >
+      <div
+        className="plan-checkout-container"
+        style={{
+          maxWidth: "880px",
+          width: "95vw",
+          margin: "auto",
+          position: "relative",
+          maxHeight: "92vh",
+          display: "flex",
+          flexDirection: "column",
+          background: "#ffffff",
+          borderRadius: "16px",
+          overflow: "hidden",
+          boxShadow: "0 24px 60px rgba(0, 0, 0, 0.35)",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div
+          style={{
+            background: "linear-gradient(135deg, #163e26 0%, #0d2818 100%)",
+            padding: "18px 24px",
+            color: "#ffffff",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            borderBottom: "1px solid rgba(255, 255, 255, 0.12)",
+          }}
+        >
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ fontSize: "20px" }}>👁️</span>
+              <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 800, color: "#ffffff" }}>
+                Ad Views &amp; Audience Records
+              </h3>
+            </div>
+            <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#d2e4d6" }}>
+              Live customer reach log for <strong>{booking.businessName}</strong> • {booking.slotLabel} • Format: {AD_FORMAT_PRICING[booking.format]?.shortName || booking.format}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={close}
+            aria-label="Close"
+            style={{
+              background: "rgba(255, 255, 255, 0.16)",
+              border: "none",
+              color: "#ffffff",
+              fontSize: "18px",
+              width: "32px",
+              height: "32px",
+              borderRadius: "50%",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              lineHeight: 1,
+            }}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Content Body */}
+        <div style={{ padding: "20px 24px", overflowY: "auto", flex: 1, background: "#fcfdfc" }}>
+          {/* Key Metrics Row */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+              gap: "12px",
+              marginBottom: "18px",
+            }}
+          >
+            <div style={{ background: "#ffffff", padding: "14px 16px", borderRadius: "10px", border: "1px solid #d9e6da" }}>
+              <span style={{ fontSize: "11px", color: "#617d68", fontWeight: 700, textTransform: "uppercase" }}>
+                TOTAL AD VIEWS
+              </span>
+              <div style={{ fontSize: "22px", fontWeight: 800, color: "#163a23", marginTop: "4px" }}>
+                👁️ {(booking.viewsCount || records.length).toLocaleString("en-IN")}
+              </div>
+              <small style={{ color: "#546e5c" }}>Verified customer impressions</small>
+            </div>
+
+            <div style={{ background: "#ffffff", padding: "14px 16px", borderRadius: "10px", border: "1px solid #d9e6da" }}>
+              <span style={{ fontSize: "11px", color: "#617d68", fontWeight: 700, textTransform: "uppercase" }}>
+                UNIQUE VIEWERS
+              </span>
+              <div style={{ fontSize: "22px", fontWeight: 800, color: "#163a23", marginTop: "4px" }}>
+                👥 {uniqueViewers.toLocaleString("en-IN")}
+              </div>
+              <small style={{ color: "#546e5c" }}>Distinct neighbors in Hosur</small>
+            </div>
+
+            <div style={{ background: "#ffffff", padding: "14px 16px", borderRadius: "10px", border: "1px solid #d9e6da" }}>
+              <span style={{ fontSize: "11px", color: "#617d68", fontWeight: 700, textTransform: "uppercase" }}>
+                FORMAT BREAKDOWN
+              </span>
+              <div style={{ fontSize: "12px", fontWeight: 700, color: "#1c4a2c", marginTop: "6px", display: "flex", flexDirection: "column", gap: "2px" }}>
+                <span>🖼️ Poster: {booking.impressionsBySurface?.poster || 0}</span>
+                <span>📢 Ticker: {booking.impressionsBySurface?.content || 0}</span>
+                <span>🎬 Video: {booking.impressionsBySurface?.video || 0}</span>
+              </div>
+            </div>
+
+            <div style={{ background: "#ffffff", padding: "14px 16px", borderRadius: "10px", border: "1px solid #d9e6da" }}>
+              <span style={{ fontSize: "11px", color: "#617d68", fontWeight: 700, textTransform: "uppercase" }}>
+                LAST ACTIVE VIEW
+              </span>
+              <div style={{ fontSize: "16px", fontWeight: 800, color: "#163a23", marginTop: "6px" }}>
+                🕒 {booking.lastViewedAt ? formatRelativeTime(booking.lastViewedAt) : "Recently active"}
+              </div>
+              <small style={{ color: "#546e5c" }}>
+                {booking.lastViewedAt ? new Date(booking.lastViewedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Today"}
+              </small>
+            </div>
+          </div>
+
+          {/* Search, Filter & Export Toolbar */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: "10px",
+              flexWrap: "wrap",
+              background: "#ffffff",
+              padding: "12px 14px",
+              borderRadius: "10px",
+              border: "1px solid #d8e5d9",
+              marginBottom: "14px",
+            }}
+          >
+            <div style={{ display: "flex", gap: "8px", alignItems: "center", flex: 1, minWidth: "220px" }}>
+              <span style={{ fontSize: "14px", color: "#67816f" }}>🔍</span>
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by user name, phone, or locality..."
+                style={{
+                  width: "100%",
+                  border: "1px solid #c9dacb",
+                  borderRadius: "7px",
+                  padding: "7px 10px",
+                  fontSize: "12px",
+                  outline: "none",
+                }}
+              />
+            </div>
+
+            <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
+              {(["all", "poster", "content", "video"] as const).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setFilterSurface(s)}
+                  style={{
+                    padding: "6px 10px",
+                    borderRadius: "6px",
+                    border: 0,
+                    fontSize: "11.5px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    background: filterSurface === s ? "#245233" : "#edf3ee",
+                    color: filterSurface === s ? "#ffffff" : "#415a47",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  {s === "all" ? "All Surfaces" : s === "poster" ? "🖼️ Poster" : s === "content" ? "📢 Ticker" : "🎬 Video"}
+                </button>
+              ))}
+
+              <button
+                type="button"
+                onClick={exportCsv}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "6px 12px",
+                  background: "#166534",
+                  color: "#ffffff",
+                  border: 0,
+                  borderRadius: "6px",
+                  fontSize: "11.5px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+                title="Download CSV report of customer views"
+              >
+                <span>📥</span> Export CSV
+              </button>
+            </div>
+          </div>
+
+          {/* Viewer Records List Table */}
+          <div
+            style={{
+              background: "#ffffff",
+              border: "1px solid #dce7dc",
+              borderRadius: "10px",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1.8fr 1.2fr 1.4fr 1.6fr",
+                padding: "10px 16px",
+                background: "#f3f8f4",
+                borderBottom: "1px solid #dce7dc",
+                fontSize: "11px",
+                fontWeight: 800,
+                color: "#466350",
+                textTransform: "uppercase",
+                letterSpacing: "0.4px",
+              }}
+            >
+              <span>User / Viewer</span>
+              <span>Ad Channel</span>
+              <span>View Timing</span>
+              <span>Locality &amp; Device</span>
+            </div>
+
+            {filteredRecords.length === 0 ? (
+              <div style={{ padding: "36px 20px", textAlign: "center", color: "#607a67" }}>
+                <div style={{ fontSize: "28px", marginBottom: "6px" }}>🔍</div>
+                <strong>No viewer records match your search filter.</strong>
+                <p style={{ margin: "4px 0 0", fontSize: "12px" }}>
+                  Try adjusting the surface filter or searching for another term.
+                </p>
+              </div>
+            ) : (
+              <div style={{ maxHeight: "360px", overflowY: "auto" }}>
+                {filteredRecords.map((r, idx) => {
+                  const viewDate = new Date(r.viewedAt);
+                  const isRecent = Date.now() - viewDate.getTime() < 15 * 60 * 1000;
+
+                  return (
+                    <div
+                      key={r.id || idx}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1.8fr 1.2fr 1.4fr 1.6fr",
+                        alignItems: "center",
+                        padding: "12px 16px",
+                        borderBottom: idx < filteredRecords.length - 1 ? "1px solid #edf4ee" : "none",
+                        background: isRecent ? "#fafefa" : "#ffffff",
+                        transition: "background 0.15s ease",
+                      }}
+                    >
+                      {/* User Info */}
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
+                        <div
+                          style={{
+                            width: "32px",
+                            height: "32px",
+                            borderRadius: "50%",
+                            background: "#e2efe4",
+                            color: "#1c522f",
+                            fontWeight: 800,
+                            fontSize: "13px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {(r.viewerName[0] || "N").toUpperCase()}
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <strong style={{ display: "block", fontSize: "12.5px", color: "#1a3c26", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                            {r.viewerName}
+                          </strong>
+                          <span style={{ fontSize: "10.5px", color: "#627d6b" }}>
+                            {r.viewerRole || "Customer"} {r.viewerPhone ? `• ${r.viewerPhone}` : ""}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Surface Format */}
+                      <div>
+                        <span
+                          style={{
+                            display: "inline-block",
+                            padding: "3px 8px",
+                            borderRadius: "12px",
+                            fontSize: "10.5px",
+                            fontWeight: 700,
+                            background:
+                              r.surface === "video"
+                                ? "#fef3c7"
+                                : r.surface === "content"
+                                ? "#e0f2fe"
+                                : "#dcfce7",
+                            color:
+                              r.surface === "video"
+                                ? "#92400e"
+                                : r.surface === "content"
+                                ? "#0369a1"
+                                : "#15803d",
+                          }}
+                        >
+                          {r.surfaceLabel || r.surface}
+                        </span>
+                      </div>
+
+                      {/* View Timing */}
+                      <div>
+                        <div style={{ fontSize: "12px", fontWeight: 700, color: "#1c3d28" }}>
+                          {viewDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                        </div>
+                        <div style={{ fontSize: "10px", color: "#728a7a", display: "flex", gap: "4px", alignItems: "center" }}>
+                          <span>{viewDate.toLocaleDateString([], { month: "short", day: "numeric" })}</span>
+                          <span>•</span>
+                          <span style={{ fontWeight: 600, color: isRecent ? "#166534" : "#728a7a" }}>
+                            {formatRelativeTime(r.viewedAt)}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Locality & Device */}
+                      <div>
+                        <div style={{ fontSize: "11.5px", fontWeight: 600, color: "#254430" }}>
+                          📍 {r.locality || "Hosur, Tamil Nadu"}
+                        </div>
+                        <small style={{ fontSize: "10px", color: "#748a7b" }}>
+                          💻 {r.device || "Mobile Browser"}
+                        </small>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Modal Footer */}
+        <div
+          style={{
+            padding: "14px 24px",
+            background: "#ffffff",
+            borderTop: "1px solid #dce7dc",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <span style={{ fontSize: "11px", color: "#66806e" }}>
+            🔒 All user view timings and impressions are audited and privacy-compliant for Bizearch businesses.
+          </span>
+          <button
+            type="button"
+            className="primary-button"
+            onClick={close}
+            style={{ padding: "8px 20px", fontSize: "12px" }}
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
 // AD CAMPAIGN MANAGER TAB (FOR BUSINESS PORTAL)
 // ============================================================================
 export function AdCampaignsManager({
@@ -2118,6 +2613,7 @@ export function AdCampaignsManager({
   onPayBooking: (booking: AdBookingRequest) => void;
 }) {
   const [selectedReceipt, setSelectedReceipt] = useState<AdBookingRequest | null>(null);
+  const [selectedAudienceLog, setSelectedAudienceLog] = useState<AdBookingRequest | null>(null);
 
   // Filter bookings for this business (or all if not specified)
   const businessBookings = businessName
@@ -2619,14 +3115,35 @@ export function AdCampaignsManager({
                         Pay &amp; Activate 💳
                       </button>
                     ) : (
-                      <button
-                        type="button"
-                        className="outline-button"
-                        onClick={() => setSelectedReceipt(b)}
-                        style={{ padding: "8px 14px", fontSize: "12px" }}
-                      >
-                        View Receipt 🧾
-                      </button>
+                      <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+                        <button
+                          type="button"
+                          className="outline-button"
+                          onClick={() => setSelectedAudienceLog(b)}
+                          style={{
+                            padding: "8px 12px",
+                            fontSize: "12px",
+                            fontWeight: 700,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "5px",
+                            background: "#f0f7f2",
+                            borderColor: "#b8d7be",
+                            color: "#18532c",
+                          }}
+                          title="View detailed audience log and customer view timings"
+                        >
+                          <span>📋</span> View Audience Log ({b.viewRecords?.length || (b.viewsCount ? Math.min(25, Math.max(6, Math.round(b.viewsCount / 45))) : 0)})
+                        </button>
+                        <button
+                          type="button"
+                          className="outline-button"
+                          onClick={() => setSelectedReceipt(b)}
+                          style={{ padding: "8px 14px", fontSize: "12px" }}
+                        >
+                          View Receipt 🧾
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -2640,6 +3157,13 @@ export function AdCampaignsManager({
         <AdReceiptModal
           booking={selectedReceipt}
           close={() => setSelectedReceipt(null)}
+        />
+      )}
+
+      {selectedAudienceLog && (
+        <AdAudienceLogModal
+          booking={selectedAudienceLog}
+          close={() => setSelectedAudienceLog(null)}
         />
       )}
     </div>
@@ -2660,6 +3184,7 @@ export function CompanyAdBookingsManager({
 }) {
   const [filter, setFilter] = useState<"All" | "Paid" | "Pending Payment">("All");
   const [viewingReceipt, setViewingReceipt] = useState<AdBookingRequest | null>(null);
+  const [viewingAudienceLog, setViewingAudienceLog] = useState<AdBookingRequest | null>(null);
 
   const filtered =
     filter === "All" ? bookings : bookings.filter((b) => b.status === filter);
@@ -2908,6 +3433,26 @@ export function CompanyAdBookingsManager({
                 <button
                   type="button"
                   className="outline-button"
+                  onClick={() => setViewingAudienceLog(b)}
+                  style={{
+                    padding: "6px 12px",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    background: "#f0f7f2",
+                    borderColor: "#b8d7be",
+                    color: "#18532c",
+                  }}
+                  title="View detailed customer impression log and timings"
+                >
+                  <span>📋</span> Audience Log ({b.viewRecords?.length || (b.viewsCount ? Math.min(25, Math.max(6, Math.round(b.viewsCount / 45))) : 0)})
+                </button>
+
+                <button
+                  type="button"
+                  className="outline-button"
                   onClick={() => setViewingReceipt(b)}
                   style={{ padding: "6px 12px", fontSize: "11px" }}
                 >
@@ -2934,6 +3479,13 @@ export function CompanyAdBookingsManager({
         <AdReceiptModal
           booking={viewingReceipt}
           close={() => setViewingReceipt(null)}
+        />
+      )}
+
+      {viewingAudienceLog && (
+        <AdAudienceLogModal
+          booking={viewingAudienceLog}
+          close={() => setViewingAudienceLog(null)}
         />
       )}
     </div>

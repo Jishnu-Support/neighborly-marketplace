@@ -10683,23 +10683,50 @@ export default function Home() {
     } catch {}
   };
 
+  function getViewerInfo() {
+    let viewerName = "Neighbor in Hosur";
+    let viewerPhone = "";
+    let viewerRole = "Customer";
+    let locality = "Hosur, Tamil Nadu";
+
+    try {
+      const stored = window.localStorage.getItem(profileStorageKey("Account"));
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.fullName) viewerName = parsed.fullName;
+        if (parsed.phone) viewerPhone = `•••• ${parsed.phone.slice(-4)}`;
+        if (parsed.locality) locality = parsed.locality;
+      }
+    } catch {}
+
+    const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
+    const device = isMobile ? "Mobile Browser (Hosur)" : "Desktop Browser (Hosur)";
+    return { viewerName, viewerPhone, viewerRole, locality, device };
+  }
+
   // Automatically record view impression when a customer views an ad on Discover
   useEffect(() => {
     if (role !== "Discover") return;
     const currentAd = adConfig.imageAds[activeAd];
     if (!currentAd?.adBookingId) return;
 
+    const viewer = getViewerInfo();
     fetch("/api/ads/impression", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         adBookingId: currentAd.adBookingId,
         surface: "poster",
+        ...viewer,
       }),
     })
       .then((r) => r.json())
       .then((data) => {
-        if (data.viewsCount) {
+        if (data.booking) {
+          setAdBookings((prev) =>
+            prev.map((b) => (b.id === data.booking.id ? data.booking : b))
+          );
+        } else if (data.viewsCount) {
           setAdBookings((prev) =>
             prev.map((b) =>
               b.id === currentAd.adBookingId
@@ -10718,17 +10745,23 @@ export default function Home() {
 
   const handleVideoAdImpression = () => {
     if (!adConfig.videoAd?.adBookingId) return;
+    const viewer = getViewerInfo();
     fetch("/api/ads/impression", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         adBookingId: adConfig.videoAd.adBookingId,
         surface: "video",
+        ...viewer,
       }),
     })
       .then((r) => r.json())
       .then((data) => {
-        if (data.viewsCount) {
+        if (data.booking) {
+          setAdBookings((prev) =>
+            prev.map((b) => (b.id === data.booking.id ? data.booking : b))
+          );
+        } else if (data.viewsCount) {
           setAdBookings((prev) =>
             prev.map((b) =>
               b.id === adConfig.videoAd?.adBookingId

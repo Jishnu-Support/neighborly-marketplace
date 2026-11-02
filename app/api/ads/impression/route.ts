@@ -4,7 +4,7 @@ import { recordAdImpression } from "@/app/lib/ad-bookings";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { adBookingId, surface } = body;
+    const { adBookingId, surface, viewerName, viewerPhone, viewerRole, locality, device } = body;
 
     if (!adBookingId || !surface) {
       return NextResponse.json(
@@ -15,7 +15,14 @@ export async function POST(request: Request) {
 
     const result = await recordAdImpression(
       String(adBookingId),
-      surface === "video" ? "video" : surface === "content" ? "content" : "poster"
+      surface === "video" ? "video" : surface === "content" ? "content" : "poster",
+      {
+        viewerName: viewerName ? String(viewerName) : undefined,
+        viewerPhone: viewerPhone ? String(viewerPhone) : undefined,
+        viewerRole: viewerRole ? String(viewerRole) : undefined,
+        locality: locality ? String(locality) : undefined,
+        device: device ? String(device) : undefined,
+      }
     );
 
     if (!result) {

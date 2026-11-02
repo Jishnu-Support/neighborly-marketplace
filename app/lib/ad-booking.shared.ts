@@ -170,7 +170,7 @@ export interface AdBookingRequest {
   createdAt: string;
   notes?: string;
 
-  // View / Impression Analytics
+  // View / Impression Analytics & Audience Logs
   viewsCount?: number;
   clicksCount?: number;
   impressionsBySurface?: {
@@ -179,6 +179,20 @@ export interface AdBookingRequest {
     video: number;
   };
   lastViewedAt?: string;
+  viewRecords?: AdViewRecord[];
+}
+
+export interface AdViewRecord {
+  id: string;
+  adBookingId: string;
+  viewerName: string;
+  viewerPhone?: string;
+  viewerRole?: string;
+  surface: "poster" | "content" | "video";
+  surfaceLabel?: string;
+  viewedAt: string; // ISO date string
+  locality?: string;
+  device?: string;
 }
 
 export function calculateAdPricing(
@@ -308,4 +322,63 @@ export function resolveScheduledAds(
         : baseConfig.imageAds,
     videoAd: customVideoAd,
   };
+}
+
+export function createSampleViewRecords(
+  adBookingId: string,
+  totalViews: number = 20,
+  allowedSurfaces: Array<"poster" | "content" | "video"> = ["poster", "content", "video"]
+): AdViewRecord[] {
+  const sampleUsers = [
+    { name: "Naveen Kumar", phone: "•••• 21482", role: "Resident Member", locality: "Bagalur Road, Hosur" },
+    { name: "Asha Rao", phone: "•••• 43210", role: "Verified Customer", locality: "Gandhi Road, Hosur" },
+    { name: "Karthik Raja", phone: "•••• 87654", role: "Resident Member", locality: "Rayakottai Road, Hosur" },
+    { name: "Priya Raman", phone: "•••• 10987", role: "Verified Customer", locality: "SIPCOT Phase 1, Hosur" },
+    { name: "Suresh Babu", phone: "•••• 65432", role: "Resident Member", locality: "Mathigiri, Hosur" },
+    { name: "Ananya Swaminathan", phone: "•••• 32109", role: "Customer", locality: "Denkanikotta Road, Hosur" },
+    { name: "Venkatesh Murthy", phone: "•••• 78901", role: "Resident Member", locality: "Near Bus Stand, Hosur" },
+    { name: "Meena Sundaram", phone: "•••• 45678", role: "Verified Customer", locality: "Avalapalli Road, Hosur" },
+    { name: "Dinesh Kumar", phone: "•••• 12345", role: "Resident Member", locality: "Mookandapalli, Hosur" },
+    { name: "Lakshmi Narayanan", phone: "•••• 67890", role: "Customer", locality: "Mornapalli, Hosur" },
+    { name: "Neighbor in Hosur", phone: "", role: "Local Shopper", locality: "All Hosur" },
+    { name: "Neighbor in Hosur", phone: "", role: "Local Shopper", locality: "Bagalur Road, Hosur" },
+  ];
+
+  const devices = [
+    "Mobile (Android / Chrome)",
+    "Mobile (iOS / Safari)",
+    "Desktop (Windows / Chrome)",
+    "Desktop (macOS / Safari)",
+  ];
+
+  const surfaceLabels: Record<string, string> = {
+    poster: "Poster Billboard",
+    content: "Marquee Ticker",
+    video: "Video Spotlight",
+  };
+
+  const records: AdViewRecord[] = [];
+  const count = Math.min(25, Math.max(6, Math.round(totalViews / 45)));
+
+  for (let i = 0; i < count; i++) {
+    const user = sampleUsers[i % sampleUsers.length];
+    const surface = allowedSurfaces[i % allowedSurfaces.length];
+    const minutesAgo = i === 0 ? 3 : i * 14 + 7;
+    const time = new Date(Date.now() - minutesAgo * 60 * 1000).toISOString();
+
+    records.push({
+      id: `view_${adBookingId}_${i + 1}`,
+      adBookingId,
+      viewerName: user.name,
+      viewerPhone: user.phone,
+      viewerRole: user.role,
+      surface,
+      surfaceLabel: surfaceLabels[surface] || "Poster Billboard",
+      viewedAt: time,
+      locality: user.locality,
+      device: devices[i % devices.length],
+    });
+  }
+
+  return records;
 }

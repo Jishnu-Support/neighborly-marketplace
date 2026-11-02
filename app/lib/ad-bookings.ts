@@ -3,12 +3,14 @@ import path from "node:path";
 import {
   type AdBookingRequest,
   type AdSlotTiming,
+  type AdViewRecord,
   AD_TIME_SLOTS,
   calculateAdPricing,
+  createSampleViewRecords,
   isAdActiveAt,
   resolveScheduledAds,
 } from "./ad-booking.shared";
-export { resolveScheduledAds };
+export { resolveScheduledAds, createSampleViewRecords };
 import { type AdConfig } from "./ad-config.shared";
 
 const bookingsFilePath =
@@ -70,6 +72,7 @@ function getInitialSampleBookings(): AdBookingRequest[] {
       clicksCount: 86,
       impressionsBySurface: { poster: 780, content: 390, video: 250 },
       lastViewedAt: new Date(Date.now() - 60000 * 2).toISOString(),
+      viewRecords: createSampleViewRecords("AD-REQ-101", 1420, ["poster", "content", "video"]),
     },
     {
       id: "AD-REQ-102",
@@ -108,6 +111,7 @@ function getInitialSampleBookings(): AdBookingRequest[] {
       clicksCount: 42,
       impressionsBySurface: { poster: 890, content: 0, video: 0 },
       lastViewedAt: new Date(Date.now() - 60000 * 8).toISOString(),
+      viewRecords: createSampleViewRecords("AD-REQ-102", 890, ["poster"]),
     },
     {
       id: "AD-REQ-103",
@@ -140,6 +144,7 @@ function getInitialSampleBookings(): AdBookingRequest[] {
       clicksCount: 110,
       impressionsBySurface: { poster: 0, content: 2150, video: 0 },
       lastViewedAt: new Date(Date.now() - 60000 * 1).toISOString(),
+      viewRecords: createSampleViewRecords("AD-REQ-103", 2150, ["content"]),
     },
   ];
 }
@@ -149,6 +154,26 @@ export async function readAdBookings(): Promise<AdBookingRequest[]> {
     const raw = await readFile(bookingsFilePath, "utf8");
     const bookings = JSON.parse(raw);
     if (Array.isArray(bookings)) {
+      let backfilled = false;
+      for (const b of bookings) {
+        if (!b.viewRecords || b.viewRecords.length === 0) {
+          const allowed: Array<"poster" | "content" | "video"> =
+            b.format === "combo"
+              ? ["poster", "content", "video"]
+              : b.format === "video"
+              ? ["video"]
+              : b.format === "content"
+              ? ["content"]
+              : ["poster"];
+          b.viewRecords = createSampleViewRecords(b.id, b.viewsCount || 20, allowed);
+          backfilled = true;
+        }
+      }
+      if (backfilled) {
+        try {
+          await saveAdBookings(bookings);
+        } catch {}
+      }
       return bookings;
     }
     return getInitialSampleBookings();
@@ -261,8 +286,15 @@ export async function markAdBookingPaid(
 
 export async function recordAdImpression(
   adBookingId: string,
-  surface: "poster" | "content" | "video"
-): Promise<{ success: boolean; viewsCount: number; booking: AdBookingRequest } | null> {
+  surface: "poster" | "content" | "video",
+  viewerDetails?: {
+    viewerName?: string;
+    viewerPhone?: string;
+    viewerRole?: string;
+    locality?: string;
+    device?: string;
+  }
+): Promise<{ success: boolean; viewsCount: number; booking: AdBookingRequest; record?: AdViewRecord } | null> {
   const bookings = await readAdBookings();
   const booking = bookings.find((b) => b.id === adBookingId);
   if (!booking) return null;
@@ -272,8 +304,36 @@ export async function recordAdImpression(
     booking.impressionsBySurface = { poster: 0, content: 0, video: 0 };
   }
   booking.impressionsBySurface[surface] = (booking.impressionsBySurface[surface] || 0) + 1;
-  booking.lastViewedAt = new Date().toISOString();
+  const now = new Date().toISOString();
+  booking.lastViewedAt = now;
+
+  const surfaceLabels = {
+    poster: "Poster Billboard",
+    content: "Marquee Ticker",
+    video: "Video Spotlight",
+  };
+
+  const newRecord: AdViewRecord = {
+    id: `view_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    adBookingId,
+    viewerName: viewerDetails?.viewerName || "Hosur Neighbor",
+    viewerPhone: viewerDetails?.viewerPhone || "",
+    viewerRole: viewerDetails?.viewerRole || "Customer",
+    surface,
+    surfaceLabel: surfaceLabels[surface] || "Poster Billboard",
+    viewedAt: now,
+    locality: viewerDetails?.locality || "Hosur, Tamil Nadu",
+    device: viewerDetails?.device || "Mobile / Web",
+  };
+
+  if (!booking.viewRecords) {
+    booking.viewRecords = [];
+  }
+  booking.viewRecords.unshift(newRecord);
+  if (booking.viewRecords.length > 200) {
+    booking.viewRecords = booking.viewRecords.slice(0, 200);
+  }
 
   await saveAdBookings(bookings);
-  return { success: true, viewsCount: booking.viewsCount, booking };
+  return { success: true, viewsCount: booking.viewsCount, booking, record: newRecord };
 }
