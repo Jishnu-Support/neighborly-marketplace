@@ -3,6 +3,13 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import type { CompanyAccessLevel } from "./lib/auth";
 import { defaultAdConfig, type AdConfig } from "./lib/ad-config.shared";
+import { type AdBookingRequest, resolveScheduledAds } from "./lib/ad-booking.shared";
+import {
+  AdBookingDialog,
+  AdReceiptModal,
+  AdCampaignsManager,
+  CompanyAdBookingsManager,
+} from "./ad-booking-components";
 import { defaultCategoryConfig, legacyDefaultCategoryConfig, type CategoryConfig, type CategorySector } from "./lib/category-config.shared";
 import { defaultRegistrationFormConfig, type RegistrationFormConfig, type RegistrationForm, type RegistrationField } from "./lib/registration-form-config.shared";
 import { buildAutomobileTaxonomyPaths as buildSharedAutomobileTaxonomyPaths, commercialVehicleSubcategories, getVehicleModelsForType as getSharedVehicleModelsForType } from "./lib/vehicle-taxonomy.shared";
@@ -10387,6 +10394,11 @@ export default function Home() {
   const [dialog, setDialog] = useState<"login" | "business" | "sos" | "plans" | null>(null);
   const [notice, setNotice] = useState("");
   const [adConfig, setAdConfig] = useState<AdConfig>(defaultAdConfig);
+  const [rawAdConfig, setRawAdConfig] = useState<AdConfig>(defaultAdConfig);
+  const [adBookings, setAdBookings] = useState<AdBookingRequest[]>([]);
+  const [simulatedHour, setSimulatedHour] = useState<number | null>(null);
+  const [adBookingWizardOpen, setAdBookingWizardOpen] = useState(false);
+  const [activeAdReceipt, setActiveAdReceipt] = useState<AdBookingRequest | null>(null);
   const [activeAd, setActiveAd] = useState(0);
   const categories = useMemo(() => [{ name: "All", icon: "✳" }, ...categoryConfig.sectors], [categoryConfig]);
   const businesses = demoData.businesses;
@@ -10562,22 +10574,113 @@ export default function Home() {
   useEffect(() => {
     const onAdsUpdated = (event: Event) => {
       const config = (event as CustomEvent<AdConfig>).detail;
-      if (config?.imageAds?.length) { setAdConfig(config); setActiveAd(0); }
+      if (config?.imageAds?.length) {
+        setRawAdConfig(config);
+        setActiveAd(0);
+      }
     };
     window.addEventListener("neighborly-ads-updated", onAdsUpdated);
     let cancelled = false;
     fetch("/api/ads", { cache: "no-store" })
       .then(async (response) => {
         if (!response.ok) throw new Error("Could not load advertising settings.");
-        const result = await response.json() as { config?: AdConfig };
-        if (!cancelled && result.config?.imageAds?.length && result.config.tickerMessages?.length) {
-          setAdConfig(result.config);
-          setActiveAd(0);
+        const result = await response.json() as { config?: AdConfig; rawConfig?: AdConfig; bookings?: AdBookingRequest[] };
+        if (!cancelled) {
+          if (result.rawConfig) setRawAdConfig(result.rawConfig);
+          if (Array.isArray(result.bookings)) setAdBookings(result.bookings);
+          if (result.config?.imageAds?.length && result.config.tickerMessages?.length) {
+            setAdConfig(result.config);
+            setActiveAd(0);
+          }
         }
       })
       .catch(() => undefined);
     return () => { cancelled = true; window.removeEventListener("neighborly-ads-updated", onAdsUpdated); };
   }, []);
+
+  // Dynamically resolve scheduled ads when simulated hour, raw config or bookings change
+  useEffect(() => {
+    const resolved = resolveScheduledAds(
+      rawAdConfig,
+      adBookings,
+      new Date(),
+      simulatedHour !== null ? simulatedHour : undefined
+    );
+    setAdConfig(resolved);
+  }, [rawAdConfig, adBookings, simulatedHour]);
+
+  // Periodic check every 30s to transition ads when real-world hour changes
+  useEffect(() => {
+    if (simulatedHour !== null) return;
+    const interval = setInterval(() => {
+      setAdConfig(resolveScheduledAds(rawAdConfig, adBookings, new Date()));
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [rawAdConfig, adBookings, simulatedHour]);
+
+  const handleBookingCreated = (booking: AdBookingRequest) => {
+    setAdBookings((prev) => [booking, ...prev.filter((b) => b.id !== booking.id)]);
+    showNotice(`📋 Ad request submitted for "${booking.businessName}" (${booking.slotLabel}). Awaiting payment activation.`);
+    recordEvent(`Ad request submitted: ${booking.format} for ${booking.businessName} (${booking.slotLabel})`);
+  };
+
+  const handleBookingPaid = (booking: AdBookingRequest) => {
+    setAdBookings((prev) => [booking, ...prev.filter((b) => b.id !== booking.id)]);
+    setActiveAdReceipt(booking);
+    showNotice(`🎉 Payment of ₹${booking.totalAmount.toLocaleString("en-IN")} received! Ad slot activated for "${booking.businessName}".`);
+    recordEvent(`Ad payment confirmed: ${booking.format} for ${booking.businessName} (${booking.slotLabel}) - ₹${booking.totalAmount}`);
+    addNotification({
+      type: "business",
+      title: `📢 Ad Slot Scheduled & Activated!`,
+      message: `Your ${booking.format} campaign for "${booking.businessName}" is paid (Ref: ${booking.transactionId}). It will run during ${booking.slotLabel} from ${booking.startDate} to ${booking.endDate}.`,
+      linkText: "View Ad Receipt",
+      action: { type: "portal", payload: "Business" },
+    });
+  };
+
+  const handlePayExistingBooking = async (booking: AdBookingRequest) => {
+    try {
+      const res = await fetch("/api/ads/bookings/pay", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: booking.id,
+          paymentMethod: "UPI QR (Instant Verified)",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Payment failed");
+      handleBookingPaid(data.booking);
+    } catch (err) {
+      showNotice(err instanceof Error ? err.message : "Payment failed");
+    }
+  };
+
+  const handleUpdateAdBookingStatus = async (id: string, status: AdBookingRequest["status"]) => {
+    try {
+      const res = await fetch("/api/ads/bookings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update booking status");
+      setAdBookings((prev) => prev.map((b) => (b.id === id ? data.booking : b)));
+      showNotice(`Ad booking ${id} status updated to ${status}.`);
+    } catch (err) {
+      showNotice(err instanceof Error ? err.message : "Failed to update status");
+    }
+  };
+
+  const refreshAdBookings = async () => {
+    try {
+      const res = await fetch("/api/ads/bookings", { cache: "no-store" });
+      const data = await res.json();
+      if (Array.isArray(data.bookings)) {
+        setAdBookings(data.bookings);
+      }
+    } catch {}
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -14026,6 +14129,11 @@ export default function Home() {
             checkouts={demoData.checkouts}
             orders={demoData.orders || []}
             initialTab={portalActiveTab}
+            adBookings={adBookings}
+            currentSimulatedHour={simulatedHour}
+            onSimulateHour={(h) => setSimulatedHour(h)}
+            onOpenAdBookingWizard={() => setAdBookingWizardOpen(true)}
+            onPayBooking={handlePayExistingBooking}
             onUpdateOrderStatus={updateOrderStatus}
             openBusinessProfile={() => window.dispatchEvent(new Event("neighborly-open-business-profile"))}
             openPlans={() => setSubscriptionCheckout({ businessName: businessAccountBusinesses[0]?.name || businesses[0]?.name, plan: "Growth" })}
@@ -14059,6 +14167,9 @@ export default function Home() {
             checkouts={demoData.checkouts}
             initialTab={portalActiveTab}
             locationEnabled={locationEnabled}
+            adBookings={adBookings}
+            onRefreshAdBookings={refreshAdBookings}
+            onUpdateAdBookingStatus={handleUpdateAdBookingStatus}
             onOpenPortal={openPortal}
             onLanguageChange={(l) => setLang(l)}
             showNotice={showNotice}
@@ -14100,6 +14211,21 @@ export default function Home() {
         <SubscriptionReceiptModal
           record={subscriptionReceipt}
           close={() => setSubscriptionReceipt(null)}
+        />
+      )}
+      {adBookingWizardOpen && (
+        <AdBookingDialog
+          businessName={businessAccountBusinesses[0]?.name || businesses[0]?.name}
+          businesses={businesses}
+          close={() => setAdBookingWizardOpen(false)}
+          onBookingCreated={handleBookingCreated}
+          onBookingPaid={handleBookingPaid}
+        />
+      )}
+      {activeAdReceipt && (
+        <AdReceiptModal
+          booking={activeAdReceipt}
+          close={() => setActiveAdReceipt(null)}
         />
       )}
       {selectedBusiness && (
@@ -17282,6 +17408,11 @@ function BusinessPortal({
   checkouts,
   orders = [],
   initialTab = "Overview",
+  adBookings = [],
+  currentSimulatedHour = null,
+  onSimulateHour,
+  onOpenAdBookingWizard,
+  onPayBooking,
   onUpdateOrderStatus,
   openBusinessProfile,
   openPlans,
@@ -17302,6 +17433,11 @@ function BusinessPortal({
   checkouts: CheckoutRequest[];
   orders?: OrderRecord[];
   initialTab?: string;
+  adBookings?: AdBookingRequest[];
+  currentSimulatedHour?: number | null;
+  onSimulateHour?: (hour: number | null) => void;
+  onOpenAdBookingWizard?: () => void;
+  onPayBooking?: (booking: AdBookingRequest) => void;
   onUpdateOrderStatus?: (orderId: string, status: OrderStatus) => void;
   openBusinessProfile: () => void;
   openPlans: () => void;
@@ -17340,7 +17476,7 @@ function BusinessPortal({
   useEffect(() => { const openBusiness = () => setTab("My business"); window.addEventListener("neighborly-open-business-profile", openBusiness); return () => window.removeEventListener("neighborly-open-business-profile", openBusiness); }, []);
   return <div className="page-content portal-content">
     <div className="portal-header"><div><div className="eyebrow"><span /> FOR LOCAL BUSINESSES</div><h1>Grow with your <em>neighbors.</em></h1><p>Manage your business and connect with nearby customers.</p></div><button className="primary-button" onClick={openBusinessProfile}>Manage your business</button></div>
-    <div className="portal-tabs">{["Overview", "My business", "Products & services", "Orders", "Enquiries", "Plans & billing", "Verification", "Profile details", "Settings"].map((item) => <button key={item} className={tab === item || (item === "Profile details" && tab === "Profile") ? "current" : ""} onClick={() => setTab(item)}>{item === "Orders" && pendingPrepCount > 0 ? `Orders (${pendingPrepCount})` : item}</button>)}</div>
+    <div className="portal-tabs">{["Overview", "My business", "Products & services", "Orders", "Enquiries", "Plans & billing", "Ad promotions", "Verification", "Profile details", "Settings"].map((item) => <button key={item} className={tab === item || (item === "Profile details" && tab === "Profile") ? "current" : ""} onClick={() => setTab(item)}>{item === "Orders" && pendingPrepCount > 0 ? `Orders (${pendingPrepCount})` : item === "Ad promotions" ? "Ad promotions 📢" : item}</button>)}</div>
     {tab === "Overview" && <>
       <div className="metric-grid">
         <Metric label="Profile views" value="1,284" delta="Sample dashboard metric" icon="◉" />
@@ -17352,7 +17488,38 @@ function BusinessPortal({
         {businesses.map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category}</small></span><span className={`status-pill ${business.subscribed ? "verified" : "pending"}`}>● {business.subscribed ? "Subscribed" : "Pending plan"}</span></div>)}
         {!businesses.length && <EmptyState title="No business profile yet" text="Complete your business registration to set up your profile." />}
       </section>
-      <section className="panel plan-panel"><div className="eyebrow">YOUR MEMBERSHIP</div><div className="plan-title"><h2>Subscription status</h2><span className={`status-pill ${activeSub ? "verified" : "pending"}`}>● {activeSub ? `${activeSub.plan} Plan` : "Pending plan"}</span></div><p>{activeSub ? `Your business is enrolled in the ${activeSub.plan} plan (${activeSub.billingCycle || "Monthly"} billing). Payments processed with official GST invoice.` : "Choose a visibility plan for your business to unlock premium neighborhood discovery and customer orders."}</p><div className="plan-features"><span>✓ Local search priority &amp; SEO listing</span><span>✓ Direct customer enquiry &amp; order receiving</span><span>✓ Verified business badge &amp; GST tax invoice</span></div><div style={{ display: "flex", gap: "10px", marginTop: "14px", flexWrap: "wrap" }}><button className="primary-button" type="button" onClick={() => onSelectPlan ? onSelectPlan(activeSub?.plan || "Growth") : openPlans()}>{activeSub ? "Upgrade / Change Plan 💳" : "Choose Growth Plan 💳"}</button>{activeSub && onViewInvoice && <button className="outline-button" type="button" onClick={() => onViewInvoice(activeSub)}>🧾 View Tax Invoice</button>}</div>{accountCheckouts[0] && <div className="checkout-summary" style={{ marginTop: "12px" }}><strong>Latest subscription payment</strong><span>{accountCheckouts[0].businessName} · {accountCheckouts[0].plan}</span><small>Status: {accountCheckouts[0].status} · Ref: {accountCheckouts[0].transactionId || "Verified"}</small></div>}</section></div>
+      <section className="panel plan-panel"><div className="eyebrow">YOUR MEMBERSHIP</div><div className="plan-title"><h2>Subscription status</h2><span className={`status-pill ${activeSub ? "verified" : "pending"}`}>● {activeSub ? `${activeSub.plan} Plan` : "Pending plan"}</span></div><p>{activeSub ? `Your business is enrolled in the ${activeSub.plan} plan (${activeSub.billingCycle || "Monthly"} billing). Payments processed with official GST invoice.` : "Choose a visibility plan for your business to unlock premium neighborhood discovery and customer orders."}</p><div className="plan-features"><span>✓ Local search priority &amp; SEO listing</span><span>✓ Direct customer enquiry &amp; order receiving</span><span>✓ Verified business badge &amp; GST tax invoice</span></div><div style={{ display: "flex", gap: "10px", marginTop: "14px", flexWrap: "wrap" }}><button className="primary-button" type="button" onClick={() => onSelectPlan ? onSelectPlan(activeSub?.plan || "Growth") : openPlans()}>{activeSub ? "Upgrade / Change Plan 💳" : "Choose Growth Plan 💳"}</button>{activeSub && onViewInvoice && <button className="outline-button" type="button" onClick={() => onViewInvoice(activeSub)}>🧾 View Tax Invoice</button>}</div>{accountCheckouts[0] && <div className="checkout-summary" style={{ marginTop: "12px" }}><strong>Latest subscription payment</strong><span>{accountCheckouts[0].businessName} · {accountCheckouts[0].plan}</span><small>Status: {accountCheckouts[0].status} · Ref: {accountCheckouts[0].transactionId || "Verified"}</small></div>}</section>
+      <section className="panel plan-panel" style={{ background: "linear-gradient(180deg, #f7faf7 0%, #ffffff 100%)", border: "1.5px solid #cce2cc" }}>
+        <div className="eyebrow">📢 TIME-SLOT PROMOTIONS</div>
+        <div className="plan-title">
+          <h2>Ad Campaigns</h2>
+          <span className="status-pill verified">● Live Timings</span>
+        </div>
+        <p>
+          Promote your business with high-impact photo billboard posters, scrolling marquee announcements, and spotlight video reels during peak footfall hours.
+        </p>
+        <div className="plan-features">
+          <span>✓ Target morning rush, lunch prime, or evening peaks</span>
+          <span>✓ Billboard photos, scrolling ticker text &amp; MP4 video spotlight</span>
+          <span>✓ Transparent pricing rate card &amp; instant payment activation</span>
+        </div>
+        <div style={{ display: "flex", gap: "10px", marginTop: "14px", flexWrap: "wrap" }}>
+          <button
+            className="primary-button"
+            type="button"
+            onClick={() => onOpenAdBookingWizard ? onOpenAdBookingWizard() : setTab("Ad promotions")}
+          >
+            Request Ad Timing &amp; Pricing 📢
+          </button>
+          <button
+            className="outline-button"
+            type="button"
+            onClick={() => setTab("Ad promotions")}
+          >
+            Manage Campaigns ({adBookings.filter(b => !accountBusinessName || b.businessName.toLowerCase() === accountBusinessName.toLowerCase()).length}) →
+          </button>
+        </div>
+      </section></div>
       <div className="verification-banner"><span className="verify-icon">⌖</span><div><strong>Help neighbors find the right place.</strong><p>Granting device location is only a demo permission check; it does not verify your registered business address.</p></div><button onClick={verifyLocation}>Check location access <span>↗</span></button></div>
       <div className="form-note"><strong>Demo dashboard</strong><span>Views, enquiries and subscription status are sample data until your business is connected to a production backend.</span></div>
     </>}
@@ -17677,6 +17844,19 @@ function BusinessPortal({
         </section>
       )}
     </>}
+    {tab === "Ad promotions" && (
+      <section className="panel tab-panel">
+        <AdCampaignsManager
+          businessName={accountBusinessName}
+          businesses={businesses}
+          adBookings={adBookings}
+          currentSimulatedHour={currentSimulatedHour}
+          onSimulateHour={onSimulateHour || (() => {})}
+          onOpenBookingWizard={onOpenAdBookingWizard || (() => {})}
+          onPayBooking={onPayBooking || (() => {})}
+        />
+      </section>
+    )}
     {tab === "Verification" && <section className="panel tab-panel"><div className="eyebrow">BUILD TRUST LOCALLY</div><h2>Verify your business location</h2><p>Share your location only when you are ready. Bizearch uses the location to check your business address; production verification requires a secure server-side workflow.</p><button className="primary-button" onClick={verifyLocation}>⌖ Verify with this device</button></section>}
     {(tab === "Profile details" || tab === "Profile") && (
       <ProfileAndSettingsPanel
@@ -20054,6 +20234,9 @@ function CompanyPortal({
   checkouts,
   initialTab = "Overview",
   locationEnabled,
+  adBookings = [],
+  onRefreshAdBookings,
+  onUpdateAdBookingStatus,
   onOpenPortal,
   onLanguageChange,
   showNotice,
@@ -20068,11 +20251,15 @@ function CompanyPortal({
   checkouts: CheckoutRequest[];
   initialTab?: string;
   locationEnabled: boolean;
+  adBookings?: AdBookingRequest[];
+  onRefreshAdBookings?: () => void;
+  onUpdateAdBookingStatus?: (id: string, status: AdBookingRequest["status"]) => void;
   onOpenPortal?: (role: Role) => void;
   onLanguageChange?: (lang: "en" | "ta" | "kn" | "te") => void;
   showNotice: (message: string) => void;
 }) {
   const [activeTab, setActiveTab] = useState(initialTab || "Overview");
+  const [companyAdSubTab, setCompanyAdSubTab] = useState<"bookings" | "default">("bookings");
   useEffect(() => {
     if (initialTab && initialTab !== "Overview") setActiveTab(initialTab);
   }, [initialTab]);
@@ -20201,7 +20388,37 @@ function CompanyPortal({
     <div className="portal-tabs">{tabNames.map((tab) => <button key={tab} className={activeTab === tab ? "current" : ""} onClick={() => setActiveTab(tab)}>{tab}</button>)}</div>
     {activeTab === "Categories" && <CompanyCategoryManager accessLevel={accessLevel} />}
     {activeTab === "Registration forms" && accessLevel === "Super Admin" && <CompanyRegistrationFormManager />}
-    {activeTab === "Advertisements" && <CompanyAdManager />}
+    {activeTab === "Advertisements" && (
+      <section className="panel tab-panel">
+        <div style={{ display: "flex", gap: "10px", marginBottom: "18px", borderBottom: "1px solid #d4e3d3", paddingBottom: "12px", flexWrap: "wrap" }}>
+          <button
+            type="button"
+            className={companyAdSubTab === "bookings" ? "primary-button" : "outline-button"}
+            onClick={() => setCompanyAdSubTab("bookings")}
+            style={{ fontSize: "12px", padding: "8px 16px" }}
+          >
+            📢 Business Ad Requests &amp; Schedules ({adBookings.length})
+          </button>
+          <button
+            type="button"
+            className={companyAdSubTab === "default" ? "primary-button" : "outline-button"}
+            onClick={() => setCompanyAdSubTab("default")}
+            style={{ fontSize: "12px", padding: "8px 16px" }}
+          >
+            ⚙️ Default Platform Ad Creatives
+          </button>
+        </div>
+        {companyAdSubTab === "bookings" ? (
+          <CompanyAdBookingsManager
+            bookings={adBookings}
+            onRefresh={onRefreshAdBookings}
+            onUpdateStatus={onUpdateAdBookingStatus}
+          />
+        ) : (
+          <CompanyAdManager />
+        )}
+      </section>
+    )}
     {activeTab === "Overview" && <><div className="metric-grid"><Metric label="Registered businesses" value={String(businesses.length)} delta="Sample directory" icon="▧" /><Metric label="Active subscriptions" value={String(businesses.filter((business) => business.subscribed).length)} delta="Subscribed demo listings" icon="◉" /><Metric label="Customer enquiries" value={String(enquiries.length)} delta="Browser-local demo records" icon="⌕" /><Metric label="Agent partners" value="42" delta="Sample metric" icon="♧" /></div>
       <div className="portal-columns"><section className="panel"><div className="panel-heading"><div><div className="eyebrow">RECENT SIGNUPS</div><h2>Business registrations</h2></div><button className="text-link" onClick={() => setActiveTab("Businesses")}>View all →</button></div>{businesses.slice(0, 4).map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category}</small></span><span className={`status-pill ${business.subscribed ? "verified" : "pending"}`}>● {business.subscribed ? "Subscribed" : "Pending"}</span></div>)}</section>
       <section className="panel admin-privacy"><div className="privacy-icon">⌖</div><div className="eyebrow">PRIVACY BY DESIGN</div><h2>Activity is opt-in.</h2><p>Precise location and sign-in activity should be collected only with explicit user consent, retained securely and visible only to authorized administrators.</p><button className="outline-button" onClick={() => setActiveTab("Customer locations")}>Review privacy controls ↗</button></section></div>

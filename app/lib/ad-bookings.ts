@@ -1,0 +1,248 @@
+import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import path from "node:path";
+import {
+  type AdBookingRequest,
+  type AdSlotTiming,
+  AD_TIME_SLOTS,
+  calculateAdPricing,
+  isAdActiveAt,
+  resolveScheduledAds,
+} from "./ad-booking.shared";
+export { resolveScheduledAds };
+import { type AdConfig } from "./ad-config.shared";
+
+const bookingsFilePath =
+  process.env.NEIGHBORLY_AD_BOOKINGS_STORE ||
+  path.join(process.cwd(), ".neighborly-ad-bookings.json");
+
+function getInitialSampleBookings(): AdBookingRequest[] {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  const todayStr = `${year}-${month}-${day}`;
+
+  const future = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const futureStr = `${future.getFullYear()}-${String(future.getMonth() + 1).padStart(2, "0")}-${String(future.getDate()).padStart(2, "0")}`;
+
+  return [
+    {
+      id: "AD-REQ-101",
+      businessName: "Greenway Auto Works",
+      contactName: "Suresh Kumar",
+      contactPhone: "+91 98450 12345",
+      format: "combo",
+      slotTiming: "morning",
+      slotLabel: "Morning Peak (08:00 AM – 12:00 PM)",
+      startHour: 8,
+      endHour: 12,
+      startDate: todayStr,
+      endDate: futureStr,
+      durationDays: 7,
+      poster: {
+        title: "Express 30-Min Two Wheeler & Car Service",
+        label: "Greenway Auto • Bagalur Road",
+        imageUrl: "https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=900&q=85",
+        tone: "market",
+      },
+      content: {
+        message: "⚡ Greenway Auto Works: Free 21-point vehicle safety inspection this week on Bagalur Road!",
+      },
+      video: {
+        title: "Greenway Precision Diagnostics",
+        description: "Watch our state-of-the-art computerized wheel balancing and engine tuning in Hosur.",
+        sourceUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+        posterUrl: "https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=900&q=85",
+        callToAction: "Book Service Appointment",
+      },
+      baseRate: 1899,
+      subtotal: 13293,
+      gstAmount: 2393,
+      totalAmount: 15686,
+      status: "Paid",
+      paymentMethod: "UPI QR (Google Pay / PhonePe)",
+      transactionId: "TXN-UPICOMBO-98213",
+      invoiceNumber: "INV-AD-2026-0041",
+      paidAt: new Date(Date.now() - 3600000 * 4).toISOString(),
+      createdAt: new Date(Date.now() - 3600000 * 5).toISOString(),
+      notes: "Morning rush special campaign verified and active.",
+    },
+    {
+      id: "AD-REQ-102",
+      businessName: "Sri Krishna Sweets & Bakery",
+      contactName: "Radha Krishnan",
+      contactPhone: "+91 94432 87654",
+      format: "poster",
+      slotTiming: "evening",
+      slotLabel: "Evening Rush (05:00 PM – 10:00 PM)",
+      startHour: 17,
+      endHour: 22,
+      startDate: todayStr,
+      endDate: futureStr,
+      durationDays: 5,
+      poster: {
+        title: "Hot Fresh Mysurpa & Savories Fresh From Kadai",
+        label: "Sri Krishna Sweets • Gandhi Road",
+        imageUrl: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=900&q=85",
+        tone: "gold",
+      },
+      content: {
+        message: "🍬 Sri Krishna Sweets: Piping hot evening snacks & pure ghee sweets freshly prepared!",
+      },
+      baseRate: 699,
+      subtotal: 4369,
+      gstAmount: 786,
+      totalAmount: 5155,
+      status: "Paid",
+      paymentMethod: "Credit Card (HDFC Visa)",
+      transactionId: "TXN-CCPOSTER-77124",
+      invoiceNumber: "INV-AD-2026-0042",
+      paidAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+      createdAt: new Date(Date.now() - 3600000 * 3).toISOString(),
+      notes: "Evening slot poster campaign active.",
+    },
+    {
+      id: "AD-REQ-103",
+      businessName: "Apex Fitness Studio",
+      contactName: "Karthik Raj",
+      contactPhone: "+91 99001 22334",
+      format: "content",
+      slotTiming: "all_day",
+      slotLabel: "All-Day 24/7 Priority",
+      startHour: 0,
+      endHour: 24,
+      startDate: todayStr,
+      endDate: futureStr,
+      durationDays: 14,
+      content: {
+        message: "💪 Apex Fitness Studio: Join today and get 30% off your annual personal training package!",
+      },
+      baseRate: 299,
+      subtotal: 7326,
+      gstAmount: 1319,
+      totalAmount: 8645,
+      status: "Paid",
+      paymentMethod: "Net Banking (SBI)",
+      transactionId: "TXN-NBTICKER-33901",
+      invoiceNumber: "INV-AD-2026-0043",
+      paidAt: new Date(Date.now() - 3600000 * 8).toISOString(),
+      createdAt: new Date(Date.now() - 3600000 * 9).toISOString(),
+      notes: "24/7 marquee ticker message running.",
+    },
+  ];
+}
+
+export async function readAdBookings(): Promise<AdBookingRequest[]> {
+  try {
+    const raw = await readFile(bookingsFilePath, "utf8");
+    const bookings = JSON.parse(raw);
+    if (Array.isArray(bookings)) {
+      return bookings;
+    }
+    return getInitialSampleBookings();
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+      console.warn("Could not read ad bookings store, returning defaults:", error);
+    }
+    const initial = getInitialSampleBookings();
+    try {
+      await saveAdBookings(initial);
+    } catch {
+      // ignore
+    }
+    return initial;
+  }
+}
+
+export async function saveAdBookings(bookings: AdBookingRequest[]): Promise<AdBookingRequest[]> {
+  await mkdir(path.dirname(bookingsFilePath), { recursive: true });
+  const temporaryPath = `${bookingsFilePath}.${process.pid}.tmp`;
+  await writeFile(temporaryPath, JSON.stringify(bookings, null, 2), {
+    encoding: "utf8",
+    mode: 0o600,
+  });
+  await rename(temporaryPath, bookingsFilePath);
+  return bookings;
+}
+
+export async function createAdBooking(
+  request: Omit<AdBookingRequest, "id" | "createdAt" | "status" | "subtotal" | "gstAmount" | "totalAmount" | "baseRate"> & {
+    status?: AdBookingRequest["status"];
+    paymentMethod?: string;
+    transactionId?: string;
+  }
+): Promise<AdBookingRequest> {
+  const bookings = await readAdBookings();
+  const id = `AD-REQ-${Math.floor(1000 + Math.random() * 9000)}`;
+
+  const pricing = calculateAdPricing(request.format, request.slotTiming, request.durationDays);
+
+  const newBooking: AdBookingRequest = {
+    ...request,
+    id,
+    baseRate: pricing.baseDailyRate,
+    subtotal: pricing.subtotal,
+    gstAmount: pricing.gstAmount,
+    totalAmount: pricing.totalAmount,
+    status: request.status || "Pending Payment",
+    createdAt: new Date().toISOString(),
+  };
+
+  bookings.unshift(newBooking);
+  await saveAdBookings(bookings);
+  return newBooking;
+}
+
+export async function updateAdBooking(
+  id: string,
+  updates: Partial<AdBookingRequest>
+): Promise<AdBookingRequest | null> {
+  const bookings = await readAdBookings();
+  const index = bookings.findIndex((b) => b.id === id);
+  if (index === -1) return null;
+
+  const current = bookings[index];
+  const updated = { ...current, ...updates };
+
+  // Re-calculate pricing if format, slotTiming, or durationDays changed
+  if (
+    updates.format ||
+    updates.slotTiming ||
+    typeof updates.durationDays === "number"
+  ) {
+    const pricing = calculateAdPricing(
+      updated.format,
+      updated.slotTiming,
+      updated.durationDays
+    );
+    updated.baseRate = pricing.baseDailyRate;
+    updated.subtotal = pricing.subtotal;
+    updated.gstAmount = pricing.gstAmount;
+    updated.totalAmount = pricing.totalAmount;
+  }
+
+  bookings[index] = updated;
+  await saveAdBookings(bookings);
+  return updated;
+}
+
+export async function markAdBookingPaid(
+  id: string,
+  paymentDetails: {
+    paymentMethod: string;
+    transactionId?: string;
+  }
+): Promise<AdBookingRequest | null> {
+  const transactionId =
+    paymentDetails.transactionId ||
+    `TXN-AD-${Math.random().toString(36).substring(2, 8).toUpperCase()}-${Date.now().toString().slice(-4)}`;
+  const invoiceNumber = `INV-AD-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+  return updateAdBooking(id, {
+    status: "Paid",
+    paymentMethod: paymentDetails.paymentMethod,
+    transactionId,
+    invoiceNumber,
+    paidAt: new Date().toISOString(),
+  });
+}
