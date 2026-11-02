@@ -185,12 +185,15 @@ export interface AdBookingRequest {
 export interface AdViewRecord {
   id: string;
   adBookingId: string;
+  customerId: string; // e.g. "CUST-HSR-21482"
   viewerName: string;
   viewerPhone?: string;
   viewerRole?: string;
   surface: "poster" | "content" | "video";
   surfaceLabel?: string;
   viewedAt: string; // ISO date string
+  viewedDate: string; // Formatted date e.g. "02 Nov 2026"
+  viewedTime: string; // Formatted time e.g. "02:04:15 PM"
   locality?: string;
   device?: string;
 }
@@ -330,18 +333,18 @@ export function createSampleViewRecords(
   allowedSurfaces: Array<"poster" | "content" | "video"> = ["poster", "content", "video"]
 ): AdViewRecord[] {
   const sampleUsers = [
-    { name: "Naveen Kumar", phone: "•••• 21482", role: "Resident Member", locality: "Bagalur Road, Hosur" },
-    { name: "Asha Rao", phone: "•••• 43210", role: "Verified Customer", locality: "Gandhi Road, Hosur" },
-    { name: "Karthik Raja", phone: "•••• 87654", role: "Resident Member", locality: "Rayakottai Road, Hosur" },
-    { name: "Priya Raman", phone: "•••• 10987", role: "Verified Customer", locality: "SIPCOT Phase 1, Hosur" },
-    { name: "Suresh Babu", phone: "•••• 65432", role: "Resident Member", locality: "Mathigiri, Hosur" },
-    { name: "Ananya Swaminathan", phone: "•••• 32109", role: "Customer", locality: "Denkanikotta Road, Hosur" },
-    { name: "Venkatesh Murthy", phone: "•••• 78901", role: "Resident Member", locality: "Near Bus Stand, Hosur" },
-    { name: "Meena Sundaram", phone: "•••• 45678", role: "Verified Customer", locality: "Avalapalli Road, Hosur" },
-    { name: "Dinesh Kumar", phone: "•••• 12345", role: "Resident Member", locality: "Mookandapalli, Hosur" },
-    { name: "Lakshmi Narayanan", phone: "•••• 67890", role: "Customer", locality: "Mornapalli, Hosur" },
-    { name: "Neighbor in Hosur", phone: "", role: "Local Shopper", locality: "All Hosur" },
-    { name: "Neighbor in Hosur", phone: "", role: "Local Shopper", locality: "Bagalur Road, Hosur" },
+    { customerId: "CUST-HSR-21482", name: "Naveen Kumar", phone: "•••• 21482", role: "Resident Member", locality: "Bagalur Road, Hosur" },
+    { customerId: "CUST-HSR-43210", name: "Asha Rao", phone: "•••• 43210", role: "Verified Customer", locality: "Gandhi Road, Hosur" },
+    { customerId: "CUST-HSR-87654", name: "Karthik Raja", phone: "•••• 87654", role: "Resident Member", locality: "Rayakottai Road, Hosur" },
+    { customerId: "CUST-HSR-10987", name: "Priya Raman", phone: "•••• 10987", role: "Verified Customer", locality: "SIPCOT Phase 1, Hosur" },
+    { customerId: "CUST-HSR-65432", name: "Suresh Babu", phone: "•••• 65432", role: "Resident Member", locality: "Mathigiri, Hosur" },
+    { customerId: "CUST-HSR-32109", name: "Ananya Swaminathan", phone: "•••• 32109", role: "Customer", locality: "Denkanikotta Road, Hosur" },
+    { customerId: "CUST-HSR-78901", name: "Venkatesh Murthy", phone: "•••• 78901", role: "Resident Member", locality: "Near Bus Stand, Hosur" },
+    { customerId: "CUST-HSR-45678", name: "Meena Sundaram", phone: "•••• 45678", role: "Verified Customer", locality: "Avalapalli Road, Hosur" },
+    { customerId: "CUST-HSR-12345", name: "Dinesh Kumar", phone: "•••• 12345", role: "Resident Member", locality: "Mookandapalli, Hosur" },
+    { customerId: "CUST-HSR-67890", name: "Lakshmi Narayanan", phone: "•••• 67890", role: "Customer", locality: "Mornapalli, Hosur" },
+    { customerId: "CUST-HSR-91823", name: "Neighbor in Hosur", phone: "", role: "Local Shopper", locality: "All Hosur" },
+    { customerId: "CUST-HSR-55241", name: "Neighbor in Hosur", phone: "", role: "Local Shopper", locality: "Bagalur Road, Hosur" },
   ];
 
   const devices = [
@@ -364,17 +367,21 @@ export function createSampleViewRecords(
     const user = sampleUsers[i % sampleUsers.length];
     const surface = allowedSurfaces[i % allowedSurfaces.length];
     const minutesAgo = i === 0 ? 3 : i * 14 + 7;
-    const time = new Date(Date.now() - minutesAgo * 60 * 1000).toISOString();
+    const viewDateObj = new Date(Date.now() - minutesAgo * 60 * 1000);
+    const time = viewDateObj.toISOString();
 
     records.push({
       id: `view_${adBookingId}_${i + 1}`,
       adBookingId,
+      customerId: user.customerId,
       viewerName: user.name,
       viewerPhone: user.phone,
       viewerRole: user.role,
       surface,
       surfaceLabel: surfaceLabels[surface] || "Poster Billboard",
       viewedAt: time,
+      viewedDate: viewDateObj.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+      viewedTime: viewDateObj.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true }),
       locality: user.locality,
       device: devices[i % devices.length],
     });

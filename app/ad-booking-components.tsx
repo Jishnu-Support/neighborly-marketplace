@@ -2136,12 +2136,13 @@ export function AdAudienceLogModal({
       if (filterSurface !== "all" && r.surface !== filterSurface) return false;
       if (search.trim()) {
         const query = search.toLowerCase();
+        const matchCustomerId = r.customerId?.toLowerCase().includes(query);
         const matchName = r.viewerName.toLowerCase().includes(query);
         const matchPhone = r.viewerPhone?.toLowerCase().includes(query);
         const matchLocality = r.locality?.toLowerCase().includes(query);
         const matchDevice = r.device?.toLowerCase().includes(query);
         const matchSurface = r.surfaceLabel?.toLowerCase().includes(query);
-        if (!matchName && !matchPhone && !matchLocality && !matchDevice && !matchSurface) {
+        if (!matchCustomerId && !matchName && !matchPhone && !matchLocality && !matchDevice && !matchSurface) {
           return false;
         }
       }
@@ -2151,6 +2152,7 @@ export function AdAudienceLogModal({
 
   const exportCsv = () => {
     const headers = [
+      "Customer ID",
       "View ID",
       "Ad Booking ID",
       "Business Name",
@@ -2158,16 +2160,19 @@ export function AdAudienceLogModal({
       "Viewer Role",
       "Phone / Status",
       "Channel Surface",
+      "Ad Viewed Date",
+      "Ad Viewed Time",
       "Timestamp (ISO)",
-      "View Date",
-      "View Time",
       "Locality",
       "Device",
     ];
 
     const rows = filteredRecords.map((r) => {
       const d = new Date(r.viewedAt);
+      const vDate = r.viewedDate || d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+      const vTime = r.viewedTime || d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true });
       return [
+        `"${r.customerId || "CUST-HSR-GUEST"}"`,
         r.id,
         r.adBookingId,
         `"${booking.businessName}"`,
@@ -2175,9 +2180,9 @@ export function AdAudienceLogModal({
         `"${r.viewerRole || "Customer"}"`,
         `"${r.viewerPhone || "N/A"}"`,
         `"${r.surfaceLabel || r.surface}"`,
+        `"${vDate}"`,
+        `"${vTime}"`,
         r.viewedAt,
-        d.toLocaleDateString("en-IN"),
-        d.toLocaleTimeString("en-IN"),
         `"${r.locality || "Hosur, Tamil Nadu"}"`,
         `"${r.device || "Mobile / Web"}"`,
       ];
@@ -2364,7 +2369,7 @@ export function AdAudienceLogModal({
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by user name, phone, or locality..."
+                placeholder="Search by Customer ID (e.g. CUST-HSR), name, phone, locality..."
                 style={{
                   width: "100%",
                   border: "1px solid #c9dacb",
@@ -2433,7 +2438,7 @@ export function AdAudienceLogModal({
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1.8fr 1.2fr 1.4fr 1.6fr",
+                gridTemplateColumns: "1.3fr 1.6fr 1.1fr 1.5fr 1.3fr",
                 padding: "10px 16px",
                 background: "#f3f8f4",
                 borderBottom: "1px solid #dce7dc",
@@ -2444,9 +2449,10 @@ export function AdAudienceLogModal({
                 letterSpacing: "0.4px",
               }}
             >
+              <span>Customer ID</span>
               <span>User / Viewer</span>
               <span>Ad Channel</span>
-              <span>View Timing</span>
+              <span>View Date &amp; Time</span>
               <span>Locality &amp; Device</span>
             </div>
 
@@ -2455,7 +2461,7 @@ export function AdAudienceLogModal({
                 <div style={{ fontSize: "28px", marginBottom: "6px" }}>🔍</div>
                 <strong>No viewer records match your search filter.</strong>
                 <p style={{ margin: "4px 0 0", fontSize: "12px" }}>
-                  Try adjusting the surface filter or searching for another term.
+                  Try adjusting the surface filter or searching for another customer ID or term.
                 </p>
               </div>
             ) : (
@@ -2463,13 +2469,15 @@ export function AdAudienceLogModal({
                 {filteredRecords.map((r, idx) => {
                   const viewDate = new Date(r.viewedAt);
                   const isRecent = Date.now() - viewDate.getTime() < 15 * 60 * 1000;
+                  const displayDate = r.viewedDate || viewDate.toLocaleDateString([], { day: "2-digit", month: "short", year: "numeric" });
+                  const displayTime = r.viewedTime || viewDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
                   return (
                     <div
                       key={r.id || idx}
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "1.8fr 1.2fr 1.4fr 1.6fr",
+                        gridTemplateColumns: "1.3fr 1.6fr 1.1fr 1.5fr 1.3fr",
                         alignItems: "center",
                         padding: "12px 16px",
                         borderBottom: idx < filteredRecords.length - 1 ? "1px solid #edf4ee" : "none",
@@ -2477,6 +2485,26 @@ export function AdAudienceLogModal({
                         transition: "background 0.15s ease",
                       }}
                     >
+                      {/* Customer ID */}
+                      <div>
+                        <span
+                          style={{
+                            display: "inline-block",
+                            padding: "3px 8px",
+                            borderRadius: "6px",
+                            fontSize: "11px",
+                            fontWeight: 800,
+                            letterSpacing: "0.4px",
+                            background: "#e0f2fe",
+                            color: "#0369a1",
+                            border: "1px solid #bae6fd",
+                            fontFamily: "monospace",
+                          }}
+                        >
+                          🆔 {r.customerId || "CUST-HSR-GUEST"}
+                        </span>
+                      </div>
+
                       {/* User Info */}
                       <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
                         <div
@@ -2533,13 +2561,13 @@ export function AdAudienceLogModal({
                         </span>
                       </div>
 
-                      {/* View Timing */}
+                      {/* View Date & Time */}
                       <div>
-                        <div style={{ fontSize: "12px", fontWeight: 700, color: "#1c3d28" }}>
-                          {viewDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                        <div style={{ fontSize: "12px", fontWeight: 700, color: "#1c3d28", display: "flex", alignItems: "center", gap: "4px" }}>
+                          <span>⏰</span> {displayTime}
                         </div>
-                        <div style={{ fontSize: "10px", color: "#728a7a", display: "flex", gap: "4px", alignItems: "center" }}>
-                          <span>{viewDate.toLocaleDateString([], { month: "short", day: "numeric" })}</span>
+                        <div style={{ fontSize: "11px", color: "#506f59", display: "flex", gap: "4px", alignItems: "center", marginTop: "2px" }}>
+                          <span>📅 {displayDate}</span>
                           <span>•</span>
                           <span style={{ fontWeight: 600, color: isRecent ? "#166534" : "#728a7a" }}>
                             {formatRelativeTime(r.viewedAt)}
@@ -3085,6 +3113,46 @@ export function AdCampaignsManager({
                           </span>
                         )}
                       </div>
+
+                      {/* Latest Customer ID & View Timestamp strip */}
+                      {b.viewRecords && b.viewRecords.length > 0 && (
+                        <div
+                          style={{
+                            marginTop: "6px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            flexWrap: "wrap",
+                            fontSize: "11px",
+                            color: "#375740",
+                            background: "#f0f7f2",
+                            padding: "4px 8px",
+                            borderRadius: "6px",
+                            border: "1px solid #d2e4d0",
+                          }}
+                        >
+                          <span style={{ fontWeight: 700, color: "#163a23" }}>Latest Customer View:</span>
+                          <span
+                            style={{
+                              background: "#e0f2fe",
+                              color: "#0369a1",
+                              padding: "1px 6px",
+                              borderRadius: "4px",
+                              fontWeight: 800,
+                              fontFamily: "monospace",
+                              fontSize: "10.5px",
+                              border: "1px solid #bae6fd",
+                            }}
+                          >
+                            🆔 {b.viewRecords[0].customerId || "CUST-HSR-GUEST"}
+                          </span>
+                          <span style={{ fontWeight: 600 }}>{b.viewRecords[0].viewerName}</span>
+                          <span>•</span>
+                          <span style={{ color: "#2d5437" }}>
+                            📅 {b.viewRecords[0].viewedDate || new Date(b.viewRecords[0].viewedAt).toLocaleDateString([], { day: "2-digit", month: "short" })} ⏰ {b.viewRecords[0].viewedTime || new Date(b.viewRecords[0].viewedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -3418,6 +3486,46 @@ export function CompanyAdBookingsManager({
                     </span>
                   )}
                 </div>
+
+                {/* Super Admin Latest Customer ID & View Timing */}
+                {b.viewRecords && b.viewRecords.length > 0 && (
+                  <div
+                    style={{
+                      marginTop: "5px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      flexWrap: "wrap",
+                      fontSize: "10.5px",
+                      color: "#375740",
+                      background: "#f0f7f2",
+                      padding: "3px 8px",
+                      borderRadius: "6px",
+                      border: "1px solid #d2e4d0",
+                    }}
+                  >
+                    <span style={{ fontWeight: 700, color: "#163a23" }}>Latest:</span>
+                    <span
+                      style={{
+                        background: "#e0f2fe",
+                        color: "#0369a1",
+                        padding: "1px 5px",
+                        borderRadius: "4px",
+                        fontWeight: 800,
+                        fontFamily: "monospace",
+                        fontSize: "10px",
+                        border: "1px solid #bae6fd",
+                      }}
+                    >
+                      🆔 {b.viewRecords[0].customerId || "CUST-HSR-GUEST"}
+                    </span>
+                    <span style={{ fontWeight: 600 }}>{b.viewRecords[0].viewerName}</span>
+                    <span>•</span>
+                    <span style={{ color: "#2d5437" }}>
+                      📅 {b.viewRecords[0].viewedDate || new Date(b.viewRecords[0].viewedAt).toLocaleDateString([], { day: "2-digit", month: "short" })} ⏰ {b.viewRecords[0].viewedTime || new Date(b.viewRecords[0].viewedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>

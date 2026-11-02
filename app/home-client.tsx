@@ -10684,6 +10684,7 @@ export default function Home() {
   };
 
   function getViewerInfo() {
+    let customerId = "";
     let viewerName = "Neighbor in Hosur";
     let viewerPhone = "";
     let viewerRole = "Customer";
@@ -10694,14 +10695,42 @@ export default function Home() {
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed.fullName) viewerName = parsed.fullName;
-        if (parsed.phone) viewerPhone = `•••• ${parsed.phone.slice(-4)}`;
+        if (parsed.phone) {
+          viewerPhone = `•••• ${parsed.phone.slice(-4)}`;
+          customerId = `CUST-HSR-${parsed.phone.replace(/\D/g, "").slice(-5)}`;
+        }
         if (parsed.locality) locality = parsed.locality;
       }
-    } catch {}
+
+      const regUser = window.localStorage.getItem("bizearch_registered_user");
+      if (regUser) {
+        const parsedReg = JSON.parse(regUser);
+        if (parsedReg.name) viewerName = parsedReg.name;
+        if (parsedReg.phone) {
+          viewerPhone = `•••• ${parsedReg.phone.slice(-4)}`;
+          if (!customerId) customerId = `CUST-HSR-${parsedReg.phone.replace(/\D/g, "").slice(-5)}`;
+        }
+      }
+
+      if (!customerId) {
+        let devCustId = window.localStorage.getItem("bizearch_device_customer_id");
+        if (!devCustId) {
+          devCustId = `CUST-HSR-${Math.floor(10000 + Math.random() * 90000)}`;
+          window.localStorage.setItem("bizearch_device_customer_id", devCustId);
+        }
+        customerId = devCustId;
+      }
+    } catch {
+      customerId = `CUST-HSR-${Math.floor(10000 + Math.random() * 90000)}`;
+    }
+
+    const now = new Date();
+    const viewedDate = now.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+    const viewedTime = now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true });
 
     const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
     const device = isMobile ? "Mobile Browser (Hosur)" : "Desktop Browser (Hosur)";
-    return { viewerName, viewerPhone, viewerRole, locality, device };
+    return { customerId, viewerName, viewerPhone, viewerRole, viewedDate, viewedTime, locality, device };
   }
 
   // Automatically record view impression when a customer views an ad on Discover

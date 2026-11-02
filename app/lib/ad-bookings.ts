@@ -167,6 +167,22 @@ export async function readAdBookings(): Promise<AdBookingRequest[]> {
               : ["poster"];
           b.viewRecords = createSampleViewRecords(b.id, b.viewsCount || 20, allowed);
           backfilled = true;
+        } else {
+          for (let i = 0; i < b.viewRecords.length; i++) {
+            const r = b.viewRecords[i];
+            if (!r.customerId) {
+              r.customerId = r.viewerPhone
+                ? `CUST-HSR-${r.viewerPhone.replace(/\D/g, "").slice(-5) || "001"}`
+                : `CUST-HSR-${Math.floor(10000 + ((i + 1) * 13579) % 89999)}`;
+              backfilled = true;
+            }
+            if (!r.viewedDate || !r.viewedTime) {
+              const d = new Date(r.viewedAt || Date.now());
+              r.viewedDate = d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+              r.viewedTime = d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true });
+              backfilled = true;
+            }
+          }
         }
       }
       if (backfilled) {
@@ -288,9 +304,12 @@ export async function recordAdImpression(
   adBookingId: string,
   surface: "poster" | "content" | "video",
   viewerDetails?: {
+    customerId?: string;
     viewerName?: string;
     viewerPhone?: string;
     viewerRole?: string;
+    viewedDate?: string;
+    viewedTime?: string;
     locality?: string;
     device?: string;
   }
@@ -304,8 +323,21 @@ export async function recordAdImpression(
     booking.impressionsBySurface = { poster: 0, content: 0, video: 0 };
   }
   booking.impressionsBySurface[surface] = (booking.impressionsBySurface[surface] || 0) + 1;
-  const now = new Date().toISOString();
-  booking.lastViewedAt = now;
+  const now = new Date();
+  const isoNow = now.toISOString();
+  booking.lastViewedAt = isoNow;
+
+  const dateStr = now.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+  const timeStr = now.toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
 
   const surfaceLabels = {
     poster: "Poster Billboard",
@@ -313,15 +345,24 @@ export async function recordAdImpression(
     video: "Video Spotlight",
   };
 
+  const customerId =
+    viewerDetails?.customerId ||
+    (viewerDetails?.viewerPhone
+      ? `CUST-HSR-${viewerDetails.viewerPhone.replace(/\D/g, "").slice(-5) || "001"}`
+      : `CUST-HSR-${Math.floor(10000 + Math.random() * 90000)}`);
+
   const newRecord: AdViewRecord = {
     id: `view_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
     adBookingId,
+    customerId,
     viewerName: viewerDetails?.viewerName || "Hosur Neighbor",
     viewerPhone: viewerDetails?.viewerPhone || "",
     viewerRole: viewerDetails?.viewerRole || "Customer",
     surface,
     surfaceLabel: surfaceLabels[surface] || "Poster Billboard",
-    viewedAt: now,
+    viewedAt: isoNow,
+    viewedDate: viewerDetails?.viewedDate || dateStr,
+    viewedTime: viewerDetails?.viewedTime || timeStr,
     locality: viewerDetails?.locality || "Hosur, Tamil Nadu",
     device: viewerDetails?.device || "Mobile / Web",
   };
