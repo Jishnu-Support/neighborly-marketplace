@@ -19,9 +19,7 @@ export async function POST(request: Request) {
     response.cookies.set(AUTH_COOKIE, createSessionToken(body.role, identity, accessLevel), authCookieOptions);
     return response;
   } catch (error) {
-    const message = error instanceof Error && error.message.includes("NEIGHBORLY_AUTH_SECRET")
-      ? "Authentication is not configured on this server."
-      : "Could not sign in. Please try again.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("Login route error:", error);
+    return NextResponse.json({ error: "Could not sign in. Please try again." }, { status: 500 });
   }
 }
