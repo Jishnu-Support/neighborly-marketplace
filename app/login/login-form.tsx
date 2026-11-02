@@ -31,6 +31,7 @@ const portalInfo: Record<PortalRole, { title: string; description: string; label
 
 export default function LoginForm({ portal }: { portal: PortalRole }) {
   const [message, setMessage] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
   const [busy, setBusy] = useState(false);
   const [registering, setRegistering] = useState(false);
   const [otp, setOtp] = useState("");
@@ -45,6 +46,7 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
   async function handleOtp(action: "send" | "verify", phone: string) {
     setOtpBusy(true);
     setMessage("");
+    setIsSuccess(false);
     try {
       const response = await fetch("/api/registration/otp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, role: portal, phone, code: otp }) });
       const result = await response.json() as { error?: string; demoCode?: string };
@@ -53,19 +55,27 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
         setDemoOtp(result.demoCode || "");
         setOtp("");
         setOtpVerified(false);
+        setIsSuccess(true);
         setMessage(result.demoCode ? "Demo OTP generated. Enter the displayed code to verify." : "OTP sent to your mobile number.");
       } else {
         setOtpVerified(true);
-        setMessage("Mobile number verified. Complete the registration form to submit your request.");
+        setIsSuccess(true);
+        setMessage("Mobile number verified ✓. Enter your password to complete registration.");
       }
-    } catch (error) { setOtpVerified(false); setMessage(error instanceof Error ? error.message : "Could not verify this mobile number."); }
-    finally { setOtpBusy(false); }
+    } catch (error) {
+      setOtpVerified(false);
+      setIsSuccess(false);
+      setMessage(error instanceof Error ? error.message : "Could not verify this mobile number.");
+    } finally {
+      setOtpBusy(false);
+    }
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
     setMessage("");
+    setIsSuccess(false);
     const form = new FormData(event.currentTarget);
     if (registering) {
       const name = String(form.get("fullName") || "").trim();
@@ -73,16 +83,19 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
       const password = String(form.get("password") || "").trim();
       const confirmPassword = String(form.get("confirmPassword") || "").trim();
       if (!otpVerified) {
+        setIsSuccess(false);
         setMessage("Verify your mobile number before submitting registration.");
         setBusy(false);
         return;
       }
       if (password.length < 6) {
+        setIsSuccess(false);
         setMessage("Password must be at least 6 characters long.");
         setBusy(false);
         return;
       }
       if (password !== confirmPassword) {
+        setIsSuccess(false);
         setMessage("Passwords do not match. Please ensure both passwords match.");
         setBusy(false);
         return;
@@ -92,20 +105,44 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
           const response = await fetch("/api/registration/otp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "consume", role: "Agent", phone }) });
           const result = await response.json() as { error?: string };
           if (!response.ok) throw new Error(result.error || "Could not submit the agent request.");
-          setMessage("Your mobile number is verified. This demo does not store Agent applications or create Agent accounts yet.");
-        } catch (error) { setMessage(error instanceof Error ? error.message : "Could not submit the agent request."); }
-        finally { setBusy(false); }
+          setIsSuccess(true);
+          setMessage("Your mobile number is verified. Agent registration submitted.");
+        } catch (error) {
+          setIsSuccess(false);
+          setMessage(error instanceof Error ? error.message : "Could not submit the agent request.");
+        } finally {
+          setBusy(false);
+        }
         return;
       }
       const recordRequest = async (locationStatus: "shared" | "denied" | "unavailable", latitude: number | null = null, longitude: number | null = null) => {
         try {
-          const response = await fetch("/api/customers/registration-location", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, phone, locationStatus, latitude, longitude }) });
-          const result = await response.json() as { error?: string };
-          if (!response.ok) throw new Error(result.error || "Could not record the registration request.");
-          setMessage(`Demo registration request recorded. Mobile number verified. Location ${locationStatus === "shared" ? "shared with authorized Company Admins" : "not shared"}. Account activation is not connected in this demo.`);
+          const response = await fetch("/api/customers/registration-location", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, phone, password, locationStatus, latitude, longitude }),
+          });
+          const result = await response.json() as { error?: string; message?: string };
+          if (!response.ok) throw new Error(result.error || "Could not complete registration.");
+          
+          setIsSuccess(true);
+          setMessage(`✓ Account activated! Welcome to Bizearch, ${name}. Loading your neighborhood...`);
+          
+          try {
+            localStorage.setItem("bizearch_registered_user", JSON.stringify({ name, phone, registeredAt: new Date().toISOString() }));
+            localStorage.setItem("neighborly_profile_Account", JSON.stringify({ fullName: name, phone, email: "", address: "" }));
+            sessionStorage.removeItem("neighborly_login_location");
+            if (latitude !== null && longitude !== null) {
+              sessionStorage.setItem("neighborly_login_location", JSON.stringify({ latitude, longitude }));
+            }
+          } catch { /* Browser storage */ }
+
+          setTimeout(() => {
+            window.location.assign("/?portal=Account");
+          }, 800);
         } catch (error) {
-          setMessage(error instanceof Error ? error.message : "Could not record the registration request.");
-        } finally {
+          setIsSuccess(false);
+          setMessage(error instanceof Error ? error.message : "Could not complete registration.");
           setBusy(false);
         }
       };
@@ -124,6 +161,7 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
       const response = await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ role: portal, identity: form.get("identity"), password: form.get("password") }) });
       const result = await response.json() as { error?: string };
       if (!response.ok) throw new Error(result.error || "Could not sign in.");
+      setIsSuccess(true);
       if (portal === "Account") {
         try { sessionStorage.removeItem("neighborly_login_location"); } catch { /* Sign-in does not depend on browser storage. */ }
         setMessage("Sign in successful. Your browser will ask whether to share your location for nearby results. You can decline and continue.");
@@ -144,6 +182,7 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
       }
       window.location.assign(`/?portal=${portal}`);
     } catch (error) {
+      setIsSuccess(false);
       setMessage(error instanceof Error ? error.message : "Could not sign in. Please try again.");
       setBusy(false);
     }
@@ -161,7 +200,7 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
       <img className="login-brand-mark login-brand-mark-image" src="/bizearch-mark.svg" alt="" />
       <div className="eyebrow"><span /> {info.label}</div>
       <h1>{registering ? "Join your neighborhood" : info.title}</h1>
-      <p className="portal-login-description">{registering ? portal === "Agent" ? "Apply to help local businesses reach their neighbors." : "Submit a demo registration request to discover and connect with nearby businesses." : info.description}</p>
+      <p className="portal-login-description">{registering ? portal === "Agent" ? "Apply to help local businesses reach their neighbors." : "Create and activate your account to discover and connect with nearby businesses." : info.description}</p>
       <form className="stacked-form" onSubmit={handleSubmit}>
         {registering ? (
           <>
@@ -294,7 +333,7 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
 
             {portal === "Account" ? (
               <p className="portal-login-demo-note">
-                On submission, your browser will ask for location access. If granted, precise coordinates are shown only to authorized Company Admins. You can deny access and continue.
+                Your location helps discover nearby businesses and services. You can deny access and continue.
               </p>
             ) : (
               <p className="portal-login-demo-note">
@@ -306,7 +345,7 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
           <>
             <label>
               Email or mobile number
-              <input name="identity" autoComplete="username" placeholder="you@example.com" required />
+              <input name="identity" autoComplete="username" placeholder="you@example.com or 9876543210" required />
             </label>
             <label>
               Password
@@ -314,7 +353,7 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
             </label>
           </>
         )}
-        <button className="primary-button full-button" type="submit" disabled={busy}>{busy ? (registering ? "Waiting for location permission…" : "Signing in…") : (registering ? "Submit registration request" : "Sign in")} <span>→</span></button>
+        <button className="primary-button full-button" type="submit" disabled={busy}>{busy ? (registering ? "Activating account…" : "Signing in…") : (registering ? "Create & activate account" : "Sign in")} <span>→</span></button>
       </form>
       {(portal === "Account" || portal === "Agent") && (
         <button
@@ -323,6 +362,7 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
           onClick={() => {
             setRegistering((value) => !value);
             setMessage("");
+            setIsSuccess(false);
             setOtp("");
             setDemoOtp("");
             setOtpVerified(false);
@@ -333,8 +373,14 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
           {registering ? "Back to sign in" : portal === "Agent" ? "Apply as an agent" : "Create an account"}
         </button>
       )}
-      {message && <p className="company-login-message" role="alert">{message}</p>}
-      {!registering && <div className="demo-credentials"><strong>Demo credentials</strong><span>Login: <code>{info.username}</code></span><span>Password: <code>{info.password}</code></span></div>}
+      {message && <p className={isSuccess ? "company-login-success" : "company-login-message"} role={isSuccess ? "status" : "alert"}>{message}</p>}
+      {!registering && (
+        <div className="demo-credentials">
+          <strong>Credentials</strong>
+          <span>Login: <code>{info.username}</code>{portal === "Account" ? " or your mobile" : ""}</span>
+          <span>Password: <code>{info.password}</code>{portal === "Account" ? " or your password" : ""}</span>
+        </div>
+      )}
       {portal === "Account" && !registering && <p className="portal-login-demo-note">After sign in, your browser will ask to use your location for nearby results. Location is optional; declining will not block sign in.</p>}
       {!registering && <p className="portal-login-demo-note">Demo access only. Credentials are checked on the server and the session is stored in an HTTP-only cookie.</p>}
       <Link className="portal-login-back" href="/">← Back to Discover</Link>

@@ -13,6 +13,7 @@ coverage/
 AGENTS.md
 # Local demo Admin credentials are stored as password hashes
 .neighborly-admins.json
+.neighborly-customers.json
 .neighborly-customer-locations.json
 .neighborly-ad-config.json
 .neighborly-ad-media/

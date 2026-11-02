@@ -9,6 +9,9 @@ export type AuthSession = { role: PortalRole; identity: string; expiresAt: numbe
 export type CompanyAdmin = { id: string; name: string; email: string; active: boolean; createdAt: string };
 type StoredAdmin = CompanyAdmin & { salt: string; passwordHash: string };
 
+export type CustomerAccount = { id: string; name: string; phone: string; email?: string; active: boolean; createdAt: string };
+export type StoredCustomer = CustomerAccount & { salt: string; passwordHash: string };
+
 export const AUTH_COOKIE = "neighborly_session";
 const SESSION_DURATION_SECONDS = 60 * 60 * 12;
 const validRoles: PortalRole[] = ["Account", "Business", "Agent", "Company"];
@@ -19,6 +22,7 @@ const demoAccounts: Record<Exclude<PortalRole, "Company">, { identity: string; p
   Agent: { identity: "agent@neighborly.demo", password: "Agent123!" },
 };
 const adminStorePath = process.env.NEIGHBORLY_ADMIN_STORE || path.join(process.cwd(), ".neighborly-admins.json");
+const customerStorePath = process.env.NEIGHBORLY_CUSTOMER_STORE || path.join(process.cwd(), ".neighborly-customers.json");
 
 function signingSecret() {
   if (process.env.NEIGHBORLY_AUTH_SECRET) return process.env.NEIGHBORLY_AUTH_SECRET;
@@ -66,6 +70,74 @@ async function readAdminRecords(): Promise<StoredAdmin[]> {
   }
 }
 
+async function writeCustomerRecords(customers: StoredCustomer[]) {
+  await mkdir(path.dirname(customerStorePath), { recursive: true });
+  const temporaryPath = `${customerStorePath}.${process.pid}.tmp`;
+  await writeFile(temporaryPath, JSON.stringify(customers, null, 2), { encoding: "utf8", mode: 0o600 });
+  await rename(temporaryPath, customerStorePath);
+}
+
+export async function readCustomerRecords(): Promise<StoredCustomer[]> {
+  try {
+    const parsed = JSON.parse(await readFile(customerStorePath, "utf8")) as unknown;
+    if (!Array.isArray(parsed)) throw new Error("The local customer store has an invalid format.");
+    return parsed as StoredCustomer[];
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    return [];
+  }
+}
+
+export async function registerCustomerAccount(input: {
+  name: string;
+  phone: string;
+  password: string;
+  email?: string;
+}): Promise<CustomerAccount> {
+  const cleanPhone = input.phone.replace(/\D/g, "");
+  const normalizedEmail = (input.email || "").trim().toLowerCase();
+  const customers = await readCustomerRecords();
+
+  const existingIndex = customers.findIndex((c) => {
+    const cPhoneClean = c.phone.replace(/\D/g, "");
+    if (cleanPhone.length >= 8 && (cPhoneClean === cleanPhone || cPhoneClean.endsWith(cleanPhone) || cleanPhone.endsWith(cPhoneClean))) {
+      return true;
+    }
+    if (normalizedEmail && c.email && c.email.toLowerCase() === normalizedEmail) {
+      return true;
+    }
+    return false;
+  });
+
+  const salt = randomBytes(16).toString("hex");
+  const passwordHash = hashPassword(input.password, salt);
+  const record: StoredCustomer = {
+    id: existingIndex >= 0 ? customers[existingIndex].id : randomUUID(),
+    name: input.name.trim(),
+    phone: input.phone.trim(),
+    email: normalizedEmail,
+    active: true,
+    createdAt: existingIndex >= 0 ? customers[existingIndex].createdAt : new Date().toISOString(),
+    salt,
+    passwordHash,
+  };
+
+  if (existingIndex >= 0) {
+    customers[existingIndex] = record;
+    await writeCustomerRecords(customers);
+  } else {
+    await writeCustomerRecords([record, ...customers]);
+  }
+
+  const { salt: _s, passwordHash: _h, ...publicCustomer } = record;
+  return publicCustomer;
+}
+
+export async function listCustomerAccounts(): Promise<CustomerAccount[]> {
+  const customers = await readCustomerRecords();
+  return customers.map(({ id, name, phone, email, active, createdAt }) => ({ id, name, phone, email, active, createdAt }));
+}
+
 export function isPortalRole(value: unknown): value is PortalRole {
   return typeof value === "string" && validRoles.includes(value as PortalRole);
 }
@@ -88,6 +160,30 @@ export async function verifyCredentials(role: PortalRole, identity: string, pass
     if (accessLevel !== "Admin") return false;
     const admin = (await readAdminRecords()).find((item) => item.email === normalizedIdentity && item.active);
     return Boolean(admin && passwordsMatch(password, admin.salt, admin.passwordHash));
+  }
+  if (role === "Account") {
+    // Check demo credentials
+    const account = demoAccounts[role];
+    if (normalizedIdentity === account.identity.toLowerCase() && password === account.password) {
+      return true;
+    }
+    // Check registered customers
+    const cleanDigits = normalizedIdentity.replace(/\D/g, "");
+    const customers = await readCustomerRecords();
+    const customer = customers.find((c) => {
+      if (!c.active) return false;
+      if (c.email && c.email.toLowerCase() === normalizedIdentity) return true;
+      const cDigits = c.phone.replace(/\D/g, "");
+      if (cleanDigits.length >= 8 && (cDigits === cleanDigits || cDigits.endsWith(cleanDigits) || cleanDigits.endsWith(cDigits))) {
+        return true;
+      }
+      return c.phone.trim().toLowerCase() === normalizedIdentity;
+    });
+
+    if (customer && passwordsMatch(password, customer.salt, customer.passwordHash)) {
+      return true;
+    }
+    return false;
   }
   const account = demoAccounts[role];
   return normalizedIdentity === account.identity && password === account.password;

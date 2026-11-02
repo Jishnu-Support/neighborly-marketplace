@@ -11416,27 +11416,45 @@ export default function Home() {
     );
   }
 
-  function logIn(event: React.FormEvent<HTMLFormElement>) {
+  async function logIn(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const phone = String(form.get("phone") || "").trim();
+    const password = String(form.get("password") || "").trim();
     if (phone.length < 8) {
       showNotice("Enter a valid mobile number to continue.");
       return;
     }
-    setDialog(null);
-    showNotice("No account was created. Connect a trusted identity provider to verify your phone and sign in.");
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role: "Account", identity: phone, password })
+      });
+      const result = await response.json() as { error?: string };
+      if (!response.ok) throw new Error(result.error || "Could not sign in.");
+      setDialog(null);
+      setAuthenticatedPortals((prev) => Array.from(new Set([...prev, "Account"])));
+      setRole("Account");
+      setPortalActiveTab("Overview");
+      showNotice("Signed in successfully. Welcome to Bizearch!");
+    } catch (error) {
+      showNotice(error instanceof Error ? error.message : "Invalid phone number or password.");
+    }
   }
 
-  async function registerCustomerLocation(input: { name: string; phone: string; locationStatus: "shared" | "denied" | "unavailable"; latitude: number | null; longitude: number | null }) {
+  async function registerCustomerLocation(input: { name: string; phone: string; password?: string; locationStatus: "shared" | "denied" | "unavailable"; latitude: number | null; longitude: number | null }) {
     try {
       const response = await fetch("/api/customers/registration-location", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) });
-      const result = await response.json() as { registration?: { verificationStatus: string }; error?: string };
-      if (!response.ok || !result.registration) throw new Error(result.error || "Could not save the registration request.");
+      const result = await response.json() as { registration?: { verificationStatus: string }; customer?: { name: string }; error?: string };
+      if (!response.ok || !result.registration) throw new Error(result.error || "Could not complete registration.");
       setDialog(null);
-      showNotice(`Demo registration request recorded. Location ${input.locationStatus === "shared" ? "shared with authorized Company Admins" : "not shared"}. Mobile number verified. Account activation is not connected in this demo.`);
+      setAuthenticatedPortals((prev) => Array.from(new Set([...prev, "Account"])));
+      setRole("Account");
+      setPortalActiveTab("Overview");
+      showNotice(`✓ Account activated! Welcome to Bizearch, ${input.name}.`);
     } catch (error) {
-      showNotice(error instanceof Error ? error.message : "Could not save the registration request.");
+      showNotice(error instanceof Error ? error.message : "Could not complete registration.");
     }
   }
 
@@ -20332,7 +20350,7 @@ function Dialog({
   profileRole: "Account" | "Business" | "Agent" | "Company";
   profileIdentity: string;
   onLogin: (event: React.FormEvent<HTMLFormElement>) => void;
-  onRegisterCustomerLocation: (input: { name: string; phone: string; locationStatus: "shared" | "denied" | "unavailable"; latitude: number | null; longitude: number | null }) => Promise<void>;
+  onRegisterCustomerLocation: (input: { name: string; phone: string; password?: string; locationStatus: "shared" | "denied" | "unavailable"; latitude: number | null; longitude: number | null }) => Promise<void>;
   onBusiness: (event: React.FormEvent<HTMLFormElement>) => void;
   businesses: Business[];
   categories: CategorySector[];
@@ -20576,7 +20594,7 @@ function Dialog({
     }
     const submitLocation = async (locationStatus: "shared" | "denied" | "unavailable", latitude: number | null = null, longitude: number | null = null) => {
       setRegistrationBusy(true);
-      await onRegisterCustomerLocation({ name, phone, locationStatus, latitude, longitude });
+      await onRegisterCustomerLocation({ name, phone, password, locationStatus, latitude, longitude });
       setRegistrationBusy(false);
     };
     if (!navigator.geolocation) {

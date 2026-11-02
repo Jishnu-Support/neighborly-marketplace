@@ -10,10 +10,12 @@ export type CustomerRegistrationLocation = {
   latitude: number | null;
   longitude: number | null;
   registeredAt: string;
-  verificationStatus: "Demo request · Mobile verified; account inactive";
+  verificationStatus: "Active · Mobile verified" | "Demo request · Mobile verified; account inactive";
 };
 
-type NewCustomerRegistrationLocation = Omit<CustomerRegistrationLocation, "id" | "registeredAt" | "verificationStatus">;
+type NewCustomerRegistrationLocation = Omit<CustomerRegistrationLocation, "id" | "registeredAt" | "verificationStatus"> & {
+  verificationStatus?: "Active · Mobile verified" | "Demo request · Mobile verified; account inactive";
+};
 const recordsPath = process.env.NEIGHBORLY_CUSTOMER_LOCATION_STORE || path.join(process.cwd(), ".neighborly-customer-locations.json");
 
 async function readRecords(): Promise<CustomerRegistrationLocation[]> {
@@ -33,7 +35,7 @@ export async function saveCustomerRegistrationLocation(input: NewCustomerRegistr
     ...input,
     id: randomUUID(),
     registeredAt: new Date().toISOString(),
-    verificationStatus: "Demo request · Mobile verified; account inactive",
+    verificationStatus: input.verificationStatus || "Active · Mobile verified",
   };
   await mkdir(path.dirname(recordsPath), { recursive: true });
   const temporaryPath = `${recordsPath}.${process.pid}.tmp`;

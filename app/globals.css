@@ -164,6 +164,7 @@ h1 em{font-family:var(--serif);font-weight:400;color:#507959;letter-spacing:-1px
 .company-login-link{display:block;margin:7px 0 0 43px;color:#9ba39c;font-size:8px;text-decoration:none}
 .company-login-link:hover,.company-login-shortcut a:hover{text-decoration:underline}
 .company-login-message{font-size:10px;line-height:1.55;color:#8a503f;background:#fbf2ef;border:1px solid #f0ddd7;border-radius:5px;padding:11px 12px;margin:15px 0 0}
+.company-login-success{font-size:10.5px;line-height:1.55;color:#14532d;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:5px;padding:11px 12px;margin:15px 0 0;font-weight:600}
 .selected-taxonomy-path{font-size:10px;color:#748276;margin:4px 0 0}
 .taxonomy-navigation{display:flex;align-items:center;gap:7px}
 .taxonomy-navigation button{border:1px solid #e1e8df;background:#fff;border-radius:5px;color:#58735c;padding:8px 10px;font-size:9px;font-weight:600}
