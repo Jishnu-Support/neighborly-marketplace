@@ -13211,9 +13211,9 @@ export default function Home() {
             </div>
           </div>
           <div className="mobile-header-substrip">
-            <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-              <span>{t.poweredBy}</span>
-              <img src="/jishnu-infotech-logo.png" alt="Jishnu Infotech" />
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(255,255,255,0.85)", padding: "2px 8px", borderRadius: "12px", border: "1px solid rgba(226,232,240,0.8)" }}>
+              <span style={{ fontSize: "9px", textTransform: "uppercase", fontWeight: 700, color: "#64748b" }}>{t.poweredBy}</span>
+              <img src="/jishnu-infotech-logo.png" alt="Jishnu Infotech" style={{ height: "18px", width: "auto", objectFit: "contain" }} />
             </span>
             <span style={{ fontWeight: 700, color: "#225a33" }}>
               {role === "Discover" ? "Explore Hosur" : role === "Account" ? "Customer Portal" : `${role} Portal`}
@@ -13223,7 +13223,10 @@ export default function Home() {
 
         <header className="topbar">
           <div className="breadcrumb" style={{ fontSize: "11px", color: "#879188", whiteSpace: "nowrap", flexShrink: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>{t.yourNeighborhood} <span>/</span> <strong>{role === "Discover" ? t.discover : role === "Account" ? t.myActivity : `${role} portal`}</strong></div>
-          <div className="topbar-partner" aria-label="Powered by Jishnu Infotech" style={{ display: "flex", alignItems: "center", gap: "8px", whiteSpace: "nowrap", color: "#718078", fontSize: "10px", flexShrink: 0 }}><span>{t.poweredBy}</span><img src="/jishnu-infotech-logo.png" alt="Jishnu Infotech" style={{ display: "block", height: "28px", width: "auto", maxWidth: "120px", objectFit: "contain" }} /></div>
+          <div className="topbar-partner-badge" aria-label="Powered by Jishnu Infotech" title="Jishnu Infotech — Innovate, Integrate, Inspire (Official Platform Host & Engineering Partner)" style={{ display: "flex", alignItems: "center", gap: "8px", whiteSpace: "nowrap", padding: "4px 10px", background: "rgba(241, 245, 249, 0.75)", border: "1px solid rgba(226, 232, 240, 0.8)", borderRadius: "999px", fontSize: "10px", color: "#64748b", flexShrink: 0, cursor: "pointer", transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)" }}>
+            <span style={{ fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase", fontSize: "9px" }}>{t.poweredBy}</span>
+            <img src="/jishnu-infotech-logo.png" alt="Jishnu Infotech" style={{ display: "block", height: "24px", width: "auto", maxWidth: "115px", objectFit: "contain", filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.05))" }} />
+          </div>
           <div className="topbar-actions" style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "nowrap", flexShrink: 0, marginLeft: "auto" }}>
             <button
               className="location-chip"
