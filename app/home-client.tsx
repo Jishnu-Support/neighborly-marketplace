@@ -1791,943 +1791,6 @@ function productImageFor(product: Product, business?: Business): string {
 
 const initialBusinesses: Business[] = [
   {
-    "name": "Maya's Home Kitchen",
-    "category": "Food & dining",
-    "subcategories": [
-      "Meal delivery",
-      "Restaurants"
-    ],
-    "products": [
-      {
-        "id": "maya-meals",
-        "name": "Homestyle lunch plate",
-        "description": "Seasonal thali with fresh sides, hot sambar, rasam, kootu, 2 poriyals, curd & appalam.",
-        "price": 180,
-        "unit": "per plate",
-        "image": "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=800&q=80",
-        "badge": "Bestseller",
-        "inStock": true
-      },
-      {
-        "id": "maya-breakfast",
-        "name": "Breakfast box",
-        "description": "A rotating morning spread: 2 hot idlis, crispy medu vada, mini masala dosa, coconut & tomato chutneys.",
-        "price": 120,
-        "unit": "per box",
-        "image": "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=800&q=80",
-        "badge": "Popular",
-        "inStock": true
-      },
-      {
-        "id": "dosa-south-indian-meals",
-        "name": "Dosa, Idli & South Indian Meals",
-        "description": "Crispy golden ghee roast dosas, steamed idlis, vada, chutneys and traditional tiffin items.",
-        "price": 70,
-        "unit": "per plate",
-        "image": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?auto=format&fit=crop&w=800&q=80",
-        "badge": "Quick Bite",
-        "inStock": true
-      },
-      {
-        "id": "meal-delivery-tiffin",
-        "name": "Meal Delivery & Homestyle Tiffins",
-        "description": "Daily subscription tiffin boxes with balanced roti, dal tadka, seasonal sabzi, curd and steamed rice.",
-        "price": 150,
-        "unit": "per tiffin",
-        "image": "https://images.unsplash.com/photo-1613292443284-8d10ef9383fe?auto=format&fit=crop&w=800&q=80",
-        "badge": "Daily Tiffin",
-        "inStock": true
-      },
-      {
-        "id": "north-indian-thali",
-        "name": "North Indian Meals & Thalis",
-        "description": "Paneer butter masala, slow-cooked dal makhani, butter naan, jeera rice and hot gulab jamun.",
-        "price": 199,
-        "unit": "per thali",
-        "image": "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=800&q=80",
-        "badge": "Chef Special",
-        "inStock": true
-      },
-      {
-        "id": "restaurant-dine-in",
-        "name": "Restaurant Dining & Regional Food",
-        "description": "Family dining tables, regional Kongu delicacies, tandoor specials and chef feast platters.",
-        "price": 300,
-        "unit": "per person",
-        "image": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80",
-        "badge": "Family Feast",
-        "inStock": true
-      }
-    ],
-    "description": "Fresh, homestyle meals made with local ingredients.",
-    "distance": 0.4,
-    "demoCoordinates": {
-      "latitude": 12.973,
-      "longitude": 77.591
-    },
-    "rating": 4.9,
-    "reviews": 128,
-    "price": "Meals from ₹180",
-    "icon": "🥘",
-    "color": "peach",
-    "subscribed": true,
-    "taxonomyTags": [
-      "Meal delivery",
-      "Lunch",
-      "Thali",
-      "Homestyle lunch plate",
-      "Breakfast",
-      "Regional specials",
-      "Breakfast box",
-      "Restaurants",
-      "Indian",
-      "South Indian",
-      "Dosa & idli",
-      "North Indian"
-    ],
-    "tag": "Popular nearby"
-  },
-  {
-    "name": "NexGen Mobile Care",
-    "category": "Electronics",
-    "subcategories": [
-      "Phone repair",
-      "Accessories",
-      "Mobile phones"
-    ],
-    "products": [
-      {
-        "id": "nex-screen",
-        "name": "Screen replacement",
-        "description": "Device inspection and screen replacement quote.",
-        "price": 2499,
-        "unit": "from"
-      },
-      {
-        "id": "nex-diagnostic",
-        "name": "Phone diagnostics",
-        "description": "Same-day device health and repair assessment.",
-        "price": 299,
-        "unit": "per visit"
-      },
-      {
-        "id": "electronics-sales-phones",
-        "name": "Electronics & Smartphone Sales",
-        "description": "Latest 5G smartphones, tablets, genuine fast chargers, tempered glass and protective cases.",
-        "price": 799,
-        "unit": "unit"
-      },
-      {
-        "id": "mobile-screen-replacement",
-        "name": "Mobile Screen & Battery Repair",
-        "description": "Glass & AMOLED screen replacements, charging port fixes, camera lens care and speaker repairs.",
-        "price": 699,
-        "unit": "service"
-      },
-      {
-        "id": "xiaomi-service-support",
-        "name": "Xiaomi & Android Smartphone Care",
-        "description": "Genuine battery replacement, motherboard diagnostics, software flashing and camera module fixes.",
-        "price": 399,
-        "unit": "service"
-      }
-    ],
-    "description": "Phone repair, accessories and same-day diagnostics.",
-    "distance": 1.2,
-    "demoCoordinates": {
-      "latitude": 12.981,
-      "longitude": 77.601
-    },
-    "rating": 4.8,
-    "reviews": 96,
-    "price": "Repairs from ₹299",
-    "icon": "📱",
-    "color": "lavender",
-    "subscribed": true,
-    "taxonomyTags": [
-      "Phone repair",
-      "Mobile phones",
-      "Screen & display",
-      "Screen replacement",
-      "Diagnostics",
-      "Phone diagnostics",
-      "Accessories",
-      "Mobile accessories",
-      "Chargers",
-      "Fast chargers",
-      "Xiaomi"
-    ]
-  },
-  {
-    "name": "Greenway Auto Works",
-    "category": "Automobiles",
-    "subcategories": [
-      "Two-wheeler service",
-      "Car repair"
-    ],
-    "products": [
-      {
-        "id": "greenway-service",
-        "name": "Two-wheeler service",
-        "description": "Routine inspection and maintenance.",
-        "price": 499,
-        "unit": "from"
-      },
-      {
-        "id": "greenway-puncture",
-        "name": "Puncture repair",
-        "description": "Quick tyre repair and safety check.",
-        "price": 150,
-        "unit": "from"
-      },
-      {
-        "id": "automobile-diagnostics",
-        "name": "Automobile Engine Diagnostics",
-        "description": "Computerized OBD-II engine scan, transmission diagnostics, brake checks and electronic fault tracing.",
-        "price": 599,
-        "unit": "service"
-      },
-      {
-        "id": "bicycle-service-rentals",
-        "name": "Bicycle Sales & Servicing",
-        "description": "Gear tuning, chain overhaul, hydraulic disc brake servicing and city bike rentals.",
-        "price": 250,
-        "unit": "service"
-      },
-      {
-        "id": "brake-pad-replacement",
-        "name": "Brake Pad & Disc Care",
-        "description": "Inspection, rotor skimming, fluid top-up and ceramic or semi-metallic brake pad replacement.",
-        "price": 450,
-        "unit": "service"
-      },
-      {
-        "id": "oil-filter-service",
-        "name": "Oil Change & Filter Replacement",
-        "description": "Synthetic engine oil change, oil filter renewal, air filter cleaning and 24-point car health inspection.",
-        "price": 799,
-        "unit": "service"
-      },
-      {
-        "id": "scooter-two-wheeler-tuning",
-        "name": "Scooter & Motorcycle Servicing",
-        "description": "Complete general maintenance, carburetor/FI cleaning, belt check and brake overhaul for all 2Ws.",
-        "price": 499,
-        "unit": "service"
-      },
-      {
-        "id": "yezdi-bullet-servicing",
-        "name": "Yezdi & Vintage Motorcycle Care",
-        "description": "Clutch cable tuning, spoke truing, vintage carburetor restoration and heavy two-wheeler service.",
-        "price": 699,
-        "unit": "service"
-      }
-    ],
-    "description": "Trusted two-wheeler and car service, right around the corner.",
-    "distance": 2.1,
-    "demoCoordinates": {
-      "latitude": 12.99,
-      "longitude": 77.608
-    },
-    "rating": 4.7,
-    "reviews": 83,
-    "price": "Services from ₹499",
-    "icon": "🛵",
-    "color": "mint",
-    "subscribed": true,
-    "taxonomyTags": [
-      "Two-wheeler service",
-      "Motorcycles",
-      "Routine service",
-      "Oil & filter",
-      "Scooters",
-      "Brake & tyre care",
-      "Brake pads",
-      "Car repair",
-      "Cars",
-      "Engine & transmission",
-      "Diagnostics",
-      "Wheels & tyres",
-      "Tyre replacement"
-    ],
-    "tag": "Verified business"
-  },
-  {
-    "name": "The Little Loom",
-    "category": "Fashion",
-    "subcategories": [
-      "Clothing",
-      "Local textiles",
-      "Tailoring",
-      "Footwear"
-    ],
-    "products": [
-      {
-        "id": "loom-kurta",
-        "name": "Everyday cotton kurta",
-        "description": "Locally made cotton clothing.",
-        "price": 899,
-        "unit": "from"
-      },
-      {
-        "id": "loom-textiles",
-        "name": "Handwoven textiles",
-        "description": "Small-batch textiles from local makers.",
-        "price": 650,
-        "unit": "from"
-      },
-      {
-        "id": "alterations-tailoring",
-        "name": "Alterations & Tailoring",
-        "description": "Suit, shirt, trouser and ethnic dress alterations, zip replacements and custom fitting.",
-        "price": 150,
-        "unit": "service"
-      },
-      {
-        "id": "fashion-apparel-wear",
-        "name": "Fashion & Everyday Clothing",
-        "description": "Kurtis, ethnic sets, casual linen shirts, trousers, nightwear and sustainable cotton apparel.",
-        "price": 599,
-        "unit": "unit"
-      },
-      {
-        "id": "footwear-shoes-sandals",
-        "name": "Footwear, Shoes & Casuals",
-        "description": "Everyday sneakers, formal leather oxfords, comfort walking sandals and ethnic juttis.",
-        "price": 799,
-        "unit": "unit"
-      },
-      {
-        "id": "kurta-kurtis-apparel",
-        "name": "Kurtas, Kurtis & Ethnic Sets",
-        "description": "Hand-block printed cotton kurtis, festive silk kurtas, palazzo sets and dupatta combinations.",
-        "price": 749,
-        "unit": "unit"
-      },
-      {
-        "id": "saree-draping-festive-wear",
-        "name": "Sarees, Drapes & Occasion Wear",
-        "description": "Handloom Kanjivaram, Banarasi, Chanderi, soft linen sarees and festive lehengas.",
-        "price": 1299,
-        "unit": "unit"
-      },
-      {
-        "id": "tailoring-custom-stitching",
-        "name": "Tailoring & Custom Blouse Stitching",
-        "description": "Designer blouse stitching, customized salwar suits, fall-pico edging and bespoke trousers.",
-        "price": 450,
-        "unit": "service"
-      }
-    ],
-    "description": "Thoughtful everyday wear from independent local makers.",
-    "distance": 3.4,
-    "demoCoordinates": {
-      "latitude": 12.945,
-      "longitude": 77.61
-    },
-    "rating": 4.9,
-    "reviews": 57,
-    "price": "New arrivals in store",
-    "icon": "🧵",
-    "color": "butter",
-    "subscribed": true,
-    "taxonomyTags": [
-      "Clothing",
-      "Women",
-      "Everyday wear",
-      "Cotton kurta",
-      "Men",
-      "Tailoring",
-      "Alterations",
-      "Footwear",
-      "Shoes",
-      "Casual",
-      "Everyday sneakers",
-      "Local textiles",
-      "Handloom",
-      "Cotton",
-      "Home textiles",
-      "Kurtas & kurtis",
-      "Sarees & dresses",
-      "Blouse stitching"
-    ]
-  },
-  {
-    "name": "Oak & Olive Living",
-    "category": "Home & furniture",
-    "subcategories": [
-      "Furniture",
-      "Home decor",
-      "Interior design",
-      "Repairs"
-    ],
-    "products": [
-      {
-        "id": "oak-side-table",
-        "name": "Handcrafted side table",
-        "description": "Made-to-order solid wood furniture.",
-        "price": 4200,
-        "unit": "from"
-      },
-      {
-        "id": "oak-consult",
-        "name": "Furniture consultation",
-        "description": "Discuss a custom piece for your home.",
-        "price": 0,
-        "unit": "free enquiry"
-      },
-      {
-        "id": "bed-bedroom-furniture",
-        "name": "Bed & Bedroom Furniture",
-        "description": "Solid wood beds, storage cots, orthopedic mattresses and bedside nightstands.",
-        "price": 5999,
-        "unit": "unit"
-      },
-      {
-        "id": "furniture-assembly-fitting",
-        "name": "Furniture Assembly & Fitting",
-        "description": "Professional assembly of flat-pack furniture, TV units, study tables, beds and modular wardrobes.",
-        "price": 399,
-        "unit": "service"
-      },
-      {
-        "id": "home-decor-lighting",
-        "name": "Home Decor & Ambient Lighting",
-        "description": "Minimalist ceramic vases, warm LED pendant lamps, canvas art frames and handmade wall hangings.",
-        "price": 350,
-        "unit": "unit"
-      },
-      {
-        "id": "indoor-plants-nursery",
-        "name": "Indoor Plants & Ceramic Pots",
-        "description": "Air-purifying snake plants, monstera, succulents, terra-cotta planters and balcony stands.",
-        "price": 120,
-        "unit": "unit"
-      },
-      {
-        "id": "nursery-flowering-plants",
-        "name": "Nursery Plants & Floral Bouquets",
-        "description": "Fresh rose bouquets, jasmine garlands, flowering shrubs, potting soils and fertilizer mixes.",
-        "price": 150,
-        "unit": "unit"
-      },
-      {
-        "id": "room-makeover-planning",
-        "name": "Room Makeover & Space Planning",
-        "description": "Wall color consultations, furniture rearrangement, lighting upgrades and modern modular aesthetics.",
-        "price": 2499,
-        "unit": "service"
-      },
-      {
-        "id": "upholstery-furniture-repair",
-        "name": "Upholstery & Furniture Restoration",
-        "description": "Re-cushioning dining chairs, high-density foam replacement, leather re-stitching and fabric upgrades.",
-        "price": 850,
-        "unit": "service"
-      },
-      {
-        "id": "urban-gardening-supplies",
-        "name": "Urban Gardening & Terrace Balcony Kits",
-        "description": "Coco-peat blocks, organic neem fertilizers, seed packs, vertical hanging planters and drip pipes.",
-        "price": 199,
-        "unit": "unit"
-      },
-      {
-        "id": "wall-art-decor-prints",
-        "name": "Wall Art & Handmade Hangings",
-        "description": "Framed canvas prints, modern abstract murals, macramé wall hangings and brass wall sculptures.",
-        "price": 450,
-        "unit": "unit"
-      },
-      {
-        "id": "wardrobes-modular-storage",
-        "name": "Wardrobes & Modular Storage Racks",
-        "description": "Sliding-door modular wardrobes, walk-in closets, study desks and engineered wood armoires.",
-        "price": 8999,
-        "unit": "unit"
-      },
-      {
-        "id": "zen-garden-landscaping",
-        "name": "Zen Garden & Water Fountain Setup",
-        "description": "Japanese zen pebble landscaping, indoor water fountains, bamboo screens and tranquility corners.",
-        "price": 3499,
-        "unit": "service"
-      }
-    ],
-    "description": "Handcrafted furniture and home finds, made to last.",
-    "distance": 4.8,
-    "demoCoordinates": {
-      "latitude": 12.94,
-      "longitude": 77.56
-    },
-    "rating": 4.6,
-    "reviews": 71,
-    "price": "Custom orders welcome",
-    "icon": "🪑",
-    "color": "mint",
-    "subscribed": true,
-    "taxonomyTags": [
-      "Furniture",
-      "Living room",
-      "Tables",
-      "Side table",
-      "Home decor",
-      "Wall decor",
-      "Handmade",
-      "Local art",
-      "Repairs",
-      "Carpentry",
-      "Furniture repair",
-      "Wood repair",
-      "Interior design",
-      "Home planning",
-      "Room makeover",
-      "Consultation",
-      "Beds",
-      "Furniture assembly",
-      "Garden care",
-      "Home & garden",
-      "Wall art",
-      "Wardrobes"
-    ]
-  },
-  {
-    "name": "Neighbourhood Physio",
-    "category": "Health & wellness",
-    "subcategories": [
-      "Physiotherapy",
-      "Clinics"
-    ],
-    "products": [
-      {
-        "id": "physio-assessment",
-        "name": "Physiotherapy assessment",
-        "description": "Initial mobility and movement consultation.",
-        "price": 400,
-        "unit": "per visit"
-      },
-      {
-        "id": "physio-followup",
-        "name": "Follow-up session",
-        "description": "One-on-one follow-up care.",
-        "price": 350,
-        "unit": "per visit"
-      },
-      {
-        "id": "doctor-general-consultation",
-        "name": "Doctor Consultation (General & Child)",
-        "description": "In-clinic and teleconsultations with certified general physicians and paediatricians.",
-        "price": 400,
-        "unit": "service"
-      },
-      {
-        "id": "eye-examination-opticals",
-        "name": "Eye Care & Prescription Glasses",
-        "description": "Comprehensive eye testing, prescription lenses, designer frames and blue-light spectacles.",
-        "price": 499,
-        "unit": "unit"
-      },
-      {
-        "id": "optical-frames-spectacles",
-        "name": "Optical Eyewear & Sunglasses",
-        "description": "Lightweight titanium and acetate frames, UV-protected sunglasses and anti-reflective reading glasses.",
-        "price": 899,
-        "unit": "unit"
-      },
-      {
-        "id": "physiotherapy-mobility",
-        "name": "Physiotherapy & Mobility Care",
-        "description": "Post-surgery rehabilitation, spinal decompression, back & neck pain relief and posture correction.",
-        "price": 400,
-        "unit": "service"
-      },
-      {
-        "id": "xray-diagnostic-appointments",
-        "name": "X-Ray & Diagnostic Appointments",
-        "description": "Digital radiography, bone density scans, ultrasound appointments and prompt digital report access.",
-        "price": 450,
-        "unit": "service"
-      }
-    ],
-    "description": "Friendly physiotherapy and mobility care from local experts.",
-    "distance": 2.7,
-    "demoCoordinates": {
-      "latitude": 12.96,
-      "longitude": 77.58
-    },
-    "rating": 4.8,
-    "reviews": 64,
-    "price": "Consultations from ₹400",
-    "icon": "🩺",
-    "color": "lavender",
-    "subscribed": true,
-    "taxonomyTags": [
-      "Physiotherapy",
-      "Mobility care",
-      "Assessment",
-      "Physiotherapy assessment",
-      "Follow-up",
-      "Follow-up session",
-      "Clinics",
-      "Eye examination",
-      "Eye care"
-    ]
-  },
-  {
-    "name": "ProFix Home & Appliance Services",
-    "category": "Everyday services",
-    "subcategories": [
-      "Appliance repair",
-      "Plumbing",
-      "Electrical",
-      "Cleaning"
-    ],
-    "products": [
-      {
-        "id": "profix-ac",
-        "name": "AC Repair & Servicing",
-        "description": "Filter clean, gas recharge and cooling coil inspection.",
-        "price": 499,
-        "unit": "from"
-      },
-      {
-        "id": "profix-elec",
-        "name": "Electrical Wiring & Fixing",
-        "description": "Switchboard repair, fan installation and emergency fixes.",
-        "price": 249,
-        "unit": "from"
-      },
-      {
-        "id": "profix-plumb",
-        "name": "Plumbing & Leak Repairs",
-        "description": "Tap, sink, toilet and drainage repair.",
-        "price": 299,
-        "unit": "from"
-      },
-      {
-        "id": "profix-ro",
-        "name": "Water Purifier (RO) Service",
-        "description": "Filter replacement and membrane service.",
-        "price": 349,
-        "unit": "from"
-      },
-      {
-        "id": "appliance-repair",
-        "name": "Appliance Repair",
-        "description": "Same-day doorstep repair for washing machines, microwaves, refrigerators and dishwashers.",
-        "price": 299,
-        "unit": "service"
-      },
-      {
-        "id": "cleaning-deep-home",
-        "name": "Cleaning & Housekeeping (Deep Clean)",
-        "description": "Full home sanitization, kitchen chimney degreasing, bathroom descaling and sofa shampooing.",
-        "price": 1299,
-        "unit": "service"
-      },
-      {
-        "id": "electrical-repairs-wiring",
-        "name": "Electrical Repairs & Wiring",
-        "description": "Short circuit troubleshooting, MCB switchboard fixing, chandelier setup and whole-home rewiring.",
-        "price": 249,
-        "unit": "service"
-      },
-      {
-        "id": "electrician-doorstep",
-        "name": "Electrician On-Demand",
-        "description": "Verified certified electricians for quick emergency fixes, fan installations and appliance plugs.",
-        "price": 199,
-        "unit": "service"
-      },
-      {
-        "id": "inverter-ups-repair",
-        "name": "Inverter & UPS Maintenance",
-        "description": "Home backup power check-up, tubular battery acid top-up, wiring safety and inverter board repairs.",
-        "price": 349,
-        "unit": "service"
-      },
-      {
-        "id": "kitchen-appliances-repair",
-        "name": "Kitchen Appliances Service",
-        "description": "Mixer grinder, induction cooktop, electric oven and water heater doorstep servicing.",
-        "price": 249,
-        "unit": "service"
-      },
-      {
-        "id": "kitchen-cleaning-degreasing",
-        "name": "Kitchen Deep Cleaning & Degreasing",
-        "description": "Heavy oil and carbon stain removal from tiles, granite counters, exhaust fans and modular cabinets.",
-        "price": 899,
-        "unit": "service"
-      },
-      {
-        "id": "laundry-dry-cleaning",
-        "name": "Laundry & Eco Dry Cleaning",
-        "description": "Steam press, silk saree dry cleaning, suit sanitization, quilt washing and doorstep pickup & drop.",
-        "price": 120,
-        "unit": "service"
-      },
-      {
-        "id": "leak-detection-plumbing",
-        "name": "Leak Repair & Pipe Plumbing",
-        "description": "Overhead tank float valve fix, concealed wall seepage tracing, tap washer and flush tank repairs.",
-        "price": 299,
-        "unit": "service"
-      },
-      {
-        "id": "plumbing-pipe-repairs",
-        "name": "Plumbing & Fixture Installation",
-        "description": "Mixer tap replacement, washbasin setup, clogged drain clearance, pipe repairs and geyser inlet valves.",
-        "price": 249,
-        "unit": "service"
-      },
-      {
-        "id": "quilt-blanket-dry-clean",
-        "name": "Quilt, Blanket & Curtain Cleaning",
-        "description": "Deep steam cleaning for heavy winter quilts, comforters, blackout curtains and decorative rugs.",
-        "price": 350,
-        "unit": "service"
-      },
-      {
-        "id": "refrigerator-gas-repair",
-        "name": "Refrigerator Repair & Gas Refill",
-        "description": "Compressor troubleshooting, frost build-up resolution, thermostat calibration and gas charge.",
-        "price": 449,
-        "unit": "service"
-      },
-      {
-        "id": "sofa-carpet-cleaning",
-        "name": "Sofa & Upholstery Deep Shampooing",
-        "description": "Fabric and leather couch steam cleaning, allergen extraction and stain spot removal.",
-        "price": 699,
-        "unit": "service"
-      },
-      {
-        "id": "tap-pipe-installation",
-        "name": "Tap & Sanitary Fixture Installation",
-        "description": "Overhead rain showers, quarter-turn taps, health faucets and bathroom fittings installed cleanly.",
-        "price": 199,
-        "unit": "service"
-      },
-      {
-        "id": "washing-machine-service",
-        "name": "Washing Machine Repair & Care",
-        "description": "Front load & top load motor checks, drum bearing repair, water inlet valve and drainage pump fixes.",
-        "price": 399,
-        "unit": "service"
-      },
-      {
-        "id": "water-purifier-ro-service",
-        "name": "Water Purifier (RO) Filter Service",
-        "description": "Sediment filter replacement, carbon block changes, RO membrane descaling and TDS water balancing.",
-        "price": 349,
-        "unit": "service"
-      }
-    ],
-    "description": "Doorstep AC repair, electrical wiring, plumbing leak fixes and home appliance maintenance.",
-    "distance": 1.5,
-    "demoCoordinates": {
-      "latitude": 12.975,
-      "longitude": 77.62
-    },
-    "rating": 4.9,
-    "reviews": 142,
-    "price": "Services from ₹249",
-    "icon": "🛠️",
-    "color": "mint",
-    "subscribed": true,
-    "taxonomyTags": [
-      "AC repair",
-      "Air conditioning",
-      "Appliance repair",
-      "Electrical",
-      "Wiring repair",
-      "Plumbing",
-      "Leak repair",
-      "Washing machine service",
-      "Refrigerator service",
-      "Water purifier",
-      "Deep cleaning",
-      "Handyman",
-      "Carpentry",
-      "Pest control",
-      "Cleaning",
-      "Kitchen cleaning",
-      "Tap & fixture installation"
-    ],
-    "tag": "Top rated nearby"
-  },
-  {
-    "name": "Urban Blossom & Fitness Studio",
-    "category": "Sports & fitness",
-    "subcategories": [
-      "Gyms & fitness centers",
-      "Yoga & pilates",
-      "Sports coaching",
-      "Dance fitness",
-      "Personal training"
-    ],
-    "products": [
-      {
-        "id": "ub-gym",
-        "name": "Gym Membership & Weight Training",
-        "description": "Full gym floor access, cardio equipment and strength weights.",
-        "price": 1500,
-        "unit": "per month"
-      },
-      {
-        "id": "ub-yoga",
-        "name": "Yoga Classes & Meditation",
-        "description": "Morning and evening Hatha & Vinyasa flow sessions.",
-        "price": 1000,
-        "unit": "per month"
-      },
-      {
-        "id": "ub-zumba",
-        "name": "Zumba & Cardio Dance",
-        "description": "High-energy rhythm cardio workout with certified instructors.",
-        "price": 1200,
-        "unit": "per month"
-      },
-      {
-        "id": "ub-turf",
-        "name": "Badminton Court & Turf Booking",
-        "description": "Hourly indoor wooden court slot with international mats.",
-        "price": 350,
-        "unit": "per hour"
-      },
-      {
-        "id": "fitness-coaching-gym",
-        "name": "Fitness Coaching & Personal Training",
-        "description": "One-on-one strength workouts, cross-training, muscle conditioning and cardio coaching.",
-        "price": 2000,
-        "unit": "mo"
-      },
-      {
-        "id": "sports-coaching-classes",
-        "name": "Sports Coaching (Badminton, Cricket)",
-        "description": "Professional coaching academies for kids and adults across badminton, cricket, tennis and swimming.",
-        "price": 1800,
-        "unit": "mo"
-      },
-      {
-        "id": "yoga-wellness-classes",
-        "name": "Yoga Classes & Pranayama Sessions",
-        "description": "Hatha, Vinyasa flow, morning meditation, breathing exercises, prenatal yoga and posture alignment.",
-        "price": 1000,
-        "unit": "mo"
-      },
-      {
-        "id": "zumba-fitness-dance",
-        "name": "Zumba & Cardio Dance Sessions",
-        "description": "High-energy Latin dance cardio workouts, rhythm fitness classes and weekend stress-buster sessions.",
-        "price": 1200,
-        "unit": "mo"
-      }
-    ],
-    "description": "Community fitness center offering weight training, yoga, Zumba, badminton courts and personal training.",
-    "distance": 2.3,
-    "demoCoordinates": {
-      "latitude": 12.965,
-      "longitude": 77.615
-    },
-    "rating": 4.8,
-    "reviews": 110,
-    "price": "Sessions from ₹350",
-    "icon": "🏋️",
-    "color": "peach",
-    "subscribed": true,
-    "taxonomyTags": [
-      "Sports & fitness",
-      "Gyms & fitness centers",
-      "Gym membership",
-      "Weight training",
-      "CrossFit",
-      "Yoga & pilates",
-      "Yoga classes",
-      "Zumba",
-      "Dance fitness",
-      "Sports coaching",
-      "Badminton",
-      "Cricket",
-      "Personal training",
-      "Fitness",
-      "Group exercise"
-    ]
-  },
-  {
-    "name": "Apex City Travel & Logistics",
-    "category": "Travel",
-    "subcategories": [
-      "Local transport",
-      "Airport rides",
-      "Moving help",
-      "Tours & experiences"
-    ],
-    "products": [
-      {
-        "id": "apex-airport",
-        "name": "Airport Transfer Cab",
-        "description": "Prompt, sanitized airport pickup and drop.",
-        "price": 999,
-        "unit": "per ride"
-      },
-      {
-        "id": "apex-tour",
-        "name": "Local City Sightseeing Cab",
-        "description": "Full-day sightseeing with professional driver.",
-        "price": 1499,
-        "unit": "per day"
-      },
-      {
-        "id": "apex-movers",
-        "name": "Movers & Packers Assistance",
-        "description": "Household packing, transport and unpacking.",
-        "price": 2499,
-        "unit": "from"
-      },
-      {
-        "id": "outdoor-tours-experiences",
-        "name": "Outdoor Tours & City Experiences",
-        "description": "Heritage walks, bird-watching nature trails, cycling breakfasts and vineyard tours.",
-        "price": 599,
-        "unit": "service"
-      },
-      {
-        "id": "tours-local-experiences",
-        "name": "Tours & Local City Sightseeing",
-        "description": "Full-day city heritage cabs, temple circuits, botanical garden trips and guided city excursions.",
-        "price": 1499,
-        "unit": "service"
-      }
-    ],
-    "description": "Reliable airport transfers, day tours, vehicle rentals and moving help across town.",
-    "distance": 3.1,
-    "demoCoordinates": {
-      "latitude": 12.985,
-      "longitude": 77.635
-    },
-    "rating": 4.7,
-    "reviews": 78,
-    "price": "Cabs from ₹999",
-    "icon": "✈️",
-    "color": "butter",
-    "subscribed": true,
-    "taxonomyTags": [
-      "Airport transfer",
-      "City tour",
-      "Local transport",
-      "Car hire",
-      "Car rentals",
-      "Hotels",
-      "Guest houses",
-      "Moving help",
-      "Movers & packers",
-      "Logistics",
-      "Tours & experiences"
-    ]
-  },
-  {
     "name": "Jaya Bajaj – Hosur",
     "category": "Automobiles",
     "subcategories": [
@@ -2782,7 +1845,22 @@ const initialBusinesses: Business[] = [
       "Oil & filter",
       "Brake pads"
     ],
-    "tag": "Authorized dealer"
+    "tag": "Authorized dealer",
+    "phone": "04344 262821",
+    "address": {
+      "doorNumber": "Shop #3",
+      "street": "Bagalur Main Road",
+      "area": "Bagalur Circle / Avalapalli",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7326,
+      "longitude": 77.8281
+    }
   },
   {
     "name": "Sree Velan TVS – Bagalur Circle",
@@ -2839,7 +1917,22 @@ const initialBusinesses: Business[] = [
       "Electric 2W",
       "Battery & motor check"
     ],
-    "tag": "Verified business"
+    "tag": "Verified business",
+    "phone": "+91 98420 37553",
+    "address": {
+      "doorNumber": "Shop #10",
+      "street": "Bagalur Main Road",
+      "area": "Bagalur Circle / Avalapalli",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7341,
+      "longitude": 77.8293
+    }
   },
   {
     "name": "Amman Motors Maruti ARENA – Hosur",
@@ -2897,7 +1990,22 @@ const initialBusinesses: Business[] = [
       "Engine & transmission",
       "Wheels & tyres"
     ],
-    "tag": "Authorized dealer"
+    "tag": "Authorized dealer",
+    "phone": "+91 97890 29947",
+    "address": {
+      "doorNumber": "Shop #17",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.727,
+      "longitude": 77.835
+    }
   },
   {
     "name": "Himavasini Hyundai – Hosur",
@@ -2955,7 +2063,22 @@ const initialBusinesses: Business[] = [
       "Car repair",
       "Wheels & tyres",
       "AC cooling recharge"
-    ]
+    ],
+    "phone": "+91 90800 61015",
+    "address": {
+      "doorNumber": "Shop #24",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.731,
+      "longitude": 77.841
+    }
   },
   {
     "name": "Saraswathi Auto Engineering – Hosur",
@@ -3033,7 +2156,22 @@ const initialBusinesses: Business[] = [
       "Car & bike battery",
       "Puncture repair",
       "Tyre replacement"
-    ]
+    ],
+    "phone": "04344 229955",
+    "address": {
+      "doorNumber": "Shop #31",
+      "street": "Bagalur Main Road",
+      "area": "Bagalur Circle / Avalapalli",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7355,
+      "longitude": 77.826
+    }
   },
   {
     "name": "Croma – Hosur",
@@ -3124,7 +2262,22 @@ const initialBusinesses: Business[] = [
       "Sony",
       "MacBook Pro"
     ],
-    "tag": "Popular nearby"
+    "tag": "Popular nearby",
+    "phone": "+91 99440 59410",
+    "address": {
+      "doorNumber": "Shop #38",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7318,
+      "longitude": 77.8301
+    }
   },
   {
     "name": "Bluewave Computers – Bagalur Road",
@@ -3181,7 +2334,22 @@ const initialBusinesses: Business[] = [
       "ThinkPad",
       "Phone repair",
       "Mobile phones"
-    ]
+    ],
+    "phone": "+91 94432 53776",
+    "address": {
+      "doorNumber": "Shop #45",
+      "street": "Bagalur Main Road",
+      "area": "Bagalur Circle / Avalapalli",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7345,
+      "longitude": 77.8278
+    }
   },
   {
     "name": "Vasavi Cafe – Hosur",
@@ -3251,7 +2419,22 @@ const initialBusinesses: Business[] = [
       "Breakfast",
       "Cold drinks"
     ],
-    "tag": "Local favourite"
+    "tag": "Local favourite",
+    "phone": "+91 94880 17597",
+    "address": {
+      "doorNumber": "Shop #24",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.733,
+      "longitude": 77.8335
+    }
   },
   {
     "name": "Muneer Bakery – Hosur",
@@ -3321,7 +2504,22 @@ const initialBusinesses: Business[] = [
       "Traditional sweets",
       "Bakery"
     ],
-    "tag": "Hosur favourite"
+    "tag": "Hosur favourite",
+    "phone": "04344 257370",
+    "address": {
+      "doorNumber": "Shop #31",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7322,
+      "longitude": 77.8318
+    }
   },
   {
     "name": "Rayalaseema Spice – Hosur",
@@ -3375,7 +2573,22 @@ const initialBusinesses: Business[] = [
       "Daily meals",
       "Lunch",
       "Homestyle lunch"
-    ]
+    ],
+    "phone": "+91 94880 73085",
+    "address": {
+      "doorNumber": "Shop #38",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7315,
+      "longitude": 77.8295
+    }
   },
   {
     "name": "Hotel Junior Kuppanna – Hosur",
@@ -3437,7 +2650,22 @@ const initialBusinesses: Business[] = [
       "Event catering",
       "Biryani"
     ],
-    "tag": "Local favourite"
+    "tag": "Local favourite",
+    "phone": "+91 94880 67701",
+    "address": {
+      "doorNumber": "Shop #45",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7302,
+      "longitude": 77.827
+    }
   },
   {
     "name": "A2B – Adyar Ananda Bhavan, Hosur",
@@ -3492,7 +2720,22 @@ const initialBusinesses: Business[] = [
       "Traditional sweets",
       "Meal delivery",
       "Tiffin"
-    ]
+    ],
+    "phone": "+91 98420 82097",
+    "address": {
+      "doorNumber": "Shop #52",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7337,
+      "longitude": 77.8308
+    }
   },
   {
     "name": "Uzhavar Santhai – Hosur Farmers Market",
@@ -3566,7 +2809,22 @@ const initialBusinesses: Business[] = [
       "Pantry",
       "Staples"
     ],
-    "tag": "Government market"
+    "tag": "Government market",
+    "phone": "04344 252877",
+    "address": {
+      "doorNumber": "Shop #59",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7335,
+      "longitude": 77.8355
+    }
   },
   {
     "name": "Apollo Pharmacy – Bagalur Road, Hosur",
@@ -3625,7 +2883,22 @@ const initialBusinesses: Business[] = [
       "Medicine delivery",
       "Health screening"
     ],
-    "tag": "Verified business"
+    "tag": "Verified business",
+    "phone": "+91 94432 99400",
+    "address": {
+      "doorNumber": "Shop #66",
+      "street": "Bagalur Main Road",
+      "area": "Bagalur Circle / Avalapalli",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7348,
+      "longitude": 77.8285
+    }
   },
   {
     "name": "Sri Chandrasekara Hospital – Hosur",
@@ -3687,7 +2960,22 @@ const initialBusinesses: Business[] = [
       "Check-ups",
       "Pharmacies",
       "Lab tests"
-    ]
+    ],
+    "phone": "+91 99440 26290",
+    "address": {
+      "doorNumber": "Shop #45",
+      "street": "Bagalur Main Road",
+      "area": "Bagalur Circle / Avalapalli",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7325,
+      "longitude": 77.8265
+    }
   },
   {
     "name": "Karthick Skin Hair & Laser Clinic – Hosur",
@@ -3769,7 +3057,22 @@ const initialBusinesses: Business[] = [
       "Consultation",
       "Wellness consultation",
       "Haircut"
-    ]
+    ],
+    "phone": "+91 94880 31565",
+    "address": {
+      "doorNumber": "Shop #52",
+      "street": "Bagalur Main Road",
+      "area": "Bagalur Circle / Avalapalli",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7358,
+      "longitude": 77.829
+    }
   },
   {
     "name": "Santhosh Instyle – Nethaji Road, Hosur",
@@ -3824,7 +3127,22 @@ const initialBusinesses: Business[] = [
       "Kids",
       "Ethnic wear",
       "Fashion accessories"
-    ]
+    ],
+    "phone": "04344 281001",
+    "address": {
+      "doorNumber": "Shop #59",
+      "street": "Nethaji Road",
+      "area": "Gandhi Nagar / Bazaar",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7332,
+      "longitude": 77.8327
+    }
   },
   {
     "name": "GRT Jewellers – Hosur",
@@ -3891,7 +3209,22 @@ const initialBusinesses: Business[] = [
       "Diamond",
       "Bangles"
     ],
-    "tag": "Trusted brand"
+    "tag": "Trusted brand",
+    "phone": "+91 82480 45238",
+    "address": {
+      "doorNumber": "Shop #66",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.732,
+      "longitude": 77.834
+    }
   },
   {
     "name": "Nilgiris Supermarket – Hosur",
@@ -3953,7 +3286,22 @@ const initialBusinesses: Business[] = [
       "Home cleaning",
       "Pantry",
       "Staples"
-    ]
+    ],
+    "phone": "+91 94432 95728",
+    "address": {
+      "doorNumber": "Shop #73",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.734,
+      "longitude": 77.832
+    }
   },
   {
     "name": "The Muscle Empire Gym – Hosur",
@@ -4008,7 +3356,22 @@ const initialBusinesses: Business[] = [
       "Personal training",
       "1-on-1 coaching"
     ],
-    "tag": "Top rated nearby"
+    "tag": "Top rated nearby",
+    "phone": "+91 98420 18041",
+    "address": {
+      "doorNumber": "Shop #80",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7352,
+      "longitude": 77.831
+    }
   },
   {
     "name": "7 Eleven Badminton Academy – Hosur",
@@ -4061,7 +3424,22 @@ const initialBusinesses: Business[] = [
       "Badminton courts",
       "Indoor court rental",
       "Court booking"
-    ]
+    ],
+    "phone": "04344 239806",
+    "address": {
+      "doorNumber": "Shop #87",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7298,
+      "longitude": 77.8268
+    }
   },
   {
     "name": "Pranava Nature Cure & Yoga – Hosur",
@@ -4113,7 +3491,22 @@ const initialBusinesses: Business[] = [
       "Personal training",
       "1-on-1 coaching",
       "Transformation"
-    ]
+    ],
+    "phone": "+91 94880 51149",
+    "address": {
+      "doorNumber": "Shop #66",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.728,
+      "longitude": 77.835
+    }
   },
   {
     "name": "GameX 360 – Hosur Turf",
@@ -4166,7 +3559,22 @@ const initialBusinesses: Business[] = [
       "Cricket",
       "Net practice & coaching",
       "Badminton courts"
-    ]
+    ],
+    "phone": "+91 96290 96524",
+    "address": {
+      "doorNumber": "Shop #73",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7305,
+      "longitude": 77.8387
+    }
   },
   {
     "name": "Fortune Hosur – ITC Hotels",
@@ -4235,7 +3643,22 @@ const initialBusinesses: Business[] = [
       "Conference",
       "Guest houses"
     ],
-    "tag": "Premium stay"
+    "tag": "Premium stay",
+    "phone": "+91 82480 17262",
+    "address": {
+      "doorNumber": "Shop #80",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7275,
+      "longitude": 77.832
+    }
   },
   {
     "name": "TGI Grand Fortuna – Hosur",
@@ -4279,7 +3702,22 @@ const initialBusinesses: Business[] = [
       "Guest houses",
       "Short stays",
       "Corporate stay"
-    ]
+    ],
+    "phone": "04344 256555",
+    "address": {
+      "doorNumber": "Shop #87",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7292,
+      "longitude": 77.8305
+    }
   },
   {
     "name": "Jaya Sri Electricals & Plumbing – Hosur",
@@ -4370,7 +3808,22 @@ const initialBusinesses: Business[] = [
       "LED Lighting",
       "Switches & Sockets"
     ],
-    "tag": "Same-day service"
+    "tag": "Same-day service",
+    "phone": "+91 82480 99422",
+    "address": {
+      "doorNumber": "Shop #94",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7344,
+      "longitude": 77.83
+    }
   },
   {
     "name": "Supreme Cool Tech AC Services – Hosur",
@@ -4466,7 +3919,22 @@ const initialBusinesses: Business[] = [
       "Refrigerators",
       "Washing machines",
       "Washing machine service"
-    ]
+    ],
+    "phone": "+91 82480 47758",
+    "address": {
+      "doorNumber": "Shop #101",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.736,
+      "longitude": 77.8265
+    }
   },
   {
     "name": "AtoZ Home Services – Hosur",
@@ -4592,7 +4060,22 @@ const initialBusinesses: Business[] = [
       "Carpentry",
       "Garden care",
       "Home planning"
-    ]
+    ],
+    "phone": "+91 97890 10859",
+    "address": {
+      "doorNumber": "Shop #108",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7315,
+      "longitude": 77.833
+    }
   },
   {
     "name": "Tarun Motors Hero – Mathigiri, Hosur",
@@ -4648,7 +4131,22 @@ const initialBusinesses: Business[] = [
       "Two-wheeler service",
       "Routine service",
       "Oil & filter"
-    ]
+    ],
+    "phone": "04344 283890",
+    "address": {
+      "doorNumber": "Shop #87",
+      "street": "Denkanikottai Main Road",
+      "area": "Hamumanth Nagar",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.722,
+      "longitude": 77.831
+    }
   },
   {
     "name": "Velan Honda – Denkanikotta Road, Hosur",
@@ -4705,7 +4203,22 @@ const initialBusinesses: Business[] = [
       "Two-wheeler service",
       "Routine service",
       "Brake & tyre care"
-    ]
+    ],
+    "phone": "+91 97890 15107",
+    "address": {
+      "doorNumber": "Shop #94",
+      "street": "Railway Station Road",
+      "area": "Shanthi Nagar / Station Area",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.724,
+      "longitude": 77.832
+    }
   },
   {
     "name": "Sri Saravana Motors Royal Enfield – Hosur",
@@ -4761,7 +4274,22 @@ const initialBusinesses: Business[] = [
       "Service",
       "Two-wheeler service",
       "Routine service"
-    ]
+    ],
+    "phone": "+91 98420 54145",
+    "address": {
+      "doorNumber": "Shop #101",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.726,
+      "longitude": 77.834
+    }
   },
   {
     "name": "KHT Motors Tata – Hosur",
@@ -4818,7 +4346,22 @@ const initialBusinesses: Business[] = [
       "Service",
       "Car repair",
       "Engine & transmission"
-    ]
+    ],
+    "phone": "+91 94880 82437",
+    "address": {
+      "doorNumber": "Shop #108",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.728,
+      "longitude": 77.82
+    }
   },
   {
     "name": "Akash Bajaj (Chetak EV) – Hosur",
@@ -4873,7 +4416,22 @@ const initialBusinesses: Business[] = [
       "Electric 2W",
       "Battery & motor check",
       "Routine service"
-    ]
+    ],
+    "phone": "04344 263884",
+    "address": {
+      "doorNumber": "Shop #115",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.73,
+      "longitude": 77.824
+    }
   },
   {
     "name": "Hosur Tyre & Battery Hub",
@@ -4924,7 +4482,22 @@ const initialBusinesses: Business[] = [
       "Vehicle batteries",
       "Battery replacement",
       "Car & bike battery"
-    ]
+    ],
+    "phone": "+91 98420 84105",
+    "address": {
+      "doorNumber": "Shop #122",
+      "street": "Bagalur Main Road",
+      "area": "Bagalur Circle / Avalapalli",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.732,
+      "longitude": 77.826
+    }
   },
   {
     "name": "Chil Zone Car Wash & Detailing – Hosur",
@@ -4991,7 +4564,22 @@ const initialBusinesses: Business[] = [
       "Upholstery shampoo",
       "Car wash",
       "Car repair"
-    ]
+    ],
+    "phone": "+91 96290 17492",
+    "address": {
+      "doorNumber": "Shop #129",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.734,
+      "longitude": 77.828
+    }
   },
   {
     "name": "Reliance Digital – Bagalur Road, Hosur",
@@ -5049,7 +4637,22 @@ const initialBusinesses: Business[] = [
       "Laptops & computers",
       "HP",
       "Lenovo"
-    ]
+    ],
+    "phone": "+91 98420 75865",
+    "address": {
+      "doorNumber": "Shop #108",
+      "street": "Bagalur Main Road",
+      "area": "Bagalur Circle / Avalapalli",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.736,
+      "longitude": 77.822
+    }
   },
   {
     "name": "Samsung Experience Store – Bagalur Road, Hosur",
@@ -5105,7 +4708,22 @@ const initialBusinesses: Business[] = [
       "Samsung",
       "Bespoke refrigerator",
       "Bespoke washing machine"
-    ]
+    ],
+    "phone": "04344 238915",
+    "address": {
+      "doorNumber": "Shop #115",
+      "street": "Bagalur Main Road",
+      "area": "Bagalur Circle / Avalapalli",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.738,
+      "longitude": 77.823
+    }
   },
   {
     "name": "Sri Mithuna Samsung Service – Hosur",
@@ -5159,7 +4777,22 @@ const initialBusinesses: Business[] = [
       "Screen replacement",
       "Diagnostics",
       "Phone diagnostics"
-    ]
+    ],
+    "phone": "+91 97890 66787",
+    "address": {
+      "doorNumber": "Shop #122",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.727,
+      "longitude": 77.833
+    }
   },
   {
     "name": "Zenith PC – Hosur",
@@ -5216,7 +4849,22 @@ const initialBusinesses: Business[] = [
       "Pavilion",
       "OmniBook",
       "IdeaPad"
-    ]
+    ],
+    "phone": "+91 98420 85313",
+    "address": {
+      "doorNumber": "Shop #129",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.729,
+      "longitude": 77.821
+    }
   },
   {
     "name": "Tanishq Jewellery – By-Pass Road, Hosur",
@@ -5269,7 +4917,22 @@ const initialBusinesses: Business[] = [
       "Gold",
       "Diamond",
       "Everyday earrings"
-    ]
+    ],
+    "phone": "+91 96290 25212",
+    "address": {
+      "doorNumber": "Shop #136",
+      "street": "NH 44 Bangalore-Salem Bypass Road",
+      "area": "Mookandapalli / Zuzuvadi",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635126"
+    },
+    "coordinates": {
+      "latitude": 12.731,
+      "longitude": 77.836
+    }
   },
   {
     "name": "Raymond – The Complete Man, Hosur",
@@ -5324,7 +4987,22 @@ const initialBusinesses: Business[] = [
       "Custom stitching",
       "Women",
       "Blouse stitching"
-    ]
+    ],
+    "phone": "04344 248256",
+    "address": {
+      "doorNumber": "Shop #143",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.733,
+      "longitude": 77.825
+    }
   },
   {
     "name": "Planet Fashion – Hosur",
@@ -5378,7 +5056,22 @@ const initialBusinesses: Business[] = [
       "Kids",
       "Everyday wear",
       "Kids clothing"
-    ]
+    ],
+    "phone": "+91 94432 36560",
+    "address": {
+      "doorNumber": "Shop #150",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.723,
+      "longitude": 77.829
+    }
   },
   {
     "name": "Bata Footwear – MG Road, Hosur",
@@ -5431,7 +5124,22 @@ const initialBusinesses: Business[] = [
       "Sandals & slippers",
       "Daily wear",
       "Sandals"
-    ]
+    ],
+    "phone": "+91 94880 55941",
+    "address": {
+      "doorNumber": "Shop #129",
+      "street": "Mahatma Gandhi Road",
+      "area": "Central Hosur",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.725,
+      "longitude": 77.83
+    }
   },
   {
     "name": "Saree Palace – Nethaji Road, Hosur",
@@ -5486,7 +5194,22 @@ const initialBusinesses: Business[] = [
       "Dress materials",
       "Home textiles",
       "Bed & bath"
-    ]
+    ],
+    "phone": "+91 97890 39187",
+    "address": {
+      "doorNumber": "Shop #136",
+      "street": "Nethaji Road",
+      "area": "Gandhi Nagar / Bazaar",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.721,
+      "longitude": 77.828
+    }
   },
   {
     "name": "Godrej Interio – Bagalur Road, Hosur",
@@ -5542,7 +5265,22 @@ const initialBusinesses: Business[] = [
       "Living room",
       "Seating",
       "Sofas & chairs"
-    ]
+    ],
+    "phone": "04344 245073",
+    "address": {
+      "doorNumber": "Shop #143",
+      "street": "Bagalur Main Road",
+      "area": "Bagalur Circle / Avalapalli",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.737,
+      "longitude": 77.827
+    }
   },
   {
     "name": "Royaloak Furniture – Hosur",
@@ -5597,7 +5335,22 @@ const initialBusinesses: Business[] = [
       "Dining",
       "Dining sets",
       "Dining tables & chairs"
-    ]
+    ],
+    "phone": "+91 82480 22054",
+    "address": {
+      "doorNumber": "Shop #150",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.739,
+      "longitude": 77.829
+    }
   },
   {
     "name": "Surya Home Decor & Interior – Hosur",
@@ -5660,7 +5413,22 @@ const initialBusinesses: Business[] = [
       "Art & hangings",
       "Lighting",
       "Indoor lighting"
-    ]
+    ],
+    "phone": "+91 96290 64100",
+    "address": {
+      "doorNumber": "Shop #157",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.735,
+      "longitude": 77.832
+    }
   },
   {
     "name": "Nilkamal Homes – Hosur",
@@ -5715,7 +5483,22 @@ const initialBusinesses: Business[] = [
       "Storage racks",
       "Repairs",
       "Furniture assembly"
-    ]
+    ],
+    "phone": "+91 98420 64305",
+    "address": {
+      "doorNumber": "Shop #164",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.74,
+      "longitude": 77.82
+    }
   },
   {
     "name": "Kauvery Hospital – Hosur",
@@ -5773,7 +5556,22 @@ const initialBusinesses: Business[] = [
       "Physiotherapy",
       "Mobility care",
       "Eye care"
-    ]
+    ],
+    "phone": "04344 223179",
+    "address": {
+      "doorNumber": "Shop #171",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.726,
+      "longitude": 77.835
+    }
   },
   {
     "name": "SBS Hospital – Hosur",
@@ -5827,7 +5625,22 @@ const initialBusinesses: Business[] = [
       "Assessment",
       "Physiotherapy assessment",
       "Physiotherapy session"
-    ]
+    ],
+    "phone": "+91 96290 41724",
+    "address": {
+      "doorNumber": "Shop #150",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.722,
+      "longitude": 77.83
+    }
   },
   {
     "name": "Apollo Dental Clinic – Hosur",
@@ -5877,7 +5690,22 @@ const initialBusinesses: Business[] = [
       "Dental consultation",
       "Treatment",
       "Cleaning & fillings"
-    ]
+    ],
+    "phone": "+91 94880 82165",
+    "address": {
+      "doorNumber": "Shop #157",
+      "street": "NH 44 Bangalore-Salem Bypass Road",
+      "area": "Mookandapalli / Zuzuvadi",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635126"
+    },
+    "coordinates": {
+      "latitude": 12.734,
+      "longitude": 77.84
+    }
   },
   {
     "name": "Arokyam Lungs Care Centre – Hosur",
@@ -5928,7 +5756,22 @@ const initialBusinesses: Business[] = [
       "Eye care",
       "Appointments",
       "Eye examination"
-    ]
+    ],
+    "phone": "+91 98420 50897",
+    "address": {
+      "doorNumber": "Shop #164",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.73,
+      "longitude": 77.837
+    }
   },
   {
     "name": "Ketone Fitness – Shanthi Nagar, Hosur",
@@ -5981,7 +5824,22 @@ const initialBusinesses: Business[] = [
       "Personal training",
       "1-on-1 coaching",
       "Transformation"
-    ]
+    ],
+    "phone": "04344 280586",
+    "address": {
+      "doorNumber": "Shop #171",
+      "street": "Denkanikottai Main Road",
+      "area": "Hamumanth Nagar",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.727,
+      "longitude": 77.838
+    }
   },
   {
     "name": "H&T Fitness – Navadhi, Hosur",
@@ -6033,7 +5891,22 @@ const initialBusinesses: Business[] = [
       "HIIT workouts",
       "Dance fitness",
       "Zumba studios"
-    ]
+    ],
+    "phone": "+91 98420 71425",
+    "address": {
+      "doorNumber": "Shop #178",
+      "street": "SIPCOT Industrial Complex, Phase I & II",
+      "area": "SIPCOT Industrial Area",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635126"
+    },
+    "coordinates": {
+      "latitude": 12.732,
+      "longitude": 77.839
+    }
   },
   {
     "name": "Royal Wellfit Health Club & Pool – Hosur",
@@ -6086,7 +5959,22 @@ const initialBusinesses: Business[] = [
       "Coaching",
       "Swimming lessons",
       "Personal training"
-    ]
+    ],
+    "phone": "+91 82480 43094",
+    "address": {
+      "doorNumber": "Shop #185",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.741,
+      "longitude": 77.824
+    }
   },
   {
     "name": "Eagles Sports Club – Bagalur Circle, Hosur",
@@ -6139,7 +6027,22 @@ const initialBusinesses: Business[] = [
       "Turf & facility rental",
       "Box cricket turf",
       "Hourly rental"
-    ]
+    ],
+    "phone": "+91 99440 59602",
+    "address": {
+      "doorNumber": "Shop #192",
+      "street": "Bagalur Main Road",
+      "area": "Bagalur Circle / Avalapalli",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.743,
+      "longitude": 77.826
+    }
   },
   {
     "name": "Little England Badminton Academy – Hosur",
@@ -6192,7 +6095,22 @@ const initialBusinesses: Business[] = [
       "Badminton courts",
       "Indoor court rental",
       "Court booking"
-    ]
+    ],
+    "phone": "04344 253375",
+    "address": {
+      "doorNumber": "Shop #171",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.738,
+      "longitude": 77.835
+    }
   },
   {
     "name": "Prabhu's Turf 24/7 – Hosur",
@@ -6243,7 +6161,22 @@ const initialBusinesses: Business[] = [
       "Badminton courts",
       "Indoor court rental",
       "Sports coaching"
-    ]
+    ],
+    "phone": "+91 94880 75957",
+    "address": {
+      "doorNumber": "Shop #178",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.74,
+      "longitude": 77.833
+    }
   },
   {
     "name": "Orien Fitness – Muneeswara Nagar, Hosur",
@@ -6295,7 +6228,22 @@ const initialBusinesses: Business[] = [
       "Cardio dance",
       "Yoga & pilates",
       "Yoga studios"
-    ]
+    ],
+    "phone": "+91 82480 73798",
+    "address": {
+      "doorNumber": "Shop #185",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.729,
+      "longitude": 77.836
+    }
   },
   {
     "name": "A1 Call Taxi – Hosur",
@@ -6349,7 +6297,22 @@ const initialBusinesses: Business[] = [
       "Daily rental",
       "Car hire",
       "Tours & experiences"
-    ]
+    ],
+    "phone": "+91 94432 43064",
+    "address": {
+      "doorNumber": "Shop #192",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.721,
+      "longitude": 77.827
+    }
   },
   {
     "name": "Red Taxi – Hosur",
@@ -6401,7 +6364,22 @@ const initialBusinesses: Business[] = [
       "Two-wheelers",
       "Local bike rental",
       "Bus & rail services"
-    ]
+    ],
+    "phone": "04344 262485",
+    "address": {
+      "doorNumber": "Shop #199",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.723,
+      "longitude": 77.832
+    }
   },
   {
     "name": "Grand Royal Tours & Travel – Hosur",
@@ -6470,7 +6448,22 @@ const initialBusinesses: Business[] = [
       "Local experiences",
       "Guided tours",
       "Airport transfer"
-    ]
+    ],
+    "phone": "+91 96290 86028",
+    "address": {
+      "doorNumber": "Shop #206",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.724,
+      "longitude": 77.826
+    }
   },
   {
     "name": "Nanban Tours & Travels – Hosur",
@@ -6524,7 +6517,22 @@ const initialBusinesses: Business[] = [
       "Intercity travel",
       "Bus booking support",
       "Tours & experiences"
-    ]
+    ],
+    "phone": "+91 82480 42534",
+    "address": {
+      "doorNumber": "Shop #213",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.726,
+      "longitude": 77.833
+    }
   },
   {
     "name": "Grand Continent Hosur (Sarovar Portico)",
@@ -6576,7 +6584,22 @@ const initialBusinesses: Business[] = [
       "Short stays",
       "Guest house booking",
       "Tours & experiences"
-    ]
+    ],
+    "phone": "+91 82480 58822",
+    "address": {
+      "doorNumber": "Shop #192",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.729,
+      "longitude": 77.834
+    }
   },
   {
     "name": "Hotel Hills – Hosur",
@@ -6627,7 +6650,22 @@ const initialBusinesses: Business[] = [
       "Guest houses",
       "Short stays",
       "Guest house booking"
-    ]
+    ],
+    "phone": "04344 222824",
+    "address": {
+      "doorNumber": "Shop #199",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.72,
+      "longitude": 77.828
+    }
   },
   {
     "name": "Lakshmi Cinemas – Hosur",
@@ -6679,7 +6717,22 @@ const initialBusinesses: Business[] = [
       "Home viewing",
       "Equipment hire",
       "Projector rental"
-    ]
+    ],
+    "phone": "+91 94880 55413",
+    "address": {
+      "doorNumber": "Shop #206",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.725,
+      "longitude": 77.831
+    }
   },
   {
     "name": "Grand Cinemas – Thally Road, Hosur",
@@ -6727,7 +6780,22 @@ const initialBusinesses: Business[] = [
       "Cinema",
       "Show times",
       "Movie tickets"
-    ]
+    ],
+    "phone": "+91 94432 16632",
+    "address": {
+      "doorNumber": "Shop #213",
+      "street": "Thally Road",
+      "area": "Near Ring Road",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.739,
+      "longitude": 77.831
+    }
   },
   {
     "name": "Hosur Music & Arts Academy",
@@ -6811,7 +6879,22 @@ const initialBusinesses: Business[] = [
       "Creative classes",
       "Craft workshop",
       "Dance classes"
-    ]
+    ],
+    "phone": "+91 99440 24146",
+    "address": {
+      "doorNumber": "Shop #220",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.728,
+      "longitude": 77.84
+    }
   },
   {
     "name": "Hosur Weekend Haat – Cultural Events",
@@ -6889,7 +6972,22 @@ const initialBusinesses: Business[] = [
       "Dance classes",
       "Event photography",
       "Photography"
-    ]
+    ],
+    "phone": "04344 220046",
+    "address": {
+      "doorNumber": "Shop #227",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.733,
+      "longitude": 77.827
+    }
   },
   {
     "name": "Hosur Gaming Zone – Arcade & VR",
@@ -6949,7 +7047,22 @@ const initialBusinesses: Business[] = [
       "Family activities",
       "Local outings",
       "Activity booking"
-    ]
+    ],
+    "phone": "+91 94880 12973",
+    "address": {
+      "doorNumber": "Shop #234",
+      "street": "SIPCOT Industrial Complex, Phase I & II",
+      "area": "SIPCOT Industrial Area",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635126"
+    },
+    "coordinates": {
+      "latitude": 12.735,
+      "longitude": 77.836
+    }
   },
   {
     "name": "Hope Home Care – Hosur",
@@ -7012,7 +7125,22 @@ const initialBusinesses: Business[] = [
       "Lighting installation",
       "Cleaning",
       "Home cleaning"
-    ]
+    ],
+    "phone": "+91 94432 57112",
+    "address": {
+      "doorNumber": "Shop #213",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.723,
+      "longitude": 77.834
+    }
   },
   {
     "name": "Vijay Home Services – Hosur",
@@ -7067,7 +7195,22 @@ const initialBusinesses: Business[] = [
       "Cleaning",
       "Home cleaning",
       "Kitchen cleaning"
-    ]
+    ],
+    "phone": "+91 94432 99920",
+    "address": {
+      "doorNumber": "Shop #220",
+      "street": "SIPCOT Industrial Complex, Phase I & II",
+      "area": "SIPCOT Industrial Area",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635126"
+    },
+    "coordinates": {
+      "latitude": 12.725,
+      "longitude": 77.836
+    }
   },
   {
     "name": "Sri Balaji Pest Control – Hosur",
@@ -7134,7 +7277,22 @@ const initialBusinesses: Business[] = [
       "Consulting",
       "Local experts",
       "Accounting"
-    ]
+    ],
+    "phone": "04344 254642",
+    "address": {
+      "doorNumber": "Shop #227",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.731,
+      "longitude": 77.838
+    }
   },
   {
     "name": "Hosur Professional Painters & Carpenters",
@@ -7188,7 +7346,22 @@ const initialBusinesses: Business[] = [
       "Local experts",
       "Initial consultation",
       "Appliance repair"
-    ]
+    ],
+    "phone": "+91 94880 36645",
+    "address": {
+      "doorNumber": "Shop #234",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.733,
+      "longitude": 77.822
+    }
   },
   {
     "name": "Hosur CA & Tax Services",
@@ -7239,7 +7412,22 @@ const initialBusinesses: Business[] = [
       "Consulting",
       "Local experts",
       "Initial consultation"
-    ]
+    ],
+    "phone": "+91 96290 57724",
+    "address": {
+      "doorNumber": "Shop #241",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.721,
+      "longitude": 77.826
+    }
   },
   {
     "name": "Hosur Event Photography & Videography",
@@ -7289,7 +7477,22 @@ const initialBusinesses: Business[] = [
       "Event photography",
       "Consulting",
       "Local experts"
-    ]
+    ],
+    "phone": "+91 94432 75840",
+    "address": {
+      "doorNumber": "Shop #248",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.727,
+      "longitude": 77.822
+    }
   },
   {
     "name": "Sri Murugan Book Center & Stationery – Netaji Road",
@@ -7366,7 +7569,22 @@ const initialBusinesses: Business[] = [
       "Classmate notebooks",
       "Competitive Exams",
       "TNPSC & Bank exams"
-    ]
+    ],
+    "phone": "04344 236961",
+    "address": {
+      "doorNumber": "Shop #255",
+      "street": "Nethaji Road",
+      "area": "Gandhi Nagar / Bazaar",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7335,
+      "longitude": 77.8288
+    }
   },
   {
     "name": "Higginbothams Books – Station Road, Hosur",
@@ -7427,7 +7645,22 @@ const initialBusinesses: Business[] = [
       "Bestsellers",
       "Children's Books",
       "Story books"
-    ]
+    ],
+    "phone": "+91 99440 43018",
+    "address": {
+      "doorNumber": "Shop #234",
+      "street": "Railway Station Road",
+      "area": "Shanthi Nagar / Station Area",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.729,
+      "longitude": 77.8315
+    }
   },
   {
     "name": "Vignesh Stationery, Xerox & Project Mart – Bagalur Road",
@@ -7495,7 +7728,22 @@ const initialBusinesses: Business[] = [
       "Color & B/W xerox",
       "Binding & lamination",
       "Spiral binding"
-    ]
+    ],
+    "phone": "+91 94432 65616",
+    "address": {
+      "doorNumber": "Shop #241",
+      "street": "Bagalur Main Road",
+      "area": "Bagalur Circle / Avalapalli",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.738,
+      "longitude": 77.834
+    }
   },
   {
     "name": "Reliance Stationery & Art Center – MG Road",
@@ -7553,7 +7801,22 @@ const initialBusinesses: Business[] = [
       "Drawing & painting",
       "Paints & canvases",
       "Craft materials"
-    ]
+    ],
+    "phone": "+91 94432 49432",
+    "address": {
+      "doorNumber": "Shop #248",
+      "street": "Mahatma Gandhi Road",
+      "area": "Central Hosur",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7312,
+      "longitude": 77.827
+    }
   },
   {
     "name": "Pooja Fancy & Bridal Gift World – MG Road",
@@ -7630,7 +7893,22 @@ const initialBusinesses: Business[] = [
       "Gifts & novelties",
       "Gift articles",
       "Bangles"
-    ]
+    ],
+    "phone": "04344 220145",
+    "address": {
+      "doorNumber": "Shop #255",
+      "street": "Mahatma Gandhi Road",
+      "area": "Central Hosur",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7318,
+      "longitude": 77.8265
+    }
   },
   {
     "name": "Sri Balaji Novelties & Toy Kingdom – Netaji Road",
@@ -7698,7 +7976,22 @@ const initialBusinesses: Business[] = [
       "Board games",
       "Family classics",
       "Kids & baby toys"
-    ]
+    ],
+    "phone": "+91 94880 74765",
+    "address": {
+      "doorNumber": "Shop #262",
+      "street": "Nethaji Road",
+      "area": "Gandhi Nagar / Bazaar",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.734,
+      "longitude": 77.8295
+    }
   },
   {
     "name": "Kids Zone Toy World & Ride-Ons – Denkanikottai Road",
@@ -7758,7 +8051,22 @@ const initialBusinesses: Business[] = [
       "Battery vehicles",
       "Kids cycles",
       "School accessories"
-    ]
+    ],
+    "phone": "+91 98420 68369",
+    "address": {
+      "doorNumber": "Shop #269",
+      "street": "Denkanikottai Main Road",
+      "area": "Hamumanth Nagar",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.726,
+      "longitude": 77.829
+    }
   },
   {
     "name": "Mahalakshmi Fancy Store & Party Hub – Bagalur Circle",
@@ -7818,7 +8126,22 @@ const initialBusinesses: Business[] = [
       "Birthday celebration",
       "Return gifts",
       "Gift articles"
-    ]
+    ],
+    "phone": "+91 99440 56322",
+    "address": {
+      "doorNumber": "Shop #276",
+      "street": "Bagalur Main Road",
+      "area": "Bagalur Circle / Avalapalli",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.742,
+      "longitude": 77.836
+    }
   },
   {
     "name": "Hosur MGR Central Bus Stand – NH 44 Bypass",
@@ -7876,7 +8199,22 @@ const initialBusinesses: Business[] = [
       "Town & intercity buses",
       "Depot & enquiry",
       "MGR Bus Stand"
-    ]
+    ],
+    "phone": "04344 242463",
+    "address": {
+      "doorNumber": "Shop #255",
+      "street": "NH 44 Bangalore-Salem Bypass Road",
+      "area": "Mookandapalli / Zuzuvadi",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635126"
+    },
+    "coordinates": {
+      "latitude": 12.7302,
+      "longitude": 77.8248
+    }
   },
   {
     "name": "Hosur Railway Station (HSRA) – Station Road",
@@ -7926,7 +8264,22 @@ const initialBusinesses: Business[] = [
       "Hosur Railway Station",
       "Train schedules & tickets",
       "Station amenities"
-    ]
+    ],
+    "phone": "+91 99440 35026",
+    "address": {
+      "doorNumber": "Shop #262",
+      "street": "Railway Station Road",
+      "area": "Shanthi Nagar / Station Area",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7238,
+      "longitude": 77.8312
+    }
   },
   {
     "name": "Shri Chandra Choodeswarar Hill Temple (Malai Kovil)",
@@ -7984,7 +8337,22 @@ const initialBusinesses: Business[] = [
       "Malai Kovil Shiva temple",
       "Temple rituals",
       "Public & Common Places"
-    ]
+    ],
+    "phone": "+91 97890 66379",
+    "address": {
+      "doorNumber": "Shop #269",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.716,
+      "longitude": 77.83
+    }
   },
   {
     "name": "Kelavarapalli Reservoir Dam & Children's Park",
@@ -8034,7 +8402,22 @@ const initialBusinesses: Business[] = [
       "Kelavarapalli Dam",
       "Reservoir garden & boating",
       "Public parks"
-    ]
+    ],
+    "phone": "+91 97890 62403",
+    "address": {
+      "doorNumber": "Shop #276",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.785,
+      "longitude": 77.85
+    }
   },
   {
     "name": "Rajaji Memorial & Eco Park – Thorapalli / Hosur",
@@ -8086,7 +8469,22 @@ const initialBusinesses: Business[] = [
       "Heritage & Temples",
       "Historic monuments",
       "Rajaji Memorial"
-    ]
+    ],
+    "phone": "04344 255417",
+    "address": {
+      "doorNumber": "Shop #283",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.705,
+      "longitude": 77.842
+    }
   },
   {
     "name": "Hosur City Municipal Corporation – Bagalur Road",
@@ -8136,7 +8534,22 @@ const initialBusinesses: Business[] = [
       "Hosur Municipal Corporation",
       "Civic services & certificates",
       "Public tax & billing"
-    ]
+    ],
+    "phone": "+91 90800 34343",
+    "address": {
+      "doorNumber": "Shop #290",
+      "street": "Bagalur Main Road",
+      "area": "Bagalur Circle / Avalapalli",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.736,
+      "longitude": 77.832
+    }
   },
   {
     "name": "Hosur Head Post Office (HPO) – Taluk Office Complex",
@@ -8185,7 +8598,22 @@ const initialBusinesses: Business[] = [
       "Hosur Head Post Office",
       "Speed post & parcel delivery",
       "Citizen identity"
-    ]
+    ],
+    "phone": "+91 98420 54977",
+    "address": {
+      "doorNumber": "Shop #297",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.731,
+      "longitude": 77.828
+    }
   },
   {
     "name": "Hosur Town Public Library – Library Street",
@@ -8234,7 +8662,22 @@ const initialBusinesses: Business[] = [
       "Public libraries",
       "Town Public Library",
       "Reading room & reference books"
-    ]
+    ],
+    "phone": "+91 94432 64680",
+    "address": {
+      "doorNumber": "Shop #276",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7325,
+      "longitude": 77.8275
+    }
   },
   {
     "name": "Hosur Government General Hospital – Denkanikottai Road",
@@ -8284,10 +8727,25 @@ const initialBusinesses: Business[] = [
       "Government General Hospital",
       "24/7 Casualty & emergency",
       "Public health"
-    ]
+    ],
+    "phone": "04344 272683",
+    "address": {
+      "doorNumber": "Shop #283",
+      "street": "Denkanikottai Main Road",
+      "area": "Hamumanth Nagar",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.727,
+      "longitude": 77.8285
+    }
   },
   {
-    "name": "Hosur Leather & Luggage World ? MG Road",
+    "name": "Hosur Leather & Luggage World – MG Road",
     "category": "Fashion",
     "subcategories": [
       "Bags & accessories"
@@ -8342,10 +8800,25 @@ const initialBusinesses: Business[] = [
       "Accessories",
       "Fashion accessories",
       "Belts & wallets"
-    ]
+    ],
+    "phone": "+91 94880 47677",
+    "address": {
+      "doorNumber": "Shop #290",
+      "street": "Mahatma Gandhi Road",
+      "area": "Central Hosur",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7315,
+      "longitude": 77.8275
+    }
   },
   {
-    "name": "Vasanth & Co ? Bagalur Road, Hosur",
+    "name": "Vasanth & Co – Bagalur Road, Hosur",
     "category": "Home Appliances",
     "subcategories": [
       "Refrigerators",
@@ -8426,10 +8899,25 @@ const initialBusinesses: Business[] = [
       "Kitchen appliances",
       "Water purifiers & geysers",
       "Appliance repair"
-    ]
+    ],
+    "phone": "+91 98420 73089",
+    "address": {
+      "doorNumber": "Shop #297",
+      "street": "Bagalur Main Road",
+      "area": "Bagalur Circle / Avalapalli",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.735,
+      "longitude": 77.831
+    }
   },
   {
-    "name": "Sathya Agencies ? Netaji Road, Hosur",
+    "name": "Sathya Agencies – Netaji Road, Hosur",
     "category": "Home Appliances",
     "subcategories": [
       "Refrigerators",
@@ -8484,10 +8972,25 @@ const initialBusinesses: Business[] = [
       "Air conditioners",
       "Refrigerators",
       "Washing machines"
-    ]
+    ],
+    "phone": "+91 82480 81942",
+    "address": {
+      "doorNumber": "Shop #304",
+      "street": "Nethaji Road",
+      "area": "Gandhi Nagar / Bazaar",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.732,
+      "longitude": 77.828
+    }
   },
   {
-    "name": "Sri Balaji Electricals & Lighting ? Bagalur Road",
+    "name": "Sri Balaji Electricals & Lighting – Bagalur Road",
     "category": "Electricals",
     "subcategories": [
       "Wiring & Cables",
@@ -8544,10 +9047,25 @@ const initialBusinesses: Business[] = [
       "Switches & Sockets",
       "LED Lighting",
       "Fans & Ventilation"
-    ]
+    ],
+    "phone": "04344 241191",
+    "address": {
+      "doorNumber": "Shop #311",
+      "street": "Bagalur Main Road",
+      "area": "Bagalur Circle / Avalapalli",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.737,
+      "longitude": 77.833
+    }
   },
   {
-    "name": "Hosur Inverter, Solar & Battery Hub ? Station Road",
+    "name": "Hosur Inverter, Solar & Battery Hub – Station Road",
     "category": "Electricals",
     "subcategories": [
       "Inverters & Power",
@@ -8607,10 +9125,25 @@ const initialBusinesses: Business[] = [
       "Inverters & Power",
       "Electrical Services",
       "Electrical"
-    ]
+    ],
+    "phone": "+91 96290 90772",
+    "address": {
+      "doorNumber": "Shop #318",
+      "street": "Railway Station Road",
+      "area": "Shanthi Nagar / Station Area",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.728,
+      "longitude": 77.832
+    }
   },
   {
-    "name": "Hosur Hardware, Tools & Power Mart ? Bagalur Road",
+    "name": "Hosur Hardware, Tools & Power Mart – Bagalur Road",
     "category": "Hardware",
     "subcategories": [
       "Power Tools & Machinery",
@@ -8672,10 +9205,25 @@ const initialBusinesses: Business[] = [
       "Power Tools & Machinery",
       "Hand Tools & Fasteners",
       "Paints & Hardware"
-    ]
+    ],
+    "phone": "+91 99440 50074",
+    "address": {
+      "doorNumber": "Shop #297",
+      "street": "Bagalur Main Road",
+      "area": "Bagalur Circle / Avalapalli",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.738,
+      "longitude": 77.834
+    }
   },
   {
-    "name": "Sri Krishna Hardware & Sanitary Mart ? MG Road",
+    "name": "Sri Krishna Hardware & Sanitary Mart – MG Road",
     "category": "Hardware",
     "subcategories": [
       "Plumbing Hardware",
@@ -8751,10 +9299,25 @@ const initialBusinesses: Business[] = [
       "Plumbing Hardware",
       "Sanitaryware & Bath",
       "Locks & Architectural"
-    ]
+    ],
+    "phone": "+91 99440 21266",
+    "address": {
+      "doorNumber": "Shop #304",
+      "street": "Mahatma Gandhi Road",
+      "area": "Central Hosur",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.731,
+      "longitude": 77.826
+    }
   },
   {
-    "name": "Asian Paints & Hosur Hardware Depot ? Denkanikottai Road",
+    "name": "Asian Paints & Hosur Hardware Depot – Denkanikottai Road",
     "category": "Hardware",
     "subcategories": [
       "Paints & Hardware",
@@ -8806,7 +9369,22 @@ const initialBusinesses: Business[] = [
       "Hardware",
       "Paints & Hardware",
       "Locks & Architectural"
-    ]
+    ],
+    "phone": "04344 266979",
+    "address": {
+      "doorNumber": "Shop #311",
+      "street": "Denkanikottai Main Road",
+      "area": "Hamumanth Nagar",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.726,
+      "longitude": 77.828
+    }
   },
   {
     "name": "Hosur Properties & Rental Hub",
@@ -8857,7 +9435,22 @@ const initialBusinesses: Business[] = [
       "Real Estate & Construction",
       "Properties for Sale",
       "Rental & Lease"
-    ]
+    ],
+    "phone": "+91 98420 73665",
+    "address": {
+      "doorNumber": "Shop #318",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.729,
+      "longitude": 77.825
+    }
   },
   {
     "name": "SIPCOT Industrial Sheds & Godowns",
@@ -8908,7 +9501,22 @@ const initialBusinesses: Business[] = [
       "Real Estate & Construction",
       "Rental & Lease",
       "Properties for Sale"
-    ]
+    ],
+    "phone": "+91 97890 76395",
+    "address": {
+      "doorNumber": "Shop #325",
+      "street": "SIPCOT Industrial Complex, Phase I & II",
+      "area": "SIPCOT Industrial Area",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635126"
+    },
+    "coordinates": {
+      "latitude": 12.756,
+      "longitude": 77.801
+    }
   },
   {
     "name": "Sri Vigneshwara Civil Builders & Architects",
@@ -8961,7 +9569,22 @@ const initialBusinesses: Business[] = [
       "Civil & Construction",
       "Architects & Surveyors",
       "Building Materials"
-    ]
+    ],
+    "phone": "+91 82480 16718",
+    "address": {
+      "doorNumber": "Shop #332",
+      "street": "Nethaji Road",
+      "area": "Gandhi Nagar / Bazaar",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.736,
+      "longitude": 77.832
+    }
   },
   {
     "name": "Hosur Heavy Earthmovers & Construction Equipment",
@@ -9035,7 +9658,22 @@ const initialBusinesses: Business[] = [
       "Heavy excavators",
       "Backhoe loaders",
       "Machinery Rentals & Contracts"
-    ]
+    ],
+    "phone": "04344 234491",
+    "address": {
+      "doorNumber": "Shop #339",
+      "street": "SIPCOT Industrial Complex, Phase I & II",
+      "area": "SIPCOT Industrial Area",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635126"
+    },
+    "coordinates": {
+      "latitude": 12.7214,
+      "longitude": 77.8112
+    }
   },
   {
     "name": "Kaveri Industrial Cranes & Material Handling Hub",
@@ -9108,7 +9746,22 @@ const initialBusinesses: Business[] = [
       "Hydraulic mobile cranes",
       "Industrial forklifts",
       "Machinery Rentals & Contracts"
-    ]
+    ],
+    "phone": "+91 82480 77102",
+    "address": {
+      "doorNumber": "Shop #318",
+      "street": "SIPCOT Industrial Complex, Phase I & II",
+      "area": "SIPCOT Industrial Area",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635126"
+    },
+    "coordinates": {
+      "latitude": 12.7538,
+      "longitude": 77.8421
+    }
   },
   {
     "name": "SIPCOT CNC Machining Centers & Machine Tools Expo",
@@ -9178,7 +9831,22 @@ const initialBusinesses: Business[] = [
       "Heavy CNC & Machine Tools",
       "CNC Machining Centers",
       "Industrial Laser & Cutting"
-    ]
+    ],
+    "phone": "+91 96290 38068",
+    "address": {
+      "doorNumber": "Shop #325",
+      "street": "SIPCOT Industrial Complex, Phase I & II",
+      "area": "SIPCOT Industrial Area",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635126"
+    },
+    "coordinates": {
+      "latitude": 12.7382,
+      "longitude": 77.8095
+    }
   },
   {
     "name": "Atlas & ELGi Industrial Power & Air Systems",
@@ -9248,7 +9916,22 @@ const initialBusinesses: Business[] = [
       "Industrial Power & Generators",
       "Industrial Air & Fluid Systems",
       "Rotary Screw Compressors"
-    ]
+    ],
+    "phone": "+91 99440 86970",
+    "address": {
+      "doorNumber": "Shop #332",
+      "street": "SIPCOT Industrial Complex, Phase I & II",
+      "area": "SIPCOT Industrial Area",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635126"
+    },
+    "coordinates": {
+      "latitude": 12.7475,
+      "longitude": 77.8188
+    }
   },
   {
     "name": "Schwing & Stetter Heavy Concrete Machinery",
@@ -9318,7 +10001,22 @@ const initialBusinesses: Business[] = [
       "Road & Concrete Machinery",
       "Concrete Batching Plants",
       "Road Rollers & Compactors"
-    ]
+    ],
+    "phone": "04344 280752",
+    "address": {
+      "doorNumber": "Shop #339",
+      "street": "SIPCOT Industrial Complex, Phase I & II",
+      "area": "SIPCOT Industrial Area",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635126"
+    },
+    "coordinates": {
+      "latitude": 12.7291,
+      "longitude": 77.8285
+    }
   },
   {
     "name": "Hosur Heavy Hydraulic & Undercarriage Engineering",
@@ -9388,7 +10086,22 @@ const initialBusinesses: Business[] = [
       "Machinery Spares & Overhauls",
       "OEM machinery spares",
       "Reconditioning & repair"
-    ]
+    ],
+    "phone": "+91 94432 35456",
+    "address": {
+      "doorNumber": "Shop #346",
+      "street": "Bagalur Main Road",
+      "area": "Bagalur Circle / Avalapalli",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.7441,
+      "longitude": 77.8398
+    }
   },
   {
     "name": "Hosur Precision CNC & VMC Machining",
@@ -9437,7 +10150,22 @@ const initialBusinesses: Business[] = [
     "taxonomyTags": [
       "Industrial & B2B Manufacturing",
       "Machining & Tooling"
-    ]
+    ],
+    "phone": "+91 90800 42087",
+    "address": {
+      "doorNumber": "Shop #353",
+      "street": "SIPCOT Industrial Complex, Phase I & II",
+      "area": "SIPCOT Industrial Area",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635126"
+    },
+    "coordinates": {
+      "latitude": 12.751,
+      "longitude": 77.808
+    }
   },
   {
     "name": "Sri Balaji Sheet Metal & Laser Cutting",
@@ -9488,7 +10216,22 @@ const initialBusinesses: Business[] = [
       "Industrial & B2B Manufacturing",
       "Fabrication & Metalworks",
       "Industrial Coatings"
-    ]
+    ],
+    "phone": "+91 94432 93152",
+    "address": {
+      "doorNumber": "Shop #360",
+      "street": "SIPCOT Industrial Complex, Phase I & II",
+      "area": "SIPCOT Industrial Area",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635126"
+    },
+    "coordinates": {
+      "latitude": 12.768,
+      "longitude": 77.795
+    }
   },
   {
     "name": "Hosur Industrial Packaging & Safety Hub",
@@ -9539,7 +10282,22 @@ const initialBusinesses: Business[] = [
       "Industrial & B2B Manufacturing",
       "Packaging & Safety PPE",
       "Industrial Supplies"
-    ]
+    ],
+    "phone": "04344 277806",
+    "address": {
+      "doorNumber": "Shop #339",
+      "street": "SIPCOT Industrial Complex, Phase I & II",
+      "area": "SIPCOT Industrial Area",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635126"
+    },
+    "coordinates": {
+      "latitude": 12.744,
+      "longitude": 77.815
+    }
   },
   {
     "name": "Adhiyamaan College of Engineering (ACE)",
@@ -9589,7 +10347,22 @@ const initialBusinesses: Business[] = [
     "taxonomyTags": [
       "Education & Coaching",
       "Colleges & Universities"
-    ]
+    ],
+    "phone": "+91 82480 28926",
+    "address": {
+      "doorNumber": "Shop #346",
+      "street": "SIPCOT Industrial Complex, Phase I & II",
+      "area": "SIPCOT Industrial Area",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635126"
+    },
+    "coordinates": {
+      "latitude": 12.712,
+      "longitude": 77.868
+    }
   },
   {
     "name": "Sri Chaitanya NEET & IIT-JEE Academy",
@@ -9639,7 +10412,22 @@ const initialBusinesses: Business[] = [
     "taxonomyTags": [
       "Education & Coaching",
       "Competitive Exam Coaching"
-    ]
+    ],
+    "phone": "+91 98420 94521",
+    "address": {
+      "doorNumber": "Shop #353",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.738,
+      "longitude": 77.829
+    }
   },
   {
     "name": "Hosur National Driving & Computer Institute",
@@ -9691,7 +10479,22 @@ const initialBusinesses: Business[] = [
       "Education & Coaching",
       "Driving & Sports Academies",
       "Skill & Vocational Training"
-    ]
+    ],
+    "phone": "+91 96290 13956",
+    "address": {
+      "doorNumber": "Shop #360",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.733,
+      "longitude": 77.826
+    }
   },
   {
     "name": "Sri Krishna Grand Kalyana Mandapam",
@@ -9741,7 +10544,22 @@ const initialBusinesses: Business[] = [
     "taxonomyTags": [
       "Events & Weddings",
       "Venues & Mandapams"
-    ]
+    ],
+    "phone": "04344 262782",
+    "address": {
+      "doorNumber": "Shop #367",
+      "street": "NH 44 Bangalore-Salem Bypass Road",
+      "area": "Mookandapalli / Zuzuvadi",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635126"
+    },
+    "coordinates": {
+      "latitude": 12.748,
+      "longitude": 77.821
+    }
   },
   {
     "name": "Sri Annam Traditional Wedding Caterers",
@@ -9791,7 +10609,22 @@ const initialBusinesses: Business[] = [
     "taxonomyTags": [
       "Events & Weddings",
       "Catering & Feast"
-    ]
+    ],
+    "phone": "+91 97890 18571",
+    "address": {
+      "doorNumber": "Shop #374",
+      "street": "Thally Road",
+      "area": "Near Ring Road",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.728,
+      "longitude": 77.834
+    }
   },
   {
     "name": "Hosur Royal Wedding Decors, Photography & Sound",
@@ -9844,7 +10677,22 @@ const initialBusinesses: Business[] = [
       "Decor & Stage Setup",
       "Sound, Light & Entertainment",
       "Photography & Styling"
-    ]
+    ],
+    "phone": "+91 82480 70374",
+    "address": {
+      "doorNumber": "Shop #381",
+      "street": "Bagalur Main Road",
+      "area": "Bagalur Circle / Avalapalli",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.742,
+      "longitude": 77.839
+    }
   },
   {
     "name": "Hosur Rose & Flora City Nurseries",
@@ -9895,7 +10743,22 @@ const initialBusinesses: Business[] = [
       "Agriculture, Nurseries & Pets",
       "Nurseries & Plants",
       "Seeds & Agri Inputs"
-    ]
+    ],
+    "phone": "+91 94880 40365",
+    "address": {
+      "doorNumber": "Shop #360",
+      "street": "Bagalur Main Road",
+      "area": "Bagalur Circle / Avalapalli",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.765,
+      "longitude": 77.852
+    }
   },
   {
     "name": "Paws & Tails Pet Shop & 24/7 Veterinary Clinic",
@@ -9946,7 +10809,22 @@ const initialBusinesses: Business[] = [
       "Agriculture, Nurseries & Pets",
       "Pet Shops & Supplies",
       "Veterinary & Live Animals"
-    ]
+    ],
+    "phone": "04344 241982",
+    "address": {
+      "doorNumber": "Shop #367",
+      "street": "Rayakottai Road",
+      "area": "Old Bus Stand Vicinity",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.73,
+      "longitude": 77.831
+    }
   },
   {
     "name": "Sri Murugan Agro Agency & Cattle Feed",
@@ -9999,14 +10877,29 @@ const initialBusinesses: Business[] = [
       "Seeds & Agri Inputs",
       "Irrigation & Farm Tools",
       "Veterinary & Live Animals"
-    ]
+    ],
+    "phone": "+91 94432 14648",
+    "address": {
+      "doorNumber": "Shop #374",
+      "street": "Bagalur Main Road",
+      "area": "Central Commercial Hub",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "coordinates": {
+      "latitude": 12.735,
+      "longitude": 77.827
+    }
   }
 ];
 
 const initialSampleOrders: OrderRecord[] = [
   {
     id: "ORD-78214",
-    businessName: "Maya's Home Kitchen",
+    businessName: "Vasavi Cafe – Hosur",
     customerName: "Kavitha R.",
     customerPhone: "+91 98452 31209",
     customerAddress: "Plot 42, Rayakottai Road, Near Old Bus Stand, Hosur - 635109",
@@ -22415,7 +23308,7 @@ function Dialog({
           setBusinessDetails(details);
           setStep(2);
         }}>
-          {regEnabled(businessForm, "businessName") && <label>{regLabel(businessForm, "businessName", "Business name")}<input name="businessName" placeholder="e.g. Greenway Auto Works" defaultValue={businessDetails.businessName} required={regField(businessForm, "businessName")?.required ?? true} /></label>}
+          {regEnabled(businessForm, "businessName") && <label>{regLabel(businessForm, "businessName", "Business name")}<input name="businessName" placeholder="e.g. Sree Velan TVS" defaultValue={businessDetails.businessName} required={regField(businessForm, "businessName")?.required ?? true} /></label>}
           <fieldset className="registration-taxonomy address-fields"><legend>Business address</legend><div className="registration-address-grid">
           {[{ key: "doorNumber", label: "Door No." }, { key: "street", label: "Street" }, { key: "area", label: "Area" }, { key: "cityTown", label: "City / town" }, { key: "taluka", label: "Taluka" }, { key: "district", label: "District" }, { key: "state", label: "State" }, { key: "pincode", label: "Pincode" }].map(({ key, label }) => <label className="registration-address-field" key={key}>{label}<input name={key} value={businessAddress[key as keyof BusinessAddress]} onChange={(event) => setBusinessAddress((current) => ({ ...current, [key]: event.target.value }))} required maxLength={key === "pincode" ? 10 : 100} inputMode={key === "pincode" ? "numeric" : undefined} pattern={key === "pincode" ? "[0-9]{6}" : undefined} title={key === "pincode" ? "Enter a 6-digit pincode" : undefined} /></label>)}
         </div><button type="button" className="outline-button location-fetch-button" onClick={fetchBusinessCoordinates}>{businessCoordinates ? "Refresh business location pin" : "Capture business location pin"}</button>{businessLocationMessage && <p className="location-result" role="status">{businessLocationMessage}</p>}{businessLocationError && <p className="form-error" role="alert">{businessLocationError}</p>}<p className="fine-print">A precise location pin is required so customers can view your business on the map and get directions.</p></fieldset>

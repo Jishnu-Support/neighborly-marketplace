@@ -32,7 +32,7 @@ function getInitialSampleBookings(): AdBookingRequest[] {
   return [
     {
       id: "AD-REQ-101",
-      businessName: "Greenway Auto Works",
+      businessName: "Amman Motors Maruti ARENA – Hosur",
       contactName: "Suresh Kumar",
       contactPhone: "+91 98450 12345",
       format: "combo",
@@ -45,16 +45,16 @@ function getInitialSampleBookings(): AdBookingRequest[] {
       durationDays: 7,
       poster: {
         title: "Express 30-Min Two Wheeler & Car Service",
-        label: "Greenway Auto • Bagalur Road",
+        label: "Amman Motors Maruti • Bagalur Road",
         imageUrl: "https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=900&q=85",
         tone: "market",
       },
       content: {
-        message: "⚡ Greenway Auto Works: Free 21-point vehicle safety inspection this week on Bagalur Road!",
+        message: "⚡ Amman Motors Maruti ARENA: Free 21-point vehicle safety inspection this week on Bagalur Road!",
       },
       video: {
-        title: "Greenway Precision Diagnostics",
-        description: "Watch our state-of-the-art computerized wheel balancing and engine tuning in Hosur.",
+        title: "Amman Motors Maruti Diagnostics",
+        description: "Watch our state-of-the-art computerized wheel balancing and authorized Maruti service in Hosur.",
         sourceUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
         posterUrl: "https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=900&q=85",
         callToAction: "Book Service Appointment",
