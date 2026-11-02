@@ -247,10 +247,10 @@ export function AdBookingDialog({
   }
 
   return (
-    <div className="dialog-overlay" onClick={close}>
+    <div className="order-modal-backdrop" onClick={close}>
       <div
         className="plan-checkout-container"
-        style={{ maxWidth: "840px" }}
+        style={{ maxWidth: "860px", width: "95vw", margin: "auto" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -258,10 +258,14 @@ export function AdBookingDialog({
           className="plan-checkout-header"
           style={{
             background: "linear-gradient(135deg, #163824 0%, #204c32 100%)",
+            padding: "16px 22px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
           }}
         >
           <div>
-            <h3>
+            <h3 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#ffffff", display: "flex", alignItems: "center", gap: "8px" }}>
               <span>📢</span> Request Ad Timing, Formats &amp; Pricing
             </h3>
             <p
@@ -276,9 +280,23 @@ export function AdBookingDialog({
             </p>
           </div>
           <button
-            className="dialog-close"
+            type="button"
             onClick={close}
-            style={{ color: "#ffffff", fontSize: "20px" }}
+            aria-label="Close"
+            style={{
+              background: "rgba(255, 255, 255, 0.16)",
+              border: "none",
+              color: "#ffffff",
+              fontSize: "18px",
+              width: "32px",
+              height: "32px",
+              borderRadius: "50%",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              lineHeight: 1,
+            }}
           >
             ✕
           </button>
@@ -1793,25 +1811,49 @@ export function AdReceiptModal({
   close: () => void;
 }) {
   return (
-    <div className="dialog-overlay" onClick={close}>
+    <div className="order-modal-backdrop" onClick={close}>
       <div
         className="plan-checkout-container"
-        style={{ maxWidth: "660px" }}
+        style={{ maxWidth: "680px", width: "95vw", margin: "auto" }}
         onClick={(e) => e.stopPropagation()}
       >
         <div
           className="plan-checkout-header"
-          style={{ background: "linear-gradient(135deg, #173f27 0%, #0d2818 100%)" }}
+          style={{
+            background: "linear-gradient(135deg, #173f27 0%, #0d2818 100%)",
+            padding: "16px 22px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
         >
           <div>
-            <h3>
+            <h3 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#ffffff", display: "flex", alignItems: "center", gap: "8px" }}>
               <span>🧾</span> Ad Booking Confirmation &amp; Tax Receipt
             </h3>
-            <p style={{ margin: "2px 0 0", fontSize: "12px", opacity: 0.9 }}>
+            <p style={{ margin: "2px 0 0", fontSize: "12px", opacity: 0.9, color: "#e2ede6" }}>
               Official payment voucher &amp; scheduled display timings.
             </p>
           </div>
-          <button className="dialog-close" onClick={close} style={{ color: "#fff" }}>
+          <button
+            type="button"
+            onClick={close}
+            aria-label="Close"
+            style={{
+              background: "rgba(255, 255, 255, 0.16)",
+              border: "none",
+              color: "#ffffff",
+              fontSize: "18px",
+              width: "32px",
+              height: "32px",
+              borderRadius: "50%",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              lineHeight: 1,
+            }}
+          >
             ✕
           </button>
         </div>
