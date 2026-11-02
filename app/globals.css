@@ -56,9 +56,21 @@ button{cursor:pointer}
 .avatar{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#efc7aa;color:#7b5237;font-size:13px;font-weight:700;margin-right:9px}
 .profile-text{display:grid;gap:3px}.profile-text strong{font-size:10px}.profile-text small{font-size:9px;color:#929a93}.profile-menu{margin-left:auto;font-size:19px;color:#8d968f}
 .main-area{margin-left:252px;min-height:100vh}
-.topbar{height:60px;min-height:60px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.98);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);gap:14px}
+.topbar{height:60px;min-height:60px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.98);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);gap:14px;max-width:100%;box-sizing:border-box}
 .breadcrumb{font-size:11px;color:#879188}.breadcrumb span{margin:0 8px;color:#c6ccc5}.breadcrumb strong{font-weight:600;color:#34433a}
 .topbar-actions{display:flex;align-items:center;gap:10px;flex-wrap:nowrap;flex-shrink:0;margin-left:auto}
+@media (max-width: 1024px) {
+  .topbar {
+    padding: 0 12px;
+    gap: 8px;
+  }
+  .topbar-partner span {
+    display: none;
+  }
+  .breadcrumb {
+    display: none;
+  }
+}
 .location-chip{background:#f4f8f4;border:1px solid #d8e5d9;border-radius:7px;color:#2c4835;font-size:11px;font-weight:600;height:32px;padding:0 10px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;line-height:1}
 .location-pin{display:inline-flex;align-items:center;justify-content:center;line-height:1}
 .chevron{color:#869087;display:inline-flex;align-items:center}

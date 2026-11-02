@@ -66,6 +66,10 @@ function getInitialSampleBookings(): AdBookingRequest[] {
       paidAt: new Date(Date.now() - 3600000 * 4).toISOString(),
       createdAt: new Date(Date.now() - 3600000 * 5).toISOString(),
       notes: "Morning rush special campaign verified and active.",
+      viewsCount: 1420,
+      clicksCount: 86,
+      impressionsBySurface: { poster: 780, content: 390, video: 250 },
+      lastViewedAt: new Date(Date.now() - 60000 * 2).toISOString(),
     },
     {
       id: "AD-REQ-102",
@@ -100,6 +104,10 @@ function getInitialSampleBookings(): AdBookingRequest[] {
       paidAt: new Date(Date.now() - 3600000 * 2).toISOString(),
       createdAt: new Date(Date.now() - 3600000 * 3).toISOString(),
       notes: "Evening slot poster campaign active.",
+      viewsCount: 890,
+      clicksCount: 42,
+      impressionsBySurface: { poster: 890, content: 0, video: 0 },
+      lastViewedAt: new Date(Date.now() - 60000 * 8).toISOString(),
     },
     {
       id: "AD-REQ-103",
@@ -128,6 +136,10 @@ function getInitialSampleBookings(): AdBookingRequest[] {
       paidAt: new Date(Date.now() - 3600000 * 8).toISOString(),
       createdAt: new Date(Date.now() - 3600000 * 9).toISOString(),
       notes: "24/7 marquee ticker message running.",
+      viewsCount: 2150,
+      clicksCount: 110,
+      impressionsBySurface: { poster: 0, content: 2150, video: 0 },
+      lastViewedAt: new Date(Date.now() - 60000 * 1).toISOString(),
     },
   ];
 }
@@ -245,4 +257,23 @@ export async function markAdBookingPaid(
     invoiceNumber,
     paidAt: new Date().toISOString(),
   });
+}
+
+export async function recordAdImpression(
+  adBookingId: string,
+  surface: "poster" | "content" | "video"
+): Promise<{ success: boolean; viewsCount: number; booking: AdBookingRequest } | null> {
+  const bookings = await readAdBookings();
+  const booking = bookings.find((b) => b.id === adBookingId);
+  if (!booking) return null;
+
+  booking.viewsCount = (booking.viewsCount || 0) + 1;
+  if (!booking.impressionsBySurface) {
+    booking.impressionsBySurface = { poster: 0, content: 0, video: 0 };
+  }
+  booking.impressionsBySurface[surface] = (booking.impressionsBySurface[surface] || 0) + 1;
+  booking.lastViewedAt = new Date().toISOString();
+
+  await saveAdBookings(bookings);
+  return { success: true, viewsCount: booking.viewsCount, booking };
 }

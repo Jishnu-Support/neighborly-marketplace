@@ -247,10 +247,38 @@ export function AdBookingDialog({
   }
 
   return (
-    <div className="order-modal-backdrop" onClick={close}>
+    <div
+      className="order-modal-backdrop"
+      style={{
+        position: "fixed",
+        inset: 0,
+        backgroundColor: "rgba(14, 28, 18, 0.76)",
+        backdropFilter: "blur(6px)",
+        WebkitBackdropFilter: "blur(6px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 100000,
+        padding: "16px",
+        overflowY: "auto",
+      }}
+      onClick={close}
+    >
       <div
         className="plan-checkout-container"
-        style={{ maxWidth: "860px", width: "95vw", margin: "auto" }}
+        style={{
+          maxWidth: "860px",
+          width: "95vw",
+          margin: "auto",
+          position: "relative",
+          maxHeight: "92vh",
+          display: "flex",
+          flexDirection: "column",
+          background: "#ffffff",
+          borderRadius: "16px",
+          overflow: "hidden",
+          boxShadow: "0 24px 60px rgba(0, 0, 0, 0.35)",
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -1811,10 +1839,38 @@ export function AdReceiptModal({
   close: () => void;
 }) {
   return (
-    <div className="order-modal-backdrop" onClick={close}>
+    <div
+      className="order-modal-backdrop"
+      style={{
+        position: "fixed",
+        inset: 0,
+        backgroundColor: "rgba(14, 28, 18, 0.76)",
+        backdropFilter: "blur(6px)",
+        WebkitBackdropFilter: "blur(6px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 100000,
+        padding: "16px",
+        overflowY: "auto",
+      }}
+      onClick={close}
+    >
       <div
         className="plan-checkout-container"
-        style={{ maxWidth: "680px", width: "95vw", margin: "auto" }}
+        style={{
+          maxWidth: "680px",
+          width: "95vw",
+          margin: "auto",
+          position: "relative",
+          maxHeight: "92vh",
+          display: "flex",
+          flexDirection: "column",
+          background: "#ffffff",
+          borderRadius: "16px",
+          overflow: "hidden",
+          boxShadow: "0 24px 60px rgba(0, 0, 0, 0.35)",
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <div
@@ -2137,6 +2193,66 @@ export function AdCampaignsManager({
         </button>
       </div>
 
+      {/* Analytics Summary */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+          gap: "12px",
+        }}
+      >
+        <div
+          style={{
+            background: "#ffffff",
+            padding: "16px",
+            borderRadius: "10px",
+            border: "1px solid #d4e3d3",
+          }}
+        >
+          <span style={{ fontSize: "11px", color: "#617d68", fontWeight: 700 }}>
+            TOTAL AD VIEWS REACHED
+          </span>
+          <div style={{ fontSize: "22px", fontWeight: 800, color: "#163a23", marginTop: "4px" }}>
+            👁️ {businessBookings.reduce((sum, b) => sum + (b.viewsCount || 0), 0).toLocaleString("en-IN")}
+          </div>
+          <small style={{ color: "#546e5c" }}>Customers who saw your ads in Hosur</small>
+        </div>
+
+        <div
+          style={{
+            background: "#ffffff",
+            padding: "16px",
+            borderRadius: "10px",
+            border: "1px solid #d4e3d3",
+          }}
+        >
+          <span style={{ fontSize: "11px", color: "#617d68", fontWeight: 700 }}>
+            ACTIVE AD SLOTS
+          </span>
+          <div style={{ fontSize: "22px", fontWeight: 800, color: "#163a23", marginTop: "4px" }}>
+            🕒 {businessBookings.filter((b) => b.status === "Paid").length} Running
+          </div>
+          <small style={{ color: "#546e5c" }}>Displaying at designated hours</small>
+        </div>
+
+        <div
+          style={{
+            background: "#ffffff",
+            padding: "16px",
+            borderRadius: "10px",
+            border: "1px solid #d4e3d3",
+          }}
+        >
+          <span style={{ fontSize: "11px", color: "#617d68", fontWeight: 700 }}>
+            TOTAL CAMPAIGN SPEND
+          </span>
+          <div style={{ fontSize: "22px", fontWeight: 800, color: "#163a23", marginTop: "4px" }}>
+            ₹{businessBookings.filter((b) => b.status === "Paid").reduce((sum, b) => sum + b.totalAmount, 0).toLocaleString("en-IN")}
+          </div>
+          <small style={{ color: "#546e5c" }}>Includes 18% GST tax invoices</small>
+        </div>
+      </div>
+
       {/* SLOT TIMING SIMULATOR & TESTER */}
       <div
         style={{
@@ -2435,6 +2551,44 @@ export function AdCampaignsManager({
                           <strong>Dates:</strong> {b.startDate} to {b.endDate}
                         </span>
                       </div>
+
+                      {/* Views analytics for business */}
+                      <div
+                        style={{
+                          marginTop: "8px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <span
+                          style={{
+                            background: "#e8f5e9",
+                            color: "#166534",
+                            border: "1px solid #bbf7d0",
+                            borderRadius: "12px",
+                            padding: "2px 8px",
+                            fontSize: "11px",
+                            fontWeight: 700,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px",
+                          }}
+                        >
+                          👁️ {(b.viewsCount || 0).toLocaleString("en-IN")} Customer Views
+                        </span>
+                        {b.impressionsBySurface && (
+                          <span style={{ fontSize: "11px", color: "#52735d" }}>
+                            (Poster: {b.impressionsBySurface.poster || 0} • Ticker: {b.impressionsBySurface.content || 0} • Video: {b.impressionsBySurface.video || 0})
+                          </span>
+                        )}
+                        {b.lastViewedAt && (
+                          <span style={{ fontSize: "10px", color: "#789281" }}>
+                            • Last viewed: {new Date(b.lastViewedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -2574,6 +2728,23 @@ export function CompanyAdBookingsManager({
           </div>
           <small style={{ color: "#546e5c" }}>Awaiting payment or quote</small>
         </div>
+
+        <div
+          style={{
+            background: "#ffffff",
+            padding: "16px",
+            borderRadius: "10px",
+            border: "1px solid #d4e3d3",
+          }}
+        >
+          <span style={{ fontSize: "11px", color: "#617d68", fontWeight: 700 }}>
+            TOTAL CUSTOMER VIEWS
+          </span>
+          <div style={{ fontSize: "22px", fontWeight: 800, color: "#163a23", marginTop: "4px" }}>
+            👁️ {bookings.reduce((sum, b) => sum + (b.viewsCount || 0), 0).toLocaleString("en-IN")}
+          </div>
+          <small style={{ color: "#546e5c" }}>Real-time impressions across Hosur</small>
+        </div>
       </div>
 
       {/* Main Table Panel */}
@@ -2683,6 +2854,44 @@ export function CompanyAdBookingsManager({
                   <span>
                     <strong>Dates:</strong> {b.startDate} to {b.endDate}
                   </span>
+                </div>
+
+                {/* Super admin views and analytics */}
+                <div
+                  style={{
+                    marginTop: "6px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <span
+                    style={{
+                      background: "#e8f5e9",
+                      color: "#166534",
+                      border: "1px solid #bbf7d0",
+                      borderRadius: "12px",
+                      padding: "2px 8px",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                  >
+                    👁️ {(b.viewsCount || 0).toLocaleString("en-IN")} Views
+                  </span>
+                  {b.impressionsBySurface && (
+                    <span style={{ fontSize: "11px", color: "#546e5c" }}>
+                      (Poster: {b.impressionsBySurface.poster || 0} • Content: {b.impressionsBySurface.content || 0} • Video: {b.impressionsBySurface.video || 0})
+                    </span>
+                  )}
+                  {b.lastViewedAt && (
+                    <span style={{ fontSize: "10px", color: "#789281" }}>
+                      • Last active: {new Date(b.lastViewedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  )}
                 </div>
               </div>
 

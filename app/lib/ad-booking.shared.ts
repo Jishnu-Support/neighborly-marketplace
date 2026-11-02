@@ -169,6 +169,16 @@ export interface AdBookingRequest {
   paidAt?: string;
   createdAt: string;
   notes?: string;
+
+  // View / Impression Analytics
+  viewsCount?: number;
+  clicksCount?: number;
+  impressionsBySurface?: {
+    poster: number;
+    content: number;
+    video: number;
+  };
+  lastViewedAt?: string;
 }
 
 export function calculateAdPricing(
@@ -262,19 +272,26 @@ export function resolveScheduledAds(
     }
     if (b.poster?.imageUrl && (b.format === "poster" || b.format === "combo")) {
       extraImages.push({
+        id: b.id,
+        adBookingId: b.id,
+        businessName: b.businessName,
         label: b.poster.label || b.businessName,
         title: b.poster.title,
         image: b.poster.imageUrl,
         tone: b.poster.tone || "gold",
+        viewsCount: b.viewsCount || 0,
       });
     }
     if (b.video?.sourceUrl && (b.format === "video" || b.format === "combo")) {
       customVideoAd = {
+        adBookingId: b.id,
+        businessName: b.businessName,
         title: b.video.title || `${b.businessName} Spotlight`,
         description: b.video.description,
         sourceUrl: b.video.sourceUrl,
         posterUrl: b.video.posterUrl || "",
         callToAction: b.video.callToAction || "View business details",
+        viewsCount: b.viewsCount || 0,
       };
     }
   }

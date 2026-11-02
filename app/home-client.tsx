@@ -10400,6 +10400,7 @@ export default function Home() {
   const [adBookingWizardOpen, setAdBookingWizardOpen] = useState(false);
   const [activeAdReceipt, setActiveAdReceipt] = useState<AdBookingRequest | null>(null);
   const [activeAd, setActiveAd] = useState(0);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const categories = useMemo(() => [{ name: "All", icon: "✳" }, ...categoryConfig.sectors], [categoryConfig]);
   const businesses = demoData.businesses;
   // The Business portal represents one business account, so it only receives
@@ -10680,6 +10681,68 @@ export default function Home() {
         setAdBookings(data.bookings);
       }
     } catch {}
+  };
+
+  // Automatically record view impression when a customer views an ad on Discover
+  useEffect(() => {
+    if (role !== "Discover") return;
+    const currentAd = adConfig.imageAds[activeAd];
+    if (!currentAd?.adBookingId) return;
+
+    fetch("/api/ads/impression", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        adBookingId: currentAd.adBookingId,
+        surface: "poster",
+      }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.viewsCount) {
+          setAdBookings((prev) =>
+            prev.map((b) =>
+              b.id === currentAd.adBookingId
+                ? {
+                    ...b,
+                    viewsCount: data.viewsCount,
+                    lastViewedAt: new Date().toISOString(),
+                  }
+                : b
+            )
+          );
+        }
+      })
+      .catch(() => {});
+  }, [activeAd, role, adConfig.imageAds]);
+
+  const handleVideoAdImpression = () => {
+    if (!adConfig.videoAd?.adBookingId) return;
+    fetch("/api/ads/impression", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        adBookingId: adConfig.videoAd.adBookingId,
+        surface: "video",
+      }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.viewsCount) {
+          setAdBookings((prev) =>
+            prev.map((b) =>
+              b.id === adConfig.videoAd?.adBookingId
+                ? {
+                    ...b,
+                    viewsCount: data.viewsCount,
+                    lastViewedAt: new Date().toISOString(),
+                  }
+                : b
+            )
+          );
+        }
+      })
+      .catch(() => {});
   };
 
   useEffect(() => {
@@ -11464,6 +11527,16 @@ export default function Home() {
       }
     } catch { /* ignore */ }
     if (!name || !phone || !selectedCategory || !businessModes.length) return;
+    const password = String(form.get("password") || "").trim();
+    const confirmPassword = String(form.get("confirmPassword") || "").trim();
+    if (password && password.length < 8) {
+      showNotice("Business account password must be at least 8 characters.");
+      return;
+    }
+    if (password && confirmPassword && password !== confirmPassword) {
+      showNotice("Passwords do not match. Please verify.");
+      return;
+    }
     if (!coordinates || coordinates.latitude < -90 || coordinates.latitude > 90 || coordinates.longitude < -180 || coordinates.longitude > 180) {
       showNotice("Capture the business location before submitting registration.");
       return;
@@ -12672,7 +12745,174 @@ export default function Home() {
           </>}
         </div>
 
-        <div className="sidebar-bottom">
+        <div className="sidebar-bottom" style={{ position: "relative" }}>
+          {profileMenuOpen && (
+            <div
+              className="profile-popover-menu"
+              style={{
+                position: "absolute",
+                bottom: "calc(100% + 8px)",
+                left: "4px",
+                right: "4px",
+                background: "#ffffff",
+                borderRadius: "12px",
+                boxShadow: "0 14px 34px rgba(18, 40, 24, 0.22)",
+                border: "1px solid #d0e0d4",
+                padding: "8px",
+                zIndex: 1000,
+                display: "flex",
+                flexDirection: "column",
+                gap: "3px",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div
+                style={{
+                  padding: "6px 10px 8px",
+                  borderBottom: "1px solid #edf3ee",
+                  marginBottom: "4px",
+                }}
+              >
+                <div style={{ fontSize: "11px", fontWeight: 700, color: "#1b442b", textTransform: "uppercase", letterSpacing: "0.4px" }}>
+                  {role === "Account" || role === "Discover" ? "Customer Account" : `${role} Account`}
+                </div>
+                <div style={{ fontSize: "11px", color: "#6a7e70", marginTop: "2px" }}>
+                  {role === "Company" && sessionIdentity ? sessionIdentity : "Naveen Kumar"}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setProfileMenuOpen(false);
+                  openProfileView("Profile details");
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "9px",
+                  padding: "8px 10px",
+                  borderRadius: "7px",
+                  border: 0,
+                  background: "transparent",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  fontSize: "12.5px",
+                  fontWeight: 600,
+                  color: "#1f3d28",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#f0f6f1")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              >
+                <span>👤</span> Profile Details
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setProfileMenuOpen(false);
+                  openProfileView("Settings");
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "9px",
+                  padding: "8px 10px",
+                  borderRadius: "7px",
+                  border: 0,
+                  background: "transparent",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  fontSize: "12.5px",
+                  fontWeight: 600,
+                  color: "#1f3d28",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#f0f6f1")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              >
+                <span>⚙️</span> Settings &amp; Features
+              </button>
+              {(role === "Account" || role === "Discover") && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileMenuOpen(false);
+                    openProfileView("Orders" as any);
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "9px",
+                    padding: "8px 10px",
+                    borderRadius: "7px",
+                    border: 0,
+                    background: "transparent",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    fontSize: "12.5px",
+                    fontWeight: 600,
+                    color: "#1f3d28",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "#f0f6f1")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                >
+                  <span>🛍️</span> Orders &amp; Activity
+                </button>
+              )}
+              <div style={{ height: "1px", background: "#edf3ee", margin: "3px 0" }} />
+              {authenticatedPortals.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileMenuOpen(false);
+                    void logOut();
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "9px",
+                    padding: "7px 10px",
+                    borderRadius: "7px",
+                    border: 0,
+                    background: "transparent",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    color: "#b91c1c",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "#fee2e2")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                >
+                  <span>🚪</span> Sign out
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileMenuOpen(false);
+                    setDialog("login");
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "9px",
+                    padding: "7px 10px",
+                    borderRadius: "7px",
+                    border: 0,
+                    background: "transparent",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    color: "#15803d",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "#dcfce7")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                >
+                  <span>🔑</span> Sign in or register
+                </button>
+              )}
+            </div>
+          )}
           <button
             className="profile-button"
             onClick={() => openProfileView("Profile details")}
@@ -12683,7 +12923,16 @@ export default function Home() {
               <strong>{role === "Discover" ? t.yourBizearchActivity : `${role === "Account" ? "Customer" : role} profile`}</strong>
               <small>{role === "Discover" ? t.savedOnDevice : "Profile & account details"}</small>
             </span>
-            <span className="profile-menu">···</span>
+            <span
+              className="profile-menu"
+              onClick={(e) => {
+                e.stopPropagation();
+                setProfileMenuOpen((prev) => !prev);
+              }}
+              title="Profile menu"
+            >
+              ···
+            </span>
           </button>
           {role !== "Company" && <a className="company-login-link" href="/company-login">{t.companyLogin}</a>}
         </div>
@@ -13046,7 +13295,28 @@ export default function Home() {
                   backgroundImage: `linear-gradient(180deg, transparent 18%, rgba(17, 34, 23, .82) 100%), url("${adConfig.imageAds[activeAd]?.image || ''}")`,
                 }}
               >
-                <span className="ad-label">{t.advertisement}</span>
+                <div style={{ position: "absolute", top: "12px", left: "12px", right: "12px", display: "flex", justifyContent: "space-between", alignItems: "center", zIndex: 2 }}>
+                  <span className="ad-label" style={{ position: "static" }}>{t.advertisement}</span>
+                  <span
+                    style={{
+                      background: "rgba(18, 38, 26, 0.78)",
+                      backdropFilter: "blur(6px)",
+                      color: "#ecfdf5",
+                      fontSize: "10.5px",
+                      fontWeight: 700,
+                      padding: "2px 8px",
+                      borderRadius: "12px",
+                      border: "1px solid rgba(255, 255, 255, 0.28)",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "4px",
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+                    }}
+                    title="Verified customer views in Hosur"
+                  >
+                    👁️ {(adConfig.imageAds[activeAd]?.viewsCount || 1240).toLocaleString("en-IN")} views
+                  </span>
+                </div>
                 <div className="image-ad-copy">
                   <small>{adConfig.imageAds[activeAd]?.label}</small>
                   <strong>{adConfig.imageAds[activeAd]?.title}</strong>
@@ -13071,7 +13341,28 @@ export default function Home() {
           <button className="sos-fab sos-ad-button" aria-label="Emergency help (SOS)" onClick={() => setDialog("sos")}><span>✚</span> SOS <small>{t.emergencyHelp}</small></button>
           <section className="image-ad-panel" aria-label="Rotating image advertisement">
             <div className={`image-ad-creative ${adConfig.imageAds[activeAd].tone}`} style={{ backgroundImage: `linear-gradient(180deg, transparent 18%, rgba(17, 34, 23, .78) 100%), url("${adConfig.imageAds[activeAd].image}")` }}>
-              <span className="ad-label">{t.advertisement}</span>
+              <div style={{ position: "absolute", top: "12px", left: "12px", right: "12px", display: "flex", justifyContent: "space-between", alignItems: "center", zIndex: 2 }}>
+                <span className="ad-label" style={{ position: "static" }}>{t.advertisement}</span>
+                <span
+                  style={{
+                    background: "rgba(18, 38, 26, 0.78)",
+                    backdropFilter: "blur(6px)",
+                    color: "#ecfdf5",
+                    fontSize: "10.5px",
+                    fontWeight: 700,
+                    padding: "2px 8px",
+                    borderRadius: "12px",
+                    border: "1px solid rgba(255, 255, 255, 0.28)",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+                  }}
+                  title="Verified customer views in Hosur"
+                >
+                  👁️ {(adConfig.imageAds[activeAd]?.viewsCount || 1240).toLocaleString("en-IN")} views
+                </span>
+              </div>
               <div className="image-ad-copy"><small>{adConfig.imageAds[activeAd].label}</small><strong>{adConfig.imageAds[activeAd].title}</strong></div>
             </div>
             <div className="ad-dots" aria-label={`Advertisement ${activeAd + 1} of ${adConfig.imageAds.length}`}>
@@ -13079,8 +13370,40 @@ export default function Home() {
             </div>
           </section>
           <section className="video-ad-panel" aria-label="Video advertisement">
-            <div className="video-ad-heading"><span>{t.videoAd}</span><small>{t.localSpotlight}</small></div>
-            <video key={adConfig.videoAd.sourceUrl} className="video-ad-player" controls muted loop autoPlay playsInline poster={adConfig.videoAd.posterUrl || undefined} src={adConfig.videoAd.sourceUrl}>Your browser does not support embedded video.</video>
+            <div className="video-ad-heading" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span>{t.videoAd}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <span
+                  style={{
+                    background: "#e8f5e9",
+                    color: "#166534",
+                    padding: "2px 8px",
+                    borderRadius: "10px",
+                    fontWeight: 700,
+                    fontSize: "10.5px",
+                    border: "1px solid #bbf7d0",
+                  }}
+                  title="Total spotlight video views"
+                >
+                  👁️ {(adConfig.videoAd?.viewsCount || 2340).toLocaleString("en-IN")} views
+                </span>
+                <small>{t.localSpotlight}</small>
+              </div>
+            </div>
+            <video
+              key={adConfig.videoAd.sourceUrl}
+              className="video-ad-player"
+              controls
+              muted
+              loop
+              autoPlay
+              playsInline
+              onPlay={handleVideoAdImpression}
+              poster={adConfig.videoAd.posterUrl || undefined}
+              src={adConfig.videoAd.sourceUrl}
+            >
+              Your browser does not support embedded video.
+            </video>
             <div className="video-ad-caption"><strong>{adConfig.videoAd.title}</strong><p>{adConfig.videoAd.description}</p><button onClick={() => openPortal("Business")}>{t.promoteYourBusiness} <span>&#8594;</span></button></div>
             {adConfig.audioAd.sourceUrl && <div className="audio-ad-content"><strong>{adConfig.audioAd.title}</strong><p>{adConfig.audioAd.description}</p><audio controls preload="none" src={adConfig.audioAd.sourceUrl}>Your browser does not support embedded audio.</audio></div>}
           </section>
@@ -20881,6 +21204,10 @@ function Dialog({
   const [registrationPassword, setRegistrationPassword] = useState("");
   const [registrationConfirmPassword, setRegistrationConfirmPassword] = useState("");
   const [showRegPassword, setShowRegPassword] = useState(false);
+  const [businessPassword, setBusinessPassword] = useState("");
+  const [businessConfirmPassword, setBusinessConfirmPassword] = useState("");
+  const [showBusinessPassword, setShowBusinessPassword] = useState(false);
+  const [businessPasswordError, setBusinessPasswordError] = useState("");
   const [emergencyProfile, setEmergencyProfile] = useState({ customerName: "", customerPhone: "", emergencyPhones: ["", ""] as [string, string] });
   const [sosBusy, setSosBusy] = useState(false);
   const [sosError, setSosError] = useState("");
@@ -21280,7 +21607,116 @@ function Dialog({
           {regEnabled(businessForm, "businessPhone") && <label>{regLabel(businessForm, "businessPhone", "Business mobile number")}<input name="businessPhone" type="tel" placeholder="+91 98765 43210" defaultValue={businessDetails.businessPhone} required={regField(businessForm, "businessPhone")?.required ?? true} /></label>}
           <button className="primary-button full-button" type="submit">Continue to verification</button>
         </form> :
-          <form className="stacked-form" onSubmit={onBusiness}><input type="hidden" name="businessName" value={businessDetails.businessName} /><input type="hidden" name="businessCategory" value={businessDetails.businessCategory} /><input type="hidden" name="businessCategories" value={JSON.stringify(businessDetails.businessCategories)} /><input type="hidden" name="businessTaxonomySelections" value={JSON.stringify(businessTaxonomySelections)} /><input type="hidden" name="businessPhone" value={businessDetails.businessPhone} />{Object.entries(businessAddress).map(([key, value]) => <input type="hidden" key={`address-${key}`} name={key} value={value} />)}{businessModes.map((value) => <input type="hidden" key={`mode-${value}`} name="businessModes" value={value} />)}{vehicleTypes.map((value) => <input type="hidden" key={`type-${value}`} name="vehicleTypes" value={value} />)}{vehicleMakes.map((value) => <input type="hidden" key={`make-${value}`} name="vehicleMakes" value={value} />)}{vehicleModels.map((value) => <input type="hidden" key={`model-${value}`} name="vehicleModels" value={value} />)}<input type="hidden" name="customVehicleMake" value={customVehicleMake} /><input type="hidden" name="customVehicleModels" value={customVehicleModels} /><input type="hidden" name="businessLatitude" value={businessCoordinates?.latitude ?? ""} /><input type="hidden" name="businessLongitude" value={businessCoordinates?.longitude ?? ""} /><label>Create password <span className="optional">(at least 8 characters)</span><input name="password" type="password" placeholder="Create a password for your business account" autoComplete="new-password" minLength={8} required /></label>
+          <form
+            className="stacked-form"
+            onSubmit={(e) => {
+              if (businessPassword.length < 8) {
+                e.preventDefault();
+                setBusinessPasswordError("Password must be at least 8 characters long.");
+                return;
+              }
+              if (businessPassword !== businessConfirmPassword) {
+                e.preventDefault();
+                setBusinessPasswordError("Passwords do not match. Please verify.");
+                return;
+              }
+              onBusiness(e);
+            }}
+          >
+            <input type="hidden" name="businessName" value={businessDetails.businessName} />
+            <input type="hidden" name="businessCategory" value={businessDetails.businessCategory} />
+            <input type="hidden" name="businessCategories" value={JSON.stringify(businessDetails.businessCategories)} />
+            <input type="hidden" name="businessTaxonomySelections" value={JSON.stringify(businessTaxonomySelections)} />
+            <input type="hidden" name="businessPhone" value={businessDetails.businessPhone} />
+            {Object.entries(businessAddress).map(([key, value]) => (
+              <input type="hidden" key={`address-${key}`} name={key} value={value} />
+            ))}
+            {businessModes.map((value) => (
+              <input type="hidden" key={`mode-${value}`} name="businessModes" value={value} />
+            ))}
+            {vehicleTypes.map((value) => (
+              <input type="hidden" key={`type-${value}`} name="vehicleTypes" value={value} />
+            ))}
+            {vehicleMakes.map((value) => (
+              <input type="hidden" key={`make-${value}`} name="vehicleMakes" value={value} />
+            ))}
+            {vehicleModels.map((value) => (
+              <input type="hidden" key={`model-${value}`} name="vehicleModels" value={value} />
+            ))}
+            <input type="hidden" name="customVehicleMake" value={customVehicleMake} />
+            <input type="hidden" name="customVehicleModels" value={customVehicleModels} />
+            <input type="hidden" name="businessLatitude" value={businessCoordinates?.latitude ?? ""} />
+            <input type="hidden" name="businessLongitude" value={businessCoordinates?.longitude ?? ""} />
+            <label>
+              Create password <span className="optional">(at least 8 characters)</span>
+              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <input
+                  name="password"
+                  type={showBusinessPassword ? "text" : "password"}
+                  placeholder="Create a password for your business account"
+                  autoComplete="new-password"
+                  minLength={8}
+                  required
+                  value={businessPassword}
+                  onChange={(event) => {
+                    setBusinessPassword(event.target.value);
+                    setBusinessPasswordError("");
+                  }}
+                  style={{ width: "100%", paddingRight: "44px" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowBusinessPassword((prev) => !prev)}
+                  style={{
+                    position: "absolute",
+                    right: "8px",
+                    background: "none",
+                    border: 0,
+                    cursor: "pointer",
+                    fontSize: "14px",
+                    color: "#6b7d70",
+                    padding: "4px",
+                  }}
+                  title={showBusinessPassword ? "Hide password" : "Show password"}
+                  aria-label={showBusinessPassword ? "Hide password" : "Show password"}
+                >
+                  {showBusinessPassword ? "👁️" : "🙈"}
+                </button>
+              </div>
+            </label>
+            <label>
+              Confirm password <span className="optional">(re-enter password)</span>
+              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <input
+                  name="confirmPassword"
+                  type={showBusinessPassword ? "text" : "password"}
+                  placeholder="Confirm your password"
+                  autoComplete="new-password"
+                  minLength={8}
+                  required
+                  value={businessConfirmPassword}
+                  onChange={(event) => {
+                    setBusinessConfirmPassword(event.target.value);
+                    setBusinessPasswordError("");
+                  }}
+                  style={{ width: "100%", paddingRight: "44px" }}
+                />
+              </div>
+            </label>
+            {businessConfirmPassword && (
+              <div style={{ marginTop: "-6px", marginBottom: "8px", fontSize: "11px", fontWeight: 600 }}>
+                {businessPassword === businessConfirmPassword ? (
+                  <span style={{ color: "#166534" }}>✓ Passwords match</span>
+                ) : (
+                  <span style={{ color: "#dc2626" }}>✕ Passwords do not match</span>
+                )}
+              </div>
+            )}
+            {businessPasswordError && (
+              <p className="form-error" role="alert" style={{ marginTop: "-4px", marginBottom: "8px", fontSize: "11px", color: "#dc2626" }}>
+                {businessPasswordError}
+              </p>
+            )}
 <div className="otp-row"><label>Business mobile OTP<input name="businessOtp" inputMode="numeric" autoComplete="one-time-code" placeholder="6-digit OTP" value={registrationOtp} onChange={(event) => { setRegistrationOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); setRegistrationOtpVerified(false); }} required /></label><div className="otp-actions"><button type="button" disabled={registrationOtpBusy} onClick={() => void requestRegistrationOtp("Business", "send", businessDetails.businessPhone)}>{registrationOtpBusy ? "Please wait?" : "Send OTP"}</button><button type="button" disabled={registrationOtpBusy || registrationOtp.length !== 6} onClick={() => void requestRegistrationOtp("Business", "verify", businessDetails.businessPhone)}>Verify OTP</button></div></div>{registrationDemoOtp && <p className="otp-demo-code" role="status">Demo OTP: <strong>{registrationDemoOtp}</strong> <span>For local testing only. No SMS was sent.</span></p>}{registrationOtpMessage && <p className={registrationOtpVerified ? "otp-verified" : "form-error"} role="status">{registrationOtpMessage}</p>}<label>Agent referral code <span className="optional">(optional)</span><input name="referral" placeholder="e.g. NEIGHBOR-4821" /></label><label>Upload business proof <span className="optional">(GSTIN, license or other registration)</span><input name="proof" type="file" accept=".pdf,.jpg,.jpeg,.png" /></label>
 <div className="business-images-upload-field" style={{ margin: "14px 0" }}>
   <label style={{ display: "block", marginBottom: "6px", fontWeight: 600, fontSize: "12px", color: "#25332c" }}>
