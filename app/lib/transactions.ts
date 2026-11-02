@@ -225,19 +225,18 @@ export async function readPlatformTransactions(): Promise<PlatformTransaction[]>
   try {
     const raw = await readFile(transactionsFilePath, "utf8");
     const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) {
+    if (Array.isArray(parsed)) {
       return parsed as PlatformTransaction[];
     }
   } catch (err: unknown) {
     if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
-      console.warn("Could not read transactions store, falling back to seed:", err);
+      console.warn("Could not read transactions store:", err);
     }
   }
 
-  // If not yet saved or empty, initialize with rich sample records and persist
-  const initial = getInitialSampleTransactions();
-  await savePlatformTransactions(initial);
-  return initial;
+  // Clean initialization: start with empty transactions array
+  await savePlatformTransactions([]);
+  return [];
 }
 
 export async function savePlatformTransactions(transactions: PlatformTransaction[]): Promise<void> {

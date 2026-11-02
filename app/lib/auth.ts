@@ -62,10 +62,7 @@ async function readAdminRecords(): Promise<StoredAdmin[]> {
     return parsed as StoredAdmin[];
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-    const demoAdmin = await createStoredAdmin("Demo Admin", "manager@neighborly.demo", "Manager123!", "demo-admin");
-    const admins = [demoAdmin];
-    await writeAdminRecords(admins);
-    return admins;
+    return [];
   }
 }
 

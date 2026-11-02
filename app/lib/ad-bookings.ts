@@ -158,37 +158,11 @@ export async function readAdBookings(): Promise<AdBookingRequest[]> {
     if (Array.isArray(bookings)) {
       let backfilled = false;
       for (const b of bookings) {
-        if (!b.viewRecords || b.viewRecords.length === 0) {
-          const allowed: Array<"poster" | "content" | "video"> =
-            b.format === "combo"
-              ? ["poster", "content", "video"]
-              : b.format === "video"
-              ? ["video"]
-              : b.format === "content"
-              ? ["content"]
-              : ["poster"];
-          b.viewRecords = createSampleViewRecords(b.id, b.viewsCount || 20, allowed);
-          backfilled = true;
-        } else {
-          for (let i = 0; i < b.viewRecords.length; i++) {
-            const r = b.viewRecords[i];
-            if (!r.customerId) {
-              r.customerId = r.viewerPhone
-                ? `CUST-HSR-${r.viewerPhone.replace(/\D/g, "").slice(-5) || "001"}`
-                : `CUST-HSR-${Math.floor(10000 + ((i + 1) * 13579) % 89999)}`;
-              backfilled = true;
-            }
-            if (!r.viewedDate || !r.viewedTime) {
-              const d = new Date(r.viewedAt || Date.now());
-              r.viewedDate = d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-              r.viewedTime = d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true });
-              backfilled = true;
-            }
-          }
+        if (!b.viewRecords) {
+          b.viewRecords = [];
         }
-        if (!b.clickRecords || b.clickRecords.length === 0) {
-          b.clickRecords = createSampleClickRecords(b.id, b.clicksCount || 8);
-          backfilled = true;
+        if (!b.clickRecords) {
+          b.clickRecords = [];
         }
       }
       if (backfilled) {

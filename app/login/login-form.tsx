@@ -374,15 +374,7 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
         </button>
       )}
       {message && <p className={isSuccess ? "company-login-success" : "company-login-message"} role={isSuccess ? "status" : "alert"}>{message}</p>}
-      {!registering && (
-        <div className="demo-credentials">
-          <strong>Credentials</strong>
-          <span>Login: <code>{info.username}</code>{portal === "Account" ? " or your mobile" : ""}</span>
-          <span>Password: <code>{info.password}</code>{portal === "Account" ? " or your password" : ""}</span>
-        </div>
-      )}
       {portal === "Account" && !registering && <p className="portal-login-demo-note">After sign in, your browser will ask to use your location for nearby results. Location is optional; declining will not block sign in.</p>}
-      {!registering && <p className="portal-login-demo-note">Demo access only. Credentials are checked on the server and the session is stored in an HTTP-only cookie.</p>}
       <Link className="portal-login-back" href="/">← Back to Discover</Link>
       <nav className="login-portal-options" aria-label="Choose a portal">
         <span>Choose a portal</span>

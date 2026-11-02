@@ -3,11 +3,7 @@
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 
-const companyDemoCredentials = {
-  Admin: { username: "manager@neighborly.demo", password: "Manager123!" },
-  "Super Admin": { username: "superadmin@neighborly.demo", password: "SuperAdmin123!" },
-} as const;
-type CompanyAccessLevel = keyof typeof companyDemoCredentials;
+type CompanyAccessLevel = "Admin" | "Super Admin";
 
 export default function CompanyLoginForm() {
   const [accessLevel, setAccessLevel] = useState<CompanyAccessLevel>("Admin");
@@ -16,21 +12,27 @@ export default function CompanyLoginForm() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setBusy(true);
     setMessage("");
+    setBusy(true);
     const form = new FormData(event.currentTarget);
-    try {
-      const response = await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ role: "Company", accessLevel, identity: form.get("identity"), password: form.get("password") }) });
-      const result = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(result.error || "Could not sign in.");
-      window.location.assign("/?portal=Company");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not sign in. Please try again.");
-      setBusy(false);
-    }
-  }
+    const identity = String(form.get("identity") || "");
+    const password = String(form.get("password") || "");
 
-  const credentials = companyDemoCredentials[accessLevel];
+    const response = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role: "Company", accessLevel, identity, password }),
+    });
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({})) as { error?: string };
+      setMessage(data.error || "Could not sign in with these company credentials.");
+      setBusy(false);
+      return;
+    }
+
+    window.location.href = "/";
+  }
 
   return <main className="login-page company-login-page">
     <header className="login-page-header">
@@ -38,20 +40,23 @@ export default function CompanyLoginForm() {
         <img className="brand-mark" src="/bizearch-mark.svg" alt="" />
         <span>bizearch<span className="brand-period">.</span></span>
       </Link>
+      <div className="login-page-powered"><span>Powered by</span><img src="/jishnu-infotech-logo.png" alt="Jishnu Infotech" /></div>
     </header>
     <section className="portal-login-card">
-      <div className="eyebrow"><span /> PRIVATE COMPANY ACCESS</div>
-      <h1>Company sign in</h1>
-      <p className="portal-login-description">Sign in as an Admin or Super Admin. Admin accounts are created and managed by the platform's initial Super Admin.</p>
-      <form className="stacked-form" onSubmit={handleSubmit}>
-        <label>Account type<select value={accessLevel} onChange={(event) => setAccessLevel(event.target.value as CompanyAccessLevel)}><option>Admin</option><option>Super Admin</option></select></label>
+      <img className="login-brand-mark login-brand-mark-image" src="/bizearch-mark.svg" alt="" />
+      <span className="portal-login-pill">COMPANY PORTAL</span>
+      <h1>Company secure sign in</h1>
+      <p className="portal-login-description">Select your administrative role and sign in with your enterprise credentials.</p>
+      <div className="company-login-role-switch" role="tablist" aria-label="Company account type">
+        {(["Admin", "Super Admin"] as const).map((level) => <button key={level} type="button" role="tab" aria-selected={accessLevel === level} className={accessLevel === level ? "active" : ""} onClick={() => { setAccessLevel(level); setMessage(""); }}>{level}</button>)}
+      </div>
+      <form onSubmit={handleSubmit} className="portal-login-form">
         <label>Work email<input name="identity" type="email" autoComplete="username" placeholder="name@company.com" required /></label>
         <label>Password<input name="password" type="password" autoComplete="current-password" placeholder="Enter your password" required /></label>
         <button className="primary-button full-button" type="submit" disabled={busy}>{busy ? "Signing in" : "Sign in"} <span>&rarr;</span></button>
       </form>
       {message && <p className="company-login-message" role="alert">{message}</p>}
-      <div className="demo-credentials"><strong>{accessLevel} demo credentials</strong><span>Login: <code>{credentials.username}</code></span><span>Password: <code>{credentials.password}</code></span></div>
-      <p className="portal-login-demo-note">The initial Super Admin is seeded for this demo. Only that account can create or disable Admin accounts. Configure NEIGHBORLY_SUPER_ADMIN_EMAIL and NEIGHBORLY_SUPER_ADMIN_PASSWORD before deployment.</p>
+      <p className="portal-login-demo-note">Super Admin accounts manage and provision Admin accounts in the Company terminal.</p>
       <Link className="portal-login-back" href="/">&larr; Back to Bizearch</Link>
     </section>
   </main>;
