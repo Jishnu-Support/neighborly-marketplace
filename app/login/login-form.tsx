@@ -37,6 +37,9 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
   const [demoOtp, setDemoOtp] = useState("");
   const [otpVerified, setOtpVerified] = useState(false);
   const [otpBusy, setOtpBusy] = useState(false);
+  const [regPassword, setRegPassword] = useState("");
+  const [regConfirmPassword, setRegConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const info = portalInfo[portal];
 
   async function handleOtp(action: "send" | "verify", phone: string) {
@@ -67,8 +70,20 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
     if (registering) {
       const name = String(form.get("fullName") || "").trim();
       const phone = String(form.get("phone") || "").trim();
+      const password = String(form.get("password") || "").trim();
+      const confirmPassword = String(form.get("confirmPassword") || "").trim();
       if (!otpVerified) {
         setMessage("Verify your mobile number before submitting registration.");
+        setBusy(false);
+        return;
+      }
+      if (password.length < 6) {
+        setMessage("Password must be at least 6 characters long.");
+        setBusy(false);
+        return;
+      }
+      if (password !== confirmPassword) {
+        setMessage("Passwords do not match. Please ensure both passwords match.");
         setBusy(false);
         return;
       }
@@ -148,10 +163,176 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
       <h1>{registering ? "Join your neighborhood" : info.title}</h1>
       <p className="portal-login-description">{registering ? portal === "Agent" ? "Apply to help local businesses reach their neighbors." : "Submit a demo registration request to discover and connect with nearby businesses." : info.description}</p>
       <form className="stacked-form" onSubmit={handleSubmit}>
-        {registering ? <><label>Your name<input name="fullName" autoComplete="name" placeholder="e.g. Asha Rao" required /></label><label>Mobile number<input name="phone" type="tel" autoComplete="tel" placeholder="+91 98765 43210" minLength={8} maxLength={20} required onChange={() => { setOtpVerified(false); setDemoOtp(""); }} /></label><div className="otp-row"><label>One-time password (OTP)<input name="otp" inputMode="numeric" autoComplete="one-time-code" placeholder="6-digit OTP" value={otp} onChange={(event) => { setOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); setOtpVerified(false); }} required /></label><div className="otp-actions"><button type="button" disabled={otpBusy || busy} onClick={(event) => { const phone = String(new FormData(event.currentTarget.form || undefined).get("phone") || "").trim(); void handleOtp("send", phone); }}>{otpBusy ? "Please wait…" : "Send OTP"}</button><button type="button" disabled={otpBusy || busy || otp.length !== 6} onClick={(event) => { const phone = String(new FormData(event.currentTarget.form || undefined).get("phone") || "").trim(); void handleOtp("verify", phone); }}>Verify OTP</button></div></div>{demoOtp && <p className="otp-demo-code" role="status">Demo OTP: <strong>{demoOtp}</strong> <span>For local testing only. No SMS was sent.</span></p>}{otpVerified && <p className="otp-verified" role="status">Mobile number verified ✓</p>}{portal === "Account" ? <p className="portal-login-demo-note">On submission, your browser will ask for location access. If granted, precise coordinates are shown only to authorized Company Admins. You can deny access and continue.</p> : <p className="portal-login-demo-note">OTP verification is required before the demo Agent registration request can be submitted.</p>}</> : <><label>Email or mobile number<input name="identity" autoComplete="username" placeholder="you@example.com" required /></label><label>Password<input name="password" type="password" autoComplete="current-password" placeholder="Enter your password" required /></label></>}
+        {registering ? (
+          <>
+            <label>
+              Your name
+              <input name="fullName" autoComplete="name" placeholder="e.g. Asha Rao" required />
+            </label>
+            <label>
+              Mobile number
+              <input
+                name="phone"
+                type="tel"
+                autoComplete="tel"
+                placeholder="+91 98765 43210"
+                minLength={8}
+                maxLength={20}
+                required
+                onChange={() => {
+                  setOtpVerified(false);
+                  setDemoOtp("");
+                }}
+              />
+            </label>
+            <div className="otp-row">
+              <label>
+                One-time password (OTP)
+                <input
+                  name="otp"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  placeholder="6-digit OTP"
+                  value={otp}
+                  onChange={(event) => {
+                    setOtp(event.target.value.replace(/\D/g, "").slice(0, 6));
+                    setOtpVerified(false);
+                  }}
+                  required
+                />
+              </label>
+              <div className="otp-actions">
+                <button
+                  type="button"
+                  disabled={otpBusy || busy}
+                  onClick={(event) => {
+                    const phone = String(new FormData(event.currentTarget.form || undefined).get("phone") || "").trim();
+                    void handleOtp("send", phone);
+                  }}
+                >
+                  {otpBusy ? "Please wait…" : "Send OTP"}
+                </button>
+                <button
+                  type="button"
+                  disabled={otpBusy || busy || otp.length !== 6}
+                  onClick={(event) => {
+                    const phone = String(new FormData(event.currentTarget.form || undefined).get("phone") || "").trim();
+                    void handleOtp("verify", phone);
+                  }}
+                >
+                  Verify OTP
+                </button>
+              </div>
+            </div>
+            {demoOtp && (
+              <p className="otp-demo-code" role="status">
+                Demo OTP: <strong>{demoOtp}</strong> <span>For local testing only. No SMS was sent.</span>
+              </p>
+            )}
+            {otpVerified && <p className="otp-verified" role="status">Mobile number verified ✓</p>}
+
+            <label>
+              Password
+              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <input
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  placeholder="Create a password (min. 6 characters)"
+                  minLength={6}
+                  required
+                  value={regPassword}
+                  onChange={(event) => setRegPassword(event.target.value)}
+                  style={{ width: "100%", paddingRight: "44px" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  style={{
+                    position: "absolute",
+                    right: "8px",
+                    background: "none",
+                    border: 0,
+                    cursor: "pointer",
+                    fontSize: "14px",
+                    color: "#6b7d70",
+                    padding: "4px",
+                  }}
+                  title={showPassword ? "Hide password" : "Show password"}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? "👁️" : "🙈"}
+                </button>
+              </div>
+            </label>
+
+            <label>
+              Confirm password
+              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <input
+                  name="confirmPassword"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  placeholder="Confirm your password"
+                  minLength={6}
+                  required
+                  value={regConfirmPassword}
+                  onChange={(event) => setRegConfirmPassword(event.target.value)}
+                  style={{ width: "100%", paddingRight: "44px" }}
+                />
+              </div>
+            </label>
+            {regConfirmPassword && (
+              <div style={{ marginTop: "-6px", marginBottom: "4px", fontSize: "11px", fontWeight: 600 }}>
+                {regPassword === regConfirmPassword ? (
+                  <span style={{ color: "#166534" }}>✓ Passwords match</span>
+                ) : (
+                  <span style={{ color: "#dc2626" }}>✕ Passwords do not match</span>
+                )}
+              </div>
+            )}
+
+            {portal === "Account" ? (
+              <p className="portal-login-demo-note">
+                On submission, your browser will ask for location access. If granted, precise coordinates are shown only to authorized Company Admins. You can deny access and continue.
+              </p>
+            ) : (
+              <p className="portal-login-demo-note">
+                OTP verification is required before the demo Agent registration request can be submitted.
+              </p>
+            )}
+          </>
+        ) : (
+          <>
+            <label>
+              Email or mobile number
+              <input name="identity" autoComplete="username" placeholder="you@example.com" required />
+            </label>
+            <label>
+              Password
+              <input name="password" type="password" autoComplete="current-password" placeholder="Enter your password" required />
+            </label>
+          </>
+        )}
         <button className="primary-button full-button" type="submit" disabled={busy}>{busy ? (registering ? "Waiting for location permission…" : "Signing in…") : (registering ? "Submit registration request" : "Sign in")} <span>→</span></button>
       </form>
-      {(portal === "Account" || portal === "Agent") && <button className="outline-button full-button" type="button" onClick={() => { setRegistering((value) => !value); setMessage(""); setOtp(""); setDemoOtp(""); setOtpVerified(false); }}>{registering ? "Back to sign in" : portal === "Agent" ? "Apply as an agent" : "Create an account"}</button>}
+      {(portal === "Account" || portal === "Agent") && (
+        <button
+          className="outline-button full-button"
+          type="button"
+          onClick={() => {
+            setRegistering((value) => !value);
+            setMessage("");
+            setOtp("");
+            setDemoOtp("");
+            setOtpVerified(false);
+            setRegPassword("");
+            setRegConfirmPassword("");
+          }}
+        >
+          {registering ? "Back to sign in" : portal === "Agent" ? "Apply as an agent" : "Create an account"}
+        </button>
+      )}
       {message && <p className="company-login-message" role="alert">{message}</p>}
       {!registering && <div className="demo-credentials"><strong>Demo credentials</strong><span>Login: <code>{info.username}</code></span><span>Password: <code>{info.password}</code></span></div>}
       {portal === "Account" && !registering && <p className="portal-login-demo-note">After sign in, your browser will ask to use your location for nearby results. Location is optional; declining will not block sign in.</p>}

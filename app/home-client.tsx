@@ -20356,6 +20356,9 @@ function Dialog({
   const [registrationOtpVerified, setRegistrationOtpVerified] = useState(false);
   const [registrationOtpBusy, setRegistrationOtpBusy] = useState(false);
   const [registrationOtpMessage, setRegistrationOtpMessage] = useState("");
+  const [registrationPassword, setRegistrationPassword] = useState("");
+  const [registrationConfirmPassword, setRegistrationConfirmPassword] = useState("");
+  const [showRegPassword, setShowRegPassword] = useState(false);
   const [emergencyProfile, setEmergencyProfile] = useState({ customerName: "", customerPhone: "", emergencyPhones: ["", ""] as [string, string] });
   const [sosBusy, setSosBusy] = useState(false);
   const [sosError, setSosError] = useState("");
@@ -20540,6 +20543,18 @@ function Dialog({
     const form = new FormData(event.currentTarget);
     const name = String(form.get("fullName") || "").trim();
     const phone = String(form.get("phone") || "").trim();
+    const password = String(form.get("password") || "").trim();
+    const confirmPassword = String(form.get("confirmPassword") || "").trim();
+    if (regEnabled(customerForm, "password")) {
+      if (password.length < 6) {
+        setRegistrationOtpMessage("Password must be at least 6 characters.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        setRegistrationOtpMessage("Passwords do not match. Please verify.");
+        return;
+      }
+    }
     const emergencyPhoneOne = String(form.get("emergencyPhone1") || "").trim();
     const emergencyPhoneTwo = String(form.get("emergencyPhone2") || "").trim();
     const emergencyDigits = [emergencyPhoneOne, emergencyPhoneTwo].map((value) => value.replace(/\D/g, ""));
@@ -20585,7 +20600,68 @@ function Dialog({
           {(!isSignup || regEnabled(customerForm, "phone")) && <label>{regLabel(customerForm, "phone", "Mobile number")}<div className="phone-input"><span>🇮🇳 +91</span><input name="phone" type="tel" placeholder="98765 43210" minLength={8} required /></div></label>}
           {isSignup && regEnabled(customerForm, "emergencyPhone1") && regEnabled(customerForm, "emergencyPhone2") && <><label>{regLabel(customerForm, "emergencyPhone1", "Emergency contact 1 mobile")}<input name="emergencyPhone1" type="tel" placeholder="+91 98765 43210" minLength={8} maxLength={20} required={regField(customerForm, "emergencyPhone1")?.required ?? true} /></label><label>{regLabel(customerForm, "emergencyPhone2", "Emergency contact 2 mobile")}<input name="emergencyPhone2" type="tel" placeholder="+91 98765 43210" minLength={8} maxLength={20} required={regField(customerForm, "emergencyPhone2")?.required ?? true} /></label><p className="fine-print">These numbers stay on this device in this demo. When an SOS is sent, they are included in the Super Admin alert.</p></>}
           {!isSignup && <label>Password<input name="password" type="password" placeholder="Enter your password" required /></label>}
-          {isSignup && regEnabled(customerForm, "otp") && <><div className="otp-row"><label>{regLabel(customerForm, "otp", "One-time password (OTP)")}<input name="otp" inputMode="numeric" autoComplete="one-time-code" placeholder="6-digit OTP" value={registrationOtp} onChange={(event) => { setRegistrationOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); setRegistrationOtpVerified(false); }} required /></label><div className="otp-actions"><button type="button" disabled={registrationOtpBusy} onClick={(event) => { const phone = String(new FormData(event.currentTarget.form || undefined).get("phone") || "").trim(); void requestRegistrationOtp("Account", "send", phone); }}>{registrationOtpBusy ? "Please wait…" : "Send OTP"}</button><button type="button" disabled={registrationOtpBusy || registrationOtp.length !== 6} onClick={(event) => { const phone = String(new FormData(event.currentTarget.form || undefined).get("phone") || "").trim(); void requestRegistrationOtp("Account", "verify", phone); }}>Verify OTP</button></div></div>{registrationDemoOtp && <p className="otp-demo-code" role="status">Demo OTP: <strong>{registrationDemoOtp}</strong> <span>For local testing only. No SMS was sent.</span></p>}{registrationOtpMessage && <p className={registrationOtpVerified ? "otp-verified" : "form-error"} role="status">{registrationOtpMessage}</p>}</>}{isSignup && regEnabled(customerForm, "password") && <label>{regLabel(customerForm, "password", "Create passcode")}<input name="password" type="password" placeholder="At least 8 characters" minLength={8} required /></label>}
+          {isSignup && regEnabled(customerForm, "otp") && <><div className="otp-row"><label>{regLabel(customerForm, "otp", "One-time password (OTP)")}<input name="otp" inputMode="numeric" autoComplete="one-time-code" placeholder="6-digit OTP" value={registrationOtp} onChange={(event) => { setRegistrationOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); setRegistrationOtpVerified(false); }} required /></label><div className="otp-actions"><button type="button" disabled={registrationOtpBusy} onClick={(event) => { const phone = String(new FormData(event.currentTarget.form || undefined).get("phone") || "").trim(); void requestRegistrationOtp("Account", "send", phone); }}>{registrationOtpBusy ? "Please wait…" : "Send OTP"}</button><button type="button" disabled={registrationOtpBusy || registrationOtp.length !== 6} onClick={(event) => { const phone = String(new FormData(event.currentTarget.form || undefined).get("phone") || "").trim(); void requestRegistrationOtp("Account", "verify", phone); }}>Verify OTP</button></div></div>{registrationDemoOtp && <p className="otp-demo-code" role="status">Demo OTP: <strong>{registrationDemoOtp}</strong> <span>For local testing only. No SMS was sent.</span></p>}{registrationOtpMessage && <p className={registrationOtpVerified ? "otp-verified" : "form-error"} role="status">{registrationOtpMessage}</p>}</>}          {isSignup && regEnabled(customerForm, "password") && (
+            <>
+              <label>
+                {regLabel(customerForm, "password", "Password")}
+                <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                  <input
+                    name="password"
+                    type={showRegPassword ? "text" : "password"}
+                    placeholder="Create a password (min. 6 characters)"
+                    minLength={6}
+                    required
+                    value={registrationPassword}
+                    onChange={(e) => setRegistrationPassword(e.target.value)}
+                    style={{ width: "100%", paddingRight: "44px" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowRegPassword((prev) => !prev)}
+                    style={{
+                      position: "absolute",
+                      right: "8px",
+                      background: "none",
+                      border: 0,
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      color: "#6b7d70",
+                      padding: "4px",
+                    }}
+                    title={showRegPassword ? "Hide password" : "Show password"}
+                    aria-label={showRegPassword ? "Hide password" : "Show password"}
+                  >
+                    {showRegPassword ? "👁️" : "🙈"}
+                  </button>
+                </div>
+              </label>
+
+              <label>
+                Confirm password
+                <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                  <input
+                    name="confirmPassword"
+                    type={showRegPassword ? "text" : "password"}
+                    placeholder="Confirm your password"
+                    minLength={6}
+                    required
+                    value={registrationConfirmPassword}
+                    onChange={(e) => setRegistrationConfirmPassword(e.target.value)}
+                    style={{ width: "100%", paddingRight: "44px" }}
+                  />
+                </div>
+              </label>
+              {registrationConfirmPassword && (
+                <div style={{ marginTop: "-6px", marginBottom: "4px", fontSize: "11px", fontWeight: 600 }}>
+                  {registrationPassword === registrationConfirmPassword ? (
+                    <span style={{ color: "#166534" }}>✓ Passwords match</span>
+                  ) : (
+                    <span style={{ color: "#dc2626" }}>✕ Passwords do not match</span>
+                  )}
+                </div>
+              )}
+            </>
+          )}
           {isSignup && regEnabled(customerForm, "acceptPolicies") && <label className="consent-check terms-consent"><input name="acceptPolicies" type="checkbox" required={regField(customerForm, "acceptPolicies")?.required ?? true} /><span>{regLabel(customerForm, "acceptPolicies", "I accept the Bizearch Terms and Conditions and Privacy Policy")}</span></label>}
           {!isSignup && <label className="consent-check"><input type="checkbox" checked={locationConsent} onChange={(event) => setLocationConsent(event.target.checked)} /><span>In production, share my approximate location and sign-in time with Bizearch’s authorized company administrator to improve local discovery. The demo does not collect or transmit location data.</span></label>}
           <button className="primary-button full-button" type="submit">{isSignup ? (registrationBusy ? "Recording request..." : "Submit registration request") : "Sign in"} <span>→</span></button>
