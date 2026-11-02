@@ -12934,6 +12934,36 @@ export default function Home() {
           <div className="ad-ticker-track">{adConfig.tickerMessages.map((message, index) => <Fragment key={`${index}-${message}`}><span>{message}</span><i>&#10038;</i></Fragment>)}</div>
         </div>}
 
+        {role === "Discover" && (
+          <div className="mobile-poster-ad-container" aria-label="Poster advertisement">
+            <section className="image-ad-panel" aria-label="Rotating image advertisement">
+              <div
+                className={`image-ad-creative ${adConfig.imageAds[activeAd]?.tone || "gold"}`}
+                style={{
+                  backgroundImage: `linear-gradient(180deg, transparent 18%, rgba(17, 34, 23, .82) 100%), url("${adConfig.imageAds[activeAd]?.image || ''}")`,
+                }}
+              >
+                <span className="ad-label">{t.advertisement}</span>
+                <div className="image-ad-copy">
+                  <small>{adConfig.imageAds[activeAd]?.label}</small>
+                  <strong>{adConfig.imageAds[activeAd]?.title}</strong>
+                </div>
+              </div>
+              <div className="ad-dots" aria-label={`Advertisement ${activeAd + 1} of ${adConfig.imageAds.length}`}>
+                {adConfig.imageAds.map((ad, index) => (
+                  <button
+                    key={`mobile-poster-${ad.tone}-${index}`}
+                    type="button"
+                    className={index === activeAd ? "active" : ""}
+                    onClick={() => setActiveAd(index)}
+                    aria-label={`Show image advertisement ${index + 1}`}
+                  />
+                ))}
+              </div>
+            </section>
+          </div>
+        )}
+
         <aside className="ad-rail" aria-label="Advertisements">
           <button className="sos-fab sos-ad-button" aria-label="Emergency help (SOS)" onClick={() => setDialog("sos")}><span>✚</span> SOS <small>{t.emergencyHelp}</small></button>
           <section className="image-ad-panel" aria-label="Rotating image advertisement">
@@ -13509,16 +13539,6 @@ export default function Home() {
               </>
             )}
 
-            <section className="image-ad-panel mobile-image-ad" aria-label="Rotating image advertisement">
-              <button className="sos-fab sos-ad-button" aria-label="Emergency help (SOS)" onClick={() => setDialog("sos")}><span>✚</span> SOS <small>{t.emergencyHelp}</small></button>
-              <div className={`image-ad-creative ${adConfig.imageAds[activeAd].tone}`} style={{ backgroundImage: `linear-gradient(180deg, transparent 18%, rgba(17, 34, 23, .78) 100%), url("${adConfig.imageAds[activeAd].image}")` }}>
-                <span className="ad-label">{t.advertisement}</span>
-                <div className="image-ad-copy"><small>{adConfig.imageAds[activeAd].label}</small><strong>{adConfig.imageAds[activeAd].title}</strong></div>
-              </div>
-              <div className="ad-dots" aria-label={`Advertisement ${activeAd + 1} of ${adConfig.imageAds.length}`}>
-                {adConfig.imageAds.map((ad, index) => <button key={`mobile-${ad.tone}-${index}`} className={index === activeAd ? "active" : ""} onClick={() => setActiveAd(index)} aria-label={`Show image advertisement ${index + 1}`} />)}
-              </div>
-            </section>
 
             {query.trim() && (
               <div className="search-engine-toolbar">
