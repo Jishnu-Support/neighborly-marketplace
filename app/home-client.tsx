@@ -13546,30 +13546,39 @@ export default function Home() {
               ) : (
                 (() => {
                   const currentImageAd = adConfig.imageAds[activeAd] || adConfig.imageAds[0];
+                  const labelRaw = currentImageAd?.label || "";
+                  const labelParts = labelRaw.split("•").map((s) => s.trim()).filter(Boolean);
+                  const storeName = labelParts[0] || (currentImageAd as any)?.businessName || labelRaw || "Featured Store";
+                  const localityPart = currentImageAd?.locality || labelParts[1] || "";
+                  const distanceStr = currentImageAd?.distanceKm !== undefined ? `${currentImageAd.distanceKm} km` : "";
                   return (
                     <>
                       <div
                         className={`image-ad-creative ${currentImageAd?.tone || "gold"}`}
                         style={{
-                          backgroundImage: `linear-gradient(180deg, transparent 18%, rgba(17, 34, 23, .82) 100%), url("${currentImageAd?.image || ""}")`,
+                          backgroundImage: `linear-gradient(180deg, rgba(15, 23, 42, 0.45) 0%, transparent 40%, rgba(15, 23, 42, 0.4) 100%), url("${currentImageAd?.image || ""}")`,
+                          height: "190px",
+                          position: "relative",
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "space-between",
+                          padding: "12px",
+                          borderRadius: "12px 12px 0 0",
                         }}
                       >
+                        {/* ONLY REQUIRED OVERLAPS ON TOP OF POSTER */}
                         <div
                           style={{
-                            position: "absolute",
-                            top: "12px",
-                            left: "12px",
-                            right: "12px",
                             display: "flex",
                             justifyContent: "space-between",
                             alignItems: "center",
                             zIndex: 2,
-                            flexWrap: "wrap",
+                            width: "100%",
                             gap: "6px",
                           }}
                         >
                           <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
-                            <span className="ad-label" style={{ position: "static" }}>
+                            <span className="ad-label" style={{ position: "static", margin: 0 }}>
                               {t.advertisement}
                             </span>
                             {currentImageAd.matchedReason && (
@@ -13577,7 +13586,7 @@ export default function Home() {
                                 style={{
                                   background: "#0284c7",
                                   color: "#ffffff",
-                                  fontSize: "9.5px",
+                                  fontSize: "9px",
                                   fontWeight: 800,
                                   padding: "2px 7px",
                                   borderRadius: "10px",
@@ -13588,26 +13597,10 @@ export default function Home() {
                                 🎯 {currentImageAd.matchedReason}
                               </span>
                             )}
-                            {!currentImageAd.matchedReason && adConfig.targetingSummary?.isLocationTargeted && (
-                              <span
-                                style={{
-                                  background: "#15803d",
-                                  color: "#ffffff",
-                                  fontSize: "9.5px",
-                                  fontWeight: 800,
-                                  padding: "2px 7px",
-                                  borderRadius: "10px",
-                                  boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
-                                }}
-                                title="Surrounding area ad"
-                              >
-                                📍 {currentImageAd.locality || adConfig.targetingSummary.locationLabel}
-                              </span>
-                            )}
                           </div>
                           <span
                             style={{
-                              background: "rgba(18, 38, 26, 0.78)",
+                              background: "rgba(15, 23, 42, 0.72)",
                               backdropFilter: "blur(6px)",
                               color: "#ecfdf5",
                               fontSize: "10.5px",
@@ -13618,109 +13611,138 @@ export default function Home() {
                               display: "inline-flex",
                               alignItems: "center",
                               gap: "4px",
-                              boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+                              boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
                             }}
                             title="Verified customer views in Hosur"
                           >
                             👁️ {(currentImageAd?.viewsCount || 1240).toLocaleString("en-IN")} views
                           </span>
                         </div>
-                        <div className="image-ad-copy">
-                          <small>
-                            {currentImageAd?.label}
-                            {currentImageAd?.locality ? ` • 📍 ${currentImageAd.locality}` : ""}
-                            {currentImageAd?.distanceKm !== undefined ? ` (${currentImageAd.distanceKm} km)` : ""}
-                          </small>
-                          <strong>{currentImageAd?.title}</strong>
+
+                        {/* Minimal bottom-left tag on image */}
+                        {localityPart && (
                           <div
                             style={{
-                              display: "flex",
-                              gap: "6px",
-                              marginTop: "8px",
-                              flexWrap: "wrap",
-                              zIndex: 3,
-                              position: "relative",
+                              alignSelf: "flex-start",
+                              background: "rgba(15, 23, 42, 0.7)",
+                              backdropFilter: "blur(6px)",
+                              color: "#ffffff",
+                              fontSize: "9.5px",
+                              fontWeight: 600,
+                              padding: "2px 8px",
+                              borderRadius: "6px",
+                              border: "1px solid rgba(255, 255, 255, 0.2)",
+                              zIndex: 2,
                             }}
                           >
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleAdAction(currentImageAd, "view_store");
-                              }}
-                              style={{
-                                flex: "1 1 auto",
-                                background: "#15803d",
-                                color: "#ffffff",
-                                border: "none",
-                                padding: "6px 10px",
-                                borderRadius: "6px",
-                                fontSize: "11px",
-                                fontWeight: 700,
-                                cursor: "pointer",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                gap: "4px",
-                                boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
-                              }}
-                            >
-                              <span>🛍️</span> View Store
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleAdAction(currentImageAd, "whatsapp");
-                              }}
-                              style={{
-                                background: "#25D366",
-                                color: "#ffffff",
-                                border: "none",
-                                padding: "6px 9px",
-                                borderRadius: "6px",
-                                fontSize: "11px",
-                                fontWeight: 700,
-                                cursor: "pointer",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                gap: "4px",
-                                boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
-                              }}
-                              title="Chat with business on WhatsApp"
-                            >
-                              <span>💬</span> WhatsApp
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleAdAction(currentImageAd, "call");
-                              }}
-                              style={{
-                                background: "rgba(255, 255, 255, 0.95)",
-                                color: "#166534",
-                                border: "1px solid #bbf7d0",
-                                padding: "6px 9px",
-                                borderRadius: "6px",
-                                fontSize: "11px",
-                                fontWeight: 700,
-                                cursor: "pointer",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                gap: "4px",
-                                boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
-                              }}
-                              title="Call store directly"
-                            >
-                              <span>📞</span> Call
-                            </button>
+                            📍 {localityPart}
                           </div>
+                        )}
+                      </div>
+
+                      {/* ALL REMAINING DETAILS BELOW THE IMAGE */}
+                      <div className="image-ad-body" style={{ padding: "14px 14px 10px", background: "#ffffff" }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", marginBottom: "4px" }}>
+                          <span style={{ fontSize: "11px", fontWeight: 700, color: "#166534", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                            {storeName}
+                          </span>
+                          {distanceStr && (
+                            <span style={{ fontSize: "10.5px", color: "#64748b", fontWeight: 600, background: "#f1f5f9", padding: "1px 6px", borderRadius: "4px" }}>
+                              {distanceStr}
+                            </span>
+                          )}
+                        </div>
+
+                        <h4 style={{ fontSize: "14.5px", fontWeight: 800, color: "#0f172a", lineHeight: 1.35, margin: "0 0 10px", letterSpacing: "-0.3px" }}>
+                          {currentImageAd?.title}
+                        </h4>
+
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "1.2fr 1fr 0.8fr",
+                            gap: "6px",
+                            zIndex: 3,
+                            position: "relative",
+                          }}
+                        >
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAdAction(currentImageAd, "view_store");
+                            }}
+                            style={{
+                              background: "#15803d",
+                              color: "#ffffff",
+                              border: "none",
+                              padding: "7px 10px",
+                              borderRadius: "8px",
+                              fontSize: "11px",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: "4px",
+                              boxShadow: "0 2px 5px rgba(22, 101, 52, 0.25)",
+                            }}
+                          >
+                            <span>🛍️</span> View Store
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAdAction(currentImageAd, "whatsapp");
+                            }}
+                            style={{
+                              background: "#25D366",
+                              color: "#ffffff",
+                              border: "none",
+                              padding: "7px 8px",
+                              borderRadius: "8px",
+                              fontSize: "11px",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: "4px",
+                              boxShadow: "0 2px 5px rgba(37, 211, 102, 0.25)",
+                            }}
+                            title="Chat with business on WhatsApp"
+                          >
+                            <span>💬</span> WhatsApp
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAdAction(currentImageAd, "call");
+                            }}
+                            style={{
+                              background: "#f8fafc",
+                              color: "#0f172a",
+                              border: "1px solid #cbd5e1",
+                              padding: "7px 8px",
+                              borderRadius: "8px",
+                              fontSize: "11px",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: "4px",
+                            }}
+                            title="Call store directly"
+                          >
+                            <span>📞</span> Call
+                          </button>
                         </div>
                       </div>
-                      <div className="ad-dots" aria-label={`Advertisement ${activeAd + 1} of ${adConfig.imageAds.length}`}>
+
+                      <div className="ad-dots" aria-label={`Advertisement ${activeAd + 1} of ${adConfig.imageAds.length}`} style={{ padding: "6px 0 10px", background: "#ffffff" }}>
                         {adConfig.imageAds.map((ad, index) => (
                           <button
                             key={`mobile-poster-${ad.tone}-${index}`}
@@ -13792,31 +13814,45 @@ export default function Home() {
             ) : (
               (() => {
                 const currentImageAd = adConfig.imageAds[activeAd] || adConfig.imageAds[0];
+                const labelRaw = currentImageAd?.label || "";
+                const labelParts = labelRaw.split("•").map((s) => s.trim()).filter(Boolean);
+                const storeName = labelParts[0] || (currentImageAd as any)?.businessName || labelRaw || "Featured Store";
+                const localityPart = currentImageAd?.locality || labelParts[1] || "";
+                const distanceStr = currentImageAd?.distanceKm !== undefined ? `${currentImageAd.distanceKm} km` : "";
                 return (
                   <>
-                    <div className={`image-ad-creative ${currentImageAd.tone || "gold"}`} style={{ backgroundImage: `linear-gradient(180deg, transparent 18%, rgba(17, 34, 23, .78) 100%), url("${currentImageAd.image || ""}")` }}>
+                    <div
+                      className={`image-ad-creative ${currentImageAd.tone || "gold"}`}
+                      style={{
+                        backgroundImage: `linear-gradient(180deg, rgba(15, 23, 42, 0.45) 0%, transparent 40%, rgba(15, 23, 42, 0.4) 100%), url("${currentImageAd.image || ""}")`,
+                        height: "200px",
+                        position: "relative",
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-between",
+                        padding: "12px",
+                        borderRadius: "12px 12px 0 0",
+                      }}
+                    >
+                      {/* ONLY REQUIRED OVERLAPS ON TOP OF POSTER */}
                       <div
                         style={{
-                          position: "absolute",
-                          top: "12px",
-                          left: "12px",
-                          right: "12px",
                           display: "flex",
                           justifyContent: "space-between",
                           alignItems: "center",
                           zIndex: 2,
-                          flexWrap: "wrap",
+                          width: "100%",
                           gap: "6px",
                         }}
                       >
                         <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
-                          <span className="ad-label" style={{ position: "static" }}>{t.advertisement}</span>
+                          <span className="ad-label" style={{ position: "static", margin: 0 }}>{t.advertisement}</span>
                           {currentImageAd.matchedReason && (
                             <span
                               style={{
                                 background: "#0284c7",
                                 color: "#ffffff",
-                                fontSize: "9.5px",
+                                fontSize: "9px",
                                 fontWeight: 800,
                                 padding: "2px 7px",
                                 borderRadius: "10px",
@@ -13827,26 +13863,10 @@ export default function Home() {
                               🎯 {currentImageAd.matchedReason}
                             </span>
                           )}
-                          {!currentImageAd.matchedReason && adConfig.targetingSummary?.isLocationTargeted && (
-                            <span
-                              style={{
-                                background: "#15803d",
-                                color: "#ffffff",
-                                fontSize: "9.5px",
-                                fontWeight: 800,
-                                padding: "2px 7px",
-                                borderRadius: "10px",
-                                boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
-                              }}
-                              title="Surrounding area ad"
-                            >
-                              📍 {currentImageAd.locality || adConfig.targetingSummary.locationLabel}
-                            </span>
-                          )}
                         </div>
                         <span
                           style={{
-                            background: "rgba(18, 38, 26, 0.78)",
+                            background: "rgba(15, 23, 42, 0.72)",
                             backdropFilter: "blur(6px)",
                             color: "#ecfdf5",
                             fontSize: "10.5px",
@@ -13857,109 +13877,138 @@ export default function Home() {
                             display: "inline-flex",
                             alignItems: "center",
                             gap: "4px",
-                            boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+                            boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
                           }}
                           title="Verified customer views in Hosur"
                         >
                           👁️ {(currentImageAd.viewsCount || 1240).toLocaleString("en-IN")} views
                         </span>
                       </div>
-                      <div className="image-ad-copy">
-                        <small>
-                          {currentImageAd.label}
-                          {currentImageAd.locality ? ` • 📍 ${currentImageAd.locality}` : ""}
-                          {currentImageAd.distanceKm !== undefined ? ` (${currentImageAd.distanceKm} km)` : ""}
-                        </small>
-                        <strong>{currentImageAd.title}</strong>
+
+                      {/* Minimal bottom-left tag on image */}
+                      {localityPart && (
                         <div
                           style={{
-                            display: "flex",
-                            gap: "6px",
-                            marginTop: "8px",
-                            flexWrap: "wrap",
-                            zIndex: 3,
-                            position: "relative",
+                            alignSelf: "flex-start",
+                            background: "rgba(15, 23, 42, 0.7)",
+                            backdropFilter: "blur(6px)",
+                            color: "#ffffff",
+                            fontSize: "9.5px",
+                            fontWeight: 600,
+                            padding: "2px 8px",
+                            borderRadius: "6px",
+                            border: "1px solid rgba(255, 255, 255, 0.2)",
+                            zIndex: 2,
                           }}
                         >
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAdAction(currentImageAd, "view_store");
-                            }}
-                            style={{
-                              flex: "1 1 auto",
-                              background: "#15803d",
-                              color: "#ffffff",
-                              border: "none",
-                              padding: "6px 10px",
-                              borderRadius: "6px",
-                              fontSize: "11px",
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              gap: "4px",
-                              boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
-                            }}
-                          >
-                            <span>🛍️</span> View Store
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAdAction(currentImageAd, "whatsapp");
-                            }}
-                            style={{
-                              background: "#25D366",
-                              color: "#ffffff",
-                              border: "none",
-                              padding: "6px 9px",
-                              borderRadius: "6px",
-                              fontSize: "11px",
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              gap: "4px",
-                              boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
-                            }}
-                            title="Chat with business on WhatsApp"
-                          >
-                            <span>💬</span> WhatsApp
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAdAction(currentImageAd, "call");
-                            }}
-                            style={{
-                              background: "rgba(255, 255, 255, 0.95)",
-                              color: "#166534",
-                              border: "1px solid #bbf7d0",
-                              padding: "6px 9px",
-                              borderRadius: "6px",
-                              fontSize: "11px",
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              gap: "4px",
-                              boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
-                            }}
-                            title="Call store directly"
-                          >
-                            <span>📞</span> Call
-                          </button>
+                          📍 {localityPart}
                         </div>
+                      )}
+                    </div>
+
+                    {/* ALL REMAINING DETAILS BELOW THE IMAGE */}
+                    <div className="image-ad-body" style={{ padding: "14px 14px 10px", background: "#ffffff" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", marginBottom: "4px" }}>
+                        <span style={{ fontSize: "11px", fontWeight: 700, color: "#166534", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                          {storeName}
+                        </span>
+                        {distanceStr && (
+                          <span style={{ fontSize: "10.5px", color: "#64748b", fontWeight: 600, background: "#f1f5f9", padding: "1px 6px", borderRadius: "4px" }}>
+                            {distanceStr}
+                          </span>
+                        )}
+                      </div>
+
+                      <h4 style={{ fontSize: "14.5px", fontWeight: 800, color: "#0f172a", lineHeight: 1.35, margin: "0 0 10px", letterSpacing: "-0.3px" }}>
+                        {currentImageAd.title}
+                      </h4>
+
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "1.2fr 1fr 0.8fr",
+                          gap: "6px",
+                          zIndex: 3,
+                          position: "relative",
+                        }}
+                      >
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAdAction(currentImageAd, "view_store");
+                          }}
+                          style={{
+                            background: "#15803d",
+                            color: "#ffffff",
+                            border: "none",
+                            padding: "7px 10px",
+                            borderRadius: "8px",
+                            fontSize: "11px",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "4px",
+                            boxShadow: "0 2px 5px rgba(22, 101, 52, 0.25)",
+                          }}
+                        >
+                          <span>🛍️</span> View Store
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAdAction(currentImageAd, "whatsapp");
+                          }}
+                          style={{
+                            background: "#25D366",
+                            color: "#ffffff",
+                            border: "none",
+                            padding: "7px 8px",
+                            borderRadius: "8px",
+                            fontSize: "11px",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "4px",
+                            boxShadow: "0 2px 5px rgba(37, 211, 102, 0.25)",
+                          }}
+                          title="Chat with business on WhatsApp"
+                        >
+                          <span>💬</span> WhatsApp
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAdAction(currentImageAd, "call");
+                          }}
+                          style={{
+                            background: "#f8fafc",
+                            color: "#0f172a",
+                            border: "1px solid #cbd5e1",
+                            padding: "7px 8px",
+                            borderRadius: "8px",
+                            fontSize: "11px",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "4px",
+                          }}
+                          title="Call store directly"
+                        >
+                          <span>📞</span> Call
+                        </button>
                       </div>
                     </div>
-                    <div className="ad-dots" aria-label={`Advertisement ${activeAd + 1} of ${adConfig.imageAds.length}`}>
+
+                    <div className="ad-dots" aria-label={`Advertisement ${activeAd + 1} of ${adConfig.imageAds.length}`} style={{ padding: "6px 0 10px", background: "#ffffff" }}>
                       {adConfig.imageAds.map((ad, index) => <button key={`${ad.tone}-${index}`} className={index === activeAd ? "active" : ""} onClick={() => setActiveAd(index)} aria-label={`Show image advertisement ${index + 1}`} />)}
                     </div>
                   </>

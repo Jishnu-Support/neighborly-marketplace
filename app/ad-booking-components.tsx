@@ -1045,42 +1045,65 @@ export function AdBookingDialog({
                       LIVE POSTER PREVIEW (As displayed in billboard):
                     </small>
                     <div
-                      className={`image-ad-creative ${posterTone}`}
                       style={{
-                        height: "170px",
-                        borderRadius: "10px",
-                        backgroundImage: `linear-gradient(180deg, transparent 18%, rgba(17, 34, 23, .82) 100%), url("${posterImage || ""}")`,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                        position: "relative",
-                        display: "flex",
-                        alignItems: "flex-end",
-                        padding: "14px",
+                        border: "1px solid #dbe6dc",
+                        borderRadius: "12px",
+                        overflow: "hidden",
+                        background: "#ffffff",
+                        boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
                       }}
                     >
-                      <span
-                        className="ad-label"
+                      <div
+                        className={`image-ad-creative ${posterTone}`}
                         style={{
-                          position: "absolute",
-                          top: "10px",
-                          left: "10px",
-                          background: "#e2b13c",
-                          color: "#1e3725",
-                          fontSize: "10px",
-                          fontWeight: 800,
-                          padding: "2px 6px",
-                          borderRadius: "4px",
+                          height: "150px",
+                          backgroundImage: `linear-gradient(180deg, rgba(15, 23, 42, 0.4) 0%, transparent 40%, rgba(15, 23, 42, 0.4) 100%), url("${posterImage || ""}")`,
+                          backgroundSize: "cover",
+                          backgroundPosition: "center",
+                          position: "relative",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          padding: "10px",
                         }}
                       >
-                        ADVERTISEMENT
-                      </span>
-                      <div className="image-ad-copy" style={{ color: "#ffffff" }}>
-                        <small style={{ fontSize: "10px", letterSpacing: "0.3px", opacity: 0.9 }}>
+                        <span
+                          className="ad-label"
+                          style={{
+                            background: "#e2b13c",
+                            color: "#1e3725",
+                            fontSize: "9px",
+                            fontWeight: 800,
+                            padding: "2px 6px",
+                            borderRadius: "4px",
+                          }}
+                        >
+                          ADVERTISEMENT
+                        </span>
+                        <span
+                          style={{
+                            background: "rgba(15, 23, 42, 0.7)",
+                            color: "#ffffff",
+                            fontSize: "9.5px",
+                            fontWeight: 700,
+                            padding: "2px 6px",
+                            borderRadius: "8px",
+                          }}
+                        >
+                          👁️ 10,200 views
+                        </span>
+                      </div>
+                      <div style={{ padding: "12px 14px 10px", background: "#ffffff" }}>
+                        <span style={{ fontSize: "10.5px", fontWeight: 700, color: "#166534", textTransform: "uppercase", letterSpacing: "0.5px" }}>
                           {posterLabel}
-                        </small>
-                        <strong style={{ fontSize: "16px", lineHeight: "1.2", display: "block" }}>
+                        </span>
+                        <strong style={{ fontSize: "14px", lineHeight: "1.3", display: "block", color: "#0f172a", margin: "3px 0 8px" }}>
                           {posterTitle}
                         </strong>
+                        <div style={{ display: "flex", gap: "6px" }}>
+                          <span style={{ background: "#15803d", color: "#ffffff", padding: "4px 8px", borderRadius: "6px", fontSize: "10px", fontWeight: 700 }}>🛍️ View Store</span>
+                          <span style={{ background: "#25D366", color: "#ffffff", padding: "4px 8px", borderRadius: "6px", fontSize: "10px", fontWeight: 700 }}>💬 WhatsApp</span>
+                          <span style={{ background: "#f8fafc", color: "#0f172a", border: "1px solid #cbd5e1", padding: "4px 8px", borderRadius: "6px", fontSize: "10px", fontWeight: 700 }}>📞 Call</span>
+                        </div>
                       </div>
                     </div>
                   </div>
