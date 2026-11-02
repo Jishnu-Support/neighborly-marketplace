@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import type { CompanyAccessLevel } from "./lib/auth";
 import { defaultAdConfig, type AdConfig } from "./lib/ad-config.shared";
-import { type AdBookingRequest, resolveScheduledAds } from "./lib/ad-booking.shared";
+import { type AdBookingRequest, resolveScheduledAds, findNearestNeighborhood } from "./lib/ad-booking.shared";
 import {
   AdBookingDialog,
   AdReceiptModal,
@@ -10599,25 +10599,69 @@ export default function Home() {
     return () => { cancelled = true; window.removeEventListener("neighborly-ads-updated", onAdsUpdated); };
   }, []);
 
-  // Dynamically resolve scheduled ads when simulated hour, raw config or bookings change
+  // Dynamically resolve scheduled and targeted ads when location, search query, hour, or bookings change
   useEffect(() => {
     const resolved = resolveScheduledAds(
       rawAdConfig,
       adBookings,
       new Date(),
-      simulatedHour !== null ? simulatedHour : undefined
+      simulatedHour !== null ? simulatedHour : undefined,
+      {
+        searchQuery: query,
+        selectedNeighborhood,
+        locationCoordinates,
+        locationEnabled,
+        radiusKm: radius,
+        businesses,
+      }
     );
     setAdConfig(resolved);
-  }, [rawAdConfig, adBookings, simulatedHour]);
+    setActiveAd(0);
+  }, [
+    rawAdConfig,
+    adBookings,
+    simulatedHour,
+    query,
+    selectedNeighborhood,
+    locationCoordinates,
+    locationEnabled,
+    radius,
+    businesses,
+  ]);
 
   // Periodic check every 30s to transition ads when real-world hour changes
   useEffect(() => {
     if (simulatedHour !== null) return;
     const interval = setInterval(() => {
-      setAdConfig(resolveScheduledAds(rawAdConfig, adBookings, new Date()));
+      setAdConfig(
+        resolveScheduledAds(
+          rawAdConfig,
+          adBookings,
+          new Date(),
+          undefined,
+          {
+            searchQuery: query,
+            selectedNeighborhood,
+            locationCoordinates,
+            locationEnabled,
+            radiusKm: radius,
+            businesses,
+          }
+        )
+      );
     }, 30000);
     return () => clearInterval(interval);
-  }, [rawAdConfig, adBookings, simulatedHour]);
+  }, [
+    rawAdConfig,
+    adBookings,
+    simulatedHour,
+    query,
+    selectedNeighborhood,
+    locationCoordinates,
+    locationEnabled,
+    radius,
+    businesses,
+  ]);
 
   const handleBookingCreated = (booking: AdBookingRequest) => {
     setAdBookings((prev) => [booking, ...prev.filter((b) => b.id !== booking.id)]);
@@ -10829,9 +10873,27 @@ export default function Home() {
               if (typeof coordinates.latitude === "number" && typeof coordinates.longitude === "number") {
                 setLocationCoordinates({ latitude: coordinates.latitude, longitude: coordinates.longitude });
                 setLocationEnabled(true);
-                setNotice("Location enabled for this browser session to show nearby businesses. Your coordinates are not sent to the server.");
+                const closest = findNearestNeighborhood({ latitude: coordinates.latitude, longitude: coordinates.longitude });
+                if (closest) {
+                  setSelectedNeighborhood(closest);
+                }
+                setNotice(`📍 Location active: Showing surrounding ads and businesses for ${closest} (within ${radius} km).`);
               }
               window.sessionStorage.removeItem("neighborly_login_location");
+            } else {
+              // Check customer profile address for locality targeting
+              const profileRaw = window.localStorage.getItem("neighborly_profile_Account");
+              if (profileRaw) {
+                const profile = JSON.parse(profileRaw);
+                if (profile.address) {
+                  for (const nh of HOSUR_NEIGHBORHOODS) {
+                    if (nh !== "All Hosur" && profile.address.toLowerCase().includes(nh.toLowerCase())) {
+                      setSelectedNeighborhood(nh);
+                      break;
+                    }
+                  }
+                }
+              }
             }
           } catch { /* Location is optional and sign-in remains available. */ }
         }
@@ -13351,50 +13413,159 @@ export default function Home() {
         {role === "Discover" && (
           <div className="mobile-poster-ad-container" aria-label="Poster advertisement">
             <section className="image-ad-panel" aria-label="Rotating image advertisement">
-              <div
-                className={`image-ad-creative ${adConfig.imageAds[activeAd]?.tone || "gold"}`}
-                style={{
-                  backgroundImage: `linear-gradient(180deg, transparent 18%, rgba(17, 34, 23, .82) 100%), url("${adConfig.imageAds[activeAd]?.image || ''}")`,
-                }}
-              >
-                <div style={{ position: "absolute", top: "12px", left: "12px", right: "12px", display: "flex", justifyContent: "space-between", alignItems: "center", zIndex: 2 }}>
-                  <span className="ad-label" style={{ position: "static" }}>{t.advertisement}</span>
-                  <span
-                    style={{
-                      background: "rgba(18, 38, 26, 0.78)",
-                      backdropFilter: "blur(6px)",
-                      color: "#ecfdf5",
-                      fontSize: "10.5px",
-                      fontWeight: 700,
-                      padding: "2px 8px",
-                      borderRadius: "12px",
-                      border: "1px solid rgba(255, 255, 255, 0.28)",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "4px",
-                      boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
-                    }}
-                    title="Verified customer views in Hosur"
-                  >
-                    👁️ {(adConfig.imageAds[activeAd]?.viewsCount || 1240).toLocaleString("en-IN")} views
-                  </span>
-                </div>
-                <div className="image-ad-copy">
-                  <small>{adConfig.imageAds[activeAd]?.label}</small>
-                  <strong>{adConfig.imageAds[activeAd]?.title}</strong>
-                </div>
-              </div>
-              <div className="ad-dots" aria-label={`Advertisement ${activeAd + 1} of ${adConfig.imageAds.length}`}>
-                {adConfig.imageAds.map((ad, index) => (
+              {adConfig.imageAds.length === 0 ? (
+                <div
+                  className="image-ad-creative gold"
+                  style={{
+                    padding: "24px 18px",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    textAlign: "center",
+                    minHeight: "200px",
+                    background: "linear-gradient(135deg, #1b3824 0%, #0e2014 100%)",
+                    borderRadius: "12px",
+                    color: "#ffffff",
+                  }}
+                >
+                  <div style={{ fontSize: "28px", marginBottom: "6px" }}>🎯</div>
+                  <strong style={{ fontSize: "13.5px", color: "#ecfdf5", lineHeight: "1.3" }}>
+                    {adConfig.targetingSummary?.isSearchTargeted
+                      ? `No sponsored ads for "${adConfig.targetingSummary.appliedQuery}"`
+                      : "No ads in this specific radius"}
+                  </strong>
+                  <p style={{ fontSize: "11px", color: "#a7f3d0", margin: "6px 0 12px", lineHeight: "1.4" }}>
+                    {adConfig.targetingSummary?.isSearchTargeted
+                      ? `Browse verified local businesses matching "${adConfig.targetingSummary.appliedQuery}" below.`
+                      : `Try expanding your search distance or browse All Hosur.`}
+                  </p>
                   <button
-                    key={`mobile-poster-${ad.tone}-${index}`}
                     type="button"
-                    className={index === activeAd ? "active" : ""}
-                    onClick={() => setActiveAd(index)}
-                    aria-label={`Show image advertisement ${index + 1}`}
-                  />
-                ))}
-              </div>
+                    onClick={() => {
+                      setQuery("");
+                      setSelectedNeighborhood("All Hosur");
+                    }}
+                    style={{
+                      background: "#22c55e",
+                      color: "#064e3b",
+                      border: 0,
+                      padding: "6px 14px",
+                      borderRadius: "6px",
+                      fontSize: "11px",
+                      fontWeight: 800,
+                      cursor: "pointer",
+                    }}
+                  >
+                    View All Hosur Ads
+                  </button>
+                </div>
+              ) : (
+                (() => {
+                  const currentImageAd = adConfig.imageAds[activeAd] || adConfig.imageAds[0];
+                  return (
+                    <>
+                      <div
+                        className={`image-ad-creative ${currentImageAd?.tone || "gold"}`}
+                        style={{
+                          backgroundImage: `linear-gradient(180deg, transparent 18%, rgba(17, 34, 23, .82) 100%), url("${currentImageAd?.image || ""}")`,
+                        }}
+                      >
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "12px",
+                            left: "12px",
+                            right: "12px",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            zIndex: 2,
+                            flexWrap: "wrap",
+                            gap: "6px",
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                            <span className="ad-label" style={{ position: "static" }}>
+                              {t.advertisement}
+                            </span>
+                            {currentImageAd.matchedReason && (
+                              <span
+                                style={{
+                                  background: "#0284c7",
+                                  color: "#ffffff",
+                                  fontSize: "9.5px",
+                                  fontWeight: 800,
+                                  padding: "2px 7px",
+                                  borderRadius: "10px",
+                                  boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
+                                }}
+                                title="Sponsored match for your search"
+                              >
+                                🎯 {currentImageAd.matchedReason}
+                              </span>
+                            )}
+                            {!currentImageAd.matchedReason && adConfig.targetingSummary?.isLocationTargeted && (
+                              <span
+                                style={{
+                                  background: "#15803d",
+                                  color: "#ffffff",
+                                  fontSize: "9.5px",
+                                  fontWeight: 800,
+                                  padding: "2px 7px",
+                                  borderRadius: "10px",
+                                  boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
+                                }}
+                                title="Surrounding area ad"
+                              >
+                                📍 {currentImageAd.locality || adConfig.targetingSummary.locationLabel}
+                              </span>
+                            )}
+                          </div>
+                          <span
+                            style={{
+                              background: "rgba(18, 38, 26, 0.78)",
+                              backdropFilter: "blur(6px)",
+                              color: "#ecfdf5",
+                              fontSize: "10.5px",
+                              fontWeight: 700,
+                              padding: "2px 8px",
+                              borderRadius: "12px",
+                              border: "1px solid rgba(255, 255, 255, 0.28)",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "4px",
+                              boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+                            }}
+                            title="Verified customer views in Hosur"
+                          >
+                            👁️ {(currentImageAd?.viewsCount || 1240).toLocaleString("en-IN")} views
+                          </span>
+                        </div>
+                        <div className="image-ad-copy">
+                          <small>
+                            {currentImageAd?.label}
+                            {currentImageAd?.locality ? ` • 📍 ${currentImageAd.locality}` : ""}
+                            {currentImageAd?.distanceKm !== undefined ? ` (${currentImageAd.distanceKm} km)` : ""}
+                          </small>
+                          <strong>{currentImageAd?.title}</strong>
+                        </div>
+                      </div>
+                      <div className="ad-dots" aria-label={`Advertisement ${activeAd + 1} of ${adConfig.imageAds.length}`}>
+                        {adConfig.imageAds.map((ad, index) => (
+                          <button
+                            key={`mobile-poster-${ad.tone}-${index}`}
+                            type="button"
+                            className={index === activeAd ? "active" : ""}
+                            onClick={() => setActiveAd(index)}
+                            aria-label={`Show image advertisement ${index + 1}`}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  );
+                })()
+              )}
             </section>
           </div>
         )}
@@ -13402,38 +13573,178 @@ export default function Home() {
         <aside className="ad-rail" aria-label="Advertisements">
           <button className="sos-fab sos-ad-button" aria-label="Emergency help (SOS)" onClick={() => setDialog("sos")}><span>✚</span> SOS <small>{t.emergencyHelp}</small></button>
           <section className="image-ad-panel" aria-label="Rotating image advertisement">
-            <div className={`image-ad-creative ${adConfig.imageAds[activeAd].tone}`} style={{ backgroundImage: `linear-gradient(180deg, transparent 18%, rgba(17, 34, 23, .78) 100%), url("${adConfig.imageAds[activeAd].image}")` }}>
-              <div style={{ position: "absolute", top: "12px", left: "12px", right: "12px", display: "flex", justifyContent: "space-between", alignItems: "center", zIndex: 2 }}>
-                <span className="ad-label" style={{ position: "static" }}>{t.advertisement}</span>
-                <span
-                  style={{
-                    background: "rgba(18, 38, 26, 0.78)",
-                    backdropFilter: "blur(6px)",
-                    color: "#ecfdf5",
-                    fontSize: "10.5px",
-                    fontWeight: 700,
-                    padding: "2px 8px",
-                    borderRadius: "12px",
-                    border: "1px solid rgba(255, 255, 255, 0.28)",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+            {adConfig.imageAds.length === 0 ? (
+              <div
+                className="image-ad-creative gold"
+                style={{
+                  padding: "24px 18px",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  textAlign: "center",
+                  minHeight: "220px",
+                  background: "linear-gradient(135deg, #1b3824 0%, #0e2014 100%)",
+                  borderRadius: "12px",
+                  color: "#ffffff",
+                }}
+              >
+                <div style={{ fontSize: "30px", marginBottom: "8px" }}>🎯</div>
+                <strong style={{ fontSize: "14px", color: "#ecfdf5", lineHeight: "1.3" }}>
+                  {adConfig.targetingSummary?.isSearchTargeted
+                    ? `No sponsored ads for "${adConfig.targetingSummary.appliedQuery}"`
+                    : "No ads in this specific radius"}
+                </strong>
+                <p style={{ fontSize: "11px", color: "#a7f3d0", margin: "6px 0 14px", lineHeight: "1.4" }}>
+                  {adConfig.targetingSummary?.isSearchTargeted
+                    ? `Showing verified Hosur businesses for "${adConfig.targetingSummary.appliedQuery}" below.`
+                    : `Showing businesses nearby. Expand radius to view more ads.`}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery("");
+                    setSelectedNeighborhood("All Hosur");
                   }}
-                  title="Verified customer views in Hosur"
+                  style={{
+                    background: "#22c55e",
+                    color: "#064e3b",
+                    border: 0,
+                    padding: "6px 14px",
+                    borderRadius: "6px",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                  }}
                 >
-                  👁️ {(adConfig.imageAds[activeAd]?.viewsCount || 1240).toLocaleString("en-IN")} views
-                </span>
+                  View All Hosur Ads
+                </button>
               </div>
-              <div className="image-ad-copy"><small>{adConfig.imageAds[activeAd].label}</small><strong>{adConfig.imageAds[activeAd].title}</strong></div>
-            </div>
-            <div className="ad-dots" aria-label={`Advertisement ${activeAd + 1} of ${adConfig.imageAds.length}`}>
-              {adConfig.imageAds.map((ad, index) => <button key={`${ad.tone}-${index}`} className={index === activeAd ? "active" : ""} onClick={() => setActiveAd(index)} aria-label={`Show image advertisement ${index + 1}`} />)}
-            </div>
+            ) : (
+              (() => {
+                const currentImageAd = adConfig.imageAds[activeAd] || adConfig.imageAds[0];
+                return (
+                  <>
+                    <div className={`image-ad-creative ${currentImageAd.tone || "gold"}`} style={{ backgroundImage: `linear-gradient(180deg, transparent 18%, rgba(17, 34, 23, .78) 100%), url("${currentImageAd.image || ""}")` }}>
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "12px",
+                          left: "12px",
+                          right: "12px",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          zIndex: 2,
+                          flexWrap: "wrap",
+                          gap: "6px",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                          <span className="ad-label" style={{ position: "static" }}>{t.advertisement}</span>
+                          {currentImageAd.matchedReason && (
+                            <span
+                              style={{
+                                background: "#0284c7",
+                                color: "#ffffff",
+                                fontSize: "9.5px",
+                                fontWeight: 800,
+                                padding: "2px 7px",
+                                borderRadius: "10px",
+                                boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
+                              }}
+                              title="Sponsored match for your search"
+                            >
+                              🎯 {currentImageAd.matchedReason}
+                            </span>
+                          )}
+                          {!currentImageAd.matchedReason && adConfig.targetingSummary?.isLocationTargeted && (
+                            <span
+                              style={{
+                                background: "#15803d",
+                                color: "#ffffff",
+                                fontSize: "9.5px",
+                                fontWeight: 800,
+                                padding: "2px 7px",
+                                borderRadius: "10px",
+                                boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
+                              }}
+                              title="Surrounding area ad"
+                            >
+                              📍 {currentImageAd.locality || adConfig.targetingSummary.locationLabel}
+                            </span>
+                          )}
+                        </div>
+                        <span
+                          style={{
+                            background: "rgba(18, 38, 26, 0.78)",
+                            backdropFilter: "blur(6px)",
+                            color: "#ecfdf5",
+                            fontSize: "10.5px",
+                            fontWeight: 700,
+                            padding: "2px 8px",
+                            borderRadius: "12px",
+                            border: "1px solid rgba(255, 255, 255, 0.28)",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px",
+                            boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+                          }}
+                          title="Verified customer views in Hosur"
+                        >
+                          👁️ {(currentImageAd.viewsCount || 1240).toLocaleString("en-IN")} views
+                        </span>
+                      </div>
+                      <div className="image-ad-copy">
+                        <small>
+                          {currentImageAd.label}
+                          {currentImageAd.locality ? ` • 📍 ${currentImageAd.locality}` : ""}
+                          {currentImageAd.distanceKm !== undefined ? ` (${currentImageAd.distanceKm} km)` : ""}
+                        </small>
+                        <strong>{currentImageAd.title}</strong>
+                      </div>
+                    </div>
+                    <div className="ad-dots" aria-label={`Advertisement ${activeAd + 1} of ${adConfig.imageAds.length}`}>
+                      {adConfig.imageAds.map((ad, index) => <button key={`${ad.tone}-${index}`} className={index === activeAd ? "active" : ""} onClick={() => setActiveAd(index)} aria-label={`Show image advertisement ${index + 1}`} />)}
+                    </div>
+                  </>
+                );
+              })()
+            )}
           </section>
           <section className="video-ad-panel" aria-label="Video advertisement">
             <div className="video-ad-heading" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span>{t.videoAd}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <span>{t.videoAd}</span>
+                {adConfig.videoAd?.matchedReason && (
+                  <span
+                    style={{
+                      background: "#0284c7",
+                      color: "#ffffff",
+                      fontSize: "9.5px",
+                      fontWeight: 800,
+                      padding: "1px 6px",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    🎯 {adConfig.videoAd.matchedReason}
+                  </span>
+                )}
+                {!adConfig.videoAd?.matchedReason && adConfig.targetingSummary?.isLocationTargeted && adConfig.videoAd?.locality && (
+                  <span
+                    style={{
+                      background: "#15803d",
+                      color: "#ffffff",
+                      fontSize: "9.5px",
+                      fontWeight: 800,
+                      padding: "1px 6px",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    📍 {adConfig.videoAd.locality}
+                  </span>
+                )}
+              </div>
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                 <span
                   style={{

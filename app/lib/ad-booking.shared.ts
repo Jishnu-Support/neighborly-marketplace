@@ -265,25 +265,351 @@ export function isAdActiveAt(
   return true;
 }
 
+export interface AdTargetingContext {
+  searchQuery?: string;
+  selectedNeighborhood?: string;
+  locationCoordinates?: { latitude: number; longitude: number } | null;
+  locationEnabled?: boolean;
+  radiusKm?: number;
+  businesses?: Array<{
+    name: string;
+    category?: string;
+    categories?: string[];
+    subcategories?: string[];
+    taxonomyTags?: string[];
+    address?: { area?: string; street?: string; cityTown?: string };
+    coordinates?: { latitude: number; longitude: number } | null;
+    demoCoordinates?: { latitude: number; longitude: number };
+    distance?: number;
+    products?: Array<{ name: string; description?: string; category?: string }>;
+  }>;
+}
+
+export function calculateDistanceKm(
+  origin: { latitude: number; longitude: number },
+  destination: { latitude: number; longitude: number }
+): number {
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const dLat = toRad(destination.latitude - origin.latitude);
+  const dLng = toRad(destination.longitude - origin.longitude);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(origin.latitude)) *
+      Math.cos(toRad(destination.latitude)) *
+      Math.sin(dLng / 2) ** 2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+export const NEIGHBORHOOD_CENTROIDS: Record<string, { latitude: number; longitude: number }> = {
+  "Bagalur Road": { latitude: 12.741, longitude: 77.834 },
+  "SIPCOT Phase 1": { latitude: 12.756, longitude: 77.801 },
+  "SIPCOT Phase 2": { latitude: 12.772, longitude: 77.789 },
+  "MG Road / Railway Station": { latitude: 12.735, longitude: 77.828 },
+  "Mathigiri": { latitude: 12.712, longitude: 77.818 },
+  "Mookandapalli": { latitude: 12.748, longitude: 77.812 },
+  "Denkanikottai Road": { latitude: 12.721, longitude: 77.839 },
+  "Rayakottai Road": { latitude: 12.729, longitude: 77.842 },
+};
+
+export function findNearestNeighborhood(coords: { latitude: number; longitude: number }): string {
+  let closest = "Bagalur Road";
+  let minDistance = Infinity;
+  for (const [name, centroid] of Object.entries(NEIGHBORHOOD_CENTROIDS)) {
+    const d = calculateDistanceKm(coords, centroid);
+    if (d < minDistance) {
+      minDistance = d;
+      closest = name;
+    }
+  }
+  return closest;
+}
+
+const PRODUCT_SYNONYMS: Record<string, string[]> = {
+  automotive: [
+    "car", "bike", "auto", "vehicle", "scooter", "motorcycle", "puncture", "tyre", "tire", "engine", "service",
+    "mechanic", "repair", "diagnostics", "brake", "oil", "two wheeler", "four wheeler", "battery", "wheel", "tvs", "bajaj", "hero", "maruti", "honda"
+  ],
+  sweets_food: [
+    "sweet", "sweets", "bakery", "cake", "biscuit", "pastry", "ladoo", "laddu", "mysurpa", "mysore pak", "halwa", "mithai",
+    "snack", "snacks", "samosa", "murukku", "thali", "meals", "briyani", "biryani", "food", "tea", "coffee", "restaurant", "cafe", "tiffin"
+  ],
+  electronics: [
+    "tv", "television", "phone", "mobile", "laptop", "computer", "electronics", "fridge", "refrigerator", "washing machine",
+    "ac", "air conditioner", "charger", "gadget", "gadgets", "croma", "samsung", "headphone", "audio", "camera", "led"
+  ],
+  fitness_sports: [
+    "gym", "fitness", "workout", "trainer", "exercise", "weight loss", "muscle", "cardio", "bodybuilding", "yoga",
+    "badminton", "turf", "sports", "swimming", "crossfit", "aerobics", "nutrition"
+  ],
+  groceries_produce: [
+    "veg", "vegetable", "vegetables", "fruits", "fruit", "organic", "farm", "produce", "grocery", "groceries", "milk",
+    "dairy", "greens", "tomato", "onion", "rice", "dal", "oil", "provisions", "supermarket"
+  ],
+  fashion_lifestyle: [
+    "cloth", "clothing", "dress", "saree", "shirt", "pant", "kurta", "fashion", "tailor", "tailoring", "textile",
+    "footwear", "shoes", "chappal", "sandals", "jewellery", "gold", "silver"
+  ],
+  hardware_home: [
+    "hardware", "tools", "paint", "cement", "pipes", "plumbing", "sanitary", "electricals", "switch", "wire", "plywood", "steel", "interior", "furniture"
+  ],
+  healthcare: [
+    "doctor", "clinic", "hospital", "medicine", "pharmacy", "medical", "physio", "dental", "dentist", "laser", "skin", "care"
+  ]
+};
+
+function checkSynonymOverlap(query: string, targetText: string): boolean {
+  const qLower = query.toLowerCase();
+  const targetLower = targetText.toLowerCase();
+
+  for (const cluster of Object.values(PRODUCT_SYNONYMS)) {
+    const queryMatchesCluster = cluster.some((syn) => qLower.includes(syn));
+    if (queryMatchesCluster) {
+      const targetMatchesCluster = cluster.some((syn) => targetLower.includes(syn));
+      if (targetMatchesCluster) return true;
+    }
+  }
+  return false;
+}
+
 /**
  * Merges time-slot active paid ads into the standard AdConfig
- * based on the current date/hour or a simulated hour.
+ * based on the current date/hour or simulated hour, filtered and ranked
+ * by customer location (surrounding area) and search query (similar products).
  */
 export function resolveScheduledAds(
   baseConfig: AdConfig,
   bookings: AdBookingRequest[],
   targetDate: Date = new Date(),
-  simulatedHour?: number
+  simulatedHour?: number,
+  targeting?: AdTargetingContext
 ): AdConfig {
   const activeBookings = bookings.filter((b) =>
     isAdActiveAt(b, targetDate, simulatedHour)
   );
 
+  const cleanQuery = targeting?.searchQuery?.trim().toLowerCase() || "";
+  const activeNeighborhood = targeting?.selectedNeighborhood || "All Hosur";
+  const hasLocalityFilter = activeNeighborhood !== "All Hosur";
+  const hasGpsFilter = Boolean(targeting?.locationEnabled && targeting?.locationCoordinates);
+  const radius = targeting?.radiusKm || 5;
+  const businesses = targeting?.businesses || [];
+
+  // Helper to find business by booking
+  const findBiz = (name: string) => {
+    const n = name.toLowerCase();
+    return businesses.find(
+      (b) =>
+        b.name.toLowerCase() === n ||
+        b.name.toLowerCase().includes(n) ||
+        n.includes(b.name.toLowerCase())
+    );
+  };
+
+  interface ScoredBooking {
+    booking: AdBookingRequest;
+    bizName: string;
+    locality: string;
+    distanceKm: number;
+    searchScore: number;
+    locationScore: number;
+    rankScore: number;
+    isSearchMatch: boolean;
+    isLocationMatch: boolean;
+    matchedReason?: string;
+  }
+
+  const scoredBookings: ScoredBooking[] = [];
+
+  for (const b of activeBookings) {
+    const biz = findBiz(b.businessName);
+    const area = biz?.address?.area || "";
+    const street = biz?.address?.street || "";
+    const label = b.poster?.label || "";
+    const combinedLocality = `${area} ${street} ${label}`.trim() || "Hosur";
+
+    // Distance
+    let dist = 2.5;
+    if (targeting?.locationCoordinates && (biz?.coordinates || biz?.demoCoordinates)) {
+      dist = calculateDistanceKm(
+        targeting.locationCoordinates,
+        biz.coordinates || biz.demoCoordinates!
+      );
+    } else if (typeof biz?.distance === "number") {
+      dist = biz.distance;
+    } else if (hasLocalityFilter && combinedLocality.toLowerCase().includes(activeNeighborhood.toLowerCase())) {
+      dist = 0.8;
+    }
+
+    // Location check (surrounding ads only)
+    let isLocationMatch = true;
+    let locationScore = 50;
+
+    if (hasLocalityFilter) {
+      const matchArea = combinedLocality.toLowerCase().includes(activeNeighborhood.toLowerCase());
+      const matchRadius = dist <= radius;
+      if (matchArea || matchRadius) {
+        isLocationMatch = true;
+        locationScore = 100 - Math.min(dist, 25) * 2;
+      } else {
+        isLocationMatch = false;
+        locationScore = 0;
+      }
+    } else if (hasGpsFilter) {
+      if (dist <= radius) {
+        isLocationMatch = true;
+        locationScore = 100 - Math.min(dist, 25) * 2;
+      } else {
+        isLocationMatch = false;
+        locationScore = 0;
+      }
+    }
+
+    // Search query check (similar products & relevant offerings only)
+    let isSearchMatch = true;
+    let searchScore = 0;
+    let matchedReason: string | undefined;
+
+    if (cleanQuery) {
+      // 1. Direct product match
+      const matchingProds = biz?.products?.filter(
+        (p) =>
+          p.name.toLowerCase().includes(cleanQuery) ||
+          (p.description && p.description.toLowerCase().includes(cleanQuery))
+      ) || [];
+
+      // 2. Ad creative text match
+      const creativeTexts = [
+        b.poster?.title,
+        b.poster?.label,
+        b.content?.message,
+        b.video?.title,
+        b.video?.description,
+      ].filter(Boolean).join(" ").toLowerCase();
+      const creativeMatch = creativeTexts.includes(cleanQuery);
+
+      // 3. Category & subcategories match
+      const catTexts = [
+        biz?.category,
+        ...(biz?.categories || []),
+        ...(biz?.subcategories || []),
+        ...(biz?.taxonomyTags || []),
+      ].filter(Boolean).join(" ").toLowerCase();
+      const catMatch = catTexts.includes(cleanQuery);
+
+      // 4. Synonym cluster match
+      const synonymMatch = checkSynonymOverlap(cleanQuery, `${biz?.name || ""} ${catTexts} ${creativeTexts}`);
+
+      if (matchingProds.length > 0) {
+        searchScore = 60 + matchingProds.length * 15;
+        matchedReason = `Similar product: "${matchingProds[0].name}"`;
+      } else if (creativeMatch) {
+        searchScore = 50;
+        matchedReason = `Sponsored promotion for "${cleanQuery}"`;
+      } else if (catMatch) {
+        searchScore = 40;
+        matchedReason = `Category match: ${biz?.category || "Local Category"}`;
+      } else if (synonymMatch) {
+        searchScore = 30;
+        matchedReason = `Relevant to "${cleanQuery}"`;
+      } else {
+        searchScore = 0;
+        isSearchMatch = false;
+      }
+    }
+
+    const rankScore = (searchScore * 4) + locationScore + (1 / (dist + 0.1)) * 10;
+
+    scoredBookings.push({
+      booking: b,
+      bizName: b.businessName,
+      locality: combinedLocality,
+      distanceKm: Math.round(dist * 10) / 10,
+      searchScore,
+      locationScore,
+      rankScore,
+      isSearchMatch,
+      isLocationMatch,
+      matchedReason,
+    });
+  }
+
+  // If search query is active: ONLY include search-matching ads!
+  let filteredBookings = scoredBookings;
+  if (cleanQuery) {
+    filteredBookings = filteredBookings.filter((sb) => sb.isSearchMatch);
+  }
+
+  // If locality is active (or GPS is active): filter to surrounding ads only.
+  if (hasLocalityFilter || hasGpsFilter) {
+    const surrounding = filteredBookings.filter((sb) => sb.isLocationMatch);
+    if (surrounding.length > 0) {
+      filteredBookings = surrounding;
+    } else if (!cleanQuery) {
+      // Pure locality browsing without search: strictly surrounding ads
+      filteredBookings = surrounding;
+    }
+  }
+
+  // Sort by rank score descending
+  filteredBookings.sort((a, b) => b.rankScore - a.rankScore);
+
+  // Evaluate base image ads for location and search
+  const evaluatedBaseImages = baseConfig.imageAds.map((ad, idx) => {
+    const adLocality = ad.locality || (idx === 0 ? "Bagalur Road" : idx === 1 ? "SIPCOT Phase 1" : "MG Road / Railway Station");
+    const adCategory = ad.category || (idx === 0 ? "Groceries & organic produce" : idx === 1 ? "Industrial & Manufacturing" : "Retail & electronics");
+
+    let isLocMatch = true;
+    if (hasLocalityFilter) {
+      isLocMatch = adLocality.toLowerCase().includes(activeNeighborhood.toLowerCase());
+    }
+
+    let isSearchMatch = true;
+    let matchedReason: string | undefined;
+    if (cleanQuery) {
+      const text = `${ad.title} ${ad.label} ${adLocality} ${adCategory}`.toLowerCase();
+      const directMatch = text.includes(cleanQuery);
+      const synMatch = checkSynonymOverlap(cleanQuery, text);
+      if (directMatch) {
+        matchedReason = `Sponsored: "${cleanQuery}"`;
+        isSearchMatch = true;
+      } else if (synMatch) {
+        matchedReason = `Relevant to "${cleanQuery}"`;
+        isSearchMatch = true;
+      } else {
+        isSearchMatch = false;
+      }
+    }
+
+    return {
+      ad: {
+        ...ad,
+        locality: adLocality,
+        category: adCategory,
+        matchedReason,
+        isSearchMatch,
+      },
+      isLocMatch,
+      isSearchMatch,
+    };
+  });
+
+  let eligibleBaseImages = evaluatedBaseImages;
+  if (cleanQuery) {
+    eligibleBaseImages = eligibleBaseImages.filter((x) => x.isSearchMatch);
+  }
+  if (hasLocalityFilter) {
+    const locOnly = eligibleBaseImages.filter((x) => x.isLocMatch);
+    if (locOnly.length > 0 || !cleanQuery) {
+      eligibleBaseImages = locOnly;
+    }
+  }
+
   const extraTickers: string[] = [];
   const extraImages: AdConfig["imageAds"] = [];
   let customVideoAd = baseConfig.videoAd;
 
-  for (const b of activeBookings) {
+  for (const sb of filteredBookings) {
+    const b = sb.booking;
     if (b.content?.message && (b.format === "content" || b.format === "combo")) {
       extraTickers.push(b.content.message);
     }
@@ -297,6 +623,10 @@ export function resolveScheduledAds(
         image: b.poster.imageUrl,
         tone: b.poster.tone || "gold",
         viewsCount: b.viewsCount || 0,
+        locality: sb.locality,
+        distanceKm: sb.distanceKm,
+        matchedReason: sb.matchedReason,
+        isSearchMatch: sb.isSearchMatch,
       });
     }
     if (b.video?.sourceUrl && (b.format === "video" || b.format === "combo")) {
@@ -309,21 +639,52 @@ export function resolveScheduledAds(
         posterUrl: b.video.posterUrl || "",
         callToAction: b.video.callToAction || "View business details",
         viewsCount: b.viewsCount || 0,
+        locality: sb.locality,
+        distanceKm: sb.distanceKm,
+        matchedReason: sb.matchedReason,
+        isSearchMatch: sb.isSearchMatch,
       };
     }
   }
 
+  const finalImageAds = [...extraImages, ...eligibleBaseImages.map((x) => x.ad)];
+
+  const isSearchTargeted = Boolean(cleanQuery);
+  const isLocationTargeted = Boolean(hasLocalityFilter || hasGpsFilter);
+
+  const targetingSummary = {
+    appliedNeighborhood: hasLocalityFilter ? activeNeighborhood : undefined,
+    appliedQuery: cleanQuery || undefined,
+    isLocationTargeted,
+    isSearchTargeted,
+    matchingAdsCount: finalImageAds.length,
+    locationLabel: hasLocalityFilter
+      ? `${activeNeighborhood} (within ${radius} km)`
+      : hasGpsFilter
+      ? `GPS Location (${radius} km radius)`
+      : "All Hosur",
+    searchLabel: cleanQuery ? `Similar products for "${cleanQuery}"` : undefined,
+  };
+
+  // For tickers: if search query is active and we have matching tickers, display only those.
+  // Otherwise, if no extra tickers match the search query, show contextual announcement.
+  let finalTickers = baseConfig.tickerMessages;
+  if (cleanQuery) {
+    if (extraTickers.length > 0) {
+      finalTickers = extraTickers;
+    } else {
+      finalTickers = [`🎯 Sponsored: Showing verified Hosur providers matching "${cleanQuery}"`];
+    }
+  } else if (extraTickers.length > 0) {
+    finalTickers = [...extraTickers, ...baseConfig.tickerMessages];
+  }
+
   return {
     ...baseConfig,
-    tickerMessages:
-      extraTickers.length > 0
-        ? [...extraTickers, ...baseConfig.tickerMessages]
-        : baseConfig.tickerMessages,
-    imageAds:
-      extraImages.length > 0
-        ? [...extraImages, ...baseConfig.imageAds]
-        : baseConfig.imageAds,
+    tickerMessages: finalTickers,
+    imageAds: finalImageAds,
     videoAd: customVideoAd,
+    targetingSummary,
   };
 }
 
