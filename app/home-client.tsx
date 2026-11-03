@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CompanyAccessLevel } from "./lib/auth";
 import { defaultAdConfig, type AdConfig } from "./lib/ad-config.shared";
 import { type AdBookingRequest, resolveScheduledAds, findNearestNeighborhood } from "./lib/ad-booking.shared";
@@ -205,6 +205,29 @@ type Business = {
   tag?: string;
   images?: string[];
   image?: string;
+  id?: string;
+  email?: string;
+  verificationStatus?: "Pending Agent Visit" | "Pending Admin Approval" | "Approved" | "Rejected";
+  assignedAgentId?: string;
+  assignedAgentName?: string;
+  assignedAgentPhone?: string;
+  agentVerification?: {
+    agentId: string;
+    agentName: string;
+    agentPhone: string;
+    agentReferralCode?: string;
+    visitedAt: string;
+    uploadedImages: string[];
+    notes?: string;
+    verifiedGps?: { latitude: number; longitude: number } | null;
+  };
+  adminApproval?: {
+    adminEmail: string;
+    adminName: string;
+    approvedAt: string;
+    notes?: string;
+  };
+  rejectionReason?: string;
 };
 type DemoEnquiry = {
   id: string;
@@ -12038,7 +12061,7 @@ export default function Home() {
     }
   }, [demoData, storageReady]);
 
-  useEffect(() => {
+  const loadRegisteredBusinesses = useCallback(() => {
     fetch("/api/businesses", { cache: "no-store" })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
@@ -12093,6 +12116,12 @@ export default function Home() {
       })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    loadRegisteredBusinesses();
+    window.addEventListener("neighborly-businesses-refresh", loadRegisteredBusinesses);
+    return () => window.removeEventListener("neighborly-businesses-refresh", loadRegisteredBusinesses);
+  }, [loadRegisteredBusinesses]);
 
   const { results, relatedProducts, relatedSearches, correctedQuery, searchDurationMs, autocompleteData } = useMemo(() => {
     const t0 = typeof performance !== "undefined" ? performance.now() : Date.now();
@@ -19827,6 +19856,59 @@ function BusinessPortal({
   return <div className="page-content portal-content">
     <div className="portal-header"><div><div className="eyebrow"><span /> FOR LOCAL BUSINESSES</div><h1>Grow with your <em>neighbors.</em></h1><p>Manage your business and connect with nearby customers.</p></div><button className="primary-button" onClick={openBusinessProfile}>Manage your business</button></div>
     <div className="portal-tabs">{["Overview", "My business", "Products & services", "Orders", "Enquiries", "Plans & billing", "Ad promotions", "Verification", "Profile details", "Settings"].map((item) => <button key={item} className={tab === item || (item === "Profile details" && tab === "Profile") ? "current" : ""} onClick={() => setTab(item)}>{item === "Orders" && pendingPrepCount > 0 ? `Orders (${pendingPrepCount})` : item === "Ad promotions" ? "Ad promotions 📢" : item}</button>)}</div>
+    {businesses[0]?.verificationStatus && businesses[0]?.verificationStatus !== "Approved" && (
+      <div className="onboarding-verification-card" style={{
+        background: "#fffbeb",
+        border: "1.5px solid #fde68a",
+        borderRadius: "12px",
+        padding: "16px 20px",
+        marginBottom: "20px",
+        boxShadow: "0 2px 8px rgba(245, 158, 11, 0.08)"
+      }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", flexWrap: "wrap", marginBottom: "12px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <span style={{ fontSize: "24px" }}>⏳</span>
+            <div>
+              <strong style={{ fontSize: "14px", color: "#92400e", display: "block" }}>
+                Verification Pipeline: {businesses[0].verificationStatus}
+              </strong>
+              <span style={{ fontSize: "12px", color: "#b45309" }}>
+                {businesses[0].verificationStatus === "Pending Agent Visit"
+                  ? "A local Hosur field agent is assigned to visit your storefront and capture verification photos."
+                  : "Field visit completed! Awaiting final authorization from Company Admin to publish listing."}
+              </span>
+            </div>
+          </div>
+          <span className="status-pill pending" style={{ background: "#fef3c7", color: "#b45309", borderColor: "#fde68a", fontWeight: 700 }}>
+            ● {businesses[0].verificationStatus}
+          </span>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "10px", marginTop: "12px" }}>
+          <div style={{ background: "#fff", padding: "12px 14px", borderRadius: "8px", border: "1.5px solid #16a34a" }}>
+            <div style={{ fontSize: "11px", fontWeight: 700, color: "#166534" }}>✓ Step 1: Registration Completed</div>
+            <div style={{ fontSize: "12px", color: "#334155", marginTop: "4px" }}>Business details & account created</div>
+          </div>
+          <div style={{
+            background: businesses[0].verificationStatus === "Pending Admin Approval" ? "#fff" : "#fefce8",
+            padding: "12px 14px",
+            borderRadius: "8px",
+            border: `1.5px solid ${businesses[0].verificationStatus === "Pending Admin Approval" ? "#16a34a" : "#eab308"}`
+          }}>
+            <div style={{ fontSize: "11px", fontWeight: 700, color: businesses[0].verificationStatus === "Pending Admin Approval" ? "#166534" : "#854d0e" }}>
+              {businesses[0].verificationStatus === "Pending Admin Approval" ? "✓ Step 2: Agent Visited & Photos Captured" : "⏳ Step 2: Field Agent Visit & Store Photo"}
+            </div>
+            <div style={{ fontSize: "12px", color: "#334155", marginTop: "4px" }}>
+              {businesses[0].verificationStatus === "Pending Admin Approval" ? "Storefront photo uploaded by agent" : "Nearby agent will inspect location"}
+            </div>
+          </div>
+          <div style={{ background: "#fff", padding: "12px 14px", borderRadius: "8px", border: "1px solid #cbd5e1" }}>
+            <div style={{ fontSize: "11px", fontWeight: 700, color: "#64748b" }}>⏳ Step 3: Admin Approval & Live Directory</div>
+            <div style={{ fontSize: "12px", color: "#64748b", marginTop: "4px" }}>Approved listing goes live across Hosur</div>
+          </div>
+        </div>
+      </div>
+    )}
     {tab === "Overview" && <>
       <div className="metric-grid">
         <Metric label="Profile views" value="1,284" delta="Sample dashboard metric" icon="◉" />
@@ -20233,6 +20315,34 @@ function BusinessPortal({
   </div>;
 }
 
+type AgentVerificationItem = {
+  id: string;
+  name: string;
+  category: string;
+  phone: string;
+  email: string;
+  ownerName: string;
+  address?: BusinessAddress;
+  coordinates?: Coordinates | null;
+  images?: string[];
+  photos?: string[];
+  verificationStatus?: "Pending Agent Visit" | "Pending Admin Approval" | "Approved" | "Rejected";
+  assignedAgentId?: string;
+  assignedAgentName?: string;
+  assignedAgentPhone?: string;
+  agentVerification?: {
+    agentId: string;
+    agentName: string;
+    agentPhone: string;
+    agentReferralCode?: string;
+    visitedAt: string;
+    uploadedImages: string[];
+    notes?: string;
+    verifiedGps?: { latitude: number; longitude: number } | null;
+  };
+  createdAt: string;
+};
+
 function AgentPortal({
   initialTab = "Overview",
   onOpenPortal,
@@ -20246,6 +20356,33 @@ function AgentPortal({
 }) {
   const [copied, setCopied] = useState(false);
   const [tab, setTab] = useState(initialTab || "Overview");
+  const [verifications, setVerifications] = useState<AgentVerificationItem[]>([]);
+  const [verificationsLoading, setVerificationsLoading] = useState(false);
+  const [verifyingBusiness, setVerifyingBusiness] = useState<AgentVerificationItem | null>(null);
+  const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([]);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [verifiedGps, setVerifiedGps] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [gpsLoading, setGpsLoading] = useState(false);
+  const [visitNotes, setVisitNotes] = useState("");
+  const [submittingVerification, setSubmittingVerification] = useState(false);
+
+  const loadVerifications = () => {
+    setVerificationsLoading(true);
+    fetch("/api/agent/verifications", { cache: "no-store", credentials: "include" })
+      .then(async (response) => {
+        const result = (await response.json()) as { businesses?: AgentVerificationItem[] };
+        if (response.ok && Array.isArray(result.businesses)) {
+          setVerifications(result.businesses);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setVerificationsLoading(false));
+  };
+
+  useEffect(() => {
+    loadVerifications();
+  }, []);
+
   useEffect(() => {
     if (initialTab && initialTab !== "Overview") setTab(initialTab);
   }, [initialTab]);
@@ -20276,54 +20413,512 @@ function AgentPortal({
     showNotice("Agent referral report downloaded as CSV.");
   }
 
-  return <div className="page-content portal-content"><div className="portal-header"><div><div className="eyebrow"><span /> NEIGHBORHOOD PARTNERS</div><h1>Good connections,<br /><em>good things.</em></h1><p>Help great local businesses meet the neighbors who need them.</p></div><div className="agent-avatar">✳</div></div>
-    <div className="portal-tabs">{["Overview", "Profile details", "Settings"].map((item) => <button key={item} className={tab === item || (item === "Profile details" && tab === "Profile") ? "current" : ""} onClick={() => setTab(item)}>{item}</button>)}</div>
-    {tab === "Overview" && <>
-    <section className="referral-card"><div className="referral-copy"><div className="eyebrow">YOUR REFERRAL CODE</div><h2>Share the local love.</h2><p>Businesses that use your code will be linked to your agent account when they register.</p></div><div className="code-box"><code>AGENT-PARTNER</code><button onClick={() => { navigator.clipboard?.writeText("AGENT-PARTNER"); setCopied(true); showNotice("Referral code copied."); }}>{copied ? "Copied ✓" : "Copy code ↗"}</button></div></section>
-    <div className="metric-grid"><Metric label="Businesses referred" value={String(referrals.length)} delta={referrals.length === 0 ? "No businesses linked yet" : `${referrals.length} active business partner${referrals.length > 1 ? "s" : ""}`} icon="♧" /><Metric label="Awaiting signup" value="0" delta="Share your referral code" icon="◷" /><Metric label="This month's reward" value="₹0" delta="Real-time commission" icon="↗" /></div>
-    <section className="panel agent-table"><div className="panel-heading"><div><div className="eyebrow">YOUR NETWORK</div><h2>Recent referrals</h2></div><button className="text-link" onClick={downloadReferralReport}>Download report ↗</button></div>
-      <div className="table-head"><span>BUSINESS</span><span>CATEGORY</span><span>JOINED</span><span>STATUS</span></div>
-      {referrals.length === 0 ? (
-        <div style={{ padding: "28px 16px", textAlign: "center", color: "#6e8273", fontSize: "11px" }}>
-          No businesses referred yet. Share your referral code with local businesses to start earning commissions when they join.
+  async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/businesses/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      if (data.url) {
+        setUploadedPhotos((prev) => [...prev, data.url]);
+        showNotice("✓ Storefront photo uploaded.");
+      }
+    } catch (err) {
+      showNotice(err instanceof Error ? err.message : "Failed to upload photo");
+    } finally {
+      setPhotoUploading(false);
+    }
+  }
+
+  function handleCaptureGps() {
+    setGpsLoading(true);
+    if (!navigator.geolocation) {
+      showNotice("Geolocation is not supported by your browser");
+      setGpsLoading(false);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setVerifiedGps({
+          latitude: Number(pos.coords.latitude.toFixed(6)),
+          longitude: Number(pos.coords.longitude.toFixed(6)),
+        });
+        setGpsLoading(false);
+        showNotice(`✓ Storefront GPS Captured: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`);
+      },
+      (err) => {
+        setGpsLoading(false);
+        showNotice(`Could not get GPS: ${err.message}`);
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  }
+
+  async function handleSubmitVerification() {
+    if (!verifyingBusiness) return;
+    if (uploadedPhotos.length === 0) {
+      showNotice("Please upload at least one storefront photo from your visit.");
+      return;
+    }
+    setSubmittingVerification(true);
+    try {
+      const res = await fetch("/api/agent/verifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          businessId: verifyingBusiness.id,
+          uploadedImages: uploadedPhotos,
+          notes: visitNotes,
+          verifiedGps,
+        }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Failed to submit verification");
+      showNotice(`✓ "${verifyingBusiness.name}" verified! Forwarded to Admin for final approval.`);
+      setVerifyingBusiness(null);
+      setUploadedPhotos([]);
+      setVisitNotes("");
+      setVerifiedGps(null);
+      loadVerifications();
+    } catch (err) {
+      showNotice(err instanceof Error ? err.message : "Failed to submit verification");
+    } finally {
+      setSubmittingVerification(false);
+    }
+  }
+
+  const pendingCount = verifications.filter((v) => v.verificationStatus === "Pending Agent Visit").length;
+
+  return (
+    <div className="page-content portal-content">
+      <div className="portal-header">
+        <div>
+          <div className="eyebrow"><span /> NEIGHBORHOOD PARTNERS</div>
+          <h1>Good connections,<br /><em>good things.</em></h1>
+          <p>Help great local businesses meet the neighbors who need them.</p>
         </div>
-      ) : (
-        referrals.map((row) => (
-          <div className="table-row" key={row.businessName}>
-            <span>{row.businessName}</span>
-            <span>{row.category}</span>
-            <span>{row.joined}</span>
-            <span className={`status-pill ${row.status === "Subscribed" ? "verified" : "pending"}`}>
-              <i>● </i>{row.status}
-            </span>
+        <div className="agent-avatar">✳</div>
+      </div>
+      <div className="portal-tabs">
+        {["Overview", `Business verifications${pendingCount > 0 ? ` (${pendingCount})` : ""}`, "Profile details", "Settings"].map((item) => {
+          const isVerif = item.startsWith("Business verifications") && tab.startsWith("Business verifications");
+          return (
+            <button
+              key={item}
+              className={tab === item || isVerif || (item === "Profile details" && tab === "Profile") ? "current" : ""}
+              onClick={() => setTab(item.startsWith("Business verifications") ? "Business verifications" : item)}
+            >
+              {item}
+            </button>
+          );
+        })}
+      </div>
+
+      {tab === "Overview" && (
+        <>
+          <section className="referral-card">
+            <div className="referral-copy">
+              <div className="eyebrow">YOUR REFERRAL CODE</div>
+              <h2>Share the local love.</h2>
+              <p>Businesses that use your code will be linked to your agent account when they register.</p>
+            </div>
+            <div className="code-box">
+              <code>AGENT-PARTNER</code>
+              <button
+                onClick={() => {
+                  navigator.clipboard?.writeText("AGENT-PARTNER");
+                  setCopied(true);
+                  showNotice("Referral code copied.");
+                }}
+              >
+                {copied ? "Copied ✓" : "Copy code ↗"}
+              </button>
+            </div>
+          </section>
+          <div className="metric-grid">
+            <Metric
+              label="Pending verifications"
+              value={String(pendingCount)}
+              delta={pendingCount > 0 ? "Requires field visit & photos" : "All visits up to date"}
+              icon="📍"
+            />
+            <Metric
+              label="Businesses referred"
+              value={String(referrals.length)}
+              delta={referrals.length === 0 ? "No businesses linked yet" : `${referrals.length} active business partner${referrals.length > 1 ? "s" : ""}`}
+              icon="♧"
+            />
+            <Metric label="This month's reward" value="₹0" delta="Real-time commission" icon="↗" />
           </div>
-        ))
+
+          {pendingCount > 0 && (
+            <div style={{ background: "#fef3c7", border: "1px solid #fde68a", borderRadius: "10px", padding: "14px 18px", marginBottom: "20px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
+              <div>
+                <strong style={{ color: "#92400e", fontSize: "13px" }}>⚠️ {pendingCount} new business registration{pendingCount > 1 ? "s" : ""} awaiting agent visit</strong>
+                <p style={{ margin: "2px 0 0", color: "#b45309", fontSize: "11.5px" }}>Visit their business premises, capture storefront photos, and submit verification for Admin approval.</p>
+              </div>
+              <button className="primary-button" style={{ padding: "8px 14px", fontSize: "12px" }} onClick={() => setTab("Business verifications")}>
+                View Verifications Queue →
+              </button>
+            </div>
+          )}
+
+          <section className="panel agent-table">
+            <div className="panel-heading">
+              <div>
+                <div className="eyebrow">YOUR NETWORK</div>
+                <h2>Recent referrals</h2>
+              </div>
+              <button className="text-link" onClick={downloadReferralReport}>Download report ↗</button>
+            </div>
+            <div className="table-head">
+              <span>BUSINESS</span>
+              <span>CATEGORY</span>
+              <span>JOINED</span>
+              <span>STATUS</span>
+            </div>
+            {referrals.length === 0 ? (
+              <div style={{ padding: "28px 16px", textAlign: "center", color: "#6e8273", fontSize: "11px" }}>
+                No businesses referred yet. Share your referral code with local businesses to start earning commissions when they join.
+              </div>
+            ) : (
+              referrals.map((row) => (
+                <div className="table-row" key={row.businessName}>
+                  <span>{row.businessName}</span>
+                  <span>{row.category}</span>
+                  <span>{row.joined}</span>
+                  <span className={`status-pill ${row.status === "Subscribed" ? "verified" : "pending"}`}>
+                    <i>● </i>{row.status}
+                  </span>
+                </div>
+              ))
+            )}
+          </section>
+          <div className="form-note">
+            <strong>Agent Network</strong>
+            <span>Live partner tracking. Businesses onboarding with your verified referral code are credited to your agent account.</span>
+          </div>
+        </>
       )}
-    </section><div className="form-note"><strong>Agent Network</strong><span>Live partner tracking. Businesses onboarding with your verified referral code are credited to your agent account.</span></div>
-    </>}
-    {(tab === "Profile details" || tab === "Profile") && (
-      <ProfileAndSettingsPanel
-        role="Agent"
-        label="Field agent"
-        initialSubTab="profile"
-        onNavigateTab={(t) => setTab(t)}
-        onOpenPortal={onOpenPortal}
-        onLanguageChange={onLanguageChange}
-        showNotice={showNotice}
-      />
-    )}
-    {tab === "Settings" && (
-      <ProfileAndSettingsPanel
-        role="Agent"
-        label="Field agent"
-        initialSubTab="settings"
-        onNavigateTab={(t) => setTab(t)}
-        onOpenPortal={onOpenPortal}
-        onLanguageChange={onLanguageChange}
-        showNotice={showNotice}
-      />
-    )}
-  </div>;
+
+      {tab.startsWith("Business verifications") && (
+        <section className="panel tab-panel">
+          <div className="panel-heading">
+            <div>
+              <div className="eyebrow">FIELD VERIFICATIONS</div>
+              <h2>Business Visit &amp; Verification Queue</h2>
+              <p style={{ fontSize: "12px", color: "#66786c", margin: "4px 0 0" }}>
+                As an authorized field agent, visit new businesses in Hosur, confirm their location, and upload their storefront photo to submit for Admin approval.
+              </p>
+            </div>
+            <button className="outline-button" onClick={loadVerifications}>
+              {verificationsLoading ? "Refreshing..." : "↻ Refresh Queue"}
+            </button>
+          </div>
+
+          {verificationsLoading ? (
+            <p style={{ padding: "20px", color: "#66786c" }}>Loading business verifications...</p>
+          ) : verifications.length === 0 ? (
+            <EmptyState
+              title="No pending verifications"
+              text="When new businesses register in Hosur, they will appear here for your physical inspection and photo upload."
+            />
+          ) : (
+            <div style={{ display: "grid", gap: "12px", marginTop: "16px" }}>
+              {verifications.map((biz) => {
+                const isPendingVisit = biz.verificationStatus === "Pending Agent Visit";
+                const isPendingAdmin = biz.verificationStatus === "Pending Admin Approval";
+                const isApproved = biz.verificationStatus === "Approved";
+                const addressStr = biz.address
+                  ? [biz.address.doorNumber, biz.address.street, biz.address.area, "Hosur"].filter(Boolean).join(", ")
+                  : "Hosur, Tamil Nadu";
+
+                return (
+                  <div
+                    key={biz.id}
+                    style={{
+                      background: "#fff",
+                      border: "1px solid #dbe6da",
+                      borderRadius: "10px",
+                      padding: "16px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "10px",
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px", flexWrap: "wrap" }}>
+                      <div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <span style={{ fontSize: "18px" }}>🏢</span>
+                          <strong style={{ fontSize: "15px", color: "#1c2e22" }}>{biz.name}</strong>
+                          <span style={{ fontSize: "11px", background: "#f0fdf4", color: "#166534", padding: "2px 8px", borderRadius: "12px", border: "1px solid #bbf7d0" }}>
+                            {biz.category}
+                          </span>
+                        </div>
+                        <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#475569" }}>
+                          📍 <strong>Location:</strong> {addressStr}
+                        </p>
+                        <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#475569" }}>
+                          📞 <strong>Contact:</strong> {biz.phone} {biz.ownerName ? `· Owner: ${biz.ownerName}` : ""}
+                        </p>
+                        <small style={{ color: "#94a3b8", fontSize: "11px" }}>
+                          Registered: {new Date(biz.createdAt).toLocaleDateString()}
+                        </small>
+                      </div>
+
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "8px" }}>
+                        <span
+                          className={`status-pill ${isApproved ? "verified" : isPendingAdmin ? "verified" : "pending"}`}
+                          style={{
+                            background: isApproved ? "#f0fdf4" : isPendingAdmin ? "#f0fdf4" : "#fef3c7",
+                            color: isApproved ? "#166534" : isPendingAdmin ? "#166534" : "#b45309",
+                            borderColor: isApproved ? "#bbf7d0" : isPendingAdmin ? "#bbf7d0" : "#fde68a",
+                          }}
+                        >
+                          ● {biz.verificationStatus || "Pending Agent Visit"}
+                        </span>
+
+                        {isPendingVisit && (
+                          <button
+                            className="primary-button"
+                            style={{ padding: "6px 14px", fontSize: "12px" }}
+                            onClick={() => {
+                              setVerifyingBusiness(biz);
+                              setUploadedPhotos(biz.images || []);
+                              setVisitNotes("");
+                              setVerifiedGps(null);
+                            }}
+                          >
+                            📸 Verify &amp; Upload Storefront
+                          </button>
+                        )}
+
+                        {isPendingAdmin && (
+                          <div style={{ fontSize: "11px", color: "#166534", fontWeight: 600 }}>
+                            ✓ Verified by Agent · Awaiting Admin Approval
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {biz.agentVerification && (
+                      <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "10px 12px", fontSize: "11.5px", color: "#334155" }}>
+                        <strong>Agent Inspection Details:</strong>
+                        <div style={{ marginTop: "4px" }}>
+                          Visited: {new Date(biz.agentVerification.visitedAt).toLocaleString()}
+                          {biz.agentVerification.verifiedGps && ` · GPS: ${biz.agentVerification.verifiedGps.latitude}, ${biz.agentVerification.verifiedGps.longitude}`}
+                        </div>
+                        {biz.agentVerification.notes && (
+                          <div style={{ marginTop: "2px", color: "#64748b" }}>
+                            Notes: &ldquo;{biz.agentVerification.notes}&rdquo;
+                          </div>
+                        )}
+                        {biz.agentVerification.uploadedImages?.length > 0 && (
+                          <div style={{ display: "flex", gap: "8px", marginTop: "8px", overflowX: "auto" }}>
+                            {biz.agentVerification.uploadedImages.map((img, i) => (
+                              <img key={i} src={img} alt="Storefront" style={{ width: "60px", height: "60px", objectFit: "cover", borderRadius: "4px", border: "1px solid #cbd5e1" }} />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Field Inspection & Photo Upload Modal */}
+      {verifyingBusiness && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.6)",
+            display: "grid",
+            placeItems: "center",
+            zIndex: 9999,
+            padding: "20px",
+          }}
+          onClick={() => setVerifyingBusiness(null)}
+        >
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: "14px",
+              padding: "24px",
+              maxWidth: "520px",
+              width: "100%",
+              maxHeight: "90vh",
+              overflowY: "auto",
+              boxShadow: "0 20px 25px -5px rgba(0,0,0,0.2)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #e2e8f0", paddingBottom: "12px", marginBottom: "16px" }}>
+              <div>
+                <span style={{ fontSize: "11px", fontWeight: 700, color: "#166534", textTransform: "uppercase" }}>FIELD AGENT VERIFICATION</span>
+                <h3 style={{ margin: "2px 0 0", fontSize: "18px", color: "#0f172a" }}>Inspect {verifyingBusiness.name}</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setVerifyingBusiness(null)}
+                style={{ background: "none", border: 0, fontSize: "20px", cursor: "pointer", color: "#64748b" }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ background: "#f8fafc", borderRadius: "8px", padding: "12px", marginBottom: "16px", fontSize: "12px", color: "#334155" }}>
+              <p style={{ margin: "0 0 4px" }}><strong>Sector:</strong> {verifyingBusiness.category}</p>
+              <p style={{ margin: "0 0 4px" }}><strong>Location:</strong> {verifyingBusiness.address ? [verifyingBusiness.address.doorNumber, verifyingBusiness.address.street, verifyingBusiness.address.area, "Hosur"].filter(Boolean).join(", ") : "Hosur"}</p>
+              <p style={{ margin: 0 }}><strong>Phone:</strong> {verifyingBusiness.phone}</p>
+            </div>
+
+            {/* GPS Verification */}
+            <div style={{ marginBottom: "16px" }}>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "6px" }}>
+                1. Storefront GPS Verification
+              </label>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <button
+                  type="button"
+                  className="outline-button"
+                  onClick={handleCaptureGps}
+                  disabled={gpsLoading}
+                  style={{ fontSize: "12px", padding: "6px 12px" }}
+                >
+                  {gpsLoading ? "Capturing GPS..." : "📍 Capture My Current GPS"}
+                </button>
+                {verifiedGps && (
+                  <span style={{ fontSize: "11.5px", color: "#166534", fontWeight: 600 }}>
+                    ✓ {verifiedGps.latitude.toFixed(4)}, {verifiedGps.longitude.toFixed(4)}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Photo Upload */}
+            <div style={{ marginBottom: "16px" }}>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "6px" }}>
+                2. Upload Storefront / Business Image *
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                disabled={photoUploading}
+                style={{ fontSize: "12px" }}
+              />
+              {photoUploading && <p style={{ fontSize: "11px", color: "#64748b", margin: "4px 0 0" }}>Uploading image...</p>}
+
+              {uploadedPhotos.length > 0 && (
+                <div style={{ display: "flex", gap: "8px", marginTop: "10px", flexWrap: "wrap" }}>
+                  {uploadedPhotos.map((url, idx) => (
+                    <div key={idx} style={{ position: "relative" }}>
+                      <img
+                        src={url}
+                        alt="Storefront preview"
+                        style={{ width: "90px", height: "70px", objectFit: "cover", borderRadius: "6px", border: "1px solid #cbd5e1" }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setUploadedPhotos((prev) => prev.filter((_, i) => i !== idx))}
+                        style={{
+                          position: "absolute",
+                          top: "-6px",
+                          right: "-6px",
+                          background: "#dc2626",
+                          color: "#fff",
+                          border: 0,
+                          borderRadius: "50%",
+                          width: "18px",
+                          height: "18px",
+                          fontSize: "10px",
+                          cursor: "pointer",
+                          display: "grid",
+                          placeItems: "center",
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Visit Remarks */}
+            <div style={{ marginBottom: "20px" }}>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "6px" }}>
+                3. Field Visit Remarks / Notes
+              </label>
+              <textarea
+                placeholder="e.g. Visited storefront at Bagalur Road. Signboard active, business verified authentic."
+                value={visitNotes}
+                onChange={(e) => setVisitNotes(e.target.value)}
+                rows={3}
+                style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12px" }}
+              />
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+              <button
+                type="button"
+                className="outline-button"
+                onClick={() => setVerifyingBusiness(null)}
+                disabled={submittingVerification}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="primary-button"
+                onClick={handleSubmitVerification}
+                disabled={submittingVerification || photoUploading}
+              >
+                {submittingVerification ? "Submitting..." : "Approve Visit & Forward to Admin →"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {(tab === "Profile details" || tab === "Profile") && (
+        <ProfileAndSettingsPanel
+          role="Agent"
+          label="Field agent"
+          initialSubTab="profile"
+          onNavigateTab={(t) => setTab(t)}
+          onOpenPortal={onOpenPortal}
+          onLanguageChange={onLanguageChange}
+          showNotice={showNotice}
+        />
+      )}
+      {tab === "Settings" && (
+        <ProfileAndSettingsPanel
+          role="Agent"
+          label="Field agent"
+          initialSubTab="settings"
+          onNavigateTab={(t) => setTab(t)}
+          onOpenPortal={onOpenPortal}
+          onLanguageChange={onLanguageChange}
+          showNotice={showNotice}
+        />
+      )}
+    </div>
+  );
 }
 
 function ProfileAndSettingsPanel({
@@ -22799,7 +23394,91 @@ function CompanyPortal({
     loadAgents();
   }, []);
 
-  const tabNames = accessLevel === "Super Admin" ? ["Overview", "Businesses", "Agents", "Transactions", "Advertisements", "Categories", "Registration forms", "Customer locations", "Admins", "Activity log", "Safety", "Profile details", "Settings"] : ["Overview", "Businesses", "Agents", "Transactions", "Advertisements", "Categories", "Customer locations", "Activity log", "Safety", "Profile details", "Settings"];
+  type BusinessApprovalRecord = {
+    id: string;
+    name: string;
+    category: string;
+    phone: string;
+    email: string;
+    ownerName: string;
+    address?: BusinessAddress;
+    coordinates?: Coordinates | null;
+    images?: string[];
+    photos?: string[];
+    verificationStatus?: "Pending Agent Visit" | "Pending Admin Approval" | "Approved" | "Rejected";
+    assignedAgentId?: string;
+    assignedAgentName?: string;
+    assignedAgentPhone?: string;
+    agentVerification?: {
+      agentId: string;
+      agentName: string;
+      agentPhone: string;
+      agentReferralCode?: string;
+      visitedAt: string;
+      uploadedImages: string[];
+      notes?: string;
+      verifiedGps?: { latitude: number; longitude: number } | null;
+    };
+    adminApproval?: {
+      adminEmail: string;
+      adminName: string;
+      approvedAt: string;
+      notes?: string;
+    };
+    rejectionReason?: string;
+    createdAt: string;
+  };
+
+  const [approvals, setApprovals] = useState<BusinessApprovalRecord[]>([]);
+  const [approvalsLoading, setApprovalsLoading] = useState(false);
+  const [approvalsError, setApprovalsError] = useState("");
+  const [processingApprovalId, setProcessingApprovalId] = useState<string | null>(null);
+
+  const loadApprovals = () => {
+    setApprovalsLoading(true);
+    setApprovalsError("");
+    fetch("/api/company/business-approvals", { cache: "no-store", credentials: "include" })
+      .then(async (response) => {
+        const result = (await response.json()) as { businesses?: BusinessApprovalRecord[]; error?: string };
+        if (!response.ok) throw new Error(result.error || "Could not load business approvals.");
+        setApprovals(result.businesses || []);
+      })
+      .catch((error) => {
+        setApprovalsError(error instanceof Error ? error.message : "Could not load business approvals.");
+      })
+      .finally(() => setApprovalsLoading(false));
+  };
+
+  useEffect(() => {
+    loadApprovals();
+  }, []);
+
+  async function handleAdminApproval(businessId: string, action: "approve" | "reject", notes?: string) {
+    setProcessingApprovalId(businessId);
+    try {
+      const response = await fetch("/api/company/business-approvals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ businessId, action, notes }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Failed to process approval.");
+      showNotice(action === "approve" ? "✓ Business approved and published live in Hosur directory!" : "Business rejection recorded.");
+      loadApprovals();
+      window.dispatchEvent(new Event("neighborly-businesses-refresh"));
+    } catch (err) {
+      showNotice(err instanceof Error ? err.message : "Failed to process approval.");
+    } finally {
+      setProcessingApprovalId(null);
+    }
+  }
+
+  const pendingApprovalsCount = approvals.filter((b) => b.verificationStatus === "Pending Admin Approval").length;
+
+  const tabNames = accessLevel === "Super Admin"
+    ? ["Overview", "Businesses", `Approvals${pendingApprovalsCount > 0 ? ` (${pendingApprovalsCount})` : ""}`, "Agents", "Transactions", "Advertisements", "Categories", "Registration forms", "Customer locations", "Admins", "Activity log", "Safety", "Profile details", "Settings"]
+    : ["Overview", "Businesses", `Approvals${pendingApprovalsCount > 0 ? ` (${pendingApprovalsCount})` : ""}`, "Agents", "Transactions", "Advertisements", "Categories", "Customer locations", "Activity log", "Safety", "Profile details", "Settings"];
 
   useEffect(() => {
     if (accessLevel !== "Super Admin") return;
@@ -22956,7 +23635,20 @@ function CompanyPortal({
     showNotice("Downloaded the local demo report. It contains sample and browser-local data only.");
   }
   return <div className="page-content portal-content"><div className="portal-header"><div><div className="eyebrow"><span /> COMPANY ADMINISTRATION</div><h1>See the whole <em>neighborhood.</em></h1><p>Platform health, partner businesses and privacy-aware activity controls.</p></div><span className="admin-label">{accessLevel.toUpperCase()}</span></div>
-    <div className="portal-tabs">{tabNames.map((tab) => <button key={tab} className={activeTab === tab ? "current" : ""} onClick={() => setActiveTab(tab)}>{tab}</button>)}</div>
+    <div className="portal-tabs">
+      {tabNames.map((tab) => {
+        const isApprovals = tab.startsWith("Approvals") && activeTab.startsWith("Approvals");
+        return (
+          <button
+            key={tab}
+            className={activeTab === tab || isApprovals ? "current" : ""}
+            onClick={() => setActiveTab(tab.startsWith("Approvals") ? "Approvals" : tab)}
+          >
+            {tab}
+          </button>
+        );
+      })}
+    </div>
     {activeTab === "Categories" && <CompanyCategoryManager accessLevel={accessLevel} />}
     {activeTab === "Registration forms" && accessLevel === "Super Admin" && <CompanyRegistrationFormManager />}
     {activeTab === "Advertisements" && (
@@ -23054,6 +23746,180 @@ function CompanyPortal({
       </section>
     )}
     {activeTab === "Customer locations" && <section className="panel tab-panel"><div className="eyebrow">CONSENTED REGISTRATION LOCATION</div><h2>Customer registration requests</h2><p>Only Company Admins can view this list. Exact coordinates are included only when the customer grants browser location access. Demo requests have a verified mobile number but do not activate an account.</p>{registrationLoading && <p>Loading registration records…</p>}{registrationError && <p className="form-error" role="alert">{registrationError}</p>}{!registrationLoading && !registrationError && customerRegistrations.length === 0 && <EmptyState title="No registration requests yet" text="Customer requests and any shared locations will appear here." />}{customerRegistrations.map((registration) => <div className="listing-row" key={registration.id}><span className="listing-icon lavender">⌖</span><span className="listing-name"><strong>{registration.name}</strong><small>Mobile ending {registration.phoneLast4} · {new Date(registration.registeredAt).toLocaleString()} · {registration.verificationStatus}</small>{registration.locationStatus === "shared" && registration.latitude !== null && registration.longitude !== null && <small>Coordinates: {registration.latitude.toFixed(5)}, {registration.longitude.toFixed(5)}</small>}</span><span className={`status-pill ${registration.locationStatus === "shared" ? "verified" : "pending"}`}>{registration.locationStatus === "shared" ? "Location shared" : registration.locationStatus === "denied" ? "Location denied" : "Location unavailable"}</span></div>)}</section>}    {activeTab === "Businesses" && <><section className="panel tab-panel"><div className="panel-heading"><div><div className="eyebrow">PARTNER DIRECTORY</div><h2>All registered businesses</h2></div><button className="outline-button" onClick={downloadReport}>Download CSV ↗</button></div>{businesses.map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category} / {business.products.length} catalogue items / sample distance {business.distance} km</small>{business.address && <small>Address: {Object.values(business.address).filter(Boolean).join(", ")}</small>}{business.coordinates && <small>Coordinates: {business.coordinates.latitude.toFixed(6)}, {business.coordinates.longitude.toFixed(6)}</small>}{business.businessModes?.length ? <small>Activity: {business.businessModes.join(", ")}</small> : null}{business.vehicleTypes?.length ? <small>Vehicles: {business.vehicleTypes.join(", ")}</small> : null}{business.vehicleMakes?.length ? <small>Makes: {business.vehicleMakes.join(", ")}</small> : null}{business.vehicleModels?.length ? <small>Models: {business.vehicleModels.join(", ")}</small> : null}</span><span className={`status-pill ${business.subscribed ? "verified" : "pending"}`}>● {business.subscribed ? "Subscribed" : "Pending"}</span></div>)}</section></>}
+    {activeTab.startsWith("Approvals") && (
+      <section className="panel tab-panel">
+        <div className="panel-heading">
+          <div>
+            <div className="eyebrow">VERIFICATION PIPELINE</div>
+            <h2>Business Approvals Queue</h2>
+            <p style={{ fontSize: "12px", color: "#66786c", margin: "4px 0 0" }}>
+              Review physical field visits conducted by local agents, verify storefront photographs, and authorize businesses to go live in the public Hosur directory.
+            </p>
+          </div>
+          <button className="outline-button" onClick={loadApprovals}>
+            {approvalsLoading ? "Refreshing..." : "↻ Refresh Approvals"}
+          </button>
+        </div>
+
+        {approvalsLoading ? (
+          <p style={{ padding: "20px", color: "#66786c" }}>Loading approvals queue...</p>
+        ) : approvals.length === 0 ? (
+          <EmptyState
+            title="No business approvals pending"
+            text="When field agents verify new businesses in Hosur, they will appear here with photos for your final publication authorization."
+          />
+        ) : (
+          <div style={{ display: "grid", gap: "16px", marginTop: "16px" }}>
+            {approvals.map((biz) => {
+              const isReadyForAdmin = biz.verificationStatus === "Pending Admin Approval";
+              const isPendingAgent = biz.verificationStatus === "Pending Agent Visit";
+              const isApproved = biz.verificationStatus === "Approved";
+              const isRejected = biz.verificationStatus === "Rejected";
+              const isProcessing = processingApprovalId === biz.id;
+
+              return (
+                <div
+                  key={biz.id}
+                  style={{
+                    background: "#fff",
+                    border: `1.5px solid ${isReadyForAdmin ? "#f59e0b" : isApproved ? "#10b981" : "#e2e8f0"}`,
+                    borderRadius: "12px",
+                    padding: "18px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "14px",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px", flexWrap: "wrap" }}>
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                        <strong style={{ fontSize: "16px", color: "#0f172a" }}>{biz.name}</strong>
+                        <span style={{ fontSize: "11px", background: "#f1f5f9", color: "#334155", padding: "2px 8px", borderRadius: "12px", border: "1px solid #cbd5e1", fontWeight: 600 }}>
+                          {biz.category}
+                        </span>
+                        <span
+                          className={`status-pill ${isApproved ? "verified" : isReadyForAdmin ? "pending" : "pending"}`}
+                          style={{
+                            background: isApproved ? "#f0fdf4" : isReadyForAdmin ? "#fef3c7" : "#f1f5f9",
+                            color: isApproved ? "#166534" : isReadyForAdmin ? "#b45309" : "#475569",
+                            borderColor: isApproved ? "#bbf7d0" : isReadyForAdmin ? "#fde68a" : "#cbd5e1",
+                          }}
+                        >
+                          ● {biz.verificationStatus || "Pending Agent Visit"}
+                        </span>
+                      </div>
+                      <p style={{ margin: "6px 0 2px", fontSize: "12px", color: "#475569" }}>
+                        📍 <strong>Location:</strong> {biz.address ? [biz.address.doorNumber, biz.address.street, biz.address.area, "Hosur"].filter(Boolean).join(", ") : "Hosur"}
+                      </p>
+                      <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#475569" }}>
+                        📞 <strong>Mobile:</strong> {biz.phone} · ✉️ {biz.email || "No email"} {biz.ownerName ? `· Owner: ${biz.ownerName}` : ""}
+                      </p>
+                      <small style={{ color: "#94a3b8", fontSize: "11px" }}>
+                        Registered on: {new Date(biz.createdAt).toLocaleString()}
+                      </small>
+                    </div>
+
+                    {isReadyForAdmin && (
+                      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                        <button
+                          type="button"
+                          className="primary-button"
+                          style={{ background: "#166534", borderColor: "#166534", padding: "8px 16px", fontSize: "12.5px" }}
+                          disabled={isProcessing}
+                          onClick={() => handleAdminApproval(biz.id, "approve")}
+                        >
+                          {isProcessing ? "Processing..." : "✓ Approve & Publish Listing"}
+                        </button>
+                        <button
+                          type="button"
+                          className="outline-button"
+                          style={{ color: "#b91c1c", borderColor: "#fca5a5", padding: "8px 14px", fontSize: "12.5px" }}
+                          disabled={isProcessing}
+                          onClick={() => {
+                            const reason = window.prompt("Reason for rejecting or requesting re-visit:");
+                            if (reason !== null) {
+                              handleAdminApproval(biz.id, "reject", reason);
+                            }
+                          }}
+                        >
+                          ✕ Reject
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Agent Field Verification Card */}
+                  {biz.agentVerification ? (
+                    <div style={{ background: "#f8fafc", border: "1px solid #cbd5e1", borderRadius: "8px", padding: "14px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px", flexWrap: "wrap" }}>
+                        <span style={{ fontSize: "12px", fontWeight: 700, color: "#1e293b", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                          🔍 Field Agent Verification Report
+                        </span>
+                        <span style={{ fontSize: "11px", color: "#64748b" }}>
+                          Visited: {new Date(biz.agentVerification.visitedAt).toLocaleString()}
+                        </span>
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "8px", fontSize: "12px", color: "#334155" }}>
+                        <div><strong>Agent Name:</strong> {biz.agentVerification.agentName}</div>
+                        <div><strong>Agent Mobile:</strong> {biz.agentVerification.agentPhone}</div>
+                        <div><strong>Referral Code:</strong> {biz.agentVerification.agentReferralCode || "N/A"}</div>
+                        <div>
+                          <strong>Storefront GPS:</strong>{" "}
+                          {biz.agentVerification.verifiedGps
+                            ? `${biz.agentVerification.verifiedGps.latitude.toFixed(5)}, ${biz.agentVerification.verifiedGps.longitude.toFixed(5)}`
+                            : "Not recorded"}
+                        </div>
+                      </div>
+                      {biz.agentVerification.notes && (
+                        <div style={{ marginTop: "8px", padding: "8px 10px", background: "#fff", borderRadius: "6px", border: "1px solid #e2e8f0", fontSize: "12px", color: "#334155" }}>
+                          <strong>Agent Remarks:</strong> &ldquo;{biz.agentVerification.notes}&rdquo;
+                        </div>
+                      )}
+
+                      {/* Storefront Photos */}
+                      {biz.agentVerification.uploadedImages?.length > 0 && (
+                        <div style={{ marginTop: "12px" }}>
+                          <span style={{ fontSize: "11.5px", fontWeight: 700, color: "#475569", display: "block", marginBottom: "6px" }}>
+                            📸 Verified Storefront Photographs ({biz.agentVerification.uploadedImages.length})
+                          </span>
+                          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                            {biz.agentVerification.uploadedImages.map((img, i) => (
+                              <a key={i} href={img} target="_blank" rel="noopener noreferrer" title="Click to view full image">
+                                <img
+                                  src={img}
+                                  alt="Storefront"
+                                  style={{ width: "120px", height: "85px", objectFit: "cover", borderRadius: "6px", border: "1px solid #94a3b8" }}
+                                />
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div style={{ background: "#fffbeb", border: "1px dashed #fde68a", borderRadius: "8px", padding: "12px", fontSize: "12px", color: "#92400e" }}>
+                      ⏳ <strong>Awaiting Field Visit:</strong> No field agent has submitted storefront photos for this business yet.
+                    </div>
+                  )}
+
+                  {biz.adminApproval && (
+                    <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "6px", padding: "8px 12px", fontSize: "11.5px", color: "#166534" }}>
+                      ✓ <strong>Authorized by:</strong> {biz.adminApproval.adminName} ({biz.adminApproval.adminEmail}) on {new Date(biz.adminApproval.approvedAt).toLocaleString()}
+                    </div>
+                  )}
+                  {biz.rejectionReason && (
+                    <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "6px", padding: "8px 12px", fontSize: "11.5px", color: "#991b1b" }}>
+                      ✕ <strong>Rejection Reason:</strong> {biz.rejectionReason}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+    )}
     {activeTab === "Admins" && accessLevel === "Super Admin" && (
       <section className="panel tab-panel">
         <div className="eyebrow">PLATFORM ACCESS</div>

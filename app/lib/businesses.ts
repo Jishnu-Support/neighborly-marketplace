@@ -1,6 +1,31 @@
 import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from "node:crypto";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { readAgentRecords } from "./agents";
+
+export type VerificationStatus =
+  | "Pending Agent Visit"
+  | "Pending Admin Approval"
+  | "Approved"
+  | "Rejected";
+
+export type AgentVerificationDetails = {
+  agentId: string;
+  agentName: string;
+  agentPhone: string;
+  agentReferralCode?: string;
+  visitedAt: string;
+  uploadedImages: string[];
+  notes?: string;
+  verifiedGps?: { latitude: number; longitude: number } | null;
+};
+
+export type AdminApprovalDetails = {
+  adminEmail: string;
+  adminName: string;
+  approvedAt: string;
+  notes?: string;
+};
 
 export type BusinessAddress = {
   doorNumber: string;
@@ -47,6 +72,13 @@ export type StoredBusiness = {
   products: BusinessProduct[];
   subscribed: boolean;
   active: boolean;
+  verificationStatus?: VerificationStatus;
+  assignedAgentId?: string;
+  assignedAgentName?: string;
+  assignedAgentPhone?: string;
+  agentVerification?: AgentVerificationDetails;
+  adminApproval?: AdminApprovalDetails;
+  rejectionReason?: string;
   createdAt: string;
   rating?: number;
   reviews?: number;
@@ -88,7 +120,7 @@ export async function writeBusinessRecords(businesses: StoredBusiness[]) {
 export async function listRegisteredBusinesses(): Promise<PublicBusiness[]> {
   const records = await readBusinessRecords();
   return records
-    .filter((b) => b.active)
+    .filter((b) => b.active && (b.verificationStatus === "Approved" || !b.verificationStatus))
     .map(({ salt, passwordHash, ...pub }) => pub);
 }
 
@@ -98,7 +130,6 @@ export async function getBusinessByIdentity(identity: string): Promise<PublicBus
   const records = await readBusinessRecords();
 
   const found = records.find((b) => {
-    if (!b.active) return false;
     if (b.email && b.email.toLowerCase() === normalizedIdentity) return true;
     const bDigits = b.phone.replace(/\D/g, "");
     if (cleanDigits.length >= 8 && (bDigits === cleanDigits || bDigits.endsWith(cleanDigits) || cleanDigits.endsWith(bDigits))) {
@@ -118,7 +149,6 @@ export async function verifyBusinessCredentials(identity: string, password: stri
   const records = await readBusinessRecords();
 
   const found = records.find((b) => {
-    if (!b.active) return false;
     if (b.email && b.email.toLowerCase() === normalizedIdentity) return true;
     const bDigits = b.phone.replace(/\D/g, "");
     if (cleanDigits.length >= 8 && (bDigits === cleanDigits || bDigits.endsWith(cleanDigits) || cleanDigits.endsWith(bDigits))) {
@@ -181,6 +211,20 @@ export async function registerBusinessAccount(input: {
     pincode: input.pincode?.trim() || (existingIndex >= 0 ? records[existingIndex].address.pincode : "635109"),
   };
 
+  // Attempt to assign to a nearby active field agent if available
+  let assignedAgentId: string | undefined;
+  let assignedAgentName: string | undefined;
+  let assignedAgentPhone: string | undefined;
+  try {
+    const agents = await readAgentRecords();
+    const activeAgent = agents.find((a) => a.active);
+    if (activeAgent) {
+      assignedAgentId = activeAgent.id;
+      assignedAgentName = activeAgent.name;
+      assignedAgentPhone = activeAgent.phone;
+    }
+  } catch {}
+
   const newRecord: StoredBusiness = {
     id: existingIndex >= 0 ? records[existingIndex].id : randomUUID(),
     name: input.name.trim(),
@@ -195,9 +239,14 @@ export async function registerBusinessAccount(input: {
     businessModes: input.businessModes || ["In-store Sales", "Customer Service"],
     description: input.description?.trim() || `${input.category} in ${input.locality || "Hosur"}`,
     images: input.images || [],
+    photos: input.images || [],
     products: input.products || [],
     subscribed: true,
-    active: true,
+    active: false, // NOT publicly listed until Admin approval
+    verificationStatus: "Pending Agent Visit",
+    assignedAgentId,
+    assignedAgentName,
+    assignedAgentPhone,
     createdAt: existingIndex >= 0 ? records[existingIndex].createdAt : new Date().toISOString(),
     rating: 5,
     reviews: 0,
@@ -211,6 +260,104 @@ export async function registerBusinessAccount(input: {
   }
 
   const { salt: _s, passwordHash: _p, ...pub } = newRecord;
+  return pub;
+}
+
+export async function listBusinessesForAgentVerification(agentIdentity?: string): Promise<PublicBusiness[]> {
+  const records = await readBusinessRecords();
+  return records
+    .filter((b) => b.verificationStatus === "Pending Agent Visit" || b.verificationStatus === "Pending Admin Approval" || b.verificationStatus === "Rejected")
+    .map(({ salt, passwordHash, ...pub }) => pub);
+}
+
+export async function submitAgentVerification(input: {
+  businessId: string;
+  agentId: string;
+  agentName: string;
+  agentPhone: string;
+  agentReferralCode?: string;
+  uploadedImages: string[];
+  notes?: string;
+  verifiedGps?: { latitude: number; longitude: number } | null;
+}): Promise<PublicBusiness> {
+  const records = await readBusinessRecords();
+  const index = records.findIndex((b) => b.id === input.businessId);
+  if (index === -1) {
+    throw new Error("Business not found for agent verification.");
+  }
+
+  const current = records[index];
+  current.verificationStatus = "Pending Admin Approval";
+  current.assignedAgentId = input.agentId;
+  current.assignedAgentName = input.agentName;
+  current.assignedAgentPhone = input.agentPhone;
+
+  current.agentVerification = {
+    agentId: input.agentId,
+    agentName: input.agentName,
+    agentPhone: input.agentPhone,
+    agentReferralCode: input.agentReferralCode,
+    visitedAt: new Date().toISOString(),
+    uploadedImages: input.uploadedImages,
+    notes: input.notes,
+    verifiedGps: input.verifiedGps,
+  };
+
+  if (input.uploadedImages.length > 0) {
+    current.images = input.uploadedImages;
+    current.photos = input.uploadedImages;
+  }
+  if (input.verifiedGps) {
+    current.coordinates = input.verifiedGps;
+  }
+
+  records[index] = current;
+  await writeBusinessRecords(records);
+
+  const { salt, passwordHash, ...pub } = current;
+  return pub;
+}
+
+export async function listBusinessesForAdminApproval(): Promise<PublicBusiness[]> {
+  const records = await readBusinessRecords();
+  return records
+    .filter((b) => b.verificationStatus === "Pending Admin Approval" || b.verificationStatus === "Pending Agent Visit" || b.verificationStatus === "Rejected")
+    .map(({ salt, passwordHash, ...pub }) => pub);
+}
+
+export async function submitAdminBusinessApproval(input: {
+  businessId: string;
+  adminEmail: string;
+  adminName: string;
+  action: "approve" | "reject";
+  notes?: string;
+}): Promise<PublicBusiness> {
+  const records = await readBusinessRecords();
+  const index = records.findIndex((b) => b.id === input.businessId);
+  if (index === -1) {
+    throw new Error("Business not found for admin approval.");
+  }
+
+  const current = records[index];
+  if (input.action === "approve") {
+    current.verificationStatus = "Approved";
+    current.active = true;
+    current.adminApproval = {
+      adminEmail: input.adminEmail,
+      adminName: input.adminName,
+      approvedAt: new Date().toISOString(),
+      notes: input.notes,
+    };
+  } else {
+    current.verificationStatus = "Rejected";
+    current.active = false;
+    current.rejectionReason = input.notes || "Rejected by administrator.";
+  }
+
+  records[index] = current;
+  await writeBusinessRecords(records);
+
+  const { salt, passwordHash, ...pub } = current;
   return pub;
 }
 
