@@ -14070,26 +14070,32 @@ export default function Home() {
           <div>
             <div className="mobile-drawer-section-title">Workspaces &amp; Portals</div>
             <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              {[
-                { r: "Discover" as Role, label: t.discover, icon: "⌕" },
-                { r: "Account" as Role, label: `${t.myActivity} & Orders`, icon: "🛍️" },
-                { r: "Business" as Role, label: t.businessPortal, icon: "🏢" },
-                { r: "Agent" as Role, label: t.agentPortal, icon: "♧" },
-                { r: "Company" as Role, label: t.companyPortal, icon: "⚙" },
-              ].map((w) => (
-                <button
-                  key={w.r}
-                  type="button"
-                  className={`mobile-drawer-nav-item ${role === w.r ? "active" : ""}`}
-                  onClick={() => {
-                    openPortal(w.r);
-                    setMobileMenuOpen(false);
-                  }}
-                >
-                  <span style={{ fontSize: "16px", width: "22px", textAlign: "center" }}>{w.icon}</span>
-                  <span>{w.label}</span>
-                </button>
-              ))}
+              {workspaceLinks.map(([wRole, icon]) => {
+                const label =
+                  wRole === "Discover"
+                    ? t.discover
+                    : wRole === "Account"
+                    ? `${t.myActivity} & Orders`
+                    : wRole === "Business"
+                    ? t.businessPortal
+                    : wRole === "Agent"
+                    ? t.agentPortal
+                    : t.companyPortal;
+                return (
+                  <button
+                    key={wRole}
+                    type="button"
+                    className={`mobile-drawer-nav-item ${role === wRole ? "active" : ""}`}
+                    onClick={() => {
+                      openPortal(wRole);
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    <span style={{ fontSize: "16px", width: "22px", textAlign: "center" }}>{icon}</span>
+                    <span>{label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -16741,71 +16747,291 @@ export default function Home() {
 
       {/* Interactive Mobile Sticky Bottom Navigation Bar */}
       <nav className="mobile-bottom-nav" aria-label="Mobile Navigation Bar">
-        <button
-          type="button"
-          className={`mobile-bottom-tab ${role === "Discover" ? "active" : ""}`}
-          onClick={() => {
-            setRole("Discover");
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }}
-        >
-          <span className="tab-icon">🧭</span>
-          <span>{t.discover}</span>
-          {role === "Discover" && <span className="mobile-bottom-tab-dot" />}
-        </button>
+        {role === "Company" ? (
+          <>
+            <button
+              type="button"
+              className={`mobile-bottom-tab ${portalActiveTab === "Overview" ? "active" : ""}`}
+              onClick={() => {
+                setPortalActiveTab("Overview");
+                window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Overview" } }));
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            >
+              <span className="tab-icon">🏛️</span>
+              <span>Overview</span>
+              {portalActiveTab === "Overview" && <span className="mobile-bottom-tab-dot" />}
+            </button>
 
-        <button
-          type="button"
-          className={`mobile-bottom-tab ${mobileCategorySheetOpen ? "active" : ""}`}
-          onClick={() => setMobileCategorySheetOpen(true)}
-        >
-          <span className="tab-icon">🏷️</span>
-          <span>Categories</span>
-        </button>
+            <button
+              type="button"
+              className={`mobile-bottom-tab ${portalActiveTab === "Businesses" ? "active" : ""}`}
+              onClick={() => {
+                setPortalActiveTab("Businesses");
+                window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Businesses" } }));
+              }}
+            >
+              <span className="tab-icon">🏢</span>
+              <span>Businesses</span>
+              {portalActiveTab === "Businesses" && <span className="mobile-bottom-tab-dot" />}
+            </button>
 
-        <button
-          type="button"
-          className={`mobile-bottom-tab ${role === "Account" && portalActiveTab === "Orders" ? "active" : ""}`}
-          onClick={() => {
-            setRole("Account");
-            setPortalActiveTab("Orders");
-            window.setTimeout(() => {
-              window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Orders" } }));
-            }, 30);
-          }}
-        >
-          <span className="tab-icon">🛍️</span>
-          <span>Orders</span>
-          {activeOrdersCount > 0 && <span className="mobile-bottom-tab-badge">{activeOrdersCount}</span>}
-          {role === "Account" && portalActiveTab === "Orders" && <span className="mobile-bottom-tab-dot" />}
-        </button>
+            <button
+              type="button"
+              className={`mobile-bottom-tab ${portalActiveTab?.startsWith("Approvals") ? "active" : ""}`}
+              onClick={() => {
+                setPortalActiveTab("Approvals");
+                window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Approvals" } }));
+              }}
+            >
+              <span className="tab-icon">✅</span>
+              <span>Approvals</span>
+              {portalActiveTab?.startsWith("Approvals") && <span className="mobile-bottom-tab-dot" />}
+            </button>
 
-        <button
-          type="button"
-          className={`mobile-bottom-tab ${role === "Account" && portalActiveTab === "Saved" ? "active" : ""}`}
-          onClick={() => {
-            setRole("Account");
-            setPortalActiveTab("Saved");
-            window.setTimeout(() => {
-              window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Saved" } }));
-            }, 30);
-          }}
-        >
-          <span className="tab-icon">♡</span>
-          <span>Saved</span>
-          {savedCount > 0 && <span className="mobile-bottom-tab-badge">{savedCount}</span>}
-          {role === "Account" && portalActiveTab === "Saved" && <span className="mobile-bottom-tab-dot" />}
-        </button>
+            <button
+              type="button"
+              className={`mobile-bottom-tab ${portalActiveTab === "Agents" ? "active" : ""}`}
+              onClick={() => {
+                setPortalActiveTab("Agents");
+                window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Agents" } }));
+              }}
+            >
+              <span className="tab-icon">👥</span>
+              <span>Agents</span>
+              {portalActiveTab === "Agents" && <span className="mobile-bottom-tab-dot" />}
+            </button>
 
-        <button
-          type="button"
-          className={`mobile-bottom-tab ${portalActiveTab === "Profile details" || portalActiveTab === "Settings" ? "active" : ""}`}
-          onClick={() => openProfileView("Profile details")}
-        >
-          <span className="tab-icon">👤</span>
-          <span>Profile</span>
-          {(portalActiveTab === "Profile details" || portalActiveTab === "Settings") && <span className="mobile-bottom-tab-dot" />}
-        </button>
+            <button
+              type="button"
+              className={`mobile-bottom-tab ${portalActiveTab === "Admins" || portalActiveTab === "Profile details" || portalActiveTab === "Settings" ? "active" : ""}`}
+              onClick={() => {
+                setPortalActiveTab("Admins");
+                window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Admins" } }));
+              }}
+            >
+              <span className="tab-icon">👑</span>
+              <span>Admins</span>
+              {(portalActiveTab === "Admins" || portalActiveTab === "Profile details" || portalActiveTab === "Settings") && <span className="mobile-bottom-tab-dot" />}
+            </button>
+          </>
+        ) : role === "Business" ? (
+          <>
+            <button
+              type="button"
+              className={`mobile-bottom-tab ${portalActiveTab === "Overview" ? "active" : ""}`}
+              onClick={() => {
+                setPortalActiveTab("Overview");
+                window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Overview" } }));
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            >
+              <span className="tab-icon">📊</span>
+              <span>Overview</span>
+              {portalActiveTab === "Overview" && <span className="mobile-bottom-tab-dot" />}
+            </button>
+
+            <button
+              type="button"
+              className={`mobile-bottom-tab ${portalActiveTab === "My business" ? "active" : ""}`}
+              onClick={() => {
+                setPortalActiveTab("My business");
+                window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "My business" } }));
+              }}
+            >
+              <span className="tab-icon">🏢</span>
+              <span>Store</span>
+              {portalActiveTab === "My business" && <span className="mobile-bottom-tab-dot" />}
+            </button>
+
+            <button
+              type="button"
+              className={`mobile-bottom-tab ${portalActiveTab === "Products & services" ? "active" : ""}`}
+              onClick={() => {
+                setPortalActiveTab("Products & services");
+                window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Products & services" } }));
+              }}
+            >
+              <span className="tab-icon">📦</span>
+              <span>Products</span>
+              {portalActiveTab === "Products & services" && <span className="mobile-bottom-tab-dot" />}
+            </button>
+
+            <button
+              type="button"
+              className={`mobile-bottom-tab ${portalActiveTab?.startsWith("Orders") ? "active" : ""}`}
+              onClick={() => {
+                setPortalActiveTab("Orders");
+                window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Orders" } }));
+              }}
+            >
+              <span className="tab-icon">🛍️</span>
+              <span>Orders</span>
+              {portalActiveTab?.startsWith("Orders") && <span className="mobile-bottom-tab-dot" />}
+            </button>
+
+            <button
+              type="button"
+              className={`mobile-bottom-tab ${portalActiveTab === "Profile details" || portalActiveTab === "Settings" ? "active" : ""}`}
+              onClick={() => openProfileView("Profile details")}
+            >
+              <span className="tab-icon">👤</span>
+              <span>Profile</span>
+              {(portalActiveTab === "Profile details" || portalActiveTab === "Settings") && <span className="mobile-bottom-tab-dot" />}
+            </button>
+          </>
+        ) : role === "Agent" ? (
+          <>
+            <button
+              type="button"
+              className={`mobile-bottom-tab ${portalActiveTab === "Overview" ? "active" : ""}`}
+              onClick={() => {
+                setPortalActiveTab("Overview");
+                window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Overview" } }));
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            >
+              <span className="tab-icon">📊</span>
+              <span>Overview</span>
+              {portalActiveTab === "Overview" && <span className="mobile-bottom-tab-dot" />}
+            </button>
+
+            <button
+              type="button"
+              className={`mobile-bottom-tab ${portalActiveTab?.startsWith("Business verifications") ? "active" : ""}`}
+              onClick={() => {
+                setPortalActiveTab("Business verifications");
+                window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Business verifications" } }));
+              }}
+            >
+              <span className="tab-icon">📋</span>
+              <span>Verify</span>
+              {portalActiveTab?.startsWith("Business verifications") && <span className="mobile-bottom-tab-dot" />}
+            </button>
+
+            <button
+              type="button"
+              className={`mobile-bottom-tab ${portalActiveTab === "Referral codes" ? "active" : ""}`}
+              onClick={() => {
+                setPortalActiveTab("Referral codes");
+                window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Referral codes" } }));
+              }}
+            >
+              <span className="tab-icon">🤝</span>
+              <span>Referrals</span>
+              {portalActiveTab === "Referral codes" && <span className="mobile-bottom-tab-dot" />}
+            </button>
+
+            <button
+              type="button"
+              className={`mobile-bottom-tab ${portalActiveTab === "Profile details" || portalActiveTab === "Settings" ? "active" : ""}`}
+              onClick={() => openProfileView("Profile details")}
+            >
+              <span className="tab-icon">👤</span>
+              <span>Profile</span>
+              {(portalActiveTab === "Profile details" || portalActiveTab === "Settings") && <span className="mobile-bottom-tab-dot" />}
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              className={`mobile-bottom-tab ${role === "Discover" ? "active" : ""}`}
+              onClick={() => {
+                setRole("Discover");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            >
+              <span className="tab-icon">🧭</span>
+              <span>{t.discover}</span>
+              {role === "Discover" && <span className="mobile-bottom-tab-dot" />}
+            </button>
+
+            <button
+              type="button"
+              className={`mobile-bottom-tab ${mobileCategorySheetOpen ? "active" : ""}`}
+              onClick={() => setMobileCategorySheetOpen(true)}
+            >
+              <span className="tab-icon">🏷️</span>
+              <span>Categories</span>
+            </button>
+
+            {authenticatedPortals.includes("Company") ? (
+              <button
+                type="button"
+                className="mobile-bottom-tab"
+                onClick={() => openPortal("Company")}
+              >
+                <span className="tab-icon">👑</span>
+                <span>Super Admin</span>
+              </button>
+            ) : authenticatedPortals.includes("Business") ? (
+              <button
+                type="button"
+                className="mobile-bottom-tab"
+                onClick={() => openPortal("Business")}
+              >
+                <span className="tab-icon">🏢</span>
+                <span>Business</span>
+              </button>
+            ) : authenticatedPortals.includes("Agent") ? (
+              <button
+                type="button"
+                className="mobile-bottom-tab"
+                onClick={() => openPortal("Agent")}
+              >
+                <span className="tab-icon">♧</span>
+                <span>Agent</span>
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className={`mobile-bottom-tab ${role === "Account" && portalActiveTab === "Orders" ? "active" : ""}`}
+                  onClick={() => {
+                    openPortal("Account");
+                    setPortalActiveTab("Orders");
+                    window.setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Orders" } }));
+                    }, 30);
+                  }}
+                >
+                  <span className="tab-icon">🛍️</span>
+                  <span>Orders</span>
+                  {activeOrdersCount > 0 && <span className="mobile-bottom-tab-badge">{activeOrdersCount}</span>}
+                  {role === "Account" && portalActiveTab === "Orders" && <span className="mobile-bottom-tab-dot" />}
+                </button>
+
+                <button
+                  type="button"
+                  className={`mobile-bottom-tab ${role === "Account" && portalActiveTab === "Saved" ? "active" : ""}`}
+                  onClick={() => {
+                    openPortal("Account");
+                    setPortalActiveTab("Saved");
+                    window.setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Saved" } }));
+                    }, 30);
+                  }}
+                >
+                  <span className="tab-icon">♡</span>
+                  <span>Saved</span>
+                  {savedCount > 0 && <span className="mobile-bottom-tab-badge">{savedCount}</span>}
+                  {role === "Account" && portalActiveTab === "Saved" && <span className="mobile-bottom-tab-dot" />}
+                </button>
+              </>
+            )}
+
+            <button
+              type="button"
+              className={`mobile-bottom-tab ${portalActiveTab === "Profile details" || portalActiveTab === "Settings" ? "active" : ""}`}
+              onClick={() => openProfileView("Profile details")}
+            >
+              <span className="tab-icon">👤</span>
+              <span>Profile</span>
+              {(portalActiveTab === "Profile details" || portalActiveTab === "Settings") && <span className="mobile-bottom-tab-dot" />}
+            </button>
+          </>
+        )}
       </nav>
 
       {/* Mobile Locality Bottom Sheet */}
@@ -21398,35 +21624,139 @@ function ProfileAndSettingsPanel({
             {profile.avatarInitials || (profile.fullName ? profile.fullName[0].toUpperCase() : "U")}
           </div>
           <div className="profile-hero-meta">
-            <h2>{profile.fullName || "Member Profile"}</h2>
+            <h2>
+              {role === "Company"
+                ? (profile.fullName || (label === "Super Admin" ? "Super Admin Profile" : "Company Admin Profile"))
+                : role === "Business"
+                ? (profile.fullName || "Business Profile")
+                : role === "Agent"
+                ? (profile.fullName || "Agent Partner Profile")
+                : (profile.fullName || "Member Profile")}
+            </h2>
             <p>
-              <span>📞 {profile.phone || "Not set"}</span>
-              <span>·</span>
-              <span>📍 {profile.locality || "Hosur, Tamil Nadu"}</span>
+              {role === "Company" ? (
+                <>
+                  <span>👑 System Administration</span>
+                  <span>·</span>
+                  <span>📍 {identity || "Platform Console"}</span>
+                </>
+              ) : role === "Business" ? (
+                <>
+                  <span>📞 {profile.phone || "Not set"}</span>
+                  <span>·</span>
+                  <span>📍 {profile.locality || profile.city || "Global Marketplace"}</span>
+                </>
+              ) : role === "Agent" ? (
+                <>
+                  <span>📞 {profile.phone || "Not set"}</span>
+                  <span>·</span>
+                  <span>📍 {profile.locality || "Field Partner Network"}</span>
+                </>
+              ) : (
+                <>
+                  <span>📞 {profile.phone || "Not set"}</span>
+                  <span>·</span>
+                  <span>📍 {profile.locality || "Global"}</span>
+                </>
+              )}
             </p>
             <div className="profile-hero-badges">
               <span className="profile-hero-pill">● {label} Account</span>
-              <span className="profile-hero-pill">✓ Verified Resident</span>
-              <span className="profile-hero-pill">🛡️ SOS Enabled</span>
+              {role === "Company" ? (
+                <>
+                  <span className="profile-hero-pill">🛡️ System Administration</span>
+                  <span className="profile-hero-pill">👑 Full Authority</span>
+                </>
+              ) : role === "Business" ? (
+                <>
+                  <span className="profile-hero-pill">🏢 Merchant Workspace</span>
+                  <span className="profile-hero-pill">📢 Local Campaigns</span>
+                </>
+              ) : role === "Agent" ? (
+                <>
+                  <span className="profile-hero-pill">📍 Field Verification</span>
+                  <span className="profile-hero-pill">✓ Partner Network</span>
+                </>
+              ) : (
+                <>
+                  <span className="profile-hero-pill">✓ Verified Resident</span>
+                  <span className="profile-hero-pill">🛡️ SOS Enabled</span>
+                </>
+              )}
             </div>
           </div>
         </div>
 
         <div className="profile-hero-stats">
-          <div className="profile-hero-stat-item">
-            <strong>{data?.orders?.length || 0}</strong>
-            <small>Orders</small>
-          </div>
-          <div style={{ width: 1, background: "rgba(255,255,255,0.2)" }} />
-          <div className="profile-hero-stat-item">
-            <strong>{data?.favorites.length || 0}</strong>
-            <small>Saved</small>
-          </div>
-          <div style={{ width: 1, background: "rgba(255,255,255,0.2)" }} />
-          <div className="profile-hero-stat-item">
-            <strong>100%</strong>
-            <small>Trust Score</small>
-          </div>
+          {role === "Company" ? (
+            <>
+              <div className="profile-hero-stat-item">
+                <strong>{label}</strong>
+                <small>Authority</small>
+              </div>
+              <div style={{ width: 1, background: "rgba(255,255,255,0.2)" }} />
+              <div className="profile-hero-stat-item">
+                <strong>Master</strong>
+                <small>Control Level</small>
+              </div>
+              <div style={{ width: 1, background: "rgba(255,255,255,0.2)" }} />
+              <div className="profile-hero-stat-item">
+                <strong>Active 🟢</strong>
+                <small>Status</small>
+              </div>
+            </>
+          ) : role === "Business" ? (
+            <>
+              <div className="profile-hero-stat-item">
+                <strong>{data?.businesses?.[0]?.products?.length || 0}</strong>
+                <small>Products</small>
+              </div>
+              <div style={{ width: 1, background: "rgba(255,255,255,0.2)" }} />
+              <div className="profile-hero-stat-item">
+                <strong>{data?.orders?.length || 0}</strong>
+                <small>Orders</small>
+              </div>
+              <div style={{ width: 1, background: "rgba(255,255,255,0.2)" }} />
+              <div className="profile-hero-stat-item">
+                <strong>100%</strong>
+                <small>Trust Score</small>
+              </div>
+            </>
+          ) : role === "Agent" ? (
+            <>
+              <div className="profile-hero-stat-item">
+                <strong>Field Partner</strong>
+                <small>Role</small>
+              </div>
+              <div style={{ width: 1, background: "rgba(255,255,255,0.2)" }} />
+              <div className="profile-hero-stat-item">
+                <strong>Active</strong>
+                <small>Status</small>
+              </div>
+              <div style={{ width: 1, background: "rgba(255,255,255,0.2)" }} />
+              <div className="profile-hero-stat-item">
+                <strong>100%</strong>
+                <small>Rating</small>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="profile-hero-stat-item">
+                <strong>{data?.orders?.length || 0}</strong>
+                <small>Orders</small>
+              </div>
+              <div style={{ width: 1, background: "rgba(255,255,255,0.2)" }} />
+              <div className="profile-hero-stat-item">
+                <strong>{data?.favorites.length || 0}</strong>
+                <small>Saved</small>
+              </div>
+              <div style={{ width: 1, background: "rgba(255,255,255,0.2)" }} />
+              <div className="profile-hero-stat-item">
+                <strong>100%</strong>
+                <small>Trust Score</small>
+              </div>
+            </>
+          )}
         </div>
       </section>
 
