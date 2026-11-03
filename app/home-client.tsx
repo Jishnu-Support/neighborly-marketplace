@@ -45,11 +45,11 @@ const subcategoriesSummary: Record<string, string> = {
 type Role = "Discover" | "Account" | "Business" | "Agent" | "Company";
 type EmergencyType = "police" | "medical" | "fire" | "women-safety" | "general";
 const emergencyTypes: { id: EmergencyType; title: string; description: string; icon: string; phone: string }[] = [
-  { id: "police", title: "Police / safety", description: "Threat, crime or immediate danger", icon: "?", phone: "100" },
-  { id: "medical", title: "Medical", description: "Urgent medical or ambulance help", icon: "+", phone: "108" },
-  { id: "fire", title: "Fire / rescue", description: "Fire, accident or rescue help", icon: "?", phone: "101" },
-  { id: "women-safety", title: "Women?s safety", description: "Safety threat or harassment", icon: "?", phone: "112" },
-  { id: "general", title: "Other emergency", description: "Any other immediate emergency", icon: "!", phone: "112" },
+  { id: "police", title: "Police / safety", description: "Threat, crime or immediate danger", icon: "👮", phone: "100" },
+  { id: "medical", title: "Medical", description: "Urgent medical or ambulance help", icon: "🚑", phone: "108" },
+  { id: "fire", title: "Fire / rescue", description: "Fire, accident or rescue help", icon: "🚒", phone: "101" },
+  { id: "women-safety", title: "Women’s safety", description: "Safety threat or harassment", icon: "🛡️", phone: "112" },
+  { id: "general", title: "Other emergency", description: "Any other immediate emergency", icon: "⚠️", phone: "112" },
 ];
 type MemberProfile = {
   fullName: string;
