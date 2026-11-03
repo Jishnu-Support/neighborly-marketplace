@@ -335,11 +335,22 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
       return;
     }
     try {
-      const response = await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ role: portal, identity: form.get("identity"), password: form.get("password") }) });
-      const result = await response.json() as { error?: string };
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role: portal, identity: form.get("identity"), password: form.get("password") }),
+      });
+      const result = await response.json() as {
+        error?: string;
+        redirectPortal?: string;
+        redirectUrl?: string;
+        session?: { role?: string; identity?: string };
+      };
       if (!response.ok) throw new Error(result.error || "Could not sign in.");
       setIsSuccess(true);
-      if (portal === "Account") {
+      const targetRole = result.redirectPortal || result.session?.role || portal;
+      const targetUrl = result.redirectUrl || (targetRole === "Account" ? "/" : `/?portal=${targetRole}`);
+      if (targetRole === "Account") {
         try { sessionStorage.removeItem("neighborly_login_location"); } catch { /* Sign-in does not depend on browser storage. */ }
         setMessage("Sign in successful. Your browser will ask whether to share your location for nearby results. You can decline and continue.");
         if (navigator.geolocation) {
@@ -357,7 +368,7 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
           });
         }
       }
-      window.location.assign(portal === "Account" ? "/" : `/?portal=${portal}`);
+      window.location.assign(targetUrl);
     } catch (error) {
       setIsSuccess(false);
       setMessage(error instanceof Error ? error.message : "Could not sign in. Please try again.");

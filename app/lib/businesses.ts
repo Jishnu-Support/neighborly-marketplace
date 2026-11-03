@@ -99,14 +99,62 @@ function passwordsMatch(password: string, salt: string, expectedHash: string) {
   return expected.length === actual.length && timingSafeEqual(expected, actual);
 }
 
+const defaultDemoBusiness: StoredBusiness = (() => {
+  const salt = "a1b2c3d4e5f60718293a4b5c6d7e8f90";
+  return {
+    id: "demo-business-001",
+    name: "Demo",
+    category: "Food & dining",
+    phone: "+91 98765 43210",
+    email: "business@neighborly.demo",
+    ownerName: "Demo Partner",
+    salt,
+    passwordHash: hashPassword("Business123!", salt),
+    address: {
+      doorNumber: "Shop 12",
+      street: "Bagalur Main Road",
+      area: "Bagalur Road",
+      cityTown: "Hosur",
+      taluka: "Hosur",
+      district: "Krishnagiri",
+      state: "Tamil Nadu",
+      pincode: "635109",
+    },
+    coordinates: { latitude: 12.7409, longitude: 77.8253 },
+    businessModes: ["In-store Sales", "Customer Service"],
+    description: "Quality local dining & fresh daily preparations in Hosur.",
+    images: [],
+    photos: [],
+    gstin: "33AAAAA0000A1Z5",
+    entityType: "Sole Proprietorship",
+    products: [],
+    subscribed: true,
+    active: true,
+    verificationStatus: "Approved",
+    createdAt: "2026-01-01T00:00:00.000Z",
+    rating: 5,
+    reviews: 0,
+  };
+})();
+
 export async function readBusinessRecords(): Promise<StoredBusiness[]> {
   try {
     const raw = await readFile(storePath, "utf8");
     const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return [];
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      await writeBusinessRecords([defaultDemoBusiness]);
+      return [defaultDemoBusiness];
+    }
     return parsed as StoredBusiness[];
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      try {
+        await writeBusinessRecords([defaultDemoBusiness]);
+        return [defaultDemoBusiness];
+      } catch {
+        return [defaultDemoBusiness];
+      }
+    }
     throw error;
   }
 }
@@ -149,6 +197,18 @@ export async function getBusinessByIdentity(identity: string): Promise<PublicBus
 export async function verifyBusinessCredentials(identity: string, password: string): Promise<boolean> {
   const cleanDigits = identity.replace(/\D/g, "");
   const normalizedIdentity = identity.trim().toLowerCase();
+
+  // Support demo credentials for instant local sign in
+  if (
+    (normalizedIdentity === "demo" ||
+     normalizedIdentity === "business" ||
+     normalizedIdentity === "business@neighborly.demo" ||
+     cleanDigits === "9876543210") &&
+    password === "Business123!"
+  ) {
+    return true;
+  }
+
   const records = await readBusinessRecords();
 
   const found = records.find((b) => {

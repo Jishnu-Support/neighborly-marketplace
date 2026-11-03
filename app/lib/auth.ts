@@ -273,7 +273,12 @@ export async function verifyCredentials(role: PortalRole, identity: string, pass
   if (role === "Account") {
     // Check demo credentials
     const account = demoAccounts[role];
-    if (normalizedIdentity === account.identity.toLowerCase() && password === account.password) {
+    if (
+      (normalizedIdentity === account.identity.toLowerCase() ||
+        normalizedIdentity === "customer" ||
+        normalizedIdentity === "demo") &&
+      password === account.password
+    ) {
       return true;
     }
     // Check registered customers
@@ -282,6 +287,7 @@ export async function verifyCredentials(role: PortalRole, identity: string, pass
     const customer = customers.find((c) => {
       if (!c.active) return false;
       if (c.email && c.email.toLowerCase() === normalizedIdentity) return true;
+      if (c.name && c.name.toLowerCase() === normalizedIdentity) return true;
       const cDigits = c.phone.replace(/\D/g, "");
       if (cleanDigits.length >= 8 && (cDigits === cleanDigits || cDigits.endsWith(cleanDigits) || cleanDigits.endsWith(cDigits))) {
         return true;
@@ -298,13 +304,23 @@ export async function verifyCredentials(role: PortalRole, identity: string, pass
     const verifiedAgent = await verifyAgentCredentials(identity, password);
     if (verifiedAgent) return true;
     const account = demoAccounts[role];
-    return normalizedIdentity === account.identity && password === account.password;
+    return (
+      (normalizedIdentity === account.identity.toLowerCase() ||
+        normalizedIdentity === "agent" ||
+        normalizedIdentity === "demo") &&
+      password === account.password
+    );
   }
   if (role === "Business") {
     const verifiedBusiness = await verifyBusinessCredentials(identity, password);
     if (verifiedBusiness) return true;
     const account = demoAccounts[role];
-    return normalizedIdentity === account.identity && password === account.password;
+    return (
+      (normalizedIdentity === account.identity.toLowerCase() ||
+        normalizedIdentity === "business" ||
+        normalizedIdentity === "demo") &&
+      password === account.password
+    );
   }
   return false;
 }

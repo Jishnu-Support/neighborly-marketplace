@@ -13057,56 +13057,122 @@ export default function Home() {
       showNotice("Capture the business location before submitting registration.");
       return;
     }
-    try {
-      const response = await fetch("/api/registration/otp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "consume", role: "Business", phone }) });
-      const result = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(result.error || "Verify the business mobile number first.");
-    } catch (error) {
-      showNotice(error instanceof Error ? error.message : "Verify the business mobile number first.");
+    const gstin = String(form.get("gstin") || "").trim();
+    if (!gstin || gstin.length < 4) {
+      showNotice("GST Number / Business Tax ID is mandatory.");
       return;
     }
-    setDemoData((current) => ({ ...current, businesses: [
-      {
-        name,
-        category: selectedCategory,
-        phone,
-        address,
-        coordinates,
-        demoCoordinates: coordinates,
-        businessModes,
-        taxonomyPaths: taxonomySelections.map((selection) => [selection.activity, selection.sector, ...selection.path]),
-        taxonomyTags: [...new Set(taxonomySelections.flatMap((selection) => [selection.activity, selection.sector, ...selection.path]))],
-        vehicleTypes,
-        vehicleMakes,
-        vehicleModels,
-        categories: selectedCategories.length ? selectedCategories : [selectedCategory],
-        subcategories: [],
-        products: [],
-        description: `${businessModes.join(" & ")} in ${selectedCategories.length ? selectedCategories.join(", ") : selectedCategory}`,
-        distance: 0.8,
-        rating: 5,
-        reviews: 0,
-        price: "Contact for pricing",
-        icon: "🏪",
-        color: "peach",
-        subscribed: false,
-        tag: "Awaiting verification",
-        images: uploadedImages,
-        image: uploadedImages[0] || undefined,
-      },
-      ...current.businesses,
-    ] }));
-    recordEvent("Business registration saved in demo");
-    setDialog(null);
-    openPortal("Business");
-    showNotice("Business profile saved. Choose a plan and complete verification to appear in search.");
-    addNotification({
-      title: `Business Profile Created: ${name}`,
-      message: `Your business has been added to local listings under ${selectedCategory}.`,
-      type: "business",
-      linkText: "View in Discover",
-      action: { type: "search", payload: name },
-    });
+    try {
+      const response = await fetch("/api/businesses/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          category: selectedCategory,
+          phone,
+          password,
+          doorNo: address.doorNumber || "Shop 1",
+          street: address.street || "Main Road",
+          locality: address.area || "Hosur",
+          city: address.cityTown || "Hosur",
+          state: address.state || "Tamil Nadu",
+          pincode: address.pincode || "635109",
+          gstin: gstin.toUpperCase(),
+          ownerName: String(form.get("ownerName") || name).trim(),
+          description: `${businessModes.join(" & ")} in ${selectedCategories.length ? selectedCategories.join(", ") : selectedCategory}`,
+          businessModes,
+          coordinates,
+          images: uploadedImages,
+        }),
+      });
+      const result = await response.json() as { error?: string; business?: any };
+      if (!response.ok) {
+        showNotice(result.error || "Could not register business. Please verify all details.");
+        return;
+      }
+
+      if (result.business) {
+        setCurrentBusinessRecord(result.business);
+        const combined = [address.doorNumber, address.street, address.area, address.cityTown, address.state, address.pincode].filter(Boolean).join(", ");
+        const bizProfile: MemberProfile = {
+          fullName: result.business.name || name,
+          phone: result.business.phone || phone,
+          email: result.business.email || "",
+          doorNo: address.doorNumber || "",
+          street: address.street || "",
+          locality: address.area || "",
+          city: address.cityTown || "",
+          district: address.district || address.cityTown || "",
+          state: address.state || "",
+          pincode: address.pincode || "",
+          address: combined || "",
+          bio: `${selectedCategory} · Pending Agent Visit`,
+          avatarInitials: (name ? name[0] : "B").toUpperCase(),
+          avatarBg: "#0f766e",
+          emergencyPhones: ["", ""],
+          emergencyNames: ["", ""],
+          emergencyRelations: ["", ""],
+        };
+        setCurrentCustomerProfile(bizProfile);
+        try {
+          localStorage.setItem("neighborly_profile_Business", JSON.stringify(bizProfile));
+          localStorage.setItem("neighborly-profile-v1-business", JSON.stringify(bizProfile));
+          localStorage.setItem(`neighborly-profile-v1-business-${encodeURIComponent(phone.trim().toLowerCase())}`, JSON.stringify(bizProfile));
+          localStorage.setItem("bizearch_registered_user", JSON.stringify({ name, phone, role: "Business", registeredAt: new Date().toISOString() }));
+        } catch {}
+      }
+
+      setDemoData((current) => ({
+        ...current,
+        businesses: [
+          {
+            name,
+            category: selectedCategory,
+            phone,
+            address,
+            coordinates,
+            demoCoordinates: coordinates,
+            businessModes,
+            taxonomyPaths: taxonomySelections.map((selection) => [selection.activity, selection.sector, ...selection.path]),
+            taxonomyTags: [...new Set(taxonomySelections.flatMap((selection) => [selection.activity, selection.sector, ...selection.path]))],
+            vehicleTypes,
+            vehicleMakes,
+            vehicleModels,
+            categories: selectedCategories.length ? selectedCategories : [selectedCategory],
+            subcategories: [],
+            products: [],
+            description: `${businessModes.join(" & ")} in ${selectedCategories.length ? selectedCategories.join(", ") : selectedCategory}`,
+            distance: 0.8,
+            rating: 5,
+            reviews: 0,
+            price: "Contact for pricing",
+            icon: "🏪",
+            color: "peach",
+            subscribed: false,
+            tag: "Awaiting verification",
+            images: uploadedImages,
+            image: uploadedImages[0] || undefined,
+          },
+          ...current.businesses,
+        ],
+      }));
+
+      setAuthenticatedPortals((prev) => (prev.includes("Business") ? prev : [...prev, "Business"]));
+      setSessionIdentity(phone);
+      recordEvent("Business registration saved to database");
+      setDialog(null);
+      openPortal("Business");
+      showNotice("✓ Business registered successfully! Saved to platform database.");
+      addNotification({
+        title: `Business Profile Created: ${name}`,
+        message: `Your business has been registered and saved.`,
+        type: "business",
+        linkText: "View in Business Portal",
+        action: { type: "portal", payload: "Business" },
+      });
+    } catch (error) {
+      showNotice(error instanceof Error ? error.message : "Error saving business registration.");
+    }
   }
 
   function updateBusinessPhotos(businessName: string, images: string[]) {
