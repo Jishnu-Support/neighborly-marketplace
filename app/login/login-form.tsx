@@ -53,10 +53,14 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
       if (!response.ok) throw new Error(result.error || "Could not verify this mobile number.");
       if (action === "send") {
         setDemoOtp(result.demoCode || "");
-        setOtp("");
+        if (result.demoCode) {
+          setOtp(result.demoCode);
+        } else {
+          setOtp("");
+        }
         setOtpVerified(false);
         setIsSuccess(true);
-        setMessage(result.demoCode ? "Demo OTP generated. Enter the displayed code to verify." : "OTP sent to your mobile number.");
+        setMessage(result.demoCode ? `Verification code ${result.demoCode} generated. Click 'Verify OTP' to proceed.` : "OTP sent to your mobile number.");
       } else {
         setOtpVerified(true);
         setIsSuccess(true);
@@ -265,7 +269,7 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
             </div>
             {demoOtp && (
               <p className="otp-demo-code" role="status">
-                Demo OTP: <strong>{demoOtp}</strong> <span>For local testing only. No SMS was sent.</span>
+                Verification OTP: <strong>{demoOtp}</strong> <span>Auto-filled. Click &apos;Verify OTP&apos; to continue.</span>
               </p>
             )}
             {otpVerified && <p className="otp-verified" role="status">Mobile number verified ✓</p>}
