@@ -106,11 +106,16 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
       }
       if (portal === "Agent") {
         try {
-          const response = await fetch("/api/registration/otp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "consume", role: "Agent", phone }) });
-          const result = await response.json() as { error?: string };
-          if (!response.ok) throw new Error(result.error || "Could not submit the agent request.");
+          const response = await fetch("/api/agents/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, phone, password }),
+          });
+          const result = (await response.json()) as { error?: string; message?: string; agent?: { referralCode: string } };
+          if (!response.ok) throw new Error(result.error || "Could not complete agent registration.");
           setIsSuccess(true);
-          setMessage("Your mobile number is verified. Agent registration submitted.");
+          setMessage(result.message || "✓ Agent registered successfully! You can now sign in.");
+          setRegistering(false);
         } catch (error) {
           setIsSuccess(false);
           setMessage(error instanceof Error ? error.message : "Could not submit the agent request.");

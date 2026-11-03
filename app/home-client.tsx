@@ -19991,15 +19991,12 @@ function AgentPortal({
     return () => window.removeEventListener("neighborly-open-profile", openProfile);
   }, []);
 
+  const [referrals, setReferrals] = useState<Array<{ businessName: string; category: string; joined: string; status: string; commission?: string }>>([]);
+
   function downloadReferralReport() {
     const rows = [
       ["Business Name", "Category", "Joined Date", "Status", "Estimated Commission"],
-      ["Bloom & Bean Café", "Food & dining", "Oct 14, 2026", "Subscribed", "₹1,200"],
-      ["Kaveri Cycle Works", "Automobiles", "Oct 12, 2026", "Pending plan", "₹0"],
-      ["Pixel Fix Studio", "Electronics", "Oct 09, 2026", "Subscribed", "₹1,200"],
-      ["Sunday Loom", "Fashion", "Oct 06, 2026", "Reviewing", "₹0"],
-      ["Hosur Properties Hub", "Real Estate & Construction", "Oct 20, 2026", "Subscribed", "₹1,200"],
-      ["Sri Balaji Laser Works", "Industrial & B2B Manufacturing", "Oct 22, 2026", "Subscribed", "₹1,200"]
+      ...referrals.map((r) => [r.businessName, r.category, r.joined, r.status, r.commission || "₹0"]),
     ];
     const csvContent = "data:text/csv;charset=utf-8," + rows.map((e) => e.join(",")).join("\n");
     const encodedUri = encodeURI(csvContent);
@@ -20015,12 +20012,27 @@ function AgentPortal({
   return <div className="page-content portal-content"><div className="portal-header"><div><div className="eyebrow"><span /> NEIGHBORHOOD PARTNERS</div><h1>Good connections,<br /><em>good things.</em></h1><p>Help great local businesses meet the neighbors who need them.</p></div><div className="agent-avatar">✳</div></div>
     <div className="portal-tabs">{["Overview", "Profile details", "Settings"].map((item) => <button key={item} className={tab === item || (item === "Profile details" && tab === "Profile") ? "current" : ""} onClick={() => setTab(item)}>{item}</button>)}</div>
     {tab === "Overview" && <>
-    <section className="referral-card"><div className="referral-copy"><div className="eyebrow">YOUR REFERRAL CODE</div><h2>Share the local love.</h2><p>Businesses that use your code will be linked to your agent account when they register.</p></div><div className="code-box"><code>NEIGHBOR-4821</code><button onClick={() => { navigator.clipboard?.writeText("NEIGHBOR-4821"); setCopied(true); showNotice("Referral code copied."); }}>{copied ? "Copied ✓" : "Copy code ↗"}</button></div></section>
-    <div className="metric-grid"><Metric label="Businesses referred" value="24" delta="Across 6 categories" icon="♧" /><Metric label="Awaiting signup" value="5" delta="Share your referral code" icon="◷" /><Metric label="This month's reward" value="₹4,800" delta="Demo estimate" icon="↗" /></div>
+    <section className="referral-card"><div className="referral-copy"><div className="eyebrow">YOUR REFERRAL CODE</div><h2>Share the local love.</h2><p>Businesses that use your code will be linked to your agent account when they register.</p></div><div className="code-box"><code>AGENT-PARTNER</code><button onClick={() => { navigator.clipboard?.writeText("AGENT-PARTNER"); setCopied(true); showNotice("Referral code copied."); }}>{copied ? "Copied ✓" : "Copy code ↗"}</button></div></section>
+    <div className="metric-grid"><Metric label="Businesses referred" value={String(referrals.length)} delta={referrals.length === 0 ? "No businesses linked yet" : `${referrals.length} active business partner${referrals.length > 1 ? "s" : ""}`} icon="♧" /><Metric label="Awaiting signup" value="0" delta="Share your referral code" icon="◷" /><Metric label="This month's reward" value="₹0" delta="Real-time commission" icon="↗" /></div>
     <section className="panel agent-table"><div className="panel-heading"><div><div className="eyebrow">YOUR NETWORK</div><h2>Recent referrals</h2></div><button className="text-link" onClick={downloadReferralReport}>Download report ↗</button></div>
       <div className="table-head"><span>BUSINESS</span><span>CATEGORY</span><span>JOINED</span><span>STATUS</span></div>
-      {[["Bloom & Bean Café", "Food & dining", "Oct 14, 2026", "Subscribed"], ["Kaveri Cycle Works", "Automobiles", "Oct 12, 2026", "Pending plan"], ["Pixel Fix Studio", "Electronics", "Oct 09, 2026", "Subscribed"], ["Sunday Loom", "Fashion", "Oct 06, 2026", "Reviewing"]].map((row) => <div className="table-row" key={row[0]}>{row.map((cell, index) => <span key={cell} className={index === 3 ? `status-pill ${cell === "Subscribed" ? "verified" : "pending"}` : ""}>{index === 3 && <i>● </i>}{cell}</span>)}</div>)}
-    </section><div className="form-note"><strong>Agent data</strong><span>Referral records, commission rules, and payouts need authenticated server-side services before launch.</span></div>
+      {referrals.length === 0 ? (
+        <div style={{ padding: "28px 16px", textAlign: "center", color: "#6e8273", fontSize: "11px" }}>
+          No businesses referred yet. Share your referral code with local businesses to start earning commissions when they join.
+        </div>
+      ) : (
+        referrals.map((row) => (
+          <div className="table-row" key={row.businessName}>
+            <span>{row.businessName}</span>
+            <span>{row.category}</span>
+            <span>{row.joined}</span>
+            <span className={`status-pill ${row.status === "Subscribed" ? "verified" : "pending"}`}>
+              <i>● </i>{row.status}
+            </span>
+          </div>
+        ))
+      )}
+    </section><div className="form-note"><strong>Agent Network</strong><span>Live partner tracking. Businesses onboarding with your verified referral code are credited to your agent account.</span></div>
     </>}
     {(tab === "Profile details" || tab === "Profile") && (
       <ProfileAndSettingsPanel
@@ -22364,7 +22376,40 @@ function CompanyPortal({
   const [sosError, setSosError] = useState("");
   const [adminError, setAdminError] = useState("");
   const [adminLoading, setAdminLoading] = useState(false);
-  const tabNames = accessLevel === "Super Admin" ? ["Overview", "Businesses", "Transactions", "Advertisements", "Categories", "Registration forms", "Customer locations", "Admins", "Activity log", "Safety", "Profile details", "Settings"] : ["Overview", "Businesses", "Transactions", "Advertisements", "Categories", "Customer locations", "Activity log", "Safety", "Profile details", "Settings"];
+  type AgentRecord = {
+    id: string;
+    name: string;
+    phone: string;
+    email?: string;
+    referralCode: string;
+    active: boolean;
+    createdAt: string;
+    referredCount: number;
+  };
+  const [agents, setAgents] = useState<AgentRecord[]>([]);
+  const [agentsLoading, setAgentsLoading] = useState(false);
+  const [agentsError, setAgentsError] = useState("");
+
+  const loadAgents = () => {
+    setAgentsLoading(true);
+    setAgentsError("");
+    fetch("/api/company/agents", { cache: "no-store" })
+      .then(async (response) => {
+        const result = (await response.json()) as { agents?: AgentRecord[]; error?: string };
+        if (!response.ok) throw new Error(result.error || "Could not load agents.");
+        setAgents(result.agents || []);
+      })
+      .catch((error) => {
+        setAgentsError(error instanceof Error ? error.message : "Could not load agents.");
+      })
+      .finally(() => setAgentsLoading(false));
+  };
+
+  useEffect(() => {
+    loadAgents();
+  }, []);
+
+  const tabNames = accessLevel === "Super Admin" ? ["Overview", "Businesses", "Agents", "Transactions", "Advertisements", "Categories", "Registration forms", "Customer locations", "Admins", "Activity log", "Safety", "Profile details", "Settings"] : ["Overview", "Businesses", "Agents", "Transactions", "Advertisements", "Categories", "Customer locations", "Activity log", "Safety", "Profile details", "Settings"];
 
   useEffect(() => {
     if (accessLevel !== "Super Admin") return;
@@ -22502,12 +22547,69 @@ function CompanyPortal({
         )}
       </section>
     )}
-    {activeTab === "Overview" && <><div className="metric-grid"><Metric label="Registered businesses" value={String(businesses.length)} delta="Sample directory" icon="▧" /><Metric label="Active subscriptions" value={String(businesses.filter((business) => business.subscribed).length)} delta="Subscribed demo listings" icon="◉" /><Metric label="Customer enquiries" value={String(enquiries.length)} delta="Browser-local demo records" icon="⌕" /><Metric label="Agent partners" value="42" delta="Sample metric" icon="♧" /></div>
+    {activeTab === "Overview" && <><div className="metric-grid"><Metric label="Registered businesses" value={String(businesses.length)} delta="Verified business directory" icon="▧" /><Metric label="Active subscriptions" value={String(businesses.filter((business) => business.subscribed).length)} delta="Active subscriptions" icon="◉" /><Metric label="Customer enquiries" value={String(enquiries.length)} delta="Customer enquiries" icon="⌕" /><Metric label="Agent partners" value={String(agents.length)} delta={agents.length === 0 ? "No agents registered yet" : `${agents.length} active partner${agents.length > 1 ? "s" : ""}`} icon="♧" /></div>
       <div className="portal-columns"><section className="panel"><div className="panel-heading"><div><div className="eyebrow">RECENT SIGNUPS</div><h2>Business registrations</h2></div><button className="text-link" onClick={() => setActiveTab("Businesses")}>View all →</button></div>{businesses.slice(0, 4).map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category}</small></span><span className={`status-pill ${business.subscribed ? "verified" : "pending"}`}>● {business.subscribed ? "Subscribed" : "Pending"}</span></div>)}</section>
       <section className="panel admin-privacy"><div className="privacy-icon">⌖</div><div className="eyebrow">PRIVACY BY DESIGN</div><h2>Activity is opt-in.</h2><p>Precise location and sign-in activity should be collected only with explicit user consent, retained securely and visible only to authorized administrators.</p><button className="outline-button" onClick={() => setActiveTab("Customer locations")}>Review privacy controls ↗</button></section></div>
       <div className="verification-banner"><span className="verify-icon">⌖</span><div><strong>Device location permission</strong><p>{locationEnabled ? "Granted for this browser session. Coordinates were not stored or transmitted." : "Not granted. No location data is available in this demo."}</p></div><button onClick={downloadReport}>Download CSV ↗</button></div>
-      <div className="form-note"><strong>Demo only</strong><span>Administrative metrics and audit entries are sample/browser-local data, not company-wide records. This view has no server-side authorization.</span></div>
+      <div className="form-note"><strong>Platform Administration</strong><span>Live directory records, partner accounts, and emergency alert audit trail.</span></div>
     </>}
+    {activeTab === "Agents" && (
+      <section className="panel tab-panel">
+        <div className="panel-heading">
+          <div>
+            <div className="eyebrow">FIELD PARTNERS</div>
+            <h2>Agent partner directory ({agents.length})</h2>
+          </div>
+          <button className="outline-button" type="button" onClick={loadAgents}>
+            Refresh ↻
+          </button>
+        </div>
+        <p>Verified field agents onboard local merchants, distribute referral links, and earn commissions. Real agent registrations appear here.</p>
+        {agentsLoading && <p>Loading agent partners…</p>}
+        {agentsError && <p className="form-error" role="alert">{agentsError}</p>}
+        {!agentsLoading && !agentsError && agents.length === 0 && (
+          <EmptyState
+            title="No agent partners registered yet"
+            text="When field agents register and verify via OTP, their profiles and referral codes will appear here in real time."
+          />
+        )}
+        {agents.map((agent) => (
+          <div className="listing-row" key={agent.id}>
+            <span className="listing-icon lavender">🤝</span>
+            <span className="listing-name">
+              <strong>{agent.name}</strong>
+              <small>
+                Mobile: {agent.phone} {agent.email ? `· ${agent.email}` : ""} · Joined {new Date(agent.createdAt).toLocaleDateString()}
+              </small>
+              <small>Referral Code: <strong>{agent.referralCode}</strong> · Businesses referred: {agent.referredCount || 0}</small>
+            </span>
+            <span className={`status-pill ${agent.active ? "verified" : "pending"}`}>
+              {agent.active ? "● Active partner" : "● Inactive"}
+            </span>
+            <button
+              className="outline-button"
+              type="button"
+              onClick={async () => {
+                try {
+                  const res = await fetch("/api/company/agents", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "toggle", id: agent.id, active: !agent.active }),
+                  });
+                  if (!res.ok) throw new Error("Could not update agent status.");
+                  loadAgents();
+                  showNotice(`Agent ${agent.name} ${!agent.active ? "activated" : "deactivated"}.`);
+                } catch (e) {
+                  showNotice(e instanceof Error ? e.message : "Error updating agent.");
+                }
+              }}
+            >
+              {agent.active ? "Disable" : "Activate"}
+            </button>
+          </div>
+        ))}
+      </section>
+    )}
     {activeTab === "Customer locations" && <section className="panel tab-panel"><div className="eyebrow">CONSENTED REGISTRATION LOCATION</div><h2>Customer registration requests</h2><p>Only Company Admins can view this list. Exact coordinates are included only when the customer grants browser location access. Demo requests have a verified mobile number but do not activate an account.</p>{registrationLoading && <p>Loading registration records…</p>}{registrationError && <p className="form-error" role="alert">{registrationError}</p>}{!registrationLoading && !registrationError && customerRegistrations.length === 0 && <EmptyState title="No registration requests yet" text="Customer requests and any shared locations will appear here." />}{customerRegistrations.map((registration) => <div className="listing-row" key={registration.id}><span className="listing-icon lavender">⌖</span><span className="listing-name"><strong>{registration.name}</strong><small>Mobile ending {registration.phoneLast4} · {new Date(registration.registeredAt).toLocaleString()} · {registration.verificationStatus}</small>{registration.locationStatus === "shared" && registration.latitude !== null && registration.longitude !== null && <small>Coordinates: {registration.latitude.toFixed(5)}, {registration.longitude.toFixed(5)}</small>}</span><span className={`status-pill ${registration.locationStatus === "shared" ? "verified" : "pending"}`}>{registration.locationStatus === "shared" ? "Location shared" : registration.locationStatus === "denied" ? "Location denied" : "Location unavailable"}</span></div>)}</section>}    {activeTab === "Businesses" && <><section className="panel tab-panel"><div className="panel-heading"><div><div className="eyebrow">PARTNER DIRECTORY</div><h2>All registered businesses</h2></div><button className="outline-button" onClick={downloadReport}>Download CSV ↗</button></div>{businesses.map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category} / {business.products.length} catalogue items / sample distance {business.distance} km</small>{business.address && <small>Address: {Object.values(business.address).filter(Boolean).join(", ")}</small>}{business.coordinates && <small>Coordinates: {business.coordinates.latitude.toFixed(6)}, {business.coordinates.longitude.toFixed(6)}</small>}{business.businessModes?.length ? <small>Activity: {business.businessModes.join(", ")}</small> : null}{business.vehicleTypes?.length ? <small>Vehicles: {business.vehicleTypes.join(", ")}</small> : null}{business.vehicleMakes?.length ? <small>Makes: {business.vehicleMakes.join(", ")}</small> : null}{business.vehicleModels?.length ? <small>Models: {business.vehicleModels.join(", ")}</small> : null}</span><span className={`status-pill ${business.subscribed ? "verified" : "pending"}`}>● {business.subscribed ? "Subscribed" : "Pending"}</span></div>)}</section></>}
     {activeTab === "Admins" && accessLevel === "Super Admin" && <section className="panel tab-panel"><div className="eyebrow">PLATFORM ACCESS</div><h2>Manage Admin accounts</h2><p>Only the initial Super Admin can create or disable company Admin accounts. Super Admin access cannot be self-registered.</p><form className="product-form" onSubmit={registerAdmin}><label>{companyAdminLabel("name", "Admin name")}<input name="name" placeholder="e.g. Priya Sharma" maxLength={100} required /></label><label>{companyAdminLabel("email", "Work email")}<input name="email" type="email" placeholder="priya@company.com" required /></label><label>{companyAdminLabel("password", "Temporary password")}<input name="password" type="password" minLength={10} autoComplete="new-password" placeholder="At least 10 characters" required /></label><button className="primary-button" type="submit">Create Admin account</button>{adminError && <span className="form-error" role="alert">{adminError}</span>}</form><div className="form-note"><strong>Account store</strong><span>Passwords are stored as salted hashes on this local server. Share temporary passwords through a private channel.</span></div>{adminLoading ? <p>Loading Admin accounts...</p> : admins.map((admin) => <div className="listing-row" key={admin.id}><span className="listing-icon lavender">A</span><span className="listing-name"><strong>{admin.name}</strong><small>{admin.email} · Created {new Date(admin.createdAt).toLocaleDateString()}</small></span><span className={`status-pill ${admin.active ? "verified" : "pending"}`}>{admin.active ? "Active" : "Disabled"}</span><button className="outline-button" type="button" onClick={() => void setAdminActive(admin.id, !admin.active)}>{admin.active ? "Disable access" : "Restore access"}</button></div>)}</section>}
     {activeTab === "Activity log" && <section className="panel tab-panel"><div className="panel-heading"><div><div className="eyebrow">LOCAL DEMO AUDIT</div><h2>Recent activity</h2></div><span className="status-pill pending">Browser only</span></div><p>Events are stored locally in this browser and are not sent to the company.</p>{events.length ? events.map((event) => <div className="activity-row" key={event.id}><span className="activity-dot" /><strong>{event.action}</strong><small>{new Date(event.createdAt).toLocaleString()}</small></div>) : <EmptyState title="No activity recorded" text="Searches and selections will appear here as local demo events." />}</section>}

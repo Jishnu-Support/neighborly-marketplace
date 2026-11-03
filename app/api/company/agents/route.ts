@@ -1,0 +1,63 @@
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { AUTH_COOKIE, verifySessionToken } from "@/app/lib/auth";
+import { createAgentPartner, listAgentPartners, toggleAgentActive } from "@/app/lib/agents";
+
+const noStore = { "Cache-Control": "no-store, no-cache, must-revalidate" };
+
+async function verifyCompanyAdminSession(): Promise<boolean> {
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get(AUTH_COOKIE)?.value;
+  const session = verifySessionToken(sessionToken);
+  return Boolean(session && session.role === "Company");
+}
+
+export async function GET() {
+  try {
+    const isCompany = await verifyCompanyAdminSession();
+    if (!isCompany) {
+      return NextResponse.json({ error: "Only Company Admins can access agent partner records." }, { status: 403, headers: noStore });
+    }
+
+    const agents = await listAgentPartners();
+    return NextResponse.json({ agents, count: agents.length }, { headers: noStore });
+  } catch (error) {
+    console.error("GET /api/company/agents error:", error);
+    return NextResponse.json({ error: "Could not load agent partner records." }, { status: 500, headers: noStore });
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const isCompany = await verifyCompanyAdminSession();
+    if (!isCompany) {
+      return NextResponse.json({ error: "Only Company Admins can manage agent partner records." }, { status: 403, headers: noStore });
+    }
+
+    const body = await request.json() as { action?: string; id?: string; active?: boolean; name?: string; phone?: string; email?: string; password?: string; referralCode?: string };
+
+    if (body.action === "toggle" && typeof body.id === "string" && typeof body.active === "boolean") {
+      const ok = await toggleAgentActive(body.id, body.active);
+      if (!ok) return NextResponse.json({ error: "Agent partner not found." }, { status: 404, headers: noStore });
+      const agents = await listAgentPartners();
+      return NextResponse.json({ success: true, agents, count: agents.length }, { headers: noStore });
+    }
+
+    if (body.name && body.phone) {
+      const agent = await createAgentPartner({
+        name: body.name,
+        phone: body.phone,
+        email: body.email,
+        password: body.password,
+        referralCode: body.referralCode,
+      });
+      const agents = await listAgentPartners();
+      return NextResponse.json({ success: true, agent, agents, count: agents.length }, { status: 201, headers: noStore });
+    }
+
+    return NextResponse.json({ error: "Invalid agent partner payload." }, { status: 400, headers: noStore });
+  } catch (error) {
+    console.error("POST /api/company/agents error:", error);
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Could not update agent partner." }, { status: 400, headers: noStore });
+  }
+}

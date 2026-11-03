@@ -2,6 +2,7 @@ import { createHmac, randomBytes, randomUUID, scryptSync, timingSafeEqual } from
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { cookies } from "next/headers";
+import { verifyAgentCredentials } from "./agents";
 
 export type PortalRole = "Account" | "Business" | "Agent" | "Company";
 export type CompanyAccessLevel = "Admin" | "Super Admin";
@@ -179,6 +180,12 @@ export async function verifyCredentials(role: PortalRole, identity: string, pass
       return true;
     }
     return false;
+  }
+  if (role === "Agent") {
+    const verifiedAgent = await verifyAgentCredentials(identity, password);
+    if (verifiedAgent) return true;
+    const account = demoAccounts[role];
+    return normalizedIdentity === account.identity && password === account.password;
   }
   const account = demoAccounts[role];
   return normalizedIdentity === account.identity && password === account.password;
