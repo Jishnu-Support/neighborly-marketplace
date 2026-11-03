@@ -12759,19 +12759,37 @@ export default function Home() {
   }
 
   async function logOut() {
+    const activePortal =
+      role === "Company" || authenticatedPortals.includes("Company")
+        ? "Company"
+        : role === "Business" || authenticatedPortals.includes("Business")
+        ? "Business"
+        : role === "Agent" || authenticatedPortals.includes("Agent")
+        ? "Agent"
+        : "Account";
+
+    const targetLoginUrl =
+      activePortal === "Company"
+        ? "/company-login"
+        : activePortal === "Account"
+        ? "/login"
+        : `/login?portal=${activePortal}`;
+
     try {
-      const response = await fetch("/api/auth/logout", { method: "POST" });
-      if (!response.ok) throw new Error("Could not end the session.");
-      setAuthenticatedPortals([]);
-      setCompanyAccessLevel("Admin");
-      setLocationEnabled(false);
-      setLocationCoordinates(null);
-      window.sessionStorage.removeItem("neighborly_login_location");
-      setRole("Discover");
-      window.history.replaceState({}, "", window.location.pathname);
-      showNotice("You have signed out.");
+      await fetch("/api/auth/logout", { method: "POST" });
     } catch {
-      showNotice("Could not sign out. Please try again.");
+      // Proceed with local cleanup and redirect even if the network call fails
+    } finally {
+      try {
+        setAuthenticatedPortals([]);
+        setCompanyAccessLevel("Admin");
+        setLocationEnabled(false);
+        setLocationCoordinates(null);
+        window.sessionStorage.removeItem("neighborly_login_location");
+      } catch {
+        // Ignore browser storage exceptions
+      }
+      window.location.assign(targetLoginUrl);
     }
   }
   const [portalActiveTab, setPortalActiveTab] = useState<string>("Overview");
@@ -14329,7 +14347,7 @@ export default function Home() {
                 </button>
               ))}
             </div>
-            {authenticatedPortals.length > 0 && (role === "Discover" || authenticatedPortals.includes(role)) ? (
+            {authenticatedPortals.length > 0 ? (
               <button
                 className="sign-in-button"
                 onClick={() => void logOut()}
