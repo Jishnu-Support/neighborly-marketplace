@@ -935,15 +935,15 @@ const TRANSLATIONS = {
     poweredBy: "Powered by",
     signIn: "Sign in",
     signOut: "Sign out",
-    hosurLocation: "Hosur, Tamil Nadu",
+    hosurLocation: "Location",
     stopLocation: "Stop using device location",
 
     // Hero
-    madeForAroundHere: "MADE FOR AROUND HERE",
+    madeForAroundHere: "GLOBAL DISCOVERY · LOCAL FIRST",
     heroHeadingMain: "Your neighborhood,",
     heroHeadingSub: "in reach.",
-    heroTitle: "Hosur's premier local & industrial marketplace",
-    heroDesc: "Discover verified manufacturers, retail, healthcare, and everyday services across Hosur.",
+    heroTitle: "Global marketplace for local and industrial businesses",
+    heroDesc: "Discover verified manufacturers, retail, healthcare, and everyday services based on your location.",
     registerBusiness: "Register your business",
     registerBusinessNote: "No customer account needed to start. One business profile per business account.",
 
@@ -951,9 +951,9 @@ const TRANSLATIONS = {
     whatDoYouNeed: "WHAT DO YOU NEED?",
     nearLocality: "NEAR LOCALITY",
     withinKm: "WITHIN",
-    searchPlaceholder: "Search 85+ Hosur businesses, Maruti Swift, Hero bike, Kauvery Hospital, Biryani...",
+    searchPlaceholder: "Search businesses, services, products, spare parts, dining nearby...",
     findNearby: "Find nearby",
-    allHosur: "All Hosur",
+    allHosur: "All Localities",
 
     // Modes & Sections
     browseBySector: "Browse by Sector",
@@ -1047,8 +1047,8 @@ const TRANSLATIONS = {
     madeForAroundHere: "நம்ம ஊருக்கான தளம்",
     heroHeadingMain: "உங்கள் அருகிலுள்ள வணிகங்கள்,",
     heroHeadingSub: "உங்கள் கைகளில்.",
-    heroTitle: "ஓசூரின் முதன்மையான உள்ளூர் & தொழில்துறை வர்த்தக களம்",
-    heroDesc: "ஓசூர் முழுவதும் உள்ள சரிபார்க்கப்பட்ட உற்பத்தியாளர்கள், கடைகள், மருத்துவமனைகள் மற்றும் சேவைகளை எளிதில் கண்டறியுங்கள்.",
+    heroTitle: "உள்ளூர் & தொழில்துறை வர்த்தக களம்",
+    heroDesc: "உங்கள் இருப்பிடத்திற்கு அருகில் உள்ள சரிபார்க்கப்பட்ட உற்பத்தியாளர்கள், கடைகள் மற்றும் சேவைகளை எளிதில் கண்டறியுங்கள்.",
     registerBusiness: "உங்கள் வணிகத்தைப் பதிவு செய்க",
     registerBusinessNote: "தொடங்க வாடிக்கையாளர் கணக்கு தேவையில்லை. ஒரு வணிகத்திற்கு ஒரு சுயவிவரம்.",
 
@@ -1058,7 +1058,7 @@ const TRANSLATIONS = {
     withinKm: "தொலைவு",
     searchPlaceholder: "வாகன உதிரிபாகங்கள், CNC இயந்திரங்கள், உணவகங்கள், மருத்துவமனைகள்...",
     findNearby: "அருகிலுள்ளவை தேடு",
-    allHosur: "அனைத்து ஓசூர்",
+    allHosur: "அனைத்து பகுதிகள்",
 
     // Modes & Sections
     browseBySector: "துறை வாரியாகப் பார்க்க",
@@ -1152,8 +1152,8 @@ const TRANSLATIONS = {
     madeForAroundHere: "ನಮ್ಮ ಸ್ಥಳೀಯರಿಗಾಗಿ ಮಾಡಲ್ಪಟ್ಟಿದೆ",
     heroHeadingMain: "ನಿಮ್ಮ ನೆರೆಹೊರೆ,",
     heroHeadingSub: "ನಿಮ್ಮ ಕೈಗೆಟಕುವಂತೆ.",
-    heroTitle: "ಹೊಸೂರಿನ ಪ್ರಮುಖ ಸ್ಥಳೀಯ ಮತ್ತು ಕೈಗಾರಿಕಾ ಮಾರುಕಟ್ಟೆ",
-    heroDesc: "ಹೊಸೂರಿನಾದ್ಯಂತ ಪರಿಶೀಲಿಸಿದ ತಯಾರಕರು, ಚಿಲ್ಲರೆ ವ್ಯಾಪಾರ, ಆರೋಗ್ಯ ಸೇವೆಗಳು ಮತ್ತು ದೈನಂದಿನ ಸೇವೆಗಳನ್ನು ಅನ್ವೇಷಿಸಿ.",
+    heroTitle: "ಸ್ಥಳೀಯ ಮತ್ತು ಕೈಗಾರಿಕಾ ಮಾರುಕಟ್ಟೆ",
+    heroDesc: "ನಿಮ್ಮ ಸ್ಥಳದ ಆಧಾರದ ಮೇಲೆ ಪರಿಶೀಲಿಸಿದ ತಯಾರಕರು, ಚಿಲ್ಲರೆ ವ್ಯಾಪಾರ, ಆರೋಗ್ಯ ಸೇವೆಗಳು ಮತ್ತು ದೈನಂದಿನ ಸೇವೆಗಳನ್ನು ಅನ್ವೇಷಿಸಿ.",
     registerBusiness: "ನಿಮ್ಮ ವ್ಯಾಪಾರವನ್ನು ನೋಂದಾಯಿಸಿ",
     registerBusinessNote: "ಪ್ರಾರಂಭಿಸಲು ಗ್ರಾಹಕರ ಖಾತೆಯ ಅಗತ್ಯವಿಲ್ಲ. ಪ್ರತಿ ವ್ಯಾಪಾರ ಖಾತೆಗೆ ಒಂದು ಪ್ರೊಫೈಲ್.",
 
@@ -1163,7 +1163,7 @@ const TRANSLATIONS = {
     withinKm: "ವ್ಯಾಪ್ತಿ",
     searchPlaceholder: "ಆಟೋ ಭಾಗಗಳು, ಸಿಎನ್‌ಸಿ ಯಂತ್ರ, ಉಪಹಾರಗೃಹಗಳು, ಆಸ್ಪತ್ರೆಗಳು...",
     findNearby: "ಹತ್ತಿರ ಹುಡುಕಿ",
-    allHosur: "ಎಲ್ಲಾ ಹೊಸೂರು",
+    allHosur: "ಎಲ್ಲಾ ಪ್ರದೇಶಗಳು",
 
     // Modes & Sections
     browseBySector: "ವಲಯವಾರು ಅನ್ವೇಷಿಸಿ",
@@ -1257,8 +1257,8 @@ const TRANSLATIONS = {
     madeForAroundHere: "మన స్థానిక ప్రజల కోసం ప్రత్యేకంగా",
     heroHeadingMain: "మీ పరిసరాల వ్యాపారాలు,",
     heroHeadingSub: "మీ చేతిలోనే.",
-    heroTitle: "హోసూరు ప్రముఖ స్థానిక & పారిశ్రామిక మార్కెట్‌ప్లేస్",
-    heroDesc: "హోసూరు అంతటా ధృవీకరించబడిన తయారీదారులు, దుకాణాలు, ఆసుపత్రులు మరియు రోజువారీ సేవలను సులభంగా కనుగొనండి.",
+    heroTitle: "స్థానిక & పారిశ్రామిక మార్కెట్‌ప్లేస్",
+    heroDesc: "మీ స్థానం ఆధారంగా ధృవీకరించబడిన తయారీదారులు, దుకాణాలు, ఆసుపత్రులు మరియు రోజువారీ సేవలను సులభంగా కనుగొనండి.",
     registerBusiness: "మీ వ్యాపారాన్ని నమోదు చేయండి",
     registerBusinessNote: "ప్రారంభించడానికి ఖాతా అవసరం లేదు. ఒక వ్యాపారానికి ఒక ప్రొఫైల్.",
 
@@ -1268,7 +1268,7 @@ const TRANSLATIONS = {
     withinKm: "పరిధి",
     searchPlaceholder: "ఆటో విడిభాగాలు, సిఎన్‌సి యంత్రాలు, రెస్టారెంట్లు, ఆసుపత్రులు...",
     findNearby: "సమీపంలో వెతకండి",
-    allHosur: "మొత్తం హోసూరు",
+    allHosur: "అన్ని ప్రాంతాలు",
 
     // Modes & Sections
     browseBySector: "రంగాల వారీగా బ్రౌజ్ చేయండి",
@@ -12607,10 +12607,10 @@ export default function Home() {
         setLocationCoordinates({ latitude: position.coords.latitude, longitude: position.coords.longitude });
         setLocationEnabled(true);
         recordEvent("Device location permission granted");
-        showNotice("Your device location is being used in memory to filter the sample directory. It is not saved or sent to a server.");
+        showNotice("Your live location is active. Nearby businesses and services are now filtered using your coordinates.");
         addNotification({
           title: "📍 Live GPS Enabled",
-          message: "Nearby businesses are now filtered using your precise coordinates in Hosur.",
+          message: "Nearby businesses and services are now filtered using your precise coordinates.",
           type: "system",
           linkText: "Search nearby",
           action: { type: "role", payload: "Discover" },
@@ -14464,7 +14464,7 @@ export default function Home() {
                 <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
                 <circle cx="12" cy="10" r="3" />
               </svg>
-              <span>{locationEnabled ? t.stopLocation : t.hosurLocation}</span>
+              <span>{locationEnabled ? "📍 Live GPS" : (currentCustomerProfile?.locality ? `📍 ${currentCustomerProfile.locality}` : "📍 Nearby")}</span>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#698070" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginLeft: "2px" }}>
                 <polyline points="6 9 12 15 18 9" />
               </svg>
@@ -20322,6 +20322,8 @@ type AgentVerificationItem = {
   phone: string;
   email: string;
   ownerName: string;
+  gstin?: string;
+  entityType?: string;
   address?: BusinessAddress;
   coordinates?: Coordinates | null;
   images?: string[];
@@ -20629,7 +20631,7 @@ function AgentPortal({
           ) : verifications.length === 0 ? (
             <EmptyState
               title="No pending verifications"
-              text="When new businesses register in Hosur, they will appear here for your physical inspection and photo upload."
+              text="When new businesses register in your region, they will appear here for your physical inspection and photo upload."
             />
           ) : (
             <div style={{ display: "grid", gap: "12px", marginTop: "16px" }}>
@@ -20638,8 +20640,8 @@ function AgentPortal({
                 const isPendingAdmin = biz.verificationStatus === "Pending Admin Approval";
                 const isApproved = biz.verificationStatus === "Approved";
                 const addressStr = biz.address
-                  ? [biz.address.doorNumber, biz.address.street, biz.address.area, "Hosur"].filter(Boolean).join(", ")
-                  : "Hosur, Tamil Nadu";
+                  ? [biz.address.doorNumber, biz.address.street, biz.address.area, biz.address.cityTown, biz.address.state, biz.address.pincode ? `PIN: ${biz.address.pincode}` : ""].filter(Boolean).join(", ")
+                  : "Address not set";
 
                 return (
                   <div
@@ -20665,11 +20667,16 @@ function AgentPortal({
                           </span>
                         </div>
                         <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#475569" }}>
-                          📍 <strong>Location:</strong> {addressStr}
+                          📍 <strong>Address:</strong> {addressStr}
                         </p>
                         <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#475569" }}>
                           📞 <strong>Contact:</strong> {biz.phone} {biz.ownerName ? `· Owner: ${biz.ownerName}` : ""}
                         </p>
+                        {biz.gstin && (
+                          <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#1e3a8a", fontWeight: 600 }}>
+                            📄 <strong>GST Number / Tax ID:</strong> {biz.gstin}
+                          </p>
+                        )}
                         <small style={{ color: "#94a3b8", fontSize: "11px" }}>
                           Registered: {new Date(biz.createdAt).toLocaleDateString()}
                         </small>
@@ -20782,7 +20789,8 @@ function AgentPortal({
 
             <div style={{ background: "#f8fafc", borderRadius: "8px", padding: "12px", marginBottom: "16px", fontSize: "12px", color: "#334155" }}>
               <p style={{ margin: "0 0 4px" }}><strong>Sector:</strong> {verifyingBusiness.category}</p>
-              <p style={{ margin: "0 0 4px" }}><strong>Location:</strong> {verifyingBusiness.address ? [verifyingBusiness.address.doorNumber, verifyingBusiness.address.street, verifyingBusiness.address.area, "Hosur"].filter(Boolean).join(", ") : "Hosur"}</p>
+              <p style={{ margin: "0 0 4px" }}><strong>Address:</strong> {verifyingBusiness.address ? [verifyingBusiness.address.doorNumber, verifyingBusiness.address.street, verifyingBusiness.address.area, verifyingBusiness.address.cityTown, verifyingBusiness.address.state, verifyingBusiness.address.pincode ? `PIN: ${verifyingBusiness.address.pincode}` : ""].filter(Boolean).join(", ") : "Address not set"}</p>
+              {verifyingBusiness.gstin && <p style={{ margin: "0 0 4px", color: "#1e3a8a", fontWeight: 600 }}><strong>GST Number / Tax ID:</strong> {verifyingBusiness.gstin}</p>}
               <p style={{ margin: 0 }}><strong>Phone:</strong> {verifyingBusiness.phone}</p>
             </div>
 
@@ -21478,27 +21486,46 @@ function ProfileAndSettingsPanel({
             </label>
 
             <label style={{ display: "grid", gap: "6px", fontSize: "11px", color: "#3e5243", fontWeight: 700 }}>
-              Hosur Locality / Area
-              <select
-                value={profile.locality || "Bagalur Road"}
+              Locality / Area
+              <input
+                type="text"
+                value={profile.locality || ""}
                 onChange={(e) => updateProfile("locality", e.target.value)}
-                style={{ padding: "8px 12px", border: "1px solid #d3e0d5", borderRadius: "8px", fontSize: "12px", background: "#fff", cursor: "pointer" }}
-              >
-                {HOSUR_LOCALITIES.filter((l) => l !== "All Hosur").map((loc) => (
-                  <option key={loc} value={loc}>
-                    📍 {loc}
-                  </option>
-                ))}
-              </select>
+                placeholder="e.g. Bagalur Road / Indiranagar"
+                style={{ padding: "8px 12px", border: "1px solid #d3e0d5", borderRadius: "8px", fontSize: "12px" }}
+              />
             </label>
 
             <label style={{ display: "grid", gap: "6px", fontSize: "11px", color: "#3e5243", fontWeight: 700 }}>
-              Pincode
+              City / Town
               <input
                 type="text"
-                value={profile.pincode || "635109"}
+                value={profile.city || ""}
+                onChange={(e) => updateProfile("city", e.target.value)}
+                placeholder="e.g. Hosur, Bengaluru, London"
+                style={{ padding: "8px 12px", border: "1px solid #d3e0d5", borderRadius: "8px", fontSize: "12px" }}
+              />
+            </label>
+
+            <label style={{ display: "grid", gap: "6px", fontSize: "11px", color: "#3e5243", fontWeight: 700 }}>
+              State / Region
+              <input
+                type="text"
+                value={profile.state || ""}
+                onChange={(e) => updateProfile("state", e.target.value)}
+                placeholder="e.g. Tamil Nadu, Karnataka"
+                style={{ padding: "8px 12px", border: "1px solid #d3e0d5", borderRadius: "8px", fontSize: "12px" }}
+              />
+            </label>
+
+            <label style={{ display: "grid", gap: "6px", fontSize: "11px", color: "#3e5243", fontWeight: 700 }}>
+              Pincode / Postal Code
+              <input
+                type="text"
+                value={profile.pincode || ""}
                 onChange={(e) => updateProfile("pincode", e.target.value)}
-                maxLength={6}
+                maxLength={10}
+                placeholder="e.g. 635109"
                 style={{ padding: "8px 12px", border: "1px solid #d3e0d5", borderRadius: "8px", fontSize: "12px" }}
               />
             </label>
@@ -23401,6 +23428,8 @@ function CompanyPortal({
     phone: string;
     email: string;
     ownerName: string;
+    gstin?: string;
+    entityType?: string;
     address?: BusinessAddress;
     coordinates?: Coordinates | null;
     images?: string[];
@@ -23753,7 +23782,7 @@ function CompanyPortal({
             <div className="eyebrow">VERIFICATION PIPELINE</div>
             <h2>Business Approvals Queue</h2>
             <p style={{ fontSize: "12px", color: "#66786c", margin: "4px 0 0" }}>
-              Review physical field visits conducted by local agents, verify storefront photographs, and authorize businesses to go live in the public Hosur directory.
+              Review physical field visits conducted by local agents, verify storefront photographs, and authorize businesses to go live in the public directory.
             </p>
           </div>
           <button className="outline-button" onClick={loadApprovals}>
@@ -23766,7 +23795,7 @@ function CompanyPortal({
         ) : approvals.length === 0 ? (
           <EmptyState
             title="No business approvals pending"
-            text="When field agents verify new businesses in Hosur, they will appear here with photos for your final publication authorization."
+            text="When field agents verify new businesses, they will appear here with photos for your final publication authorization."
           />
         ) : (
           <div style={{ display: "grid", gap: "16px", marginTop: "16px" }}>
@@ -23810,11 +23839,16 @@ function CompanyPortal({
                         </span>
                       </div>
                       <p style={{ margin: "6px 0 2px", fontSize: "12px", color: "#475569" }}>
-                        📍 <strong>Location:</strong> {biz.address ? [biz.address.doorNumber, biz.address.street, biz.address.area, "Hosur"].filter(Boolean).join(", ") : "Hosur"}
+                        📍 <strong>Address:</strong> {biz.address ? [biz.address.doorNumber, biz.address.street, biz.address.area, biz.address.cityTown, biz.address.state, biz.address.pincode ? `PIN: ${biz.address.pincode}` : ""].filter(Boolean).join(", ") : "Address not set"}
                       </p>
                       <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#475569" }}>
-                        📞 <strong>Mobile:</strong> {biz.phone} · ✉️ {biz.email || "No email"} {biz.ownerName ? `· Owner: ${biz.ownerName}` : ""}
+                        📞 <strong>Mobile:</strong> {biz.phone} · ✉️ {biz.email || "No email"} {biz.ownerName ? `· Owner: ${biz.ownerName}` : ""} {biz.entityType ? `(${biz.entityType})` : ""}
                       </p>
+                      {biz.gstin && (
+                        <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#1e3a8a", fontWeight: 600 }}>
+                          📄 <strong>GST Number / Tax ID:</strong> {biz.gstin}
+                        </p>
+                      )}
                       <small style={{ color: "#94a3b8", fontSize: "11px" }}>
                         Registered on: {new Date(biz.createdAt).toLocaleString()}
                       </small>
@@ -25083,7 +25117,7 @@ function Dialog({
                 {businessPasswordError}
               </p>
             )}
-<div className="otp-row"><label>Business mobile OTP<input name="businessOtp" inputMode="numeric" autoComplete="one-time-code" placeholder="6-digit OTP" value={registrationOtp} onChange={(event) => { setRegistrationOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); setRegistrationOtpVerified(false); }} required /></label><div className="otp-actions"><button type="button" disabled={registrationOtpBusy} onClick={() => void requestRegistrationOtp("Business", "send", businessDetails.businessPhone)}>{registrationOtpBusy ? "Please wait?" : "Send OTP"}</button><button type="button" disabled={registrationOtpBusy || registrationOtp.length !== 6} onClick={() => void requestRegistrationOtp("Business", "verify", businessDetails.businessPhone)}>Verify OTP</button></div></div>{registrationDemoOtp && <p className="otp-demo-code" role="status">Demo OTP: <strong>{registrationDemoOtp}</strong> <span>For local testing only. No SMS was sent.</span></p>}{registrationOtpMessage && <p className={registrationOtpVerified ? "otp-verified" : "form-error"} role="status">{registrationOtpMessage}</p>}<label>Agent referral code <span className="optional">(optional)</span><input name="referral" placeholder="e.g. NEIGHBOR-4821" /></label><label>Upload business proof <span className="optional">(GSTIN, license or other registration)</span><input name="proof" type="file" accept=".pdf,.jpg,.jpeg,.png" /></label>
+<div className="otp-row"><label>Business mobile OTP<input name="businessOtp" inputMode="numeric" autoComplete="one-time-code" placeholder="6-digit OTP" value={registrationOtp} onChange={(event) => { setRegistrationOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); setRegistrationOtpVerified(false); }} required /></label><div className="otp-actions"><button type="button" disabled={registrationOtpBusy} onClick={() => void requestRegistrationOtp("Business", "send", businessDetails.businessPhone)}>{registrationOtpBusy ? "Please wait…" : "Send OTP"}</button><button type="button" disabled={registrationOtpBusy || registrationOtp.length !== 6} onClick={() => void requestRegistrationOtp("Business", "verify", businessDetails.businessPhone)}>Verify OTP</button></div></div>{registrationDemoOtp && <p className="otp-demo-code" role="status">Demo OTP: <strong>{registrationDemoOtp}</strong> <span>For local testing only. No SMS was sent.</span></p>}{registrationOtpMessage && <p className={registrationOtpVerified ? "otp-verified" : "form-error"} role="status">{registrationOtpMessage}</p>}<label>GST Number / Business Tax ID *<input name="gstin" placeholder="e.g. 33AAAAA0000A1Z5 (15-digit GSTIN or Tax ID)" required style={{ textTransform: "uppercase" }} /></label><label>Agent referral code <span className="optional">(optional)</span><input name="referral" placeholder="e.g. NEIGHBOR-4821" /></label><label>Upload business proof <span className="optional">(GSTIN certificate, license or registration document)</span><input name="proof" type="file" accept=".pdf,.jpg,.jpeg,.png" /></label>
 <div className="business-images-upload-field" style={{ margin: "14px 0" }}>
   <label style={{ display: "block", marginBottom: "6px", fontWeight: 600, fontSize: "12px", color: "#25332c" }}>
     Upload business images <span className="optional" style={{ fontWeight: 400, color: "#778179", fontSize: "11px" }}>(Storefront, interior, products, or showcase photos)</span>

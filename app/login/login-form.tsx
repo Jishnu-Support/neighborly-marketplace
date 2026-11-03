@@ -139,6 +139,60 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
       }
       if (portal === "Business") {
         const category = String(form.get("category") || "Everyday services").trim();
+        const ownerName = String(form.get("ownerName") || "").trim();
+        const gstin = String(form.get("gstin") || "").trim().toUpperCase();
+        const entityType = String(form.get("entityType") || "Sole Proprietorship").trim();
+        const city = String(form.get("city") || "").trim();
+        const state = String(form.get("state") || "").trim();
+        const pincode = String(form.get("pincode") || "").trim();
+        const website = String(form.get("website") || "").trim();
+
+        // Mandatory address validation
+        if (!doorNo) {
+          setIsSuccess(false);
+          setMessage("Door / Shop / Building No. is mandatory.");
+          setBusy(false);
+          return;
+        }
+        if (!street) {
+          setIsSuccess(false);
+          setMessage("Street / Road / Landmark is mandatory.");
+          setBusy(false);
+          return;
+        }
+        if (!locality) {
+          setIsSuccess(false);
+          setMessage("Locality / Area is mandatory.");
+          setBusy(false);
+          return;
+        }
+        if (!city) {
+          setIsSuccess(false);
+          setMessage("City / Town is mandatory.");
+          setBusy(false);
+          return;
+        }
+        if (!state) {
+          setIsSuccess(false);
+          setMessage("State / Province is mandatory.");
+          setBusy(false);
+          return;
+        }
+        if (!pincode) {
+          setIsSuccess(false);
+          setMessage("Pincode / Postal code is mandatory.");
+          setBusy(false);
+          return;
+        }
+
+        // Mandatory GST No. validation
+        if (!gstin) {
+          setIsSuccess(false);
+          setMessage("GST Number / Business Tax ID is mandatory.");
+          setBusy(false);
+          return;
+        }
+
         try {
           const response = await fetch("/api/businesses/register", {
             method: "POST",
@@ -148,9 +202,16 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
               category,
               phone,
               email,
-              locality,
               doorNo,
               street,
+              locality,
+              city,
+              state,
+              pincode,
+              gstin,
+              ownerName,
+              entityType,
+              website,
               password,
             }),
           });
@@ -296,9 +357,9 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
       <p className="portal-login-description">
         {registering
           ? portal === "Agent"
-            ? "Apply to help local businesses reach their neighbors in Hosur."
+            ? "Apply to help local businesses reach their customers in your region."
             : portal === "Business"
-            ? "Register your business to showcase products, receive customer orders, and grow in Hosur."
+            ? "Register your business to showcase products, receive customer orders, and reach customers anywhere."
             : "Create and activate your account to discover and connect with nearby businesses."
           : info.description}
       </p>
@@ -316,34 +377,75 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
             </label>
 
             {portal === "Business" && (
-              <label>
-                Business Category / Sector *
-                <select
-                  name="category"
-                  defaultValue="Automobiles"
-                  style={{ background: "#fff", cursor: "pointer", padding: "10px", borderRadius: "5px", border: "1px solid #e1e7e0" }}
-                  required
-                >
-                  {[
-                    "Automobiles",
-                    "Electronics",
-                    "Electricals",
-                    "Hardware",
-                    "Home appliances",
-                    "Fashion",
-                    "Food & dining",
-                    "Health & wellness",
-                    "Sports & fitness",
-                    "Travel",
-                    "Entertainment",
-                    "Everyday services",
-                  ].map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <>
+                <label>
+                  Owner / Authorized Contact Person *
+                  <input
+                    name="ownerName"
+                    autoComplete="name"
+                    placeholder="e.g. Ramesh Kumar"
+                    required
+                  />
+                </label>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "10px" }}>
+                  <label>
+                    Business Category / Sector *
+                    <select
+                      name="category"
+                      defaultValue="Automobiles"
+                      style={{ background: "#fff", cursor: "pointer", padding: "10px", borderRadius: "5px", border: "1px solid #e1e7e0" }}
+                      required
+                    >
+                      {[
+                        "Automobiles",
+                        "Electronics",
+                        "Electricals",
+                        "Hardware",
+                        "Home appliances",
+                        "Fashion",
+                        "Food & dining",
+                        "Health & wellness",
+                        "Sports & fitness",
+                        "Travel",
+                        "Entertainment",
+                        "Everyday services",
+                      ].map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label>
+                    Business Entity Type *
+                    <select
+                      name="entityType"
+                      defaultValue="Sole Proprietorship"
+                      style={{ background: "#fff", cursor: "pointer", padding: "10px", borderRadius: "5px", border: "1px solid #e1e7e0" }}
+                      required
+                    >
+                      <option value="Sole Proprietorship">Sole Proprietorship</option>
+                      <option value="Partnership">Partnership</option>
+                      <option value="Private Limited">Private Limited (Pvt Ltd)</option>
+                      <option value="LLP">Limited Liability Partnership (LLP)</option>
+                      <option value="Individual / Freelancer">Individual / Freelancer</option>
+                      <option value="Other">Other / Commercial Enterprise</option>
+                    </select>
+                  </label>
+                </div>
+
+                <label>
+                  GST Number / Business Tax ID *
+                  <input
+                    name="gstin"
+                    placeholder="e.g. 33AAAAA0000A1Z5 (15-digit GSTIN or Tax ID)"
+                    required
+                    style={{ textTransform: "uppercase" }}
+                  />
+                </label>
+              </>
             )}
 
             <label>
@@ -415,16 +517,69 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
               </label>
             )}
 
-            {(portal === "Account" || portal === "Business") && (
+            {portal === "Business" && (
+              <label>
+                Website / Online Store <span className="optional">(optional)</span>
+                <input name="website" type="url" placeholder="e.g. https://mybusiness.com" />
+              </label>
+            )}
+
+            {portal === "Business" && (
+              <div style={{ background: "#f8fbf8", border: "1px solid #d4e4d6", borderRadius: "8px", padding: "14px", display: "grid", gap: "10px", margin: "4px 0" }}>
+                <div style={{ fontSize: "11.5px", fontWeight: 800, color: "#1b4426", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span>📍</span> Business Physical Address (Mandatory)
+                </div>
+                <div style={{ fontSize: "10px", color: "#617565", marginTop: "-4px" }}>
+                  Provide your complete physical store / office address for local customer discovery and agent field verification.
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                  <label style={{ fontSize: "10.5px", fontWeight: 700, color: "#27432f" }}>
+                    Door / Shop / Building No. *
+                    <input name="doorNo" placeholder="e.g. Shop 4B / Plot 12" required style={{ background: "#fff" }} />
+                  </label>
+                  <label style={{ fontSize: "10.5px", fontWeight: 700, color: "#27432f" }}>
+                    Street / Road / Landmark *
+                    <input name="street" placeholder="e.g. MG Road, Near Central Bus Stand" required style={{ background: "#fff" }} />
+                  </label>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                  <label style={{ fontSize: "10.5px", fontWeight: 700, color: "#27432f" }}>
+                    Locality / Area *
+                    <input name="locality" placeholder="e.g. Indiranagar / Bagalur Road" required style={{ background: "#fff" }} />
+                  </label>
+                  <label style={{ fontSize: "10.5px", fontWeight: 700, color: "#27432f" }}>
+                    City / Town *
+                    <input name="city" placeholder="e.g. Hosur, Bengaluru, London" required style={{ background: "#fff" }} />
+                  </label>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                  <label style={{ fontSize: "10.5px", fontWeight: 700, color: "#27432f" }}>
+                    State / Province *
+                    <input name="state" placeholder="e.g. Tamil Nadu, Karnataka" required style={{ background: "#fff" }} />
+                  </label>
+                  <label style={{ fontSize: "10.5px", fontWeight: 700, color: "#27432f" }}>
+                    Pincode / Postal Code *
+                    <input name="pincode" placeholder="e.g. 635109" required maxLength={10} style={{ background: "#fff" }} />
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {portal === "Account" && (
               <>
-                <label>
-                  Hosur Locality / Area *
-                  <select name="locality" defaultValue="Bagalur Road" style={{ background: "#fff", cursor: "pointer", padding: "10px", borderRadius: "5px", border: "1px solid #e1e7e0" }}>
-                    {["Bagalur Road", "Sipcot Phase 1", "Sipcot Phase 2", "Rayakottai Road", "Mookandapalli", "Mathigiri", "Avalapalli", "Gandhi Nagar", "Kamaraj Nagar", "Old Bangalore Road", "Railway Station Road", "Moranapalli", "Zuzuvadi", "Thally Road", "Denkanikottai Road", "Hosur Cattle Farm"].map((loc) => (
-                      <option key={loc} value={loc}>📍 {loc}</option>
-                    ))}
-                  </select>
-                </label>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                  <label>
+                    Locality / Area *
+                    <input name="locality" placeholder="e.g. Bagalur Road" defaultValue="Bagalur Road" required />
+                  </label>
+                  <label>
+                    City / Town *
+                    <input name="city" placeholder="e.g. Hosur" defaultValue="Hosur" required />
+                  </label>
+                </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                   <label>
@@ -436,23 +591,21 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
                     <input name="street" placeholder="e.g. Near Bus Stand" />
                   </label>
                 </div>
-              </>
-            )}
 
-            {portal === "Account" && (
-              <div style={{ background: "#f8faf8", border: "1px solid #dbe6dc", borderRadius: "8px", padding: "12px", display: "grid", gap: "8px" }}>
-                <div style={{ fontSize: "11px", fontWeight: 700, color: "#285536" }}>🛡️ Emergency SOS Contact (Hosur Safety Network)</div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-                  <label style={{ fontSize: "10px", color: "#365c41" }}>
-                    Emergency Contact Name <span className="optional">(optional)</span>
-                    <input name="emergencyContactName" placeholder="e.g. Spouse / Parent" style={{ background: "#fff" }} />
-                  </label>
-                  <label style={{ fontSize: "10px", color: "#365c41" }}>
-                    Emergency Mobile Number <span className="optional">(optional)</span>
-                    <input name="emergencyContactPhone" type="tel" placeholder="e.g. 98432 12345" style={{ background: "#fff" }} />
-                  </label>
+                <div style={{ background: "#f8faf8", border: "1px solid #dbe6dc", borderRadius: "8px", padding: "12px", display: "grid", gap: "8px" }}>
+                  <div style={{ fontSize: "11px", fontWeight: 700, color: "#285536" }}>🛡️ Emergency SOS Contact (Safety Network)</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                    <label style={{ fontSize: "10px", color: "#365c41" }}>
+                      Emergency Contact Name <span className="optional">(optional)</span>
+                      <input name="emergencyContactName" placeholder="e.g. Spouse / Parent" style={{ background: "#fff" }} />
+                    </label>
+                    <label style={{ fontSize: "10px", color: "#365c41" }}>
+                      Emergency Mobile Number <span className="optional">(optional)</span>
+                      <input name="emergencyContactPhone" type="tel" placeholder="e.g. 98432 12345" style={{ background: "#fff" }} />
+                    </label>
+                  </div>
                 </div>
-              </div>
+              </>
             )}
 
             <label>
@@ -522,7 +675,7 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
               </p>
             ) : portal === "Business" ? (
               <p className="portal-login-demo-note">
-                Once registered, your business profile and products are persisted to the Hosur directory database and visible to local residents.
+                Once registered, field verification and Admin approval will publish your profile live in the directory, accessible to nearby customers anywhere.
               </p>
             ) : (
               <p className="portal-login-demo-note">

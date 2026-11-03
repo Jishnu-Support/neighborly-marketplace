@@ -68,6 +68,7 @@ export type StoredBusiness = {
   photos?: string[];
   website?: string;
   gstin?: string;
+  entityType?: string;
   hours?: string;
   products: BusinessProduct[];
   subscribed: boolean;
@@ -172,10 +173,14 @@ export async function registerBusinessAccount(input: {
   doorNumber?: string;
   doorNo?: string;
   street?: string;
+  city?: string;
+  cityTown?: string;
+  state?: string;
   pincode?: string;
   description?: string;
   website?: string;
   gstin?: string;
+  entityType?: string;
   businessModes?: string[];
   coordinates?: { latitude: number; longitude: number } | null;
   images?: string[];
@@ -200,15 +205,18 @@ export async function registerBusinessAccount(input: {
   const defaultPassword = input.password && input.password.length >= 6 ? input.password : `Biz@${cleanPhone.slice(-4) || "1234"}`;
   const passwordHash = hashPassword(defaultPassword, salt);
 
+  const cityVal = (input.city || input.cityTown || "").trim() || (existingIndex >= 0 ? records[existingIndex].address.cityTown : "Hosur");
+  const stateVal = input.state?.trim() || (existingIndex >= 0 ? records[existingIndex].address.state : "Tamil Nadu");
+
   const address: BusinessAddress = {
     doorNumber: (input.doorNo || input.doorNumber || "").trim() || (existingIndex >= 0 ? records[existingIndex].address.doorNumber : ""),
     street: input.street?.trim() || (existingIndex >= 0 ? records[existingIndex].address.street : ""),
-    area: input.locality?.trim() || (existingIndex >= 0 ? records[existingIndex].address.area : "Bagalur Road"),
-    cityTown: "Hosur",
-    taluka: "Hosur",
-    district: "Krishnagiri",
-    state: "Tamil Nadu",
-    pincode: input.pincode?.trim() || (existingIndex >= 0 ? records[existingIndex].address.pincode : "635109"),
+    area: input.locality?.trim() || (existingIndex >= 0 ? records[existingIndex].address.area : ""),
+    cityTown: cityVal,
+    taluka: cityVal,
+    district: cityVal,
+    state: stateVal,
+    pincode: input.pincode?.trim() || (existingIndex >= 0 ? records[existingIndex].address.pincode : ""),
   };
 
   // Attempt to assign to a nearby active field agent if available
@@ -237,9 +245,12 @@ export async function registerBusinessAccount(input: {
     address,
     coordinates: input.coordinates || (existingIndex >= 0 ? records[existingIndex].coordinates : null),
     businessModes: input.businessModes || ["In-store Sales", "Customer Service"],
-    description: input.description?.trim() || `${input.category} in ${input.locality || "Hosur"}`,
+    description: input.description?.trim() || `${input.category} in ${input.locality || cityVal}`,
     images: input.images || [],
     photos: input.images || [],
+    website: input.website?.trim() || undefined,
+    gstin: input.gstin?.trim() || (existingIndex >= 0 ? records[existingIndex].gstin : undefined),
+    entityType: input.entityType?.trim() || (existingIndex >= 0 ? records[existingIndex].entityType : undefined),
     products: input.products || [],
     subscribed: true,
     active: false, // NOT publicly listed until Admin approval

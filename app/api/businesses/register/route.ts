@@ -6,7 +6,24 @@ import { consumeVerifiedRegistrationOtp } from "@/app/lib/registration-otp";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, category, phone, password, locality, email, doorNo, street, pincode, description, website, gstin } = body;
+    const {
+      name,
+      category,
+      phone,
+      password,
+      doorNo,
+      street,
+      locality,
+      city,
+      state,
+      pincode,
+      gstin,
+      ownerName,
+      entityType,
+      email,
+      description,
+      website,
+    } = body;
 
     if (!name || typeof name !== "string" || name.trim().length < 2) {
       return NextResponse.json({ error: "Please enter a valid business name (at least 2 characters)." }, { status: 400 });
@@ -29,8 +46,34 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Password must be at least 6 characters long." }, { status: 400 });
     }
 
+    // Mandatory address validation as requested
+    if (!doorNo || typeof doorNo !== "string" || !doorNo.trim()) {
+      return NextResponse.json({ error: "Door / Shop / Building No. is mandatory." }, { status: 400 });
+    }
+
+    if (!street || typeof street !== "string" || !street.trim()) {
+      return NextResponse.json({ error: "Street / Road / Landmark is mandatory." }, { status: 400 });
+    }
+
     if (!locality || typeof locality !== "string" || !locality.trim()) {
-      return NextResponse.json({ error: "Please provide your business locality / area in Hosur." }, { status: 400 });
+      return NextResponse.json({ error: "Locality / Area is mandatory." }, { status: 400 });
+    }
+
+    if (!city || typeof city !== "string" || !city.trim()) {
+      return NextResponse.json({ error: "City / Town is mandatory." }, { status: 400 });
+    }
+
+    if (!state || typeof state !== "string" || !state.trim()) {
+      return NextResponse.json({ error: "State / Province is mandatory." }, { status: 400 });
+    }
+
+    if (!pincode || typeof pincode !== "string" || !pincode.trim()) {
+      return NextResponse.json({ error: "Pincode / Postal code is mandatory." }, { status: 400 });
+    }
+
+    // Mandatory GST NO. / Business Tax ID as requested
+    if (!gstin || typeof gstin !== "string" || gstin.trim().length < 4) {
+      return NextResponse.json({ error: "GST Number / Business Tax ID is mandatory." }, { status: 400 });
     }
 
     const business = await registerBusinessAccount({
@@ -38,14 +81,18 @@ export async function POST(request: Request) {
       category: category.trim(),
       phone: phone.trim(),
       password,
+      doorNo: doorNo.trim(),
+      street: street.trim(),
       locality: locality.trim(),
+      city: city.trim(),
+      state: state.trim(),
+      pincode: pincode.trim(),
+      gstin: gstin.trim().toUpperCase(),
+      ownerName: ownerName && typeof ownerName === "string" ? ownerName.trim() : undefined,
+      entityType: entityType && typeof entityType === "string" ? entityType.trim() : undefined,
       email: email ? String(email).trim() : undefined,
-      doorNo: doorNo ? String(doorNo).trim() : undefined,
-      street: street ? String(street).trim() : undefined,
-      pincode: pincode ? String(pincode).trim() : undefined,
       description: description ? String(description).trim() : undefined,
       website: website ? String(website).trim() : undefined,
-      gstin: gstin ? String(gstin).trim() : undefined,
     });
 
     const token = createSessionToken("Business", business.phone);
