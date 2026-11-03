@@ -11295,7 +11295,6 @@ export default function Home() {
   const [adBookingWizardOpen, setAdBookingWizardOpen] = useState(false);
   const [activeAdReceipt, setActiveAdReceipt] = useState<AdBookingRequest | null>(null);
   const [activeAd, setActiveAd] = useState(0);
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const categories = useMemo(() => [{ name: "All", icon: "✳" }, ...categoryConfig.sectors], [categoryConfig]);
   const businesses = demoData.businesses;
   // The Business portal represents one business account, so it only receives
@@ -13669,7 +13668,9 @@ export default function Home() {
             ✕
           </button>
           <div className="mobile-drawer-user-info">
-            <div className="mobile-drawer-avatar">N</div>
+            <div className="mobile-drawer-avatar">
+              {(currentCustomerProfile?.fullName?.[0] || (role === "Company" ? sessionIdentity?.[0] : "C") || "C").toUpperCase()}
+            </div>
             <div>
               <strong style={{ fontSize: "14px", display: "block" }}>
                 {role === "Discover" ? t.yourBizearchActivity : `${role === "Account" ? "Customer" : role} Account`}
@@ -13917,195 +13918,187 @@ export default function Home() {
           </>}
         </div>
 
-        <div className="sidebar-bottom" style={{ position: "relative" }}>
-          {profileMenuOpen && (
-            <div
-              className="profile-popover-menu"
-              style={{
-                position: "absolute",
-                bottom: "calc(100% + 8px)",
-                left: "4px",
-                right: "4px",
-                background: "#ffffff",
-                borderRadius: "12px",
-                boxShadow: "0 14px 34px rgba(18, 40, 24, 0.22)",
-                border: "1px solid #d0e0d4",
-                padding: "8px",
-                zIndex: 1000,
-                display: "flex",
-                flexDirection: "column",
-                gap: "3px",
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div
-                style={{
-                  padding: "6px 10px 8px",
-                  borderBottom: "1px solid #edf3ee",
-                  marginBottom: "4px",
-                }}
-              >
-                <div style={{ fontSize: "11px", fontWeight: 700, color: "#1b442b", textTransform: "uppercase", letterSpacing: "0.4px" }}>
-                  {role === "Account" || role === "Discover" ? "Customer Account" : `${role} Account`}
-                </div>
-                <div style={{ fontSize: "11px", color: "#6a7e70", marginTop: "2px" }}>
-                  {role === "Company" && sessionIdentity ? sessionIdentity : (currentCustomerProfile?.fullName || "Customer")}
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setProfileMenuOpen(false);
-                  openProfileView("Profile details");
-                }}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "9px",
-                  padding: "8px 10px",
-                  borderRadius: "7px",
-                  border: 0,
-                  background: "transparent",
-                  cursor: "pointer",
-                  textAlign: "left",
-                  fontSize: "12.5px",
-                  fontWeight: 600,
-                  color: "#1f3d28",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "#f0f6f1")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-              >
-                <span>👤</span> Profile Details
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setProfileMenuOpen(false);
-                  openProfileView("Settings");
-                }}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "9px",
-                  padding: "8px 10px",
-                  borderRadius: "7px",
-                  border: 0,
-                  background: "transparent",
-                  cursor: "pointer",
-                  textAlign: "left",
-                  fontSize: "12.5px",
-                  fontWeight: 600,
-                  color: "#1f3d28",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "#f0f6f1")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-              >
-                <span>⚙️</span> Settings &amp; Features
-              </button>
-              {(role === "Account" || role === "Discover") && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setProfileMenuOpen(false);
-                    openProfileView("Orders" as any);
-                  }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "9px",
-                    padding: "8px 10px",
-                    borderRadius: "7px",
-                    border: 0,
-                    background: "transparent",
-                    cursor: "pointer",
-                    textAlign: "left",
-                    fontSize: "12.5px",
-                    fontWeight: 600,
-                    color: "#1f3d28",
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "#f0f6f1")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                >
-                  <span>🛍️</span> Orders &amp; Activity
-                </button>
-              )}
-              <div style={{ height: "1px", background: "#edf3ee", margin: "3px 0" }} />
-              {authenticatedPortals.length > 0 ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setProfileMenuOpen(false);
-                    void logOut();
-                  }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "9px",
-                    padding: "7px 10px",
-                    borderRadius: "7px",
-                    border: 0,
-                    background: "transparent",
-                    cursor: "pointer",
-                    textAlign: "left",
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    color: "#b91c1c",
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "#fee2e2")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                >
-                  <span>🚪</span> Sign out
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setProfileMenuOpen(false);
-                    setDialog("login");
-                  }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "9px",
-                    padding: "7px 10px",
-                    borderRadius: "7px",
-                    border: 0,
-                    background: "transparent",
-                    cursor: "pointer",
-                    textAlign: "left",
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    color: "#15803d",
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "#dcfce7")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                >
-                  <span>🔑</span> Sign in or register
-                </button>
-              )}
-            </div>
-          )}
-          <button
-            className="profile-button"
-            onClick={() => openProfileView("Profile details")}
-            title="Open Profile details & settings"
+        <div className="sidebar-bottom">
+          <div
+            className="sidebar-profile-row"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "6px",
+              width: "100%",
+            }}
           >
-            <span className="avatar">{(currentCustomerProfile?.fullName?.[0] || (role === "Company" ? sessionIdentity?.[0] : "C") || "C").toUpperCase()}</span>
-            <span className="profile-text">
-              <strong>{role === "Discover" ? t.yourBizearchActivity : `${role === "Account" ? "Customer" : role} profile`}</strong>
-              <small>{role === "Discover" ? t.savedOnDevice : "Profile & account details"}</small>
-            </span>
-            <span
-              className="profile-menu"
-              onClick={(e) => {
-                e.stopPropagation();
-                setProfileMenuOpen((prev) => !prev);
+            <button
+              type="button"
+              className="profile-button"
+              onClick={() => openProfileView("Profile details")}
+              title="Open profile details & settings"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                flex: "1 1 auto",
+                minWidth: 0,
+                border: 0,
+                background: "transparent",
+                padding: "4px 6px",
+                borderRadius: "8px",
+                cursor: "pointer",
+                textAlign: "left",
+                transition: "background 0.15s ease",
               }}
-              title="Profile menu"
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#edf5ee")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
             >
-              ···
-            </span>
-          </button>
+              <span className="avatar" style={{ flexShrink: 0 }}>
+                {(currentCustomerProfile?.fullName?.[0] || (role === "Company" ? sessionIdentity?.[0] : "C") || "C").toUpperCase()}
+              </span>
+              <span
+                className="profile-text"
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  minWidth: 0,
+                  overflow: "hidden",
+                  flex: 1,
+                }}
+              >
+                <strong
+                  style={{
+                    display: "block",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    fontSize: "11px",
+                    color: "#1c2e22",
+                  }}
+                >
+                  {role === "Discover" ? t.yourBizearchActivity : `${role === "Account" ? "Customer" : role} profile`}
+                </strong>
+                <small
+                  style={{
+                    display: "block",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    fontSize: "9.5px",
+                    color: "#78877d",
+                  }}
+                >
+                  {role === "Company" && sessionIdentity
+                    ? sessionIdentity
+                    : (currentCustomerProfile?.fullName || (role === "Discover" ? t.savedOnDevice : "Profile & account details"))}
+                </small>
+              </span>
+            </button>
+
+            {authenticatedPortals.length > 0 ? (
+              <button
+                type="button"
+                className="profile-logout-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void logOut();
+                }}
+                title="Sign out"
+                aria-label="Sign out"
+                style={{
+                  border: "1px solid #fed7d7",
+                  background: "#fff5f5",
+                  borderRadius: "8px",
+                  color: "#c53030",
+                  width: "32px",
+                  height: "32px",
+                  minWidth: "32px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  flexShrink: 0,
+                  transition: "all 0.15s ease",
+                  padding: 0,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "#fee2e2";
+                  e.currentTarget.style.borderColor = "#fca5a5";
+                  e.currentTarget.style.color = "#991b1b";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "#fff5f5";
+                  e.currentTarget.style.borderColor = "#fed7d7";
+                  e.currentTarget.style.color = "#c53030";
+                }}
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="profile-logout-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDialog("login");
+                }}
+                title="Sign in or register"
+                aria-label="Sign in"
+                style={{
+                  border: "1px solid #d0e0d4",
+                  background: "#f3f8f4",
+                  borderRadius: "8px",
+                  color: "#1c5c32",
+                  width: "32px",
+                  height: "32px",
+                  minWidth: "32px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  flexShrink: 0,
+                  transition: "all 0.15s ease",
+                  fontSize: "13px",
+                  padding: 0,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "#e2efe4";
+                  e.currentTarget.style.borderColor = "#b5d4bc";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "#f3f8f4";
+                  e.currentTarget.style.borderColor = "#d0e0d4";
+                }}
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                  <polyline points="10 17 15 12 10 7" />
+                  <line x1="15" y1="12" x2="3" y2="12" />
+                </svg>
+              </button>
+            )}
+          </div>
           {role !== "Company" && <a className="company-login-link" href="/company-login">{t.companyLogin}</a>}
         </div>
       </aside>
