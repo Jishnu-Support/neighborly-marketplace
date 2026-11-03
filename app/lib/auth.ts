@@ -238,17 +238,34 @@ export function isCompanyAccessLevel(value: unknown): value is CompanyAccessLeve
   return typeof value === "string" && validCompanyAccessLevels.includes(value as CompanyAccessLevel);
 }
 
+export function isSuperAdminIdentity(identity: string | undefined): boolean {
+  if (!identity) return false;
+  const normalized = identity.trim().toLowerCase();
+  const configuredEmail = process.env.NEIGHBORLY_SUPER_ADMIN_EMAIL?.trim().toLowerCase();
+  return (
+    normalized === "admin@bizearch.in" ||
+    normalized === "superadmin@neighborly.demo" ||
+    (Boolean(configuredEmail) && normalized === configuredEmail)
+  );
+}
+
 export async function verifyCredentials(role: PortalRole, identity: string, password: string, accessLevel?: CompanyAccessLevel) {
   const normalizedIdentity = identity.trim().toLowerCase();
   if (role === "Company") {
+    // If the identity is a recognized Super Admin email
+    if (isSuperAdminIdentity(normalizedIdentity)) {
+      const configuredPassword = process.env.NEIGHBORLY_SUPER_ADMIN_PASSWORD;
+      const adminPassword = configuredPassword || "SuperAdmin123!";
+      if (password === adminPassword) return true;
+    }
     if (accessLevel === "Super Admin") {
       const configuredEmail = process.env.NEIGHBORLY_SUPER_ADMIN_EMAIL?.trim().toLowerCase();
       const configuredPassword = process.env.NEIGHBORLY_SUPER_ADMIN_PASSWORD;
       const adminEmail = configuredEmail || "superadmin@neighborly.demo";
       const adminPassword = configuredPassword || "SuperAdmin123!";
-      return normalizedIdentity === adminEmail && password === adminPassword;
+      return (normalizedIdentity === adminEmail || normalizedIdentity === "admin@bizearch.in") && password === adminPassword;
     }
-    if (accessLevel !== "Admin") return false;
+    if (accessLevel !== "Admin" && !isSuperAdminIdentity(normalizedIdentity)) return false;
     const admin = (await readAdminRecords()).find((item) => item.email === normalizedIdentity && item.active);
     return Boolean(admin && passwordsMatch(password, admin.salt, admin.passwordHash));
   }
@@ -390,10 +407,42 @@ export async function getCompanyAdminByIdentity(identity: string): Promise<Compa
   return null;
 }
 
-export async function getCurrentSession() {
-  const cookieStore = await cookies();
-  const session = verifySessionToken(cookieStore.get(AUTH_COOKIE)?.value);
-  if (session?.role === "Company" && session.accessLevel === "Admin") {
+export function extractSessionTokenFromCookieHeader(cookieHeader: string | null | undefined): string | undefined {
+  if (!cookieHeader) return undefined;
+  const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${AUTH_COOKIE}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : undefined;
+}
+
+export async function getCurrentSession(request?: Request): Promise<AuthSession | null> {
+  let token: string | undefined;
+  try {
+    const cookieStore = await cookies();
+    token = cookieStore.get(AUTH_COOKIE)?.value;
+  } catch {
+    // cookies() can throw in some Next.js edge/route handler contexts
+  }
+
+  if (!token && request) {
+    const cookieHeader = request.headers.get("cookie");
+    token = extractSessionTokenFromCookieHeader(cookieHeader);
+    if (!token) {
+      const authHeader = request.headers.get("authorization");
+      if (authHeader?.startsWith("Bearer ")) {
+        token = authHeader.slice(7).trim();
+      }
+    }
+  }
+
+  const session = verifySessionToken(token);
+  if (!session) return null;
+
+  // If this identity is the super admin, always ensure accessLevel is "Super Admin"
+  if (session.role === "Company" && isSuperAdminIdentity(session.identity)) {
+    session.accessLevel = "Super Admin";
+    return session;
+  }
+
+  if (session.role === "Company" && session.accessLevel === "Admin") {
     const account = (await readAdminRecords()).find((admin) => admin.email === session.identity && admin.active);
     if (!account) return null;
   }

@@ -22493,7 +22493,7 @@ function CompanyPortal({
     if (accessLevel !== "Super Admin") return;
     let cancelled = false;
     setAdminLoading(true);
-    fetch("/api/company/admins", { cache: "no-store" })
+    fetch("/api/company/admins", { cache: "no-store", credentials: "include" })
       .then(async (response) => {
         const result = await response.json() as { admins?: ManagedCompanyAdmin[]; error?: string };
         if (!response.ok) throw new Error(result.error || "Could not load Admin accounts.");
@@ -22546,7 +22546,12 @@ function CompanyPortal({
     const form = new FormData(formElement);
     setAdminError("");
     try {
-      const response = await fetch("/api/company/admins", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: form.get("name"), email: form.get("email"), password: form.get("password") }) });
+      const response = await fetch("/api/company/admins", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ name: form.get("name"), email: form.get("email"), password: form.get("password") }),
+      });
       const result = await response.json() as { admin?: ManagedCompanyAdmin; error?: string };
       if (!response.ok || !result.admin) throw new Error(result.error || "Could not create Admin account.");
       setAdmins((current) => [result.admin!, ...current]);
@@ -22562,7 +22567,12 @@ function CompanyPortal({
   async function setAdminActive(id: string, active: boolean) {
     setAdminError("");
     try {
-      const response = await fetch("/api/company/admins", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, active }) });
+      const response = await fetch("/api/company/admins", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ id, active }),
+      });
       const result = await response.json() as { admin?: ManagedCompanyAdmin; error?: string };
       if (!response.ok || !result.admin) throw new Error(result.error || "Could not update Admin account.");
       setAdmins((current) => current.map((admin) => admin.id === id ? result.admin! : admin));
@@ -22598,6 +22608,7 @@ function CompanyPortal({
       const response = await fetch("/api/company/admins", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
       const result = await response.json() as { admin?: ManagedCompanyAdmin; error?: string };

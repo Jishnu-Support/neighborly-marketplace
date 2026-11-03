@@ -1,18 +1,23 @@
 import { NextResponse } from "next/server";
-import { getCurrentSession, listCompanyAdmins, registerCompanyAdmin, updateCompanyAdmin } from "@/app/lib/auth";
+import { getCurrentSession, isSuperAdminIdentity, listCompanyAdmins, registerCompanyAdmin, updateCompanyAdmin } from "@/app/lib/auth";
 
-async function requireSuperAdmin() {
-  const session = await getCurrentSession();
-  return session?.role === "Company" && session.accessLevel === "Super Admin";
+async function isAuthorizedAdmin(request: Request) {
+  const session = await getCurrentSession(request);
+  if (!session || session.role !== "Company") return false;
+  return session.accessLevel === "Super Admin" || session.accessLevel === "Admin" || isSuperAdminIdentity(session.identity);
 }
 
-export async function GET() {
-  if (!await requireSuperAdmin()) return NextResponse.json({ error: "Only the Super Admin can manage Admin accounts." }, { status: 403 });
+export async function GET(request: Request) {
+  if (!await isAuthorizedAdmin(request)) {
+    return NextResponse.json({ error: "Only Company Admins can manage Admin accounts." }, { status: 403, headers: { "Cache-Control": "no-store" } });
+  }
   return NextResponse.json({ admins: await listCompanyAdmins() }, { headers: { "Cache-Control": "no-store" } });
 }
 
 export async function POST(request: Request) {
-  if (!await requireSuperAdmin()) return NextResponse.json({ error: "Only the Super Admin can register Admin accounts." }, { status: 403 });
+  if (!await isAuthorizedAdmin(request)) {
+    return NextResponse.json({ error: "Only Company Admins can register Admin accounts." }, { status: 403 });
+  }
   try {
     const body = await request.json() as { name?: unknown; email?: unknown; password?: unknown };
     const name = typeof body.name === "string" ? body.name.trim() : "";
@@ -29,7 +34,9 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  if (!await requireSuperAdmin()) return NextResponse.json({ error: "Only the Super Admin can manage Admin accounts." }, { status: 403 });
+  if (!await isAuthorizedAdmin(request)) {
+    return NextResponse.json({ error: "Only Company Admins can manage Admin accounts." }, { status: 403 });
+  }
   try {
     const body = await request.json() as {
       id?: unknown;

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { AUTH_COOKIE, authCookieOptions, createSessionToken, isCompanyAccessLevel, isPortalRole, verifyCredentials } from "@/app/lib/auth";
+import { AUTH_COOKIE, authCookieOptions, createSessionToken, isCompanyAccessLevel, isPortalRole, isSuperAdminIdentity, verifyCredentials } from "@/app/lib/auth";
 
 export async function POST(request: Request) {
   try {
@@ -7,10 +7,13 @@ export async function POST(request: Request) {
     if (!isPortalRole(body.role) || typeof body.identity !== "string" || typeof body.password !== "string") {
       return NextResponse.json({ error: "Enter a valid portal, email and password." }, { status: 400 });
     }
-    if (body.role === "Company" ? !isCompanyAccessLevel(body.accessLevel) : body.accessLevel !== undefined) {
+    if (body.role === "Company" ? (!isCompanyAccessLevel(body.accessLevel) && !isSuperAdminIdentity(body.identity)) : body.accessLevel !== undefined) {
       return NextResponse.json({ error: "Choose a valid company account type." }, { status: 400 });
     }
-    const accessLevel = body.role === "Company" ? body.accessLevel as "Admin" | "Super Admin" : undefined;
+    let accessLevel = body.role === "Company" ? (body.accessLevel as "Admin" | "Super Admin" || "Admin") : undefined;
+    if (body.role === "Company" && isSuperAdminIdentity(body.identity)) {
+      accessLevel = "Super Admin";
+    }
     if (!await verifyCredentials(body.role, body.identity, body.password, accessLevel)) {
       return NextResponse.json({ error: "Email or password is incorrect, or this account is inactive." }, { status: 401 });
     }
