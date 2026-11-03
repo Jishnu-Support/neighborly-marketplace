@@ -74,15 +74,52 @@ async function createStoredAdmin(name: string, email: string, password: string, 
   return { id, name, email, active: true, createdAt: new Date().toISOString(), salt, passwordHash: hashPassword(password, salt) };
 }
 
+const defaultAdmins: { name: string; email: string; defaultPassword: string }[] = [
+  { name: "Keerthana E", email: "keerthanabhuvaneshwari22@gmail.com", defaultPassword: "AdminPassword123!" },
+  { name: "Dharshan R", email: "dharshanrameshreddy@gmail.com", defaultPassword: "AdminPassword123!" },
+];
+
 async function readAdminRecords(): Promise<StoredAdmin[]> {
+  let records: StoredAdmin[] = [];
   try {
-    const parsed = JSON.parse(await readFile(adminStorePath, "utf8")) as unknown;
-    if (!Array.isArray(parsed)) throw new Error("The local Admin account store has an invalid format.");
-    return parsed as StoredAdmin[];
+    const raw = await readFile(adminStorePath, "utf8");
+    const parsed = JSON.parse(raw) as unknown;
+    if (Array.isArray(parsed)) {
+      records = parsed as StoredAdmin[];
+    }
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-    return [];
   }
+
+  // Ensure default company admin accounts (Keerthana E and Dharshan R) are never removed
+  let modified = false;
+  for (const def of defaultAdmins) {
+    const normalized = def.email.trim().toLowerCase();
+    const existing = records.find((a) => a.email.trim().toLowerCase() === normalized);
+    if (!existing) {
+      const salt = randomBytes(16).toString("hex");
+      records.push({
+        id: randomUUID(),
+        name: def.name,
+        email: normalized,
+        active: true,
+        createdAt: new Date().toISOString(),
+        salt,
+        passwordHash: hashPassword(def.defaultPassword, salt),
+      });
+      modified = true;
+    }
+  }
+
+  if (modified) {
+    try {
+      await writeAdminRecords(records);
+    } catch {
+      // Ignore write errors during initial read
+    }
+  }
+
+  return records;
 }
 
 async function writeCustomerRecords(customers: StoredCustomer[]) {
@@ -289,13 +326,68 @@ export async function registerCompanyAdmin(name: string, email: string, password
 }
 
 export async function setCompanyAdminStatus(id: string, active: boolean) {
+  return updateCompanyAdmin({ id, active });
+}
+
+export async function updateCompanyAdmin(input: {
+  id: string;
+  name?: string;
+  email?: string;
+  active?: boolean;
+  password?: string;
+}): Promise<CompanyAdmin | null> {
   const admins = await readAdminRecords();
-  const selectedAdmin = admins.find((admin) => admin.id === id);
+  const selectedAdmin = admins.find((admin) => admin.id === input.id);
   if (!selectedAdmin) return null;
-  selectedAdmin.active = active;
+
+  if (typeof input.name === "string") {
+    const trimmed = input.name.trim();
+    if (!trimmed || trimmed.length > 100) {
+      throw new Error("Admin name must be between 1 and 100 characters.");
+    }
+    selectedAdmin.name = trimmed;
+  }
+
+  if (typeof input.email === "string") {
+    const normalizedEmail = input.email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      throw new Error("Enter a valid work email address.");
+    }
+    const duplicate = admins.find((a) => a.id !== input.id && a.email.toLowerCase() === normalizedEmail);
+    const superAdminEmail = (process.env.NEIGHBORLY_SUPER_ADMIN_EMAIL || "superadmin@neighborly.demo").trim().toLowerCase();
+    if (duplicate || normalizedEmail === superAdminEmail || normalizedEmail === "admin@bizearch.in") {
+      throw new Error("Another admin account already exists with that email address.");
+    }
+    selectedAdmin.email = normalizedEmail;
+  }
+
+  if (typeof input.active === "boolean") {
+    selectedAdmin.active = input.active;
+  }
+
+  if (typeof input.password === "string" && input.password.trim() !== "") {
+    if (input.password.length < 10) {
+      throw new Error("Password must be at least 10 characters.");
+    }
+    const salt = randomBytes(16).toString("hex");
+    selectedAdmin.salt = salt;
+    selectedAdmin.passwordHash = hashPassword(input.password, salt);
+  }
+
   await writeAdminRecords(admins);
   const { salt: _salt, passwordHash: _hash, ...publicAdmin } = selectedAdmin;
   return publicAdmin;
+}
+
+export async function getCompanyAdminByIdentity(identity: string): Promise<CompanyAdmin | null> {
+  const normalized = identity.trim().toLowerCase();
+  const admins = await readAdminRecords();
+  const match = admins.find((a) => a.email.trim().toLowerCase() === normalized);
+  if (match) {
+    const { salt: _s, passwordHash: _p, ...publicAdmin } = match;
+    return publicAdmin;
+  }
+  return null;
 }
 
 export async function getCurrentSession() {

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentSession, listCompanyAdmins, registerCompanyAdmin, setCompanyAdminStatus } from "@/app/lib/auth";
+import { getCurrentSession, listCompanyAdmins, registerCompanyAdmin, updateCompanyAdmin } from "@/app/lib/auth";
 
 async function requireSuperAdmin() {
   const session = await getCurrentSession();
@@ -30,9 +30,31 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   if (!await requireSuperAdmin()) return NextResponse.json({ error: "Only the Super Admin can manage Admin accounts." }, { status: 403 });
-  const body = await request.json() as { id?: unknown; active?: unknown };
-  if (typeof body.id !== "string" || typeof body.active !== "boolean") return NextResponse.json({ error: "Provide an Admin ID and active status." }, { status: 400 });
-  const admin = await setCompanyAdminStatus(body.id, body.active);
-  if (!admin) return NextResponse.json({ error: "Admin account not found." }, { status: 404 });
-  return NextResponse.json({ admin });
+  try {
+    const body = await request.json() as {
+      id?: unknown;
+      active?: unknown;
+      name?: unknown;
+      email?: unknown;
+      password?: unknown;
+    };
+    if (typeof body.id !== "string") {
+      return NextResponse.json({ error: "Provide an Admin ID." }, { status: 400 });
+    }
+    const admin = await updateCompanyAdmin({
+      id: body.id,
+      name: typeof body.name === "string" ? body.name : undefined,
+      email: typeof body.email === "string" ? body.email : undefined,
+      active: typeof body.active === "boolean" ? body.active : undefined,
+      password: typeof body.password === "string" ? body.password : undefined,
+    });
+    if (!admin) return NextResponse.json({ error: "Admin account not found." }, { status: 404 });
+    return NextResponse.json({ admin });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Could not update Admin account." }, { status: 400 });
+  }
+}
+
+export async function PUT(request: Request) {
+  return PATCH(request);
 }

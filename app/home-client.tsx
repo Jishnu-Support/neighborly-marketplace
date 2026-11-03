@@ -11772,9 +11772,16 @@ export default function Home() {
             emergencyNames?: [string, string];
             emergencyRelations?: [string, string];
           } | null;
+          adminProfile?: {
+            id: string;
+            name: string;
+            email: string;
+            active: boolean;
+            createdAt: string;
+          } | null;
         }>;
       })
-      .then(({ session, customer }) => {
+      .then(({ session, customer, adminProfile }) => {
         if (cancelled) return;
         const signedInPortals = session ? [session.role] : [];
         setAuthenticatedPortals(signedInPortals);
@@ -11846,6 +11853,32 @@ export default function Home() {
         if (session?.role === "Company") {
           if (session.accessLevel) setCompanyAccessLevel(session.accessLevel);
           setSessionIdentity(session.identity || "");
+          if (adminProfile) {
+            const companyProfileData: MemberProfile = {
+              fullName: adminProfile.name || "Company Admin",
+              phone: "",
+              email: adminProfile.email || session?.identity || "",
+              doorNo: "",
+              street: "",
+              locality: "Hosur",
+              city: "Hosur",
+              district: "Krishnagiri",
+              state: "Tamil Nadu",
+              pincode: "635109",
+              address: "Hosur, Tamil Nadu",
+              bio: `${session?.accessLevel || "Admin"} · Bizearch Administration`,
+              avatarInitials: (adminProfile.name?.[0] || "A").toUpperCase(),
+              avatarBg: "#1e3a8a",
+              emergencyPhones: ["", ""],
+              emergencyNames: ["", ""],
+              emergencyRelations: ["", ""],
+            };
+            setCurrentCustomerProfile(companyProfileData);
+            try {
+              window.localStorage.setItem(profileStorageKey("Company"), JSON.stringify(companyProfileData));
+              window.localStorage.setItem("neighborly_profile_Company", JSON.stringify(companyProfileData));
+            } catch {}
+          }
         }
         if (!requestedPortal) return;
         if (session?.role === requestedPortal) {
@@ -22538,6 +22571,48 @@ function CompanyPortal({
       setAdminError(error instanceof Error ? error.message : "Could not update Admin account.");
     }
   }
+
+  const [editingAdminId, setEditingAdminId] = useState<string | null>(null);
+  const [editAdminForm, setEditAdminForm] = useState<{
+    name: string;
+    email: string;
+    password: string;
+    active: boolean;
+  }>({ name: "", email: "", password: "", active: true });
+  const [editAdminSaving, setEditAdminSaving] = useState(false);
+  const [editAdminError, setEditAdminError] = useState("");
+
+  async function saveAdminDetails(id: string) {
+    setEditAdminSaving(true);
+    setEditAdminError("");
+    try {
+      const payload: { id: string; name?: string; email?: string; active?: boolean; password?: string } = {
+        id,
+        name: editAdminForm.name.trim(),
+        email: editAdminForm.email.trim(),
+        active: editAdminForm.active,
+      };
+      if (editAdminForm.password.trim()) {
+        payload.password = editAdminForm.password;
+      }
+      const response = await fetch("/api/company/admins", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json() as { admin?: ManagedCompanyAdmin; error?: string };
+      if (!response.ok || !result.admin) {
+        throw new Error(result.error || "Could not update Admin details.");
+      }
+      setAdmins((current) => current.map((admin) => (admin.id === id ? result.admin! : admin)));
+      setEditingAdminId(null);
+      showNotice(`Admin details updated for ${result.admin.name}.`);
+    } catch (error) {
+      setEditAdminError(error instanceof Error ? error.message : "Could not update Admin details.");
+    } finally {
+      setEditAdminSaving(false);
+    }
+  }
   function downloadReport() {
     const rows = [
       ["Record type", "Name or event", "Category or status", "Products", "Address", "Coordinates", "Business activity", "Vehicle types", "Makes", "Vehicle models", "Timestamp"],
@@ -22656,7 +22731,197 @@ function CompanyPortal({
       </section>
     )}
     {activeTab === "Customer locations" && <section className="panel tab-panel"><div className="eyebrow">CONSENTED REGISTRATION LOCATION</div><h2>Customer registration requests</h2><p>Only Company Admins can view this list. Exact coordinates are included only when the customer grants browser location access. Demo requests have a verified mobile number but do not activate an account.</p>{registrationLoading && <p>Loading registration records…</p>}{registrationError && <p className="form-error" role="alert">{registrationError}</p>}{!registrationLoading && !registrationError && customerRegistrations.length === 0 && <EmptyState title="No registration requests yet" text="Customer requests and any shared locations will appear here." />}{customerRegistrations.map((registration) => <div className="listing-row" key={registration.id}><span className="listing-icon lavender">⌖</span><span className="listing-name"><strong>{registration.name}</strong><small>Mobile ending {registration.phoneLast4} · {new Date(registration.registeredAt).toLocaleString()} · {registration.verificationStatus}</small>{registration.locationStatus === "shared" && registration.latitude !== null && registration.longitude !== null && <small>Coordinates: {registration.latitude.toFixed(5)}, {registration.longitude.toFixed(5)}</small>}</span><span className={`status-pill ${registration.locationStatus === "shared" ? "verified" : "pending"}`}>{registration.locationStatus === "shared" ? "Location shared" : registration.locationStatus === "denied" ? "Location denied" : "Location unavailable"}</span></div>)}</section>}    {activeTab === "Businesses" && <><section className="panel tab-panel"><div className="panel-heading"><div><div className="eyebrow">PARTNER DIRECTORY</div><h2>All registered businesses</h2></div><button className="outline-button" onClick={downloadReport}>Download CSV ↗</button></div>{businesses.map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category} / {business.products.length} catalogue items / sample distance {business.distance} km</small>{business.address && <small>Address: {Object.values(business.address).filter(Boolean).join(", ")}</small>}{business.coordinates && <small>Coordinates: {business.coordinates.latitude.toFixed(6)}, {business.coordinates.longitude.toFixed(6)}</small>}{business.businessModes?.length ? <small>Activity: {business.businessModes.join(", ")}</small> : null}{business.vehicleTypes?.length ? <small>Vehicles: {business.vehicleTypes.join(", ")}</small> : null}{business.vehicleMakes?.length ? <small>Makes: {business.vehicleMakes.join(", ")}</small> : null}{business.vehicleModels?.length ? <small>Models: {business.vehicleModels.join(", ")}</small> : null}</span><span className={`status-pill ${business.subscribed ? "verified" : "pending"}`}>● {business.subscribed ? "Subscribed" : "Pending"}</span></div>)}</section></>}
-    {activeTab === "Admins" && accessLevel === "Super Admin" && <section className="panel tab-panel"><div className="eyebrow">PLATFORM ACCESS</div><h2>Manage Admin accounts</h2><p>Only the initial Super Admin can create or disable company Admin accounts. Super Admin access cannot be self-registered.</p><form className="product-form" onSubmit={registerAdmin}><label>{companyAdminLabel("name", "Admin name")}<input name="name" placeholder="e.g. Priya Sharma" maxLength={100} required /></label><label>{companyAdminLabel("email", "Work email")}<input name="email" type="email" placeholder="priya@company.com" required /></label><label>{companyAdminLabel("password", "Temporary password")}<input name="password" type="password" minLength={10} autoComplete="new-password" placeholder="At least 10 characters" required /></label><button className="primary-button" type="submit">Create Admin account</button>{adminError && <span className="form-error" role="alert">{adminError}</span>}</form><div className="form-note"><strong>Account store</strong><span>Passwords are stored as salted hashes on this local server. Share temporary passwords through a private channel.</span></div>{adminLoading ? <p>Loading Admin accounts...</p> : admins.map((admin) => <div className="listing-row" key={admin.id}><span className="listing-icon lavender">A</span><span className="listing-name"><strong>{admin.name}</strong><small>{admin.email} · Created {new Date(admin.createdAt).toLocaleDateString()}</small></span><span className={`status-pill ${admin.active ? "verified" : "pending"}`}>{admin.active ? "Active" : "Disabled"}</span><button className="outline-button" type="button" onClick={() => void setAdminActive(admin.id, !admin.active)}>{admin.active ? "Disable access" : "Restore access"}</button></div>)}</section>}
+    {activeTab === "Admins" && accessLevel === "Super Admin" && (
+      <section className="panel tab-panel">
+        <div className="eyebrow">PLATFORM ACCESS</div>
+        <h2>Manage Admin accounts</h2>
+        <p>Only the initial Super Admin can create, edit, or disable company Admin accounts. Super Admin access cannot be self-registered.</p>
+        <form className="product-form" onSubmit={registerAdmin}>
+          <label>
+            {companyAdminLabel("name", "Admin name")}
+            <input name="name" placeholder="e.g. Priya Sharma" maxLength={100} required />
+          </label>
+          <label>
+            {companyAdminLabel("email", "Work email")}
+            <input name="email" type="email" placeholder="priya@company.com" required />
+          </label>
+          <label>
+            {companyAdminLabel("password", "Temporary password")}
+            <input name="password" type="password" minLength={10} autoComplete="new-password" placeholder="At least 10 characters" required />
+          </label>
+          <button className="primary-button" type="submit">Create Admin account</button>
+          {adminError && <span className="form-error" role="alert">{adminError}</span>}
+        </form>
+        <div className="form-note">
+          <strong>Account store</strong>
+          <span>Passwords are stored as salted hashes on this local server. Share temporary passwords through a private channel.</span>
+        </div>
+        {adminLoading ? (
+          <p>Loading Admin accounts...</p>
+        ) : admins.length === 0 ? (
+          <EmptyState title="No Admin accounts yet" text="Created admin accounts will appear here." />
+        ) : (
+          admins.map((admin) => (
+            <div key={admin.id} style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "8px" }}>
+              <div className="listing-row" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0, flex: 1 }}>
+                  <span className="listing-icon lavender" style={{ width: "36px", height: "36px", borderRadius: "50%", display: "grid", placeItems: "center", fontWeight: 700, fontSize: "14px", flexShrink: 0 }}>
+                    {(admin.name?.[0] || "A").toUpperCase()}
+                  </span>
+                  <span className="listing-name" style={{ minWidth: 0 }}>
+                    <strong style={{ fontSize: "13px", display: "block" }}>{admin.name}</strong>
+                    <small style={{ color: "#66786c", fontSize: "11px" }}>{admin.email} · Created {new Date(admin.createdAt).toLocaleDateString()}</small>
+                  </span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0, flexWrap: "wrap" }}>
+                  <span className={`status-pill ${admin.active ? "verified" : "pending"}`}>
+                    {admin.active ? "Active" : "Disabled"}
+                  </span>
+                  <button
+                    className="outline-button"
+                    type="button"
+                    onClick={() => {
+                      if (editingAdminId === admin.id) {
+                        setEditingAdminId(null);
+                        setEditAdminError("");
+                      } else {
+                        setEditingAdminId(admin.id);
+                        setEditAdminForm({
+                          name: admin.name,
+                          email: admin.email,
+                          password: "",
+                          active: admin.active,
+                        });
+                        setEditAdminError("");
+                      }
+                    }}
+                    style={{ fontSize: "11.5px", padding: "6px 12px" }}
+                  >
+                    {editingAdminId === admin.id ? "Close edit" : "✏️ Edit details"}
+                  </button>
+                  <button
+                    className="outline-button"
+                    type="button"
+                    onClick={() => void setAdminActive(admin.id, !admin.active)}
+                    style={{ fontSize: "11.5px", padding: "6px 12px", color: admin.active ? "#b91c1c" : "#15803d" }}
+                  >
+                    {admin.active ? "Disable access" : "Restore access"}
+                  </button>
+                </div>
+              </div>
+
+              {editingAdminId === admin.id && (
+                <div
+                  style={{
+                    background: "#f8fbf8",
+                    border: "1.5px solid #285536",
+                    borderRadius: "10px",
+                    padding: "16px",
+                    margin: "2px 0 12px",
+                    boxShadow: "0 4px 14px rgba(40, 85, 54, 0.08)",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", paddingBottom: "8px", borderBottom: "1px solid #e3ede4" }}>
+                    <div>
+                      <strong style={{ fontSize: "13px", color: "#1c3d26", display: "block" }}>
+                        Edit Admin Account: {admin.name}
+                      </strong>
+                      <span style={{ fontSize: "11px", color: "#66786c" }}>
+                        Update name, work email, account status, or set a new password.
+                      </span>
+                    </div>
+                    <span className={`status-pill ${editAdminForm.active ? "verified" : "pending"}`}>
+                      {editAdminForm.active ? "Active" : "Disabled"}
+                    </span>
+                  </div>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px" }}>
+                    <label style={{ display: "grid", gap: "5px", fontSize: "11.5px", fontWeight: 600, color: "#23412c" }}>
+                      Admin Name *
+                      <input
+                        type="text"
+                        value={editAdminForm.name}
+                        onChange={(e) => setEditAdminForm((prev) => ({ ...prev, name: e.target.value }))}
+                        placeholder="Full name"
+                        maxLength={100}
+                        required
+                        style={{ padding: "8px 10px", borderRadius: "6px", border: "1px solid #cad7cd", fontSize: "12.5px" }}
+                      />
+                    </label>
+
+                    <label style={{ display: "grid", gap: "5px", fontSize: "11.5px", fontWeight: 600, color: "#23412c" }}>
+                      Work Email *
+                      <input
+                        type="email"
+                        value={editAdminForm.email}
+                        onChange={(e) => setEditAdminForm((prev) => ({ ...prev, email: e.target.value }))}
+                        placeholder="work@example.com"
+                        required
+                        style={{ padding: "8px 10px", borderRadius: "6px", border: "1px solid #cad7cd", fontSize: "12.5px" }}
+                      />
+                    </label>
+
+                    <label style={{ display: "grid", gap: "5px", fontSize: "11.5px", fontWeight: 600, color: "#23412c" }}>
+                      Reset Password (optional)
+                      <input
+                        type="password"
+                        value={editAdminForm.password}
+                        onChange={(e) => setEditAdminForm((prev) => ({ ...prev, password: e.target.value }))}
+                        placeholder="Leave blank to keep current"
+                        minLength={10}
+                        autoComplete="new-password"
+                        style={{ padding: "8px 10px", borderRadius: "6px", border: "1px solid #cad7cd", fontSize: "12.5px" }}
+                      />
+                    </label>
+
+                    <label style={{ display: "grid", gap: "5px", fontSize: "11.5px", fontWeight: 600, color: "#23412c" }}>
+                      Account Status
+                      <select
+                        value={editAdminForm.active ? "active" : "disabled"}
+                        onChange={(e) => setEditAdminForm((prev) => ({ ...prev, active: e.target.value === "active" }))}
+                        style={{ padding: "8px 10px", borderRadius: "6px", border: "1px solid #cad7cd", fontSize: "12.5px", background: "#fff" }}
+                      >
+                        <option value="active">Active (Access granted)</option>
+                        <option value="disabled">Disabled (Access revoked)</option>
+                      </select>
+                    </label>
+                  </div>
+
+                  {editAdminError && (
+                    <div style={{ color: "#b91c1c", fontSize: "12px", marginTop: "10px", fontWeight: 500 }}>
+                      ⚠️ {editAdminError}
+                    </div>
+                  )}
+
+                  <div style={{ display: "flex", gap: "10px", marginTop: "14px", alignItems: "center" }}>
+                    <button
+                      type="button"
+                      className="primary-button"
+                      disabled={editAdminSaving}
+                      onClick={() => void saveAdminDetails(admin.id)}
+                      style={{ padding: "8px 18px", fontSize: "12px" }}
+                    >
+                      {editAdminSaving ? "Saving changes..." : "Save changes"}
+                    </button>
+                    <button
+                      type="button"
+                      className="outline-button"
+                      onClick={() => {
+                        setEditingAdminId(null);
+                        setEditAdminError("");
+                      }}
+                      style={{ padding: "8px 14px", fontSize: "12px" }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))
+        )}
+      </section>
+    )}
     {activeTab === "Activity log" && <section className="panel tab-panel"><div className="panel-heading"><div><div className="eyebrow">LOCAL DEMO AUDIT</div><h2>Recent activity</h2></div><span className="status-pill pending">Browser only</span></div><p>Events are stored locally in this browser and are not sent to the company.</p>{events.length ? events.map((event) => <div className="activity-row" key={event.id}><span className="activity-dot" /><strong>{event.action}</strong><small>{new Date(event.createdAt).toLocaleString()}</small></div>) : <EmptyState title="No activity recorded" text="Searches and selections will appear here as local demo events." />}</section>}
     {(activeTab === "Transactions" || activeTab === "Billing") && (
       <CompanyTransactionsManager
