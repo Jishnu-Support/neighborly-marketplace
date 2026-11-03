@@ -142,7 +142,7 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
           } catch { /* Browser storage */ }
 
           setTimeout(() => {
-            window.location.assign("/?portal=Account");
+            window.location.assign("/");
           }, 800);
         } catch (error) {
           setIsSuccess(false);
@@ -184,7 +184,7 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
           });
         }
       }
-      window.location.assign(`/?portal=${portal}`);
+      window.location.assign(portal === "Account" ? "/" : `/?portal=${portal}`);
     } catch (error) {
       setIsSuccess(false);
       setMessage(error instanceof Error ? error.message : "Could not sign in. Please try again.");

@@ -11797,7 +11797,11 @@ export default function Home() {
         }
         if (!requestedPortal) return;
         if (session?.role === requestedPortal) {
-          setRole(requestedPortal);
+          if (requestedPortal === "Account") {
+            setRole("Discover");
+          } else {
+            setRole(requestedPortal);
+          }
           window.history.replaceState({}, "", window.location.pathname);
           return;
         }
@@ -12731,7 +12735,7 @@ export default function Home() {
       if (!response.ok) throw new Error(result.error || "Could not sign in.");
       setDialog(null);
       setAuthenticatedPortals((prev) => Array.from(new Set([...prev, "Account"])));
-      setRole("Account");
+      setRole("Discover");
       setPortalActiveTab("Overview");
       showNotice("Signed in successfully. Welcome to Bizearch!");
     } catch (error) {
@@ -12746,7 +12750,7 @@ export default function Home() {
       if (!response.ok || !result.registration) throw new Error(result.error || "Could not complete registration.");
       setDialog(null);
       setAuthenticatedPortals((prev) => Array.from(new Set([...prev, "Account"])));
-      setRole("Account");
+      setRole("Discover");
       setPortalActiveTab("Overview");
       showNotice(`✓ Account activated! Welcome to Bizearch, ${input.name}.`);
     } catch (error) {
@@ -12804,11 +12808,11 @@ export default function Home() {
 
   const workspaceLinks = ([
     ["Discover", "\u2315"],
-    ...(role === "Discover" || role === "Account" ? [["Account", "\u25c9"] as [Role, string]] : []),
-    ...(role === "Discover" || role === "Business" ? [["Business", "\u25a7"] as [Role, string]] : []),
-    ...(role === "Discover" || role === "Agent" ? [["Agent", "\u2667"] as [Role, string]] : []),
-    ...(role === "Company" ? [["Company", "\u2699"] as [Role, string]] : []),
-  ] as [Role, string][]).sort(([left], [right]) => left === role ? -1 : right === role ? 1 : 0);
+    ...(role === "Discover" || role === "Account" || authenticatedPortals.includes("Account") ? [["Account", "\u25c9"] as [Role, string]] : []),
+    ...(role === "Discover" || role === "Business" || authenticatedPortals.includes("Business") ? [["Business", "\u25a7"] as [Role, string]] : []),
+    ...(role === "Discover" || role === "Agent" || authenticatedPortals.includes("Agent") ? [["Agent", "\u2667"] as [Role, string]] : []),
+    ...(role === "Company" || authenticatedPortals.includes("Company") ? [["Company", "\u2699"] as [Role, string]] : []),
+  ] as [Role, string][]);
 
   return (
     <main className="app-shell">
@@ -13772,7 +13776,7 @@ export default function Home() {
           <span>bizearch<span className="brand-period">.</span></span>
         </a>
         <button className="mobile-menu-toggle" type="button" aria-label={mobileMenuOpen ? "Close menu" : "Open menu"} aria-expanded={mobileMenuOpen} onClick={() => setMobileMenuOpen((open) => !open)}>{mobileMenuOpen ? "×" : "☰"}</button>
-        <div className="workspace-label">{role === "Discover" ? t.workspaceLabel : `${role === "Account" ? "CUSTOMER" : role.toUpperCase()} ${t.workspaceLabel}`}</div>
+        <div className="workspace-label">{role === "Discover" && !authenticatedPortals.includes("Account") ? t.workspaceLabel : `${role === "Account" || authenticatedPortals.includes("Account") ? "CUSTOMER" : role.toUpperCase()} ${t.workspaceLabel}`}</div>
         <nav className="main-nav" aria-label="Main navigation">
           {workspaceLinks.map(([item, icon]) => (
             <button key={item} className={`nav-item ${role === item ? "active" : ""}`} onClick={() => { openPortal(item); setMobileMenuOpen(false); }}>
