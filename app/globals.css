@@ -489,9 +489,10 @@ button{cursor:pointer}
 }
 .sidebar{position:fixed;inset:0 auto 0 0;width:252px;background:#fff;border-right:1px solid var(--line);padding:20px 10px 14px 14px;display:flex;flex-direction:column;z-index:5;overflow:hidden;height:100vh}
 .mobile-menu-toggle{display:none}
-.sos-ad-button{position:static;align-self:flex-end;width:auto;height:34px;padding:7px 10px;border-radius:6px;justify-content:center;gap:7px;flex-direction:row;font-size:9px;z-index:2}
-.sos-ad-button>span{font-size:14px}
-.sos-ad-button small{display:inline;font-size:8px}
+.sos-ad-button{position:static!important;width:100%!important;height:38px!important;margin:0 0 10px 0!important;padding:8px 12px!important;border:1px solid #fecdd3!important;background:#fff1f2!important;color:#be123c!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;font-size:11px!important;font-weight:800!important;border-radius:8px!important;cursor:pointer!important;box-shadow:0 1px 4px rgba(190,18,60,.08)!important;flex-shrink:0!important}
+.sos-ad-button:hover{background:#ffe4e6!important;border-color:#fda4af!important}
+.sos-ad-button>span{font-size:15px!important;margin-right:2px!important}
+.sos-ad-button small{display:inline!important;font-size:9.5px!important;color:#9f1239!important;font-weight:600!important;border-left:1px solid #fecdd3!important;padding-left:8px!important;margin-left:4px!important}
 .brand{display:flex;align-items:center;gap:10px;margin:0 8px 18px;text-decoration:none;color:#24382e;font-family:Manrope,sans-serif;font-size:22px;font-weight:800;letter-spacing:-1.2px;flex:none}
 .brand-period{color:#e9855c}.brand-mark{height:29px;width:29px;border-radius:9px;background:#477b58;position:relative;display:inline-flex;align-items:center;justify-content:center;transform:rotate(-5deg)}
 .brand-mark{display:block;flex:0 0 auto;border-radius:0;background:transparent;transform:none;object-fit:contain}

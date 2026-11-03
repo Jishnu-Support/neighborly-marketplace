@@ -441,6 +441,7 @@ export function resolveScheduledAds(
     const area = biz?.address?.area || "";
     const street = biz?.address?.street || "";
     const label = b.poster?.label || "";
+    const cleanLocality = area || street || (label.includes("•") ? label.split("•")[1].trim() : label) || "Hosur";
     const combinedLocality = `${area} ${street} ${label}`.trim() || "Hosur";
 
     // Distance
@@ -538,7 +539,7 @@ export function resolveScheduledAds(
     scoredBookings.push({
       booking: b,
       bizName: b.businessName,
-      locality: combinedLocality,
+      locality: cleanLocality,
       distanceKm: Math.round(dist * 10) / 10,
       searchScore,
       locationScore,

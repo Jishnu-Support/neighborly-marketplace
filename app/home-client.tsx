@@ -14515,26 +14515,6 @@ export default function Home() {
                             👁️ {(currentImageAd?.viewsCount || 1240).toLocaleString("en-IN")} views
                           </span>
                         </div>
-
-                        {/* Minimal bottom-left tag on image */}
-                        {localityPart && (
-                          <div
-                            style={{
-                              alignSelf: "flex-start",
-                              background: "rgba(15, 23, 42, 0.7)",
-                              backdropFilter: "blur(6px)",
-                              color: "#ffffff",
-                              fontSize: "9.5px",
-                              fontWeight: 600,
-                              padding: "2px 8px",
-                              borderRadius: "6px",
-                              border: "1px solid rgba(255, 255, 255, 0.2)",
-                              zIndex: 2,
-                            }}
-                          >
-                            📍 {localityPart}
-                          </div>
-                        )}
                       </div>
 
                       {/* ALL REMAINING DETAILS BELOW THE IMAGE */}
@@ -14549,6 +14529,12 @@ export default function Home() {
                             </span>
                           )}
                         </div>
+
+                        {localityPart && (
+                          <div style={{ fontSize: "11px", color: "#475569", margin: "0 0 6px", display: "flex", alignItems: "center", gap: "4px", fontWeight: 500 }}>
+                            📍 {localityPart}
+                          </div>
+                        )}
 
                         <h4 style={{ fontSize: "14.5px", fontWeight: 800, color: "#0f172a", lineHeight: 1.35, margin: "0 0 10px", letterSpacing: "-0.3px" }}>
                           {currentImageAd?.title}
@@ -14659,7 +14645,7 @@ export default function Home() {
         )}
 
         <aside className="ad-rail" aria-label="Advertisements">
-          <button className="sos-fab sos-ad-button" aria-label="Emergency help (SOS)" onClick={() => setDialog("sos")}><span>✚</span> SOS <small>{t.emergencyHelp}</small></button>
+          <button className="sos-ad-button" aria-label="Emergency help (SOS)" onClick={() => setDialog("sos")}><span>✚</span> SOS <small>{t.emergencyHelp}</small></button>
           <section className="image-ad-panel" aria-label="Rotating image advertisement">
             {adConfig.imageAds.length === 0 ? (
               <div
@@ -14781,26 +14767,6 @@ export default function Home() {
                           👁️ {(currentImageAd.viewsCount || 1240).toLocaleString("en-IN")} views
                         </span>
                       </div>
-
-                      {/* Minimal bottom-left tag on image */}
-                      {localityPart && (
-                        <div
-                          style={{
-                            alignSelf: "flex-start",
-                            background: "rgba(15, 23, 42, 0.7)",
-                            backdropFilter: "blur(6px)",
-                            color: "#ffffff",
-                            fontSize: "9.5px",
-                            fontWeight: 600,
-                            padding: "2px 8px",
-                            borderRadius: "6px",
-                            border: "1px solid rgba(255, 255, 255, 0.2)",
-                            zIndex: 2,
-                          }}
-                        >
-                          📍 {localityPart}
-                        </div>
-                      )}
                     </div>
 
                     {/* ALL REMAINING DETAILS BELOW THE IMAGE */}
@@ -14815,6 +14781,12 @@ export default function Home() {
                           </span>
                         )}
                       </div>
+
+                      {localityPart && (
+                        <div style={{ fontSize: "11px", color: "#475569", margin: "0 0 6px", display: "flex", alignItems: "center", gap: "4px", fontWeight: 500 }}>
+                          📍 {localityPart}
+                        </div>
+                      )}
 
                       <h4 style={{ fontSize: "14.5px", fontWeight: 800, color: "#0f172a", lineHeight: 1.35, margin: "0 0 10px", letterSpacing: "-0.3px" }}>
                         {currentImageAd.title}
@@ -14946,7 +14918,7 @@ export default function Home() {
                   </span>
                 )}
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
                 <span
                   style={{
                     background: "#e8f5e9",
@@ -14956,12 +14928,14 @@ export default function Home() {
                     fontWeight: 700,
                     fontSize: "10.5px",
                     border: "1px solid #bbf7d0",
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
                   }}
                   title="Total spotlight video views"
                 >
                   👁️ {(adConfig.videoAd?.viewsCount || 2340).toLocaleString("en-IN")} views
                 </span>
-                <small>{t.localSpotlight}</small>
+                <small style={{ whiteSpace: "nowrap" }}>{t.localSpotlight}</small>
               </div>
             </div>
             <video
