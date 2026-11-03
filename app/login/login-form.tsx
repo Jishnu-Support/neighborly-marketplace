@@ -84,6 +84,14 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
     if (registering) {
       const name = String(form.get("fullName") || "").trim();
       const phone = String(form.get("phone") || "").trim();
+      const email = String(form.get("email") || "").trim();
+      const locality = String(form.get("locality") || "Bagalur Road").trim();
+      const doorNo = String(form.get("doorNo") || "").trim();
+      const street = String(form.get("street") || "").trim();
+      const emergencyContactName = String(form.get("emergencyContactName") || "").trim();
+      const emergencyContactPhone = String(form.get("emergencyContactPhone") || "").trim();
+      const emergencyContactRelation = String(form.get("emergencyContactRelation") || "Family").trim();
+      const fullAddress = [doorNo, street, locality, "Hosur - 635109"].filter(Boolean).join(", ");
       const password = String(form.get("password") || "").trim();
       const confirmPassword = String(form.get("confirmPassword") || "").trim();
       if (!otpVerified) {
@@ -109,7 +117,7 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
           const response = await fetch("/api/agents/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, phone, password }),
+            body: JSON.stringify({ name, phone, password, email }),
           });
           const result = (await response.json()) as { error?: string; message?: string; agent?: { referralCode: string } };
           if (!response.ok) throw new Error(result.error || "Could not complete agent registration.");
@@ -129,7 +137,23 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
           const response = await fetch("/api/customers/registration-location", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, phone, password, locationStatus, latitude, longitude }),
+            body: JSON.stringify({
+              name,
+              phone,
+              email,
+              password,
+              doorNo,
+              street,
+              locality,
+              pincode: "635109",
+              address: fullAddress,
+              emergencyContactName,
+              emergencyContactPhone,
+              emergencyContactRelation,
+              locationStatus,
+              latitude,
+              longitude,
+            }),
           });
           const result = await response.json() as { error?: string; message?: string };
           if (!response.ok) throw new Error(result.error || "Could not complete registration.");
@@ -138,8 +162,28 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
           setMessage(`✓ Account activated! Welcome to Bizearch, ${name}. Loading your neighborhood...`);
           
           try {
-            localStorage.setItem("bizearch_registered_user", JSON.stringify({ name, phone, registeredAt: new Date().toISOString() }));
-            localStorage.setItem("neighborly_profile_Account", JSON.stringify({ fullName: name, phone, email: "", address: "" }));
+            const customerProfileData = {
+              fullName: name,
+              phone,
+              email,
+              doorNo,
+              street,
+              locality,
+              city: "Hosur",
+              district: "Krishnagiri",
+              state: "Tamil Nadu",
+              pincode: "635109",
+              address: fullAddress,
+              bio: "Hosur resident & verified community member.",
+              avatarInitials: (name[0] || "C").toUpperCase(),
+              avatarBg: "#285536",
+              emergencyPhones: [emergencyContactPhone, ""],
+              emergencyNames: [emergencyContactName, ""],
+              emergencyRelations: [emergencyContactRelation, ""],
+            };
+            localStorage.setItem("bizearch_registered_user", JSON.stringify({ name, phone, email, registeredAt: new Date().toISOString() }));
+            localStorage.setItem("neighborly_profile_Account", JSON.stringify(customerProfileData));
+            localStorage.setItem("neighborly-profile-v1-account", JSON.stringify(customerProfileData));
             sessionStorage.removeItem("neighborly_login_location");
             if (latitude !== null && longitude !== null) {
               sessionStorage.setItem("neighborly_login_location", JSON.stringify({ latitude, longitude }));
@@ -278,6 +322,49 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
               </p>
             )}
             {otpVerified && <p className="otp-verified" role="status">Mobile number verified ✓</p>}
+
+            {portal === "Account" && (
+              <>
+                <label>
+                  Email address <span className="optional">(for orders, invoices &amp; safety alerts)</span>
+                  <input name="email" type="email" autoComplete="email" placeholder="e.g. name@example.com" />
+                </label>
+
+                <label>
+                  Hosur Locality / Area
+                  <select name="locality" defaultValue="Bagalur Road" style={{ background: "#fff", cursor: "pointer", padding: "10px", borderRadius: "5px", border: "1px solid #e1e7e0" }}>
+                    {["Bagalur Road", "Sipcot Phase 1", "Sipcot Phase 2", "Rayakottai Road", "Mookandapalli", "Mathigiri", "Avalapalli", "Gandhi Nagar", "Kamaraj Nagar", "Old Bangalore Road", "Railway Station Road", "Moranapalli", "Zuzuvadi", "Thally Road", "Denkanikottai Road", "Hosur Cattle Farm"].map((loc) => (
+                      <option key={loc} value={loc}>📍 {loc}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                  <label>
+                    Door / Flat No. <span className="optional">(optional)</span>
+                    <input name="doorNo" placeholder="e.g. Flat 102, 3rd Floor" />
+                  </label>
+                  <label>
+                    Street / Landmark <span className="optional">(optional)</span>
+                    <input name="street" placeholder="e.g. Near Old Bus Stand" />
+                  </label>
+                </div>
+
+                <div style={{ background: "#f8faf8", border: "1px solid #dbe6dc", borderRadius: "8px", padding: "12px", display: "grid", gap: "8px" }}>
+                  <div style={{ fontSize: "11px", fontWeight: 700, color: "#285536" }}>🛡️ Emergency SOS Contact (Hosur Safety Network)</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                    <label style={{ fontSize: "10px", color: "#365c41" }}>
+                      Emergency Contact Name
+                      <input name="emergencyContactName" placeholder="e.g. Spouse / Parent" style={{ background: "#fff" }} />
+                    </label>
+                    <label style={{ fontSize: "10px", color: "#365c41" }}>
+                      Emergency Mobile Number
+                      <input name="emergencyContactPhone" type="tel" placeholder="e.g. 98432 12345" style={{ background: "#fff" }} />
+                    </label>
+                  </div>
+                </div>
+              </>
+            )}
 
             <label>
               Password

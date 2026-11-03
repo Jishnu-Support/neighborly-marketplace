@@ -11247,6 +11247,7 @@ export default function Home() {
   const [authenticatedPortals, setAuthenticatedPortals] = useState<PortalRole[]>([]);
   const [companyAccessLevel, setCompanyAccessLevel] = useState<CompanyAccessLevel>("Admin");
   const [sessionIdentity, setSessionIdentity] = useState("");
+  const [currentCustomerProfile, setCurrentCustomerProfile] = useState<MemberProfile | null>(null);
   const [category, setCategory] = useState("All");
   const [categoryPath, setCategoryPath] = useState<string[]>([]);
   const [categoryConfig, setCategoryConfig] = useState<CategoryConfig>(defaultCategoryConfig);
@@ -11753,13 +11754,65 @@ export default function Home() {
     fetch("/api/auth/session", { cache: "no-store" })
       .then(async (response) => {
         if (!response.ok) throw new Error("Could not read the sign-in session.");
-        return response.json() as Promise<{ session: { role: PortalRole; accessLevel?: CompanyAccessLevel; identity?: string } | null }>;
+        return response.json() as Promise<{
+          session: { role: PortalRole; accessLevel?: CompanyAccessLevel; identity?: string } | null;
+          customer?: {
+            id: string;
+            name: string;
+            phone: string;
+            email?: string;
+            doorNo?: string;
+            street?: string;
+            locality?: string;
+            city?: string;
+            district?: string;
+            state?: string;
+            pincode?: string;
+            address?: string;
+            emergencyPhones?: [string, string];
+            emergencyNames?: [string, string];
+            emergencyRelations?: [string, string];
+          } | null;
+        }>;
       })
-      .then(({ session }) => {
+      .then(({ session, customer }) => {
         if (cancelled) return;
         const signedInPortals = session ? [session.role] : [];
         setAuthenticatedPortals(signedInPortals);
         if (session?.role === "Account") {
+          if (customer) {
+            const customerProfileData: MemberProfile = {
+              fullName: customer.name || "",
+              phone: customer.phone || "",
+              email: customer.email || "",
+              doorNo: customer.doorNo || "",
+              street: customer.street || "",
+              locality: customer.locality || "Bagalur Road",
+              city: customer.city || "Hosur",
+              district: customer.district || "Krishnagiri",
+              state: customer.state || "Tamil Nadu",
+              pincode: customer.pincode || "635109",
+              address: customer.address || "",
+              bio: "Hosur resident & verified community member.",
+              avatarInitials: (customer.name ? customer.name[0] : "C").toUpperCase(),
+              avatarBg: "#285536",
+              emergencyPhones: customer.emergencyPhones || ["", ""],
+              emergencyNames: customer.emergencyNames || ["", ""],
+              emergencyRelations: customer.emergencyRelations || ["Family", ""],
+            };
+            setCurrentCustomerProfile(customerProfileData);
+            try {
+              window.localStorage.setItem(profileStorageKey("Account"), JSON.stringify(customerProfileData));
+              window.localStorage.setItem("neighborly_profile_Account", JSON.stringify(customerProfileData));
+            } catch {}
+          } else {
+            try {
+              const localRaw = window.localStorage.getItem(profileStorageKey("Account"));
+              if (localRaw) {
+                setCurrentCustomerProfile(JSON.parse(localRaw));
+              }
+            } catch {}
+          }
           try {
             const savedLocation = window.sessionStorage.getItem("neighborly_login_location");
             if (savedLocation) {
@@ -13896,7 +13949,7 @@ export default function Home() {
                   {role === "Account" || role === "Discover" ? "Customer Account" : `${role} Account`}
                 </div>
                 <div style={{ fontSize: "11px", color: "#6a7e70", marginTop: "2px" }}>
-                  {role === "Company" && sessionIdentity ? sessionIdentity : "Naveen Kumar"}
+                  {role === "Company" && sessionIdentity ? sessionIdentity : (currentCustomerProfile?.fullName || "Customer")}
                 </div>
               </div>
               <button
@@ -14037,7 +14090,7 @@ export default function Home() {
             onClick={() => openProfileView("Profile details")}
             title="Open Profile details & settings"
           >
-            <span className="avatar">N</span>
+            <span className="avatar">{(currentCustomerProfile?.fullName?.[0] || (role === "Company" ? sessionIdentity?.[0] : "C") || "C").toUpperCase()}</span>
             <span className="profile-text">
               <strong>{role === "Discover" ? t.yourBizearchActivity : `${role === "Account" ? "Customer" : role} profile`}</strong>
               <small>{role === "Discover" ? t.savedOnDevice : "Profile & account details"}</small>
@@ -20106,45 +20159,44 @@ function ProfileAndSettingsPanel({
       if (storedProfile) {
         const parsed = JSON.parse(storedProfile) as Partial<MemberProfile>;
         setProfile({
-          fullName: parsed.fullName || (role === "Company" && identity ? identity.split("@")[0].replace(/[._-]+/g, " ") : "Naveen Kumar"),
-          phone: parsed.phone || "94895 21482",
-          email: parsed.email || (identity || "naveen.hosur@gmail.com"),
-          doorNo: parsed.doorNo || "Flat 302, Sri Krishna Apts",
-          street: parsed.street || "Near Sub-Collector Office, Bagalur Main Road",
+          fullName: parsed.fullName || (role === "Company" && identity ? identity.split("@")[0].replace(/[._-]+/g, " ") : ""),
+          phone: parsed.phone || "",
+          email: parsed.email || (identity || ""),
+          doorNo: parsed.doorNo || "",
+          street: parsed.street || "",
           locality: parsed.locality || "Bagalur Road",
           city: parsed.city || "Hosur",
           district: parsed.district || "Krishnagiri",
           state: parsed.state || "Tamil Nadu",
           pincode: parsed.pincode || "635109",
-          address: parsed.address || "Flat 302, Sri Krishna Apts, Bagalur Main Road, Hosur - 635109",
-          bio: parsed.bio || "Hosur resident & community member since 2024. Active patron of local makers and farmers.",
-          avatarInitials: parsed.avatarInitials || "N",
-          avatarBg: parsed.avatarBg || "#efc7aa",
-          emergencyPhones: [parsed.emergencyPhones?.[0] || "98432 10987", parsed.emergencyPhones?.[1] || "94432 56789"],
-          emergencyNames: [parsed.emergencyNames?.[0] || "Priya Kumar", parsed.emergencyNames?.[1] || "Dr. Rajesh Raman"],
-          emergencyRelations: [parsed.emergencyRelations?.[0] || "Spouse / Family", parsed.emergencyRelations?.[1] || "Family Physician"],
+          address: parsed.address || "",
+          bio: parsed.bio || "Hosur resident & verified community member.",
+          avatarInitials: parsed.avatarInitials || (parsed.fullName ? parsed.fullName[0].toUpperCase() : "U"),
+          avatarBg: parsed.avatarBg || "#285536",
+          emergencyPhones: [parsed.emergencyPhones?.[0] || "", parsed.emergencyPhones?.[1] || ""],
+          emergencyNames: [parsed.emergencyNames?.[0] || "", parsed.emergencyNames?.[1] || ""],
+          emergencyRelations: [parsed.emergencyRelations?.[0] || "Family", parsed.emergencyRelations?.[1] || ""],
           capturedGps: parsed.capturedGps,
         });
       } else {
-        // Sensible initial profile for demo
         setProfile({
-          fullName: role === "Company" && identity ? identity.split("@")[0].replace(/[._-]+/g, " ") : "Naveen Kumar",
-          phone: "94895 21482",
-          email: identity || "naveen.hosur@gmail.com",
-          doorNo: "Flat 302, Sri Krishna Apts",
-          street: "Near Sub-Collector Office, Bagalur Main Road",
+          fullName: role === "Company" && identity ? identity.split("@")[0].replace(/[._-]+/g, " ") : "",
+          phone: "",
+          email: identity || "",
+          doorNo: "",
+          street: "",
           locality: "Bagalur Road",
           city: "Hosur",
           district: "Krishnagiri",
           state: "Tamil Nadu",
           pincode: "635109",
-          address: "Flat 302, Sri Krishna Apts, Bagalur Main Road, Hosur - 635109",
-          bio: "Hosur resident & community member since 2024. Active patron of local makers and farmers.",
-          avatarInitials: "N",
-          avatarBg: "#efc7aa",
-          emergencyPhones: ["98432 10987", "94432 56789"],
-          emergencyNames: ["Priya Kumar", "Dr. Rajesh Raman"],
-          emergencyRelations: ["Spouse / Family", "Family Physician"],
+          address: "",
+          bio: "Hosur resident & verified community member.",
+          avatarInitials: "U",
+          avatarBg: "#285536",
+          emergencyPhones: ["", ""],
+          emergencyNames: ["", ""],
+          emergencyRelations: ["Family", ""],
         });
       }
 
@@ -20304,12 +20356,12 @@ function ProfileAndSettingsPanel({
             className="profile-avatar-large"
             style={{ background: profile.avatarBg || "#efc7aa", color: "#3d2414" }}
           >
-            {profile.avatarInitials || profile.fullName[0] || "N"}
+            {profile.avatarInitials || (profile.fullName ? profile.fullName[0].toUpperCase() : "U")}
           </div>
           <div className="profile-hero-meta">
             <h2>{profile.fullName || "Member Profile"}</h2>
             <p>
-              <span>📞 {profile.phone || "+91 94895 21482"}</span>
+              <span>📞 {profile.phone || "Not set"}</span>
               <span>·</span>
               <span>📍 {profile.locality || "Hosur, Tamil Nadu"}</span>
             </p>

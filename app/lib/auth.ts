@@ -10,7 +10,25 @@ export type AuthSession = { role: PortalRole; identity: string; expiresAt: numbe
 export type CompanyAdmin = { id: string; name: string; email: string; active: boolean; createdAt: string };
 type StoredAdmin = CompanyAdmin & { salt: string; passwordHash: string };
 
-export type CustomerAccount = { id: string; name: string; phone: string; email?: string; active: boolean; createdAt: string };
+export type CustomerAccount = {
+  id: string;
+  name: string;
+  phone: string;
+  email?: string;
+  doorNo?: string;
+  street?: string;
+  locality?: string;
+  city?: string;
+  district?: string;
+  state?: string;
+  pincode?: string;
+  address?: string;
+  emergencyPhones?: [string, string];
+  emergencyNames?: [string, string];
+  emergencyRelations?: [string, string];
+  active: boolean;
+  createdAt: string;
+};
 export type StoredCustomer = CustomerAccount & { salt: string; passwordHash: string };
 
 export const AUTH_COOKIE = "neighborly_session";
@@ -90,6 +108,17 @@ export async function registerCustomerAccount(input: {
   phone: string;
   password: string;
   email?: string;
+  doorNo?: string;
+  street?: string;
+  locality?: string;
+  city?: string;
+  district?: string;
+  state?: string;
+  pincode?: string;
+  address?: string;
+  emergencyPhones?: [string, string];
+  emergencyNames?: [string, string];
+  emergencyRelations?: [string, string];
 }): Promise<CustomerAccount> {
   const cleanPhone = input.phone.replace(/\D/g, "");
   const normalizedEmail = (input.email || "").trim().toLowerCase();
@@ -113,6 +142,17 @@ export async function registerCustomerAccount(input: {
     name: input.name.trim(),
     phone: input.phone.trim(),
     email: normalizedEmail,
+    doorNo: input.doorNo?.trim() || (existingIndex >= 0 ? customers[existingIndex].doorNo : ""),
+    street: input.street?.trim() || (existingIndex >= 0 ? customers[existingIndex].street : ""),
+    locality: input.locality?.trim() || (existingIndex >= 0 ? customers[existingIndex].locality : "Bagalur Road"),
+    city: input.city?.trim() || (existingIndex >= 0 ? customers[existingIndex].city : "Hosur"),
+    district: input.district?.trim() || "Krishnagiri",
+    state: input.state?.trim() || "Tamil Nadu",
+    pincode: input.pincode?.trim() || (existingIndex >= 0 ? customers[existingIndex].pincode : "635109"),
+    address: input.address?.trim() || (existingIndex >= 0 ? customers[existingIndex].address : ""),
+    emergencyPhones: input.emergencyPhones || (existingIndex >= 0 ? customers[existingIndex].emergencyPhones : ["", ""]),
+    emergencyNames: input.emergencyNames || (existingIndex >= 0 ? customers[existingIndex].emergencyNames : ["", ""]),
+    emergencyRelations: input.emergencyRelations || (existingIndex >= 0 ? customers[existingIndex].emergencyRelations : ["", ""]),
     active: true,
     createdAt: existingIndex >= 0 ? customers[existingIndex].createdAt : new Date().toISOString(),
     salt,
@@ -127,6 +167,24 @@ export async function registerCustomerAccount(input: {
   }
 
   const { salt: _s, passwordHash: _h, ...publicCustomer } = record;
+  return publicCustomer;
+}
+
+export async function getCustomerByIdentity(identity: string): Promise<CustomerAccount | null> {
+  const cleanDigits = identity.replace(/\D/g, "");
+  const normalizedIdentity = identity.trim().toLowerCase();
+  const customers = await readCustomerRecords();
+  const customer = customers.find((c) => {
+    if (!c.active) return false;
+    if (c.email && c.email.toLowerCase() === normalizedIdentity) return true;
+    const cDigits = c.phone.replace(/\D/g, "");
+    if (cleanDigits.length >= 8 && (cDigits === cleanDigits || cDigits.endsWith(cleanDigits) || cleanDigits.endsWith(cDigits))) {
+      return true;
+    }
+    return c.phone.trim().toLowerCase() === normalizedIdentity;
+  });
+  if (!customer) return null;
+  const { salt: _s, passwordHash: _p, ...publicCustomer } = customer;
   return publicCustomer;
 }
 
