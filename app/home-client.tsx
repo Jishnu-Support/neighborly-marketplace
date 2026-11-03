@@ -11478,12 +11478,19 @@ export default function Home() {
       setCategory("All");
       setCategoryPath([]);
       setRole("Discover");
-    } else if (notif.action.type === "role") {
-      setRole(notif.action.payload as Role);
-    } else if (notif.action.type === "portal") {
-      setRole(notif.action.payload as Role);
+    } else if (notif.action.type === "role" || notif.action.type === "portal") {
+      const target = notif.action.payload as Role;
+      if (authenticatedPortals.includes("Company") && target === "Account") {
+        setRole("Company");
+      } else {
+        openPortal(target);
+      }
     } else if (notif.action.type === "order") {
-      setRole("Business");
+      if (authenticatedPortals.includes("Company")) {
+        setRole("Company");
+      } else {
+        setRole("Business");
+      }
     } else if (notif.action.type === "sos") {
       setDialog("sos");
     }
@@ -12051,35 +12058,41 @@ export default function Home() {
         }
 
         if (session?.role === "Company") {
-          if (session.accessLevel) setCompanyAccessLevel(session.accessLevel);
-          if (adminProfile) {
-            const companyProfileData: MemberProfile = {
-              fullName: adminProfile.name || "Company Admin",
-              phone: "",
-              email: adminProfile.email || session?.identity || "",
-              doorNo: "",
-              street: "",
-              locality: "Hosur",
-              city: "Hosur",
-              district: "Krishnagiri",
-              state: "Tamil Nadu",
-              pincode: "635109",
-              address: "Hosur, Tamil Nadu",
-              bio: `${session?.accessLevel || "Admin"} · Bizearch Administration`,
-              avatarInitials: (adminProfile.name?.[0] || "A").toUpperCase(),
-              avatarBg: "#1e3a8a",
-              emergencyPhones: ["", ""],
-              emergencyNames: ["", ""],
-              emergencyRelations: ["", ""],
-            };
-            setCurrentCustomerProfile(companyProfileData);
-            try {
-              window.localStorage.setItem(profileStorageKey("Company"), JSON.stringify(companyProfileData));
-              window.localStorage.setItem("neighborly_profile_Company", JSON.stringify(companyProfileData));
-            } catch {}
-          }
+          const isSuper = session.accessLevel === "Super Admin" || session.identity?.toLowerCase() === "admin@bizearch.in";
+          setCompanyAccessLevel(isSuper ? "Super Admin" : (session.accessLevel || "Admin"));
+          const adminName = adminProfile?.name || (isSuper ? "Super Admin" : "Company Admin");
+          const companyProfileData: MemberProfile = {
+            fullName: adminName,
+            phone: "",
+            email: adminProfile?.email || session?.identity || "admin@bizearch.in",
+            doorNo: "",
+            street: "",
+            locality: "Hosur",
+            city: "Hosur",
+            district: "Krishnagiri",
+            state: "Tamil Nadu",
+            pincode: "635109",
+            address: "Hosur, Tamil Nadu",
+            bio: `${isSuper ? "Super Admin" : (session?.accessLevel || "Admin")} · Bizearch Administration`,
+            avatarInitials: (adminName[0] || "A").toUpperCase(),
+            avatarBg: "#1e3a8a",
+            emergencyPhones: ["", ""],
+            emergencyNames: ["", ""],
+            emergencyRelations: ["", ""],
+          };
+          setCurrentCustomerProfile(companyProfileData);
+          try {
+            window.localStorage.setItem(profileStorageKey("Company"), JSON.stringify(companyProfileData));
+            window.localStorage.setItem(profileStorageKey("Company", session?.identity), JSON.stringify(companyProfileData));
+            window.localStorage.setItem("neighborly_profile_Company", JSON.stringify(companyProfileData));
+          } catch {}
         }
-        if (!requestedPortal) return;
+        if (!requestedPortal) {
+          if (session?.role && session.role !== "Account") {
+            setRole(session.role);
+          }
+          return;
+        }
         if (session?.role === requestedPortal) {
           if (requestedPortal === "Account") {
             setRole("Discover");
@@ -12097,6 +12110,13 @@ export default function Home() {
       });
     return () => { cancelled = true; };
   }, []);
+
+  // Prevent any Company Super Admin from ever being placed into Account / Customer portal
+  useEffect(() => {
+    if (authenticatedPortals.includes("Company") && role === "Account") {
+      setRole("Company");
+    }
+  }, [authenticatedPortals, role]);
 
   useEffect(() => {
     try {
@@ -13167,20 +13187,22 @@ export default function Home() {
   const [portalActiveTab, setPortalActiveTab] = useState<string>("Overview");
 
   function openProfileView(tabName: "Profile details" | "Settings" = "Profile details", targetRole?: Role) {
+    const isCompany = authenticatedPortals.includes("Company") || role === "Company";
     const activePortal: Role =
-      authenticatedPortals.includes("Company")
+      isCompany
         ? "Company"
-        : authenticatedPortals.includes("Business")
+        : authenticatedPortals.includes("Business") || role === "Business"
         ? "Business"
-        : authenticatedPortals.includes("Agent")
+        : authenticatedPortals.includes("Agent") || role === "Agent"
         ? "Agent"
         : "Account";
-    const dest = targetRole || (role === "Discover" ? activePortal : role);
+    const dest = isCompany ? "Company" : (targetRole || (role === "Discover" ? activePortal : role));
     setDialog(null);
-    setPortalActiveTab(tabName);
+    const targetTab = dest === "Company" ? "Admins" : tabName;
+    setPortalActiveTab(targetTab);
     if (role !== dest) setRole(dest);
     window.setTimeout(() => {
-      window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: tabName } }));
+      window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: targetTab } }));
       window.dispatchEvent(new Event("neighborly-open-profile"));
     }, 40);
   }
@@ -13189,6 +13211,10 @@ export default function Home() {
     openProfileView("Profile details");
   }
   function openPortal(portal: Role) {
+    if ((authenticatedPortals.includes("Company") || role === "Company") && portal === "Account") {
+      setRole("Company");
+      return;
+    }
     if (portal === "Discover") {
       setRole("Discover");
       return;
@@ -14014,14 +14040,33 @@ export default function Home() {
             ✕
           </button>
           <div className="mobile-drawer-user-info">
-            <div className="mobile-drawer-avatar">
-              {(role === "Business" && businessAccountBusinesses[0]?.name ? businessAccountBusinesses[0].name[0] : (currentCustomerProfile?.fullName?.[0] || (role === "Company" ? sessionIdentity?.[0] : "C") || "C")).toUpperCase()}
+            <div
+              className="mobile-drawer-avatar"
+              style={{
+                background: (authenticatedPortals.includes("Company") || role === "Company") ? "#1e3a8a" : undefined,
+                color: "#ffffff",
+                fontWeight: 700,
+              }}
+            >
+              {(authenticatedPortals.includes("Company") || role === "Company")
+                ? "👑"
+                : (role === "Business" && businessAccountBusinesses[0]?.name
+                    ? businessAccountBusinesses[0].name[0]
+                    : (currentCustomerProfile?.fullName?.[0] || "C")).toUpperCase()}
             </div>
             <div>
               <strong style={{ fontSize: "14px", display: "block" }}>
-                {role === "Discover" ? t.yourBizearchActivity : `${role === "Account" ? "Customer" : role} Account`}
+                {(authenticatedPortals.includes("Company") || role === "Company")
+                  ? "Super Admin Console"
+                  : role === "Discover"
+                  ? t.yourBizearchActivity
+                  : `${role === "Account" ? "Customer" : role} Account`}
               </strong>
-              <small style={{ fontSize: "11px", opacity: 0.85 }}>Hosur, Tamil Nadu · Connected</small>
+              <small style={{ fontSize: "11px", opacity: 0.85 }}>
+                {(authenticatedPortals.includes("Company") || role === "Company")
+                  ? "System Administration · Master Control"
+                  : "Connected"}
+              </small>
             </div>
           </div>
           <button
@@ -14029,10 +14074,16 @@ export default function Home() {
             className="mobile-drawer-profile-btn"
             onClick={() => {
               setMobileMenuOpen(false);
-              openProfileView("Profile details");
+              if (authenticatedPortals.includes("Company") || role === "Company") {
+                setRole("Company");
+                setPortalActiveTab("Admins");
+                window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Admins" } }));
+              } else {
+                openProfileView("Profile details");
+              }
             }}
           >
-            <span>👤 View Profile &amp; Settings</span>
+            <span>{(authenticatedPortals.includes("Company") || role === "Company") ? "👑 Manage Admins & Profile" : "👤 View Profile & Settings"}</span>
             <span>→</span>
           </button>
         </div>
@@ -14518,10 +14569,28 @@ export default function Home() {
               <button
                 type="button"
                 className="mobile-avatar-btn"
-                onClick={() => openProfileView("Profile details")}
-                title="My Profile & Settings"
+                style={{
+                  background: (authenticatedPortals.includes("Company") || role === "Company") ? "#1e3a8a" : undefined,
+                  color: "#ffffff",
+                  fontWeight: 700,
+                  fontSize: (authenticatedPortals.includes("Company") || role === "Company") ? "14px" : "12px",
+                }}
+                onClick={() => {
+                  if (authenticatedPortals.includes("Company") || role === "Company") {
+                    setRole("Company");
+                    setPortalActiveTab("Admins");
+                    window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Admins" } }));
+                  } else {
+                    openProfileView("Profile details");
+                  }
+                }}
+                title={(authenticatedPortals.includes("Company") || role === "Company") ? "Company Administration Profile" : "My Profile & Settings"}
               >
-                N
+                {(authenticatedPortals.includes("Company") || role === "Company")
+                  ? "👑"
+                  : (role === "Business" && businessAccountBusinesses[0]?.name
+                      ? businessAccountBusinesses[0].name[0]
+                      : (currentCustomerProfile?.fullName?.[0] || "C")).toUpperCase()}
               </button>
             </div>
           </div>
@@ -14531,7 +14600,7 @@ export default function Home() {
               <img src="/jishnu-infotech-logo.png" alt="Jishnu Infotech" style={{ height: "18px", width: "auto", objectFit: "contain" }} />
             </span>
             <span style={{ fontWeight: 700, color: "#225a33" }}>
-              {role === "Discover" ? "Explore Hosur" : role === "Account" ? "Customer Portal" : `${role} Portal`}
+              {(authenticatedPortals.includes("Company") || role === "Company") ? "Company Portal" : role === "Discover" ? "Explore Hosur" : role === "Account" ? "Customer Portal" : `${role} Portal`}
             </span>
           </div>
         </header>
@@ -16549,7 +16618,7 @@ export default function Home() {
           </div>
         )}
 
-        {role === "Account" && (
+        {role === "Account" && (!authenticatedPortals.includes("Company")) && (
           <CustomerPortal
             data={demoData}
             initialTab={portalActiveTab}
@@ -16644,7 +16713,9 @@ export default function Home() {
           close={() => setActiveReceipt(null)}
           onViewInPortal={() => {
             setActiveReceipt(null);
-            setRole("Account");
+            if (!authenticatedPortals.includes("Company")) {
+              setRole("Account");
+            }
           }}
         />
       )}
@@ -21619,9 +21690,13 @@ function ProfileAndSettingsPanel({
         <div className="profile-hero-left">
           <div
             className="profile-avatar-large"
-            style={{ background: profile.avatarBg || "#efc7aa", color: "#3d2414" }}
+            style={{
+              background: role === "Company" ? "#1e3a8a" : role === "Business" ? "#0f766e" : role === "Agent" ? "#7c3aed" : (profile.avatarBg || "#efc7aa"),
+              color: role === "Account" && (!profile.avatarBg || profile.avatarBg === "#efc7aa") ? "#3d2414" : "#ffffff",
+              fontSize: role === "Company" ? "28px" : undefined,
+            }}
           >
-            {profile.avatarInitials || (profile.fullName ? profile.fullName[0].toUpperCase() : "U")}
+            {role === "Company" ? "👑" : (profile.avatarInitials || (profile.fullName ? profile.fullName[0].toUpperCase() : "U"))}
           </div>
           <div className="profile-hero-meta">
             <h2>
@@ -21807,7 +21882,59 @@ function ProfileAndSettingsPanel({
       </nav>
 
       {/* TAB 1: PROFILE DETAILS */}
-      {activeSubTab === "profile" && (
+      {activeSubTab === "profile" && role === "Company" ? (
+        <div className="settings-section-card">
+          <div className="settings-card-header">
+            <h3><span>👑</span> Company Administrator Profile</h3>
+            <p>Master credentials, authority privileges, and security details for Bizearch platform management.</p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "14px" }}>
+            <div style={{ display: "grid", gap: "6px", fontSize: "11px", color: "#3e5243", fontWeight: 700 }}>
+              <span>Administrator Title</span>
+              <div style={{ padding: "10px 14px", background: "#f8fafc", border: "1px solid #cbd5e1", borderRadius: "8px", fontSize: "13px", fontWeight: 700, color: "#1e3a8a" }}>
+                👑 Super Admin (Master Console)
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gap: "6px", fontSize: "11px", color: "#3e5243", fontWeight: 700 }}>
+              <span>Official Admin Email</span>
+              <div style={{ padding: "10px 14px", background: "#f8fafc", border: "1px solid #cbd5e1", borderRadius: "8px", fontSize: "13px", fontWeight: 600, color: "#0f172a" }}>
+                {identity || "admin@bizearch.in"}
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gap: "6px", fontSize: "11px", color: "#3e5243", fontWeight: 700 }}>
+              <span>Access Authority</span>
+              <div style={{ padding: "10px 14px", background: "#ecfdf5", border: "1px solid #a7f3d0", borderRadius: "8px", fontSize: "13px", fontWeight: 700, color: "#065f46" }}>
+                ✓ Full Master Authority (Read / Write / Approvals)
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gap: "6px", fontSize: "11px", color: "#3e5243", fontWeight: 700 }}>
+              <span>Operational Status</span>
+              <div style={{ padding: "10px 14px", background: "#ecfdf5", border: "1px solid #a7f3d0", borderRadius: "8px", fontSize: "13px", fontWeight: 700, color: "#065f46" }}>
+                🟢 Active Session &amp; Protected
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: "16px", padding: "14px", background: "#f1f5f9", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
+            <h4 style={{ margin: "0 0 6px", fontSize: "13px", fontWeight: 700, color: "#1e293b" }}>Platform Access &amp; Sub-Admins</h4>
+            <p style={{ margin: "0 0 10px", fontSize: "12px", color: "#64748b" }}>
+              To create new admin accounts, edit credentials, or disable access for team members, use the Admins management tab.
+            </p>
+            <button
+              type="button"
+              className="primary-button"
+              onClick={() => onNavigateTab && onNavigateTab("Admins")}
+              style={{ fontSize: "12px", padding: "8px 16px" }}
+            >
+              👑 Go to Manage Admins
+            </button>
+          </div>
+        </div>
+      ) : activeSubTab === "profile" && (
         <form className="settings-section-card" onSubmit={saveProfile}>
           <div className="settings-card-header">
             <h3><span>👤</span> Personal Information</h3>
@@ -22582,15 +22709,17 @@ function ProfileAndSettingsPanel({
               <span>Open Discover →</span>
             </button>
 
-            <button
-              type="button"
-              className="portal-jump-card"
-              onClick={() => onOpenPortal && onOpenPortal("Account")}
-            >
-              <h4>👤 Customer Account Portal</h4>
-              <p>Active order fulfillment tracking, saved shortlisted favorites, and enquiries.</p>
-              <span>Open Customer Portal →</span>
-            </button>
+            {role !== "Company" && (
+              <button
+                type="button"
+                className="portal-jump-card"
+                onClick={() => onOpenPortal && onOpenPortal("Account")}
+              >
+                <h4>👤 Customer Account Portal</h4>
+                <p>Active order fulfillment tracking, saved shortlisted favorites, and enquiries.</p>
+                <span>Open Customer Portal →</span>
+              </button>
+            )}
 
             <button
               type="button"

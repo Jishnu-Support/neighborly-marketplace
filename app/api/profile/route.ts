@@ -32,13 +32,23 @@ export async function GET(request: Request) {
   }
 
   if (session.role === "Company") {
-    const admin = await getCompanyAdminByIdentity(session.identity);
+    let admin = await getCompanyAdminByIdentity(session.identity);
+    const isSuper = isSuperAdminIdentity(session.identity);
+    if (!admin && isSuper) {
+      admin = {
+        id: "super-admin",
+        name: "Super Admin",
+        email: session.identity,
+        active: true,
+        createdAt: "2026-01-01T00:00:00.000Z",
+      };
+    }
     return NextResponse.json({
       role: "Company",
       identity: session.identity,
       adminProfile: admin,
-      accessLevel: session.accessLevel,
-      isSuperAdmin: isSuperAdminIdentity(session.identity),
+      accessLevel: session.accessLevel || (isSuper ? "Super Admin" : "Admin"),
+      isSuperAdmin: isSuper,
     });
   }
 

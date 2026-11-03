@@ -32,7 +32,7 @@ export default function CompanyLoginForm() {
       return;
     }
 
-    window.location.href = "/";
+    window.location.assign("/?portal=Company");
   }
 
   return (
