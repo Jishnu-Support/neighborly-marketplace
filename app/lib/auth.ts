@@ -3,6 +3,7 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { cookies } from "next/headers";
 import { verifyAgentCredentials } from "./agents";
+import { verifyBusinessCredentials } from "./businesses";
 
 export type PortalRole = "Account" | "Business" | "Agent" | "Company";
 export type CompanyAccessLevel = "Admin" | "Super Admin";
@@ -299,8 +300,68 @@ export async function verifyCredentials(role: PortalRole, identity: string, pass
     const account = demoAccounts[role];
     return normalizedIdentity === account.identity && password === account.password;
   }
-  const account = demoAccounts[role];
-  return normalizedIdentity === account.identity && password === account.password;
+  if (role === "Business") {
+    const verifiedBusiness = await verifyBusinessCredentials(identity, password);
+    if (verifiedBusiness) return true;
+    const account = demoAccounts[role];
+    return normalizedIdentity === account.identity && password === account.password;
+  }
+  return false;
+}
+
+export async function updateCustomerProfile(
+  identity: string,
+  updates: Partial<{
+    name: string;
+    phone: string;
+    email: string;
+    doorNo: string;
+    street: string;
+    locality: string;
+    city: string;
+    district: string;
+    state: string;
+    pincode: string;
+    address: string;
+    emergencyPhones: [string, string];
+    emergencyNames: [string, string];
+    emergencyRelations: [string, string];
+  }>
+): Promise<CustomerAccount | null> {
+  const cleanDigits = identity.replace(/\D/g, "");
+  const normalizedIdentity = identity.trim().toLowerCase();
+  const customers = await readCustomerRecords();
+
+  const index = customers.findIndex((c) => {
+    if (c.id === identity) return true;
+    if (c.email && c.email.toLowerCase() === normalizedIdentity) return true;
+    const cDigits = c.phone.replace(/\D/g, "");
+    if (cleanDigits.length >= 8 && (cDigits === cleanDigits || cDigits.endsWith(cleanDigits) || cleanDigits.endsWith(cDigits))) {
+      return true;
+    }
+    return c.phone.trim().toLowerCase() === normalizedIdentity;
+  });
+
+  if (index === -1) return null;
+
+  if (updates.name !== undefined) customers[index].name = updates.name.trim();
+  if (updates.phone !== undefined) customers[index].phone = updates.phone.trim();
+  if (updates.email !== undefined) customers[index].email = updates.email.trim().toLowerCase();
+  if (updates.doorNo !== undefined) customers[index].doorNo = updates.doorNo.trim();
+  if (updates.street !== undefined) customers[index].street = updates.street.trim();
+  if (updates.locality !== undefined) customers[index].locality = updates.locality.trim();
+  if (updates.city !== undefined) customers[index].city = updates.city.trim();
+  if (updates.district !== undefined) customers[index].district = updates.district.trim();
+  if (updates.state !== undefined) customers[index].state = updates.state.trim();
+  if (updates.pincode !== undefined) customers[index].pincode = updates.pincode.trim();
+  if (updates.address !== undefined) customers[index].address = updates.address.trim();
+  if (updates.emergencyPhones !== undefined) customers[index].emergencyPhones = updates.emergencyPhones;
+  if (updates.emergencyNames !== undefined) customers[index].emergencyNames = updates.emergencyNames;
+  if (updates.emergencyRelations !== undefined) customers[index].emergencyRelations = updates.emergencyRelations;
+
+  await writeCustomerRecords(customers);
+  const { salt: _s, passwordHash: _p, ...publicCustomer } = customers[index];
+  return publicCustomer;
 }
 
 export function createSessionToken(role: PortalRole, identity: string, accessLevel?: CompanyAccessLevel) {

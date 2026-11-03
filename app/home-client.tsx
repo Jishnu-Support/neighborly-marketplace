@@ -11297,9 +11297,19 @@ export default function Home() {
   const [activeAd, setActiveAd] = useState(0);
   const categories = useMemo(() => [{ name: "All", icon: "✳" }, ...categoryConfig.sectors], [categoryConfig]);
   const businesses = demoData.businesses;
-  // The Business portal represents one business account, so it only receives
-  // the single business attached to that account (new registrations are prepended).
-  const businessAccountBusinesses = businesses.slice(0, 1);
+  // The Business portal represents one business account, so it matches
+  // the registered business attached to that account, or falls back to the top listing.
+  const businessAccountBusinesses = useMemo(() => {
+    if (currentCustomerProfile?.fullName) {
+      const match = businesses.find(
+        (b) =>
+          b.name.toLowerCase() === currentCustomerProfile.fullName.toLowerCase() ||
+          (currentCustomerProfile.phone && b.phone && b.phone.replace(/\D/g, "").endsWith(currentCustomerProfile.phone.replace(/\D/g, "")))
+      );
+      if (match) return [match];
+    }
+    return businesses.slice(0, 1);
+  }, [businesses, currentCustomerProfile]);
   const businessDistance = (business: Business) =>
     locationCoordinates ? distanceBetween(locationCoordinates, business.coordinates || business.demoCoordinates) : business.distance;
 
@@ -11430,7 +11440,17 @@ export default function Home() {
       }
     };
     window.addEventListener("neighborly-add-notification", onAddNotification);
-    return () => window.removeEventListener("neighborly-add-notification", onAddNotification);
+    const onProfileUpdated = (e: Event) => {
+      const customEvent = e as CustomEvent<MemberProfile>;
+      if (customEvent.detail) {
+        setCurrentCustomerProfile(customEvent.detail);
+      }
+    };
+    window.addEventListener("neighborly-profile-updated", onProfileUpdated);
+    return () => {
+      window.removeEventListener("neighborly-add-notification", onAddNotification);
+      window.removeEventListener("neighborly-profile-updated", onProfileUpdated);
+    };
   }, []);
 
   useEffect(() => {
@@ -11772,6 +11792,30 @@ export default function Home() {
             emergencyNames?: [string, string];
             emergencyRelations?: [string, string];
           } | null;
+          business?: {
+            id: string;
+            name: string;
+            category: string;
+            phone: string;
+            email: string;
+            address?: {
+              doorNumber?: string;
+              street?: string;
+              area?: string;
+              cityTown?: string;
+              district?: string;
+              state?: string;
+              pincode?: string;
+            };
+            description?: string;
+          } | null;
+          agent?: {
+            id: string;
+            name: string;
+            phone: string;
+            email?: string;
+            referralCode: string;
+          } | null;
           adminProfile?: {
             id: string;
             name: string;
@@ -11781,10 +11825,12 @@ export default function Home() {
           } | null;
         }>;
       })
-      .then(({ session, customer, adminProfile }) => {
+      .then(({ session, customer, business, agent, adminProfile }) => {
         if (cancelled) return;
         const signedInPortals = session ? [session.role] : [];
         setAuthenticatedPortals(signedInPortals);
+        if (session?.identity) setSessionIdentity(session.identity);
+
         if (session?.role === "Account") {
           if (customer) {
             const customerProfileData: MemberProfile = {
@@ -11850,9 +11896,69 @@ export default function Home() {
             }
           } catch { /* Location is optional and sign-in remains available. */ }
         }
+
+        if (session?.role === "Business") {
+          if (business) {
+            const addr = business.address || {};
+            const combined = [addr.doorNumber, addr.street, addr.area, "Hosur"].filter(Boolean).join(", ");
+            const businessProfileData: MemberProfile = {
+              fullName: business.name || "Business Partner",
+              phone: business.phone || "",
+              email: business.email || "",
+              doorNo: addr.doorNumber || "",
+              street: addr.street || "",
+              locality: addr.area || "Bagalur Road",
+              city: addr.cityTown || "Hosur",
+              district: addr.district || "Krishnagiri",
+              state: addr.state || "Tamil Nadu",
+              pincode: addr.pincode || "635109",
+              address: combined || "Hosur, Tamil Nadu",
+              bio: `${business.category || "Local Business"} · Verified Merchant in Hosur`,
+              avatarInitials: (business.name ? business.name[0] : "B").toUpperCase(),
+              avatarBg: "#0f766e",
+              emergencyPhones: ["", ""],
+              emergencyNames: ["", ""],
+              emergencyRelations: ["", ""],
+            };
+            setCurrentCustomerProfile(businessProfileData);
+            try {
+              window.localStorage.setItem(profileStorageKey("Business"), JSON.stringify(businessProfileData));
+              window.localStorage.setItem("neighborly_profile_Business", JSON.stringify(businessProfileData));
+            } catch {}
+          }
+        }
+
+        if (session?.role === "Agent") {
+          if (agent) {
+            const agentProfileData: MemberProfile = {
+              fullName: agent.name || "Agent Partner",
+              phone: agent.phone || "",
+              email: agent.email || "",
+              doorNo: "",
+              street: "",
+              locality: "Hosur",
+              city: "Hosur",
+              district: "Krishnagiri",
+              state: "Tamil Nadu",
+              pincode: "635109",
+              address: "Hosur, Tamil Nadu",
+              bio: `Agent Referral Partner (Code: ${agent.referralCode})`,
+              avatarInitials: (agent.name ? agent.name[0] : "A").toUpperCase(),
+              avatarBg: "#7c3aed",
+              emergencyPhones: ["", ""],
+              emergencyNames: ["", ""],
+              emergencyRelations: ["", ""],
+            };
+            setCurrentCustomerProfile(agentProfileData);
+            try {
+              window.localStorage.setItem(profileStorageKey("Agent"), JSON.stringify(agentProfileData));
+              window.localStorage.setItem("neighborly_profile_Agent", JSON.stringify(agentProfileData));
+            } catch {}
+          }
+        }
+
         if (session?.role === "Company") {
           if (session.accessLevel) setCompanyAccessLevel(session.accessLevel);
-          setSessionIdentity(session.identity || "");
           if (adminProfile) {
             const companyProfileData: MemberProfile = {
               fullName: adminProfile.name || "Company Admin",
@@ -11931,6 +12037,62 @@ export default function Home() {
       setStorageError(error instanceof Error ? error.message : "Could not save demo data in this browser.");
     }
   }, [demoData, storageReady]);
+
+  useEffect(() => {
+    fetch("/api/businesses", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!data || !Array.isArray(data.businesses) || data.businesses.length === 0) return;
+        const registered: Business[] = data.businesses.map((b: any) => ({
+          name: b.name,
+          category: b.category,
+          subcategories: b.categories || [b.category],
+          description: b.description || `${b.category} in Hosur`,
+          phone: b.phone,
+          email: b.email || "",
+          distance: 1.5,
+          distanceKm: 1.5,
+          rating: b.rating || 5,
+          reviews: b.reviews || 0,
+          subscribed: b.subscribed ?? true,
+          products: Array.isArray(b.products)
+            ? b.products.map((p: any, idx: number) => ({
+                id: p.id || `reg-p-${idx}`,
+                name: p.name,
+                price: typeof p.price === "number" ? p.price : Number(p.price) || 0,
+                description: p.description || "",
+                unit: "unit",
+              }))
+            : [],
+          photos: b.images || [],
+          images: b.images || [],
+          businessModes: b.businessModes || ["In-store Sales", "Customer Service"],
+          address: b.address
+            ? {
+                doorNumber: b.address.doorNumber || "",
+                street: b.address.street || "",
+                area: b.address.area || "Hosur",
+                cityTown: b.address.cityTown || "Hosur",
+                district: b.address.district || "Krishnagiri",
+                state: b.address.state || "Tamil Nadu",
+                pincode: b.address.pincode || "635109",
+              }
+            : undefined,
+          icon: "🏢",
+        }));
+
+        setDemoData((prev) => {
+          const existingNames = new Set(prev.businesses.map((item) => item.name.toLowerCase()));
+          const newToAdd = registered.filter((item) => !existingNames.has(item.name.toLowerCase()));
+          if (newToAdd.length === 0) return prev;
+          return {
+            ...prev,
+            businesses: [...newToAdd, ...prev.businesses],
+          };
+        });
+      })
+      .catch(() => {});
+  }, []);
 
   const { results, relatedProducts, relatedSearches, correctedQuery, searchDurationMs, autocompleteData } = useMemo(() => {
     const t0 = typeof performance !== "undefined" ? performance.now() : Date.now();
@@ -12880,7 +13042,15 @@ export default function Home() {
   const [portalActiveTab, setPortalActiveTab] = useState<string>("Overview");
 
   function openProfileView(tabName: "Profile details" | "Settings" = "Profile details", targetRole?: Role) {
-    const dest = targetRole || (role === "Discover" ? "Account" : role);
+    const activePortal: Role =
+      authenticatedPortals.includes("Company")
+        ? "Company"
+        : authenticatedPortals.includes("Business")
+        ? "Business"
+        : authenticatedPortals.includes("Agent")
+        ? "Agent"
+        : "Account";
+    const dest = targetRole || (role === "Discover" ? activePortal : role);
     setDialog(null);
     setPortalActiveTab(tabName);
     if (role !== dest) setRole(dest);
@@ -12898,6 +13068,9 @@ export default function Home() {
       setRole("Discover");
       return;
     }
+    if (authenticatedPortals.length > 0 && !authenticatedPortals.includes(portal as PortalRole)) {
+      return;
+    }
     if (portal === "Company" && !authenticatedPortals.includes("Company")) {
       window.location.assign("/company-login");
       return;
@@ -12911,10 +13084,25 @@ export default function Home() {
 
   const workspaceLinks = ([
     ["Discover", "\u2315"],
-    ...(role === "Discover" || role === "Account" || authenticatedPortals.includes("Account") ? [["Account", "\u25c9"] as [Role, string]] : []),
-    ...(role === "Discover" || role === "Business" || authenticatedPortals.includes("Business") ? [["Business", "\u25a7"] as [Role, string]] : []),
-    ...(role === "Discover" || role === "Agent" || authenticatedPortals.includes("Agent") ? [["Agent", "\u2667"] as [Role, string]] : []),
-    ...(role === "Company" || authenticatedPortals.includes("Company") ? [["Company", "\u2699"] as [Role, string]] : []),
+    ...(authenticatedPortals.length > 0
+      ? (
+          authenticatedPortals.includes("Account")
+            ? [["Account", "\u25c9"] as [Role, string]]
+            : authenticatedPortals.includes("Business")
+            ? [["Business", "\u25a7"] as [Role, string]]
+            : authenticatedPortals.includes("Agent")
+            ? [["Agent", "\u2667"] as [Role, string]]
+            : authenticatedPortals.includes("Company")
+            ? [["Company", "\u2699"] as [Role, string]]
+            : []
+        )
+      : (
+          [
+            ["Account", "\u25c9"] as [Role, string],
+            ["Business", "\u25a7"] as [Role, string],
+            ["Agent", "\u2667"] as [Role, string],
+          ]
+        )),
   ] as [Role, string][]);
 
   return (
@@ -20178,52 +20366,138 @@ function ProfileAndSettingsPanel({
     if (initialSubTab) setActiveSubTab(initialSubTab);
   }, [initialSubTab]);
 
-  // Load profile & settings from local storage
+  // Load profile & settings from database and local storage
   useEffect(() => {
+    let cancelled = false;
+
+    // Load from server database
+    fetch("/api/profile", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return;
+        if (data.customer) {
+          const c = data.customer;
+          const combined = [c.doorNo, c.street, c.locality, `${c.city || "Hosur"} - ${c.pincode || "635109"}`, c.state || "Tamil Nadu"].filter(Boolean).join(", ");
+          setProfile({
+            fullName: c.name || "",
+            phone: c.phone || "",
+            email: c.email || "",
+            doorNo: c.doorNo || "",
+            street: c.street || "",
+            locality: c.locality || "Bagalur Road",
+            city: c.city || "Hosur",
+            district: c.district || "Krishnagiri",
+            state: c.state || "Tamil Nadu",
+            pincode: c.pincode || "635109",
+            address: c.address || combined,
+            bio: c.bio || "Hosur resident & verified community member.",
+            avatarInitials: (c.name ? c.name[0] : "C").toUpperCase(),
+            avatarBg: "#285536",
+            emergencyPhones: c.emergencyPhones || ["", ""],
+            emergencyNames: c.emergencyNames || ["", ""],
+            emergencyRelations: c.emergencyRelations || ["Family", ""],
+          });
+          return;
+        }
+        if (data.business) {
+          const b = data.business;
+          const addr = b.address || {};
+          const combined = [addr.doorNumber, addr.street, addr.area, `${addr.cityTown || "Hosur"} - ${addr.pincode || "635109"}`, addr.state || "Tamil Nadu"].filter(Boolean).join(", ");
+          setProfile({
+            fullName: b.name || "",
+            phone: b.phone || "",
+            email: b.email || "",
+            doorNo: addr.doorNumber || "",
+            street: addr.street || "",
+            locality: addr.area || "Bagalur Road",
+            city: addr.cityTown || "Hosur",
+            district: addr.district || "Krishnagiri",
+            state: addr.state || "Tamil Nadu",
+            pincode: addr.pincode || "635109",
+            address: combined,
+            bio: `${b.category || "Local Business"} · Verified Merchant in Hosur`,
+            avatarInitials: (b.name ? b.name[0] : "B").toUpperCase(),
+            avatarBg: "#0f766e",
+            emergencyPhones: ["", ""],
+            emergencyNames: ["", ""],
+            emergencyRelations: ["", ""],
+          });
+          return;
+        }
+        if (data.agent) {
+          const a = data.agent;
+          setProfile({
+            fullName: a.name || "",
+            phone: a.phone || "",
+            email: a.email || "",
+            doorNo: "",
+            street: "",
+            locality: "Hosur",
+            city: "Hosur",
+            district: "Krishnagiri",
+            state: "Tamil Nadu",
+            pincode: "635109",
+            address: "Hosur, Tamil Nadu",
+            bio: `Agent Referral Partner (Code: ${a.referralCode})`,
+            avatarInitials: (a.name ? a.name[0] : "A").toUpperCase(),
+            avatarBg: "#7c3aed",
+            emergencyPhones: ["", ""],
+            emergencyNames: ["", ""],
+            emergencyRelations: ["", ""],
+          });
+          return;
+        }
+        if (data.adminProfile) {
+          const adm = data.adminProfile;
+          setProfile({
+            fullName: adm.name || "Company Administrator",
+            phone: "",
+            email: adm.email || "",
+            doorNo: "",
+            street: "",
+            locality: "Hosur",
+            city: "Hosur",
+            district: "Krishnagiri",
+            state: "Tamil Nadu",
+            pincode: "635109",
+            address: "Hosur, Tamil Nadu",
+            bio: `${data.accessLevel || "Admin"} · Bizearch Administration`,
+            avatarInitials: (adm.name ? adm.name[0] : "A").toUpperCase(),
+            avatarBg: "#1e3a8a",
+            emergencyPhones: ["", ""],
+            emergencyNames: ["", ""],
+            emergencyRelations: ["", ""],
+          });
+          return;
+        }
+      })
+      .catch(() => {});
+
     try {
       const storedProfile = window.localStorage.getItem(profileStorageKey(role, identity));
       if (storedProfile) {
         const parsed = JSON.parse(storedProfile) as Partial<MemberProfile>;
-        setProfile({
-          fullName: parsed.fullName || (role === "Company" && identity ? identity.split("@")[0].replace(/[._-]+/g, " ") : ""),
-          phone: parsed.phone || "",
-          email: parsed.email || (identity || ""),
-          doorNo: parsed.doorNo || "",
-          street: parsed.street || "",
-          locality: parsed.locality || "Bagalur Road",
-          city: parsed.city || "Hosur",
-          district: parsed.district || "Krishnagiri",
-          state: parsed.state || "Tamil Nadu",
-          pincode: parsed.pincode || "635109",
-          address: parsed.address || "",
-          bio: parsed.bio || "Hosur resident & verified community member.",
-          avatarInitials: parsed.avatarInitials || (parsed.fullName ? parsed.fullName[0].toUpperCase() : "U"),
-          avatarBg: parsed.avatarBg || "#285536",
-          emergencyPhones: [parsed.emergencyPhones?.[0] || "", parsed.emergencyPhones?.[1] || ""],
-          emergencyNames: [parsed.emergencyNames?.[0] || "", parsed.emergencyNames?.[1] || ""],
-          emergencyRelations: [parsed.emergencyRelations?.[0] || "Family", parsed.emergencyRelations?.[1] || ""],
-          capturedGps: parsed.capturedGps,
-        });
-      } else {
-        setProfile({
-          fullName: role === "Company" && identity ? identity.split("@")[0].replace(/[._-]+/g, " ") : "",
-          phone: "",
-          email: identity || "",
-          doorNo: "",
-          street: "",
-          locality: "Bagalur Road",
-          city: "Hosur",
-          district: "Krishnagiri",
-          state: "Tamil Nadu",
-          pincode: "635109",
-          address: "",
-          bio: "Hosur resident & verified community member.",
-          avatarInitials: "U",
-          avatarBg: "#285536",
-          emergencyPhones: ["", ""],
-          emergencyNames: ["", ""],
-          emergencyRelations: ["Family", ""],
-        });
+        setProfile((curr) => ({
+          ...curr,
+          fullName: curr.fullName || parsed.fullName || (role === "Company" && identity ? identity.split("@")[0].replace(/[._-]+/g, " ") : ""),
+          phone: curr.phone || parsed.phone || "",
+          email: curr.email || parsed.email || (identity || ""),
+          doorNo: curr.doorNo || parsed.doorNo || "",
+          street: curr.street || parsed.street || "",
+          locality: curr.locality || parsed.locality || "Bagalur Road",
+          city: curr.city || parsed.city || "Hosur",
+          district: curr.district || parsed.district || "Krishnagiri",
+          state: curr.state || parsed.state || "Tamil Nadu",
+          pincode: curr.pincode || parsed.pincode || "635109",
+          address: curr.address || parsed.address || "",
+          bio: curr.bio || parsed.bio || "Hosur resident & verified community member.",
+          avatarInitials: curr.avatarInitials || parsed.avatarInitials || (parsed.fullName ? parsed.fullName[0].toUpperCase() : "U"),
+          avatarBg: curr.avatarBg || parsed.avatarBg || "#285536",
+          emergencyPhones: curr.emergencyPhones || [parsed.emergencyPhones?.[0] || "", parsed.emergencyPhones?.[1] || ""],
+          emergencyNames: curr.emergencyNames || [parsed.emergencyNames?.[0] || "", parsed.emergencyNames?.[1] || ""],
+          emergencyRelations: curr.emergencyRelations || [parsed.emergencyRelations?.[0] || "Family", parsed.emergencyRelations?.[1] || ""],
+          capturedGps: curr.capturedGps || parsed.capturedGps,
+        }));
       }
 
       const storedSettings = window.localStorage.getItem(settingsStorageKey(role, identity));
@@ -20233,6 +20507,10 @@ function ProfileAndSettingsPanel({
     } catch {
       // Fallback
     }
+
+    return () => {
+      cancelled = true;
+    };
   }, [role, identity]);
 
   function updateProfile<K extends keyof MemberProfile>(key: K, value: MemberProfile[K]) {
@@ -20253,7 +20531,7 @@ function ProfileAndSettingsPanel({
     setTimeout(() => setSettingsSaved(false), 2500);
   }
 
-  function saveProfile(e: React.FormEvent) {
+  async function saveProfile(e: React.FormEvent) {
     e.preventDefault();
     if (!profile.fullName.trim()) {
       setProfileError("Please enter your full name.");
@@ -20268,13 +20546,47 @@ function ProfileAndSettingsPanel({
     };
     try {
       window.localStorage.setItem(profileStorageKey(role, identity), JSON.stringify(updated));
+      window.localStorage.setItem(`neighborly_profile_${role}`, JSON.stringify(updated));
       setProfile(updated);
+    } catch {}
+
+    // Persist to server database
+    try {
+      const response = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: profile.fullName.trim(),
+          phone: profile.phone.trim(),
+          email: profile.email.trim(),
+          doorNo: profile.doorNo || "",
+          street: profile.street || "",
+          locality: profile.locality || "",
+          city: profile.city || "Hosur",
+          district: profile.district || "Krishnagiri",
+          state: profile.state || "Tamil Nadu",
+          pincode: profile.pincode || "635109",
+          address: combinedAddress || profile.address,
+          emergencyPhones: profile.emergencyPhones,
+          emergencyNames: profile.emergencyNames,
+          emergencyRelations: profile.emergencyRelations,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to update profile in database.");
+      }
       setProfileSaved(true);
       setProfileError("");
-      if (showNotice) showNotice("✓ Profile details successfully saved.");
+      window.dispatchEvent(new CustomEvent("neighborly-profile-updated", { detail: updated }));
+      if (showNotice) showNotice("✓ Profile details saved to database.");
       setTimeout(() => setProfileSaved(false), 3000);
-    } catch {
-      setProfileError("Could not save profile details on this device.");
+    } catch (err) {
+      setProfileSaved(true);
+      const msg = err instanceof Error ? err.message : "Profile saved locally.";
+      if (showNotice) showNotice(`✓ Saved: ${msg}`);
+      setTimeout(() => setProfileSaved(false), 3000);
     }
   }
 

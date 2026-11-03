@@ -122,11 +122,51 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
           const result = (await response.json()) as { error?: string; message?: string; agent?: { referralCode: string } };
           if (!response.ok) throw new Error(result.error || "Could not complete agent registration.");
           setIsSuccess(true);
-          setMessage(result.message || "✓ Agent registered successfully! You can now sign in.");
-          setRegistering(false);
+          setMessage(result.message || "✓ Agent registered successfully! Loading your agent portal...");
+          try {
+            localStorage.setItem("bizearch_registered_user", JSON.stringify({ name, phone, email, role: "Agent", registeredAt: new Date().toISOString() }));
+          } catch { /* Browser storage */ }
+          setTimeout(() => {
+            window.location.assign("/?portal=Agent");
+          }, 800);
         } catch (error) {
           setIsSuccess(false);
           setMessage(error instanceof Error ? error.message : "Could not submit the agent request.");
+        } finally {
+          setBusy(false);
+        }
+        return;
+      }
+      if (portal === "Business") {
+        const category = String(form.get("category") || "Everyday services").trim();
+        try {
+          const response = await fetch("/api/businesses/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name,
+              category,
+              phone,
+              email,
+              locality,
+              doorNo,
+              street,
+              password,
+            }),
+          });
+          const result = (await response.json()) as { error?: string; business?: any };
+          if (!response.ok) throw new Error(result.error || "Could not complete business registration.");
+          setIsSuccess(true);
+          setMessage(`✓ Business "${name}" registered successfully! Loading your business portal...`);
+          try {
+            localStorage.setItem("bizearch_registered_user", JSON.stringify({ name, phone, email, role: "Business", registeredAt: new Date().toISOString() }));
+          } catch { /* Browser storage */ }
+          setTimeout(() => {
+            window.location.assign("/?portal=Business");
+          }, 800);
+        } catch (error) {
+          setIsSuccess(false);
+          setMessage(error instanceof Error ? error.message : "Could not complete business registration.");
         } finally {
           setBusy(false);
         }
@@ -252,17 +292,62 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
     <section className="portal-login-card">
       <img className="login-brand-mark login-brand-mark-image" src="/bizearch-mark.svg" alt="" />
       <div className="eyebrow"><span /> {info.label}</div>
-      <h1>{registering ? "Join your neighborhood" : info.title}</h1>
-      <p className="portal-login-description">{registering ? portal === "Agent" ? "Apply to help local businesses reach their neighbors." : "Create and activate your account to discover and connect with nearby businesses." : info.description}</p>
+      <h1>{registering ? (portal === "Business" ? "Register your business" : portal === "Agent" ? "Join as an Agent partner" : "Join your neighborhood") : info.title}</h1>
+      <p className="portal-login-description">
+        {registering
+          ? portal === "Agent"
+            ? "Apply to help local businesses reach their neighbors in Hosur."
+            : portal === "Business"
+            ? "Register your business to showcase products, receive customer orders, and grow in Hosur."
+            : "Create and activate your account to discover and connect with nearby businesses."
+          : info.description}
+      </p>
       <form className="stacked-form" onSubmit={handleSubmit}>
         {registering ? (
           <>
             <label>
-              Your name
-              <input name="fullName" autoComplete="name" placeholder="e.g. Asha Rao" required />
+              {portal === "Business" ? "Business Name *" : "Your full name *"}
+              <input
+                name="fullName"
+                autoComplete="name"
+                placeholder={portal === "Business" ? "e.g. Sri Lakshmi Automotives" : "e.g. Asha Rao"}
+                required
+              />
             </label>
+
+            {portal === "Business" && (
+              <label>
+                Business Category / Sector *
+                <select
+                  name="category"
+                  defaultValue="Automobiles"
+                  style={{ background: "#fff", cursor: "pointer", padding: "10px", borderRadius: "5px", border: "1px solid #e1e7e0" }}
+                  required
+                >
+                  {[
+                    "Automobiles",
+                    "Electronics",
+                    "Electricals",
+                    "Hardware",
+                    "Home appliances",
+                    "Fashion",
+                    "Food & dining",
+                    "Health & wellness",
+                    "Sports & fitness",
+                    "Travel",
+                    "Entertainment",
+                    "Everyday services",
+                  ].map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+
             <label>
-              Mobile number
+              Mobile number *
               <input
                 name="phone"
                 type="tel"
@@ -279,7 +364,7 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
             </label>
             <div className="otp-row">
               <label>
-                One-time password (OTP)
+                One-time password (OTP) *
                 <input
                   name="otp"
                   inputMode="numeric"
@@ -323,15 +408,17 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
             )}
             {otpVerified && <p className="otp-verified" role="status">Mobile number verified ✓</p>}
 
-            {portal === "Account" && (
+            {(portal === "Account" || portal === "Business" || portal === "Agent") && (
+              <label>
+                Email address <span className="optional">(optional - for invoices &amp; notifications)</span>
+                <input name="email" type="email" autoComplete="email" placeholder="e.g. contact@example.com" />
+              </label>
+            )}
+
+            {(portal === "Account" || portal === "Business") && (
               <>
                 <label>
-                  Email address <span className="optional">(for orders, invoices &amp; safety alerts)</span>
-                  <input name="email" type="email" autoComplete="email" placeholder="e.g. name@example.com" />
-                </label>
-
-                <label>
-                  Hosur Locality / Area
+                  Hosur Locality / Area *
                   <select name="locality" defaultValue="Bagalur Road" style={{ background: "#fff", cursor: "pointer", padding: "10px", borderRadius: "5px", border: "1px solid #e1e7e0" }}>
                     {["Bagalur Road", "Sipcot Phase 1", "Sipcot Phase 2", "Rayakottai Road", "Mookandapalli", "Mathigiri", "Avalapalli", "Gandhi Nagar", "Kamaraj Nagar", "Old Bangalore Road", "Railway Station Road", "Moranapalli", "Zuzuvadi", "Thally Road", "Denkanikottai Road", "Hosur Cattle Farm"].map((loc) => (
                       <option key={loc} value={loc}>📍 {loc}</option>
@@ -341,29 +428,31 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                   <label>
-                    Door / Flat No. <span className="optional">(optional)</span>
-                    <input name="doorNo" placeholder="e.g. Flat 102, 3rd Floor" />
+                    Door / Shop / Flat No. <span className="optional">(optional)</span>
+                    <input name="doorNo" placeholder="e.g. Shop 4B / Flat 102" />
                   </label>
                   <label>
                     Street / Landmark <span className="optional">(optional)</span>
-                    <input name="street" placeholder="e.g. Near Old Bus Stand" />
+                    <input name="street" placeholder="e.g. Near Bus Stand" />
                   </label>
                 </div>
-
-                <div style={{ background: "#f8faf8", border: "1px solid #dbe6dc", borderRadius: "8px", padding: "12px", display: "grid", gap: "8px" }}>
-                  <div style={{ fontSize: "11px", fontWeight: 700, color: "#285536" }}>🛡️ Emergency SOS Contact (Hosur Safety Network)</div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-                    <label style={{ fontSize: "10px", color: "#365c41" }}>
-                      Emergency Contact Name
-                      <input name="emergencyContactName" placeholder="e.g. Spouse / Parent" style={{ background: "#fff" }} />
-                    </label>
-                    <label style={{ fontSize: "10px", color: "#365c41" }}>
-                      Emergency Mobile Number
-                      <input name="emergencyContactPhone" type="tel" placeholder="e.g. 98432 12345" style={{ background: "#fff" }} />
-                    </label>
-                  </div>
-                </div>
               </>
+            )}
+
+            {portal === "Account" && (
+              <div style={{ background: "#f8faf8", border: "1px solid #dbe6dc", borderRadius: "8px", padding: "12px", display: "grid", gap: "8px" }}>
+                <div style={{ fontSize: "11px", fontWeight: 700, color: "#285536" }}>🛡️ Emergency SOS Contact (Hosur Safety Network)</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                  <label style={{ fontSize: "10px", color: "#365c41" }}>
+                    Emergency Contact Name <span className="optional">(optional)</span>
+                    <input name="emergencyContactName" placeholder="e.g. Spouse / Parent" style={{ background: "#fff" }} />
+                  </label>
+                  <label style={{ fontSize: "10px", color: "#365c41" }}>
+                    Emergency Mobile Number <span className="optional">(optional)</span>
+                    <input name="emergencyContactPhone" type="tel" placeholder="e.g. 98432 12345" style={{ background: "#fff" }} />
+                  </label>
+                </div>
+              </div>
             )}
 
             <label>
@@ -431,9 +520,13 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
               <p className="portal-login-demo-note">
                 Your location helps discover nearby businesses and services. You can deny access and continue.
               </p>
+            ) : portal === "Business" ? (
+              <p className="portal-login-demo-note">
+                Once registered, your business profile and products are persisted to the Hosur directory database and visible to local residents.
+              </p>
             ) : (
               <p className="portal-login-demo-note">
-                OTP verification is required before the demo Agent registration request can be submitted.
+                OTP verification is required before your Agent partner account is activated.
               </p>
             )}
           </>
@@ -449,9 +542,22 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
             </label>
           </>
         )}
-        <button className="primary-button full-button" type="submit" disabled={busy}>{busy ? (registering ? "Activating account…" : "Signing in…") : (registering ? "Create & activate account" : "Sign in")} <span>→</span></button>
+        <button className="primary-button full-button" type="submit" disabled={busy}>
+          {busy
+            ? registering
+              ? "Activating account…"
+              : "Signing in…"
+            : registering
+            ? portal === "Business"
+              ? "Register business"
+              : portal === "Agent"
+              ? "Submit agent application"
+              : "Create & activate account"
+            : "Sign in"}{" "}
+          <span>→</span>
+        </button>
       </form>
-      {(portal === "Account" || portal === "Agent") && (
+      {(portal === "Account" || portal === "Agent" || portal === "Business") && (
         <button
           className="outline-button full-button"
           type="button"
@@ -466,7 +572,13 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
             setRegConfirmPassword("");
           }}
         >
-          {registering ? "Back to sign in" : portal === "Agent" ? "Apply as an agent" : "Create an account"}
+          {registering
+            ? "Back to sign in"
+            : portal === "Agent"
+            ? "Apply as an agent"
+            : portal === "Business"
+            ? "Register your business"
+            : "Create an account"}
         </button>
       )}
       {message && <p className={isSuccess ? "company-login-success" : "company-login-message"} role={isSuccess ? "status" : "alert"}>{message}</p>}

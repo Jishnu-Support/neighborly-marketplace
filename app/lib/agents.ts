@@ -131,3 +131,52 @@ export async function toggleAgentActive(id: string, active: boolean): Promise<bo
   await writeAgentRecords(agents);
   return true;
 }
+
+export async function getAgentByIdentity(identity: string): Promise<AgentPartner | null> {
+  const cleanDigits = identity.replace(/\D/g, "");
+  const normalizedIdentity = identity.trim().toLowerCase();
+  const agents = await readAgentRecords();
+
+  const agent = agents.find((a) => {
+    if (a.id === identity) return true;
+    if (a.email && a.email.toLowerCase() === normalizedIdentity) return true;
+    if (a.referralCode && a.referralCode.toLowerCase() === normalizedIdentity) return true;
+    const aDigits = a.phone.replace(/\D/g, "");
+    if (cleanDigits.length >= 8 && (aDigits === cleanDigits || aDigits.endsWith(cleanDigits) || cleanDigits.endsWith(aDigits))) {
+      return true;
+    }
+    return a.phone.trim().toLowerCase() === normalizedIdentity;
+  });
+
+  if (!agent) return null;
+  const { salt: _s, passwordHash: _p, ...publicAgent } = agent;
+  return publicAgent;
+}
+
+export async function updateAgentProfile(identity: string, updates: Partial<{ name: string; phone: string; email: string }>): Promise<AgentPartner | null> {
+  const cleanDigits = identity.replace(/\D/g, "");
+  const normalizedIdentity = identity.trim().toLowerCase();
+  const agents = await readAgentRecords();
+
+  const index = agents.findIndex((a) => {
+    if (a.id === identity) return true;
+    if (a.email && a.email.toLowerCase() === normalizedIdentity) return true;
+    if (a.referralCode && a.referralCode.toLowerCase() === normalizedIdentity) return true;
+    const aDigits = a.phone.replace(/\D/g, "");
+    if (cleanDigits.length >= 8 && (aDigits === cleanDigits || aDigits.endsWith(cleanDigits) || cleanDigits.endsWith(aDigits))) {
+      return true;
+    }
+    return a.phone.trim().toLowerCase() === normalizedIdentity;
+  });
+
+  if (index === -1) return null;
+
+  if (updates.name) agents[index].name = updates.name.trim();
+  if (updates.phone) agents[index].phone = updates.phone.trim();
+  if (updates.email !== undefined) agents[index].email = updates.email.trim().toLowerCase();
+
+  await writeAgentRecords(agents);
+  const { salt: _s, passwordHash: _p, ...publicAgent } = agents[index];
+  return publicAgent;
+}
+

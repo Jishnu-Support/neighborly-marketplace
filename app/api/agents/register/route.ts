@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAgentPartner } from "@/app/lib/agents";
 import { consumeVerifiedRegistrationOtp } from "@/app/lib/registration-otp";
+import { AUTH_COOKIE, authCookieOptions, createSessionToken } from "@/app/lib/auth";
 
 export async function POST(request: Request) {
   try {
@@ -36,7 +37,8 @@ export async function POST(request: Request) {
       password: password.length >= 6 ? password : undefined,
     });
 
-    return NextResponse.json({
+    const token = createSessionToken("Agent", agent.phone);
+    const response = NextResponse.json({
       success: true,
       agent: {
         id: agent.id,
@@ -46,6 +48,9 @@ export async function POST(request: Request) {
       },
       message: `✓ Agent application approved! Your referral code is ${agent.referralCode}.`,
     }, { status: 201 });
+    response.cookies.set(AUTH_COOKIE, token, authCookieOptions);
+
+    return response;
   } catch (error) {
     console.error("Agent registration error:", error);
     return NextResponse.json({ error: error instanceof Error ? error.message : "Could not complete agent registration." }, { status: 400 });
