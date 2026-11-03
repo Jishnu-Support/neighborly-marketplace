@@ -151,8 +151,8 @@ const emptyMemberProfile: MemberProfile = {
   emergencyRelations: ["Spouse / Family", "Friend / Colleague"],
 };
 
-const profileStorageKey = (role: "Account" | "Business" | "Agent" | "Company", identity = "") => `neighborly-profile-v1-${role.toLowerCase()}${role === "Company" && identity ? `-${encodeURIComponent(identity.trim().toLowerCase())}` : ""}`;
-const settingsStorageKey = (role: "Account" | "Business" | "Agent" | "Company", identity = "") => `neighborly-settings-v1-${role.toLowerCase()}${role === "Company" && identity ? `-${encodeURIComponent(identity.trim().toLowerCase())}` : ""}`;
+const profileStorageKey = (role: "Account" | "Business" | "Agent" | "Company", identity = "") => `neighborly-profile-v1-${role.toLowerCase()}${identity ? `-${encodeURIComponent(identity.trim().toLowerCase())}` : ""}`;
+const settingsStorageKey = (role: "Account" | "Business" | "Agent" | "Company", identity = "") => `neighborly-settings-v1-${role.toLowerCase()}${identity ? `-${encodeURIComponent(identity.trim().toLowerCase())}` : ""}`;
 type PortalRole = Exclude<Role, "Discover">;
 type Product = {
   id: string;
@@ -11011,9 +11011,9 @@ const emptyDemoData: DemoData = {
   recentSearches: [],
   enquiries: [],
   events: [],
-  checkouts: initialSampleCheckouts,
+  checkouts: [],
   businesses: initialBusinesses,
-  orders: initialSampleOrders,
+  orders: [],
 };
 
 const planNames = ["Starter", "Growth", "Spotlight"];
@@ -11271,6 +11271,7 @@ export default function Home() {
   const [companyAccessLevel, setCompanyAccessLevel] = useState<CompanyAccessLevel>("Admin");
   const [sessionIdentity, setSessionIdentity] = useState("");
   const [currentCustomerProfile, setCurrentCustomerProfile] = useState<MemberProfile | null>(null);
+  const [currentBusinessRecord, setCurrentBusinessRecord] = useState<any | null>(null);
   const [category, setCategory] = useState("All");
   const [categoryPath, setCategoryPath] = useState<string[]>([]);
   const [categoryConfig, setCategoryConfig] = useState<CategoryConfig>(defaultCategoryConfig);
@@ -11323,16 +11324,49 @@ export default function Home() {
   // The Business portal represents one business account, so it matches
   // the registered business attached to that account, or falls back to the top listing.
   const businessAccountBusinesses = useMemo(() => {
-    if (currentCustomerProfile?.fullName) {
-      const match = businesses.find(
-        (b) =>
-          b.name.toLowerCase() === currentCustomerProfile.fullName.toLowerCase() ||
-          (currentCustomerProfile.phone && b.phone && b.phone.replace(/\D/g, "").endsWith(currentCustomerProfile.phone.replace(/\D/g, "")))
-      );
-      if (match) return [match];
+    if (currentBusinessRecord) {
+      const b: Business = {
+        name: currentBusinessRecord.name,
+        category: currentBusinessRecord.category,
+        subcategories: [currentBusinessRecord.category],
+        description: currentBusinessRecord.description || `${currentBusinessRecord.category} in ${currentBusinessRecord.address?.cityTown || "Hosur"}`,
+        phone: currentBusinessRecord.phone,
+        email: currentBusinessRecord.email || "",
+        distance: 0.5,
+        rating: currentBusinessRecord.rating || 5,
+        reviews: currentBusinessRecord.reviews || 0,
+        subscribed: Boolean(currentBusinessRecord.subscribed),
+        products: (currentBusinessRecord.products || []).map((p: any, idx: number) => ({
+          id: p.id || `prod-${idx}`,
+          name: p.name,
+          price: typeof p.price === "number" ? p.price : Number(p.price) || 0,
+          description: p.description || "",
+          unit: "unit",
+        })),
+        images: currentBusinessRecord.images || currentBusinessRecord.photos || [],
+        businessModes: currentBusinessRecord.businessModes || ["In-store Sales", "Customer Service"],
+        address: currentBusinessRecord.address,
+        icon: "🏢",
+        color: "warm",
+        price: "₹₹",
+        demoCoordinates: { latitude: 12.7409, longitude: 77.8253 },
+        verificationStatus: currentBusinessRecord.verificationStatus,
+      };
+      return [b];
+    }
+    if (role === "Business") {
+      if (currentCustomerProfile?.fullName && currentCustomerProfile.fullName.toLowerCase() !== "demo") {
+        const match = businesses.find(
+          (b) =>
+            b.name.toLowerCase() === currentCustomerProfile.fullName.toLowerCase() ||
+            (currentCustomerProfile.phone && b.phone && b.phone.replace(/\D/g, "").endsWith(currentCustomerProfile.phone.replace(/\D/g, "")))
+        );
+        if (match) return [match];
+      }
+      return [];
     }
     return businesses.slice(0, 1);
-  }, [businesses, currentCustomerProfile]);
+  }, [currentBusinessRecord, role, businesses, currentCustomerProfile]);
   const businessDistance = (business: Business) =>
     locationCoordinates ? distanceBetween(locationCoordinates, business.coordinates || business.demoCoordinates) : business.distance;
 
@@ -11831,6 +11865,11 @@ export default function Home() {
               pincode?: string;
             };
             description?: string;
+            verificationStatus?: string;
+            products?: any[];
+            images?: string[];
+            photos?: string[];
+            subscribed?: boolean;
           } | null;
           agent?: {
             id: string;
@@ -11922,21 +11961,22 @@ export default function Home() {
 
         if (session?.role === "Business") {
           if (business) {
+            setCurrentBusinessRecord(business);
             const addr = business.address || {};
-            const combined = [addr.doorNumber, addr.street, addr.area, "Hosur"].filter(Boolean).join(", ");
+            const combined = [addr.doorNumber, addr.street, addr.area, addr.cityTown, addr.state, addr.pincode].filter(Boolean).join(", ");
             const businessProfileData: MemberProfile = {
               fullName: business.name || "Business Partner",
               phone: business.phone || "",
               email: business.email || "",
               doorNo: addr.doorNumber || "",
               street: addr.street || "",
-              locality: addr.area || "Bagalur Road",
-              city: addr.cityTown || "Hosur",
-              district: addr.district || "Krishnagiri",
-              state: addr.state || "Tamil Nadu",
-              pincode: addr.pincode || "635109",
-              address: combined || "Hosur, Tamil Nadu",
-              bio: `${business.category || "Local Business"} · Verified Merchant in Hosur`,
+              locality: addr.area || "",
+              city: addr.cityTown || "",
+              district: addr.district || addr.cityTown || "",
+              state: addr.state || "",
+              pincode: addr.pincode || "",
+              address: combined || "",
+              bio: `${business.category || "Local Business"} · ${business.verificationStatus || "Registered Merchant"}`,
               avatarInitials: (business.name ? business.name[0] : "B").toUpperCase(),
               avatarBg: "#0f766e",
               emergencyPhones: ["", ""],
@@ -11945,9 +11985,39 @@ export default function Home() {
             };
             setCurrentCustomerProfile(businessProfileData);
             try {
-              window.localStorage.setItem(profileStorageKey("Business"), JSON.stringify(businessProfileData));
+              window.localStorage.setItem(profileStorageKey("Business", session?.identity || business.phone || business.name), JSON.stringify(businessProfileData));
               window.localStorage.setItem("neighborly_profile_Business", JSON.stringify(businessProfileData));
+              window.localStorage.setItem("neighborly-profile-v1-business", JSON.stringify(businessProfileData));
             } catch {}
+          } else {
+            let fallbackName = "Business Account";
+            try {
+              const regRaw = window.localStorage.getItem("bizearch_registered_user");
+              if (regRaw) {
+                const parsed = JSON.parse(regRaw);
+                if (parsed.name) fallbackName = parsed.name;
+              }
+            } catch {}
+            const businessProfileData: MemberProfile = {
+              fullName: fallbackName,
+              phone: session?.identity || "",
+              email: session?.identity?.includes("@") ? session.identity : "",
+              doorNo: "",
+              street: "",
+              locality: "",
+              city: "",
+              district: "",
+              state: "",
+              pincode: "",
+              address: "",
+              bio: "Local Business · Registered Merchant",
+              avatarInitials: (fallbackName ? fallbackName[0] : "B").toUpperCase(),
+              avatarBg: "#0f766e",
+              emergencyPhones: ["", ""],
+              emergencyNames: ["", ""],
+              emergencyRelations: ["", ""],
+            };
+            setCurrentCustomerProfile(businessProfileData);
           }
         }
 
@@ -12040,8 +12110,8 @@ export default function Home() {
           setDemoData({
             ...parsed,
             businesses: [...custom, ...initialBusinesses],
-            checkouts: Array.isArray(parsed.checkouts) && parsed.checkouts.length > 0 ? parsed.checkouts : initialSampleCheckouts,
-            orders: Array.isArray(parsed.orders) && parsed.orders.length > 0 ? parsed.orders : initialSampleOrders,
+            checkouts: Array.isArray(parsed.checkouts) ? parsed.checkouts : [],
+            orders: Array.isArray(parsed.orders) ? parsed.orders : [],
           });
         }
       }
@@ -12746,6 +12816,12 @@ export default function Home() {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       inStock: product.inStock !== false,
     };
+    if (currentBusinessRecord && currentBusinessRecord.name === businessName) {
+      setCurrentBusinessRecord((prev: any) => prev ? {
+        ...prev,
+        products: [...(prev.products || []), newProduct]
+      } : prev);
+    }
     setDemoData((current) => ({
       ...current,
       businesses: current.businesses.map((business) =>
@@ -12757,6 +12833,12 @@ export default function Home() {
   }
 
   function updateProduct(businessName: string, productId: string, updated: Partial<Product>) {
+    if (currentBusinessRecord && currentBusinessRecord.name === businessName) {
+      setCurrentBusinessRecord((prev: any) => prev ? {
+        ...prev,
+        products: (prev.products || []).map((p: any) => p.id === productId ? { ...p, ...updated } : p)
+      } : prev);
+    }
     setDemoData((current) => ({
       ...current,
       businesses: current.businesses.map((business) =>
@@ -12775,6 +12857,12 @@ export default function Home() {
   }
 
   function deleteProduct(businessName: string, productId: string) {
+    if (currentBusinessRecord && currentBusinessRecord.name === businessName) {
+      setCurrentBusinessRecord((prev: any) => prev ? {
+        ...prev,
+        products: (prev.products || []).filter((p: any) => p.id !== productId)
+      } : prev);
+    }
     setDemoData((current) => ({
       ...current,
       businesses: current.businesses.map((business) =>
@@ -12971,6 +13059,14 @@ export default function Home() {
   }
 
   function updateBusinessPhotos(businessName: string, images: string[]) {
+    if (currentBusinessRecord && currentBusinessRecord.name === businessName) {
+      setCurrentBusinessRecord((prev: any) => prev ? {
+        ...prev,
+        images,
+        photos: images,
+        image: images[0] || undefined,
+      } : prev);
+    }
     setDemoData((prev) => ({
       ...prev,
       businesses: prev.businesses.map((b) =>
@@ -13919,7 +14015,7 @@ export default function Home() {
           </button>
           <div className="mobile-drawer-user-info">
             <div className="mobile-drawer-avatar">
-              {(currentCustomerProfile?.fullName?.[0] || (role === "Company" ? sessionIdentity?.[0] : "C") || "C").toUpperCase()}
+              {(role === "Business" && businessAccountBusinesses[0]?.name ? businessAccountBusinesses[0].name[0] : (currentCustomerProfile?.fullName?.[0] || (role === "Company" ? sessionIdentity?.[0] : "C") || "C")).toUpperCase()}
             </div>
             <div>
               <strong style={{ fontSize: "14px", display: "block" }}>
@@ -14201,7 +14297,7 @@ export default function Home() {
               onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
             >
               <span className="avatar" style={{ flexShrink: 0 }}>
-                {(currentCustomerProfile?.fullName?.[0] || (role === "Company" ? sessionIdentity?.[0] : "C") || "C").toUpperCase()}
+                {(role === "Business" && businessAccountBusinesses[0]?.name ? businessAccountBusinesses[0].name[0] : (currentCustomerProfile?.fullName?.[0] || (role === "Company" ? sessionIdentity?.[0] : "C") || "C")).toUpperCase()}
               </span>
               <span
                 className="profile-text"
@@ -14237,6 +14333,8 @@ export default function Home() {
                 >
                   {role === "Company" && sessionIdentity
                     ? sessionIdentity
+                    : role === "Business" && businessAccountBusinesses[0]?.name
+                    ? businessAccountBusinesses[0].name
                     : (currentCustomerProfile?.fullName || (role === "Discover" ? t.savedOnDevice : "Profile & account details"))}
                 </small>
               </span>
@@ -16471,9 +16569,9 @@ export default function Home() {
           <BusinessPortal
             businesses={businessAccountBusinesses}
             categoryConfig={categoryConfig}
-            enquiries={demoData.enquiries}
-            checkouts={demoData.checkouts}
-            orders={demoData.orders || []}
+            enquiries={businessAccountBusinesses[0]?.name ? demoData.enquiries.filter((e) => e.businessName?.toLowerCase() === businessAccountBusinesses[0]?.name.toLowerCase()) : []}
+            checkouts={businessAccountBusinesses[0]?.name ? demoData.checkouts.filter((c) => c.businessName?.toLowerCase() === businessAccountBusinesses[0]?.name.toLowerCase()) : []}
+            orders={businessAccountBusinesses[0]?.name ? (demoData.orders || []).filter((o) => o.businessName?.toLowerCase() === businessAccountBusinesses[0]?.name.toLowerCase()) : []}
             initialTab={portalActiveTab}
             adBookings={adBookings}
             currentSimulatedHour={simulatedHour}
@@ -19833,11 +19931,11 @@ function BusinessPortal({
 }) {
   const [tab, setTab] = useState(initialTab || "Overview");
   const accountBusinessName = businesses[0]?.name;
-  const accountEnquiries = enquiries.filter((item) => item.businessName === accountBusinessName);
-  const accountCheckouts = checkouts.filter((item) => item.businessName === accountBusinessName);
-  const activeSub = accountCheckouts.find((c) => c.status === "Active" || c.status === "Paid") || (businesses[0]?.subscribed ? accountCheckouts[0] : null);
+  const accountEnquiries = enquiries.filter((item) => accountBusinessName && item.businessName && item.businessName.toLowerCase() === accountBusinessName.toLowerCase());
+  const accountCheckouts = checkouts.filter((item) => accountBusinessName && item.businessName && item.businessName.toLowerCase() === accountBusinessName.toLowerCase());
+  const activeSub = accountCheckouts.find((c) => (c.status === "Active" || c.status === "Paid") && c.businessName?.toLowerCase() === accountBusinessName?.toLowerCase()) || null;
   const accountOrders = orders.filter((item) =>
-    !accountBusinessName || item.businessName.toLowerCase() === accountBusinessName.toLowerCase() || businesses.length > 1
+    accountBusinessName && item.businessName && item.businessName.toLowerCase() === accountBusinessName.toLowerCase()
   );
   const pendingPrepCount = accountOrders.filter((o) => o.status === "placed" || o.status === "accepted" || o.status === "preparing").length;
 
@@ -19874,8 +19972,8 @@ function BusinessPortal({
               </strong>
               <span style={{ fontSize: "12px", color: "#b45309" }}>
                 {businesses[0].verificationStatus === "Pending Agent Visit"
-                  ? "A local Hosur field agent is assigned to visit your storefront and capture verification photos."
-                  : "Field visit completed! Awaiting final authorization from Company Admin to publish listing."}
+                  ? "A local field agent is assigned to visit your storefront and capture verification photos."
+                  : "Field visit completed! Awaiting final authorization from Admin to publish listing."}
               </span>
             </div>
           </div>
@@ -19904,17 +20002,17 @@ function BusinessPortal({
           </div>
           <div style={{ background: "#fff", padding: "12px 14px", borderRadius: "8px", border: "1px solid #cbd5e1" }}>
             <div style={{ fontSize: "11px", fontWeight: 700, color: "#64748b" }}>⏳ Step 3: Admin Approval & Live Directory</div>
-            <div style={{ fontSize: "12px", color: "#64748b", marginTop: "4px" }}>Approved listing goes live across Hosur</div>
+            <div style={{ fontSize: "12px", color: "#64748b", marginTop: "4px" }}>Approved listing goes live in the public directory</div>
           </div>
         </div>
       </div>
     )}
     {tab === "Overview" && <>
       <div className="metric-grid">
-        <Metric label="Profile views" value="1,284" delta="Sample dashboard metric" icon="◉" />
-        <Metric label="Active orders" value={String(accountOrders.length)} delta={`${pendingPrepCount} awaiting preparation`} icon="🛍️" />
-        <Metric label="Customer enquiries" value={String(accountEnquiries.length)} delta="Saved in this browser" icon="↗" />
-        <Metric label="Search appearances" value="438" delta="Sample dashboard metric" icon="⌕" />
+        <Metric label="Profile views" value="0" delta={businesses[0]?.verificationStatus === "Approved" ? "Live listing views" : "Listing pending verification"} icon="◉" />
+        <Metric label="Active orders" value={String(accountOrders.length)} delta={accountOrders.length > 0 ? `${pendingPrepCount} awaiting preparation` : "No pending orders"} icon="🛍️" />
+        <Metric label="Customer enquiries" value={String(accountEnquiries.length)} delta={accountEnquiries.length > 0 ? `${accountEnquiries.length} received` : "No customer enquiries yet"} icon="↗" />
+        <Metric label="Search appearances" value="0" delta={businesses[0]?.verificationStatus === "Approved" ? "Live search appearances" : "Listing pending verification"} icon="⌕" />
       </div>
       <div className="portal-columns"><section className="panel"><div className="panel-heading"><div><div className="eyebrow">YOUR BUSINESS</div><h2>Business profile</h2></div><button className="text-link" onClick={openBusinessProfile}>View details <span>→</span></button></div>
         {businesses.map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category}</small></span><span className={`status-pill ${business.subscribed ? "verified" : "pending"}`}>● {business.subscribed ? "Subscribed" : "Pending plan"}</span></div>)}
@@ -19953,7 +20051,7 @@ function BusinessPortal({
         </div>
       </section></div>
       <div className="verification-banner"><span className="verify-icon">⌖</span><div><strong>Help neighbors find the right place.</strong><p>Granting device location is only a demo permission check; it does not verify your registered business address.</p></div><button onClick={verifyLocation}>Check location access <span>↗</span></button></div>
-      <div className="form-note"><strong>Demo dashboard</strong><span>Views, enquiries and subscription status are sample data until your business is connected to a production backend.</span></div>
+      <div className="form-note"><strong>Business portal</strong><span>Manage your storefront, products, customer orders, and local ad campaigns. Approved listings are discoverable worldwide.</span></div>
     </>}
     {tab === "My business" && (
       <section className="panel tab-panel">

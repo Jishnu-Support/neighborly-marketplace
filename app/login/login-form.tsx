@@ -220,6 +220,29 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
           setIsSuccess(true);
           setMessage(`✓ Business "${name}" registered successfully! Loading your business portal...`);
           try {
+            const combinedAddr = [doorNo, street, locality, city, state, pincode].filter(Boolean).join(", ");
+            const freshBizProfile = {
+              fullName: name,
+              phone: phone,
+              email: email || "",
+              doorNo: doorNo || "",
+              street: street || "",
+              locality: locality || "",
+              city: city || "",
+              district: city || "",
+              state: state || "",
+              pincode: pincode || "",
+              address: combinedAddr || "",
+              bio: `${category} · Pending Verification`,
+              avatarInitials: (name ? name[0] : "B").toUpperCase(),
+              avatarBg: "#0f766e",
+              emergencyPhones: ["", ""],
+              emergencyNames: ["", ""],
+              emergencyRelations: ["", ""],
+            };
+            localStorage.setItem("neighborly_profile_Business", JSON.stringify(freshBizProfile));
+            localStorage.setItem("neighborly-profile-v1-business", JSON.stringify(freshBizProfile));
+            localStorage.setItem(`neighborly-profile-v1-business-${encodeURIComponent(phone.trim().toLowerCase())}`, JSON.stringify(freshBizProfile));
             localStorage.setItem("bizearch_registered_user", JSON.stringify({ name, phone, email, role: "Business", registeredAt: new Date().toISOString() }));
           } catch { /* Browser storage */ }
           setTimeout(() => {

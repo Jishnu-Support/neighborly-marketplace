@@ -131,6 +131,8 @@ export async function getBusinessByIdentity(identity: string): Promise<PublicBus
   const records = await readBusinessRecords();
 
   const found = records.find((b) => {
+    if (b.id === identity) return true;
+    if (b.name && b.name.toLowerCase() === normalizedIdentity) return true;
     if (b.email && b.email.toLowerCase() === normalizedIdentity) return true;
     const bDigits = b.phone.replace(/\D/g, "");
     if (cleanDigits.length >= 8 && (bDigits === cleanDigits || bDigits.endsWith(cleanDigits) || cleanDigits.endsWith(bDigits))) {
@@ -150,6 +152,8 @@ export async function verifyBusinessCredentials(identity: string, password: stri
   const records = await readBusinessRecords();
 
   const found = records.find((b) => {
+    if (b.id === identity) return true;
+    if (b.name && b.name.toLowerCase() === normalizedIdentity) return true;
     if (b.email && b.email.toLowerCase() === normalizedIdentity) return true;
     const bDigits = b.phone.replace(/\D/g, "");
     if (cleanDigits.length >= 8 && (bDigits === cleanDigits || bDigits.endsWith(cleanDigits) || cleanDigits.endsWith(bDigits))) {
