@@ -644,6 +644,11 @@ h1 em{font-family:var(--serif);font-weight:400;color:#507959;letter-spacing:-1px
 .company-login-shortcut a{color:#526f58;font-weight:700;margin-left:4px;text-decoration:none}
 .company-login-link{display:block;margin:7px 0 0 43px;color:#9ba39c;font-size:8px;text-decoration:none}
 .company-login-link:hover,.company-login-shortcut a:hover{text-decoration:underline}
+.portal-login-pill{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.6px;color:#245831;background:#edf5ee;border:1px solid #d4e5d5;padding:4px 10px;border-radius:12px;margin-bottom:10px}
+.company-login-role-switch{display:flex;gap:6px;background:#f0f4ee;border:1px solid #dde5dc;border-radius:8px;padding:4px;margin:16px 0 20px}
+.company-login-role-switch button{flex:1;border:0;background:transparent;padding:10px 14px;border-radius:6px;font:600 12px Manrope,sans-serif;color:#536657;cursor:pointer;transition:all .18s ease;display:flex;align-items:center;justify-content:center;gap:6px}
+.company-login-role-switch button.active{background:#fff;color:#183d23;font-weight:800;box-shadow:0 2px 7px rgba(0,0,0,.07)}
+.company-login-role-switch button:hover:not(.active){background:#e6ede4;color:#284a32}
 .company-login-message{font-size:10px;line-height:1.55;color:#8a503f;background:#fbf2ef;border:1px solid #f0ddd7;border-radius:5px;padding:11px 12px;margin:15px 0 0}
 .company-login-success{font-size:10.5px;line-height:1.55;color:#14532d;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:5px;padding:11px 12px;margin:15px 0 0;font-weight:600}
 .selected-taxonomy-path{font-size:10px;color:#748276;margin:4px 0 0}
