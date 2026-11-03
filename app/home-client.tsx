@@ -11363,7 +11363,38 @@ export default function Home() {
         );
         if (match) return [match];
       }
-      return [];
+      const bizName = (currentCustomerProfile?.fullName && currentCustomerProfile.fullName.trim()) || "Demo";
+      const b: Business = {
+        name: bizName,
+        category: "Local Business",
+        subcategories: ["Local Business"],
+        description: currentCustomerProfile?.bio || "Registered Business Merchant",
+        phone: currentCustomerProfile?.phone || "",
+        email: currentCustomerProfile?.email || sessionIdentity || "",
+        distance: 0.5,
+        rating: 5,
+        reviews: 0,
+        subscribed: false,
+        products: [],
+        images: [],
+        businessModes: ["In-store Sales", "Customer Service"],
+        address: currentCustomerProfile ? {
+          doorNumber: currentCustomerProfile.doorNo || "",
+          street: currentCustomerProfile.street || "",
+          area: currentCustomerProfile.locality || "",
+          cityTown: currentCustomerProfile.city || "Hosur",
+          taluka: currentCustomerProfile.city || "Hosur",
+          district: currentCustomerProfile.district || "Krishnagiri",
+          state: currentCustomerProfile.state || "Tamil Nadu",
+          pincode: currentCustomerProfile.pincode || "635109",
+        } : undefined,
+        icon: "🏢",
+        color: "warm",
+        price: "₹₹",
+        demoCoordinates: { latitude: 12.7409, longitude: 77.8253 },
+        verificationStatus: "Pending Agent Visit",
+      };
+      return [b];
     }
     return businesses.slice(0, 1);
   }, [currentBusinessRecord, role, businesses, currentCustomerProfile]);
@@ -16648,7 +16679,7 @@ export default function Home() {
             checkouts={businessAccountBusinesses[0]?.name ? demoData.checkouts.filter((c) => c.businessName?.toLowerCase() === businessAccountBusinesses[0]?.name.toLowerCase()) : []}
             orders={businessAccountBusinesses[0]?.name ? (demoData.orders || []).filter((o) => o.businessName?.toLowerCase() === businessAccountBusinesses[0]?.name.toLowerCase()) : []}
             initialTab={portalActiveTab}
-            adBookings={adBookings}
+            adBookings={businessAccountBusinesses[0]?.name ? adBookings.filter((b) => b.businessName && b.businessName.toLowerCase() === businessAccountBusinesses[0]?.name.toLowerCase()) : []}
             currentSimulatedHour={simulatedHour}
             onSimulateHour={(h) => setSimulatedHour(h)}
             onOpenAdBookingWizard={() => setAdBookingWizardOpen(true)}
@@ -16737,7 +16768,7 @@ export default function Home() {
       {adBookingWizardOpen && (
         <AdBookingDialog
           businessName={businessAccountBusinesses[0]?.name || businesses[0]?.name}
-          businesses={businesses}
+          businesses={businessAccountBusinesses.length > 0 ? businessAccountBusinesses : businesses}
           close={() => setAdBookingWizardOpen(false)}
           onBookingCreated={handleBookingCreated}
           onBookingPaid={handleBookingPaid}
@@ -20343,7 +20374,7 @@ function BusinessPortal({
             type="button"
             onClick={() => setTab("Ad promotions")}
           >
-            Manage Campaigns ({adBookings.filter(b => !accountBusinessName || b.businessName.toLowerCase() === accountBusinessName.toLowerCase()).length}) →
+            Manage Campaigns ({accountBusinessName ? adBookings.filter(b => b.businessName && b.businessName.toLowerCase() === accountBusinessName.toLowerCase()).length : 0}) →
           </button>
         </div>
       </section></div>

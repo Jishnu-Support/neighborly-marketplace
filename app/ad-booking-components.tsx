@@ -2913,12 +2913,12 @@ export function AdCampaignsManager({
   const [selectedReceipt, setSelectedReceipt] = useState<AdBookingRequest | null>(null);
   const [selectedAudienceLog, setSelectedAudienceLog] = useState<AdBookingRequest | null>(null);
 
-  // Filter bookings for this business (or all if not specified)
-  const businessBookings = businessName
+  // Filter bookings strictly for this business. Never show other merchants' ad bookings in a merchant portal.
+  const businessBookings = businessName && businessName.trim()
     ? adBookings.filter(
-        (b) => b.businessName.toLowerCase() === businessName.toLowerCase()
+        (b) => b.businessName && b.businessName.trim().toLowerCase() === businessName.trim().toLowerCase()
       )
-    : adBookings;
+    : [];
 
   const currentHour =
     currentSimulatedHour !== null ? currentSimulatedHour : new Date().getHours();
