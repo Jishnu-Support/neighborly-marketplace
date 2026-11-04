@@ -294,13 +294,13 @@ export function CompanyCustomerRegistrationsPanel({
 
       {/* Empty State */}
       {!loading && !error && filtered.length === 0 && (
-        <div style={{ padding: "30px 20px", textAlign: "center", background: "#fbfcfb", borderRadius: "8px" }}>
-          <div style={{ fontSize: "28px", marginBottom: "8px" }}>🔍</div>
-          <strong style={{ fontSize: "14px", color: "#2d4233", display: "block" }}>No registered customers found</strong>
-          <p style={{ fontSize: "12px", color: "#77877c", margin: "4px 0 12px" }}>
+        <div style={{ padding: "40px 20px", textAlign: "center", background: "#fbfcfb", borderRadius: "8px", border: "1px dashed #d5e0d4" }}>
+          <div style={{ fontSize: "32px", marginBottom: "8px" }}>👥</div>
+          <strong style={{ fontSize: "15px", color: "#2d4233", display: "block" }}>No registered customers yet</strong>
+          <p style={{ fontSize: "12px", color: "#77877c", margin: "6px auto 14px", maxWidth: "460px", lineHeight: 1.5 }}>
             {searchQuery || locationFilter !== "All"
-              ? "Try adjusting your search query or location filter."
-              : "Customer registrations will appear here when customers create accounts."}
+              ? "No registered customers matched your search query or location filter."
+              : "Only real customer registrations are displayed here. When customers sign up through 'Create an account', their verified phone, address, and location consent will appear here."}
           </p>
         </div>
       )}
@@ -946,11 +946,13 @@ export function CompanyActivityLogsPanel({
 
       {/* Empty State */}
       {!loading && !error && logs.length === 0 && (
-        <div style={{ padding: "30px 20px", textAlign: "center", background: "#fbfcfb", borderRadius: "8px" }}>
-          <div style={{ fontSize: "28px", marginBottom: "8px" }}>📋</div>
-          <strong style={{ fontSize: "14px", color: "#2d4233", display: "block" }}>No activity logs found</strong>
-          <p style={{ fontSize: "12px", color: "#77877c", margin: "4px 0 12px" }}>
-            No activities matched your current category or search filters.
+        <div style={{ padding: "40px 20px", textAlign: "center", background: "#fbfcfb", borderRadius: "8px", border: "1px dashed #d5e0d4" }}>
+          <div style={{ fontSize: "32px", marginBottom: "8px" }}>📋</div>
+          <strong style={{ fontSize: "15px", color: "#2d4233", display: "block" }}>No activity logs recorded yet</strong>
+          <p style={{ fontSize: "12px", color: "#77877c", margin: "6px auto 14px", maxWidth: "460px", lineHeight: 1.5 }}>
+            {searchQuery || categoryFilter !== "All" || roleFilter !== "All"
+              ? "No activities matched your current category or search filters."
+              : "Real customer and platform activities (registrations, logins, searches, WhatsApp leads, phone calls, SOS alerts) will be recorded live here."}
           </p>
         </div>
       )}

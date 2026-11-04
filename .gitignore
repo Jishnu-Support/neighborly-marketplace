@@ -21,3 +21,5 @@ AGENTS.md
 .neighborly-sos-alerts.json
 .neighborly-ad-bookings.json
 .neighborly-agents.json
+.neighborly-activity-logs.json
+.neighborly-customer-accounts.json
