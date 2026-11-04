@@ -12,6 +12,7 @@ import {
 } from "@/app/lib/auth";
 import { getBusinessByIdentity } from "@/app/lib/businesses";
 import { getAgentByIdentity } from "@/app/lib/agents";
+import { saveActivityLog } from "@/app/lib/activity-logs";
 
 export async function POST(request: Request) {
   try {
@@ -102,6 +103,22 @@ export async function POST(request: Request) {
       createSessionToken(matchedRole, identity, matchedAccessLevel),
       authCookieOptions
     );
+
+    // Record persistent login audit activity
+    try {
+      const displayRole = matchedRole === "Account" ? "Customer" : matchedRole === "Company" ? (matchedAccessLevel || "Admin") : matchedRole;
+      await saveActivityLog({
+        action: `${displayRole} login: ${identity}`,
+        category: "Login",
+        actorName: identity,
+        actorRole: (matchedRole === "Account" ? "Customer" : matchedRole === "Company" ? (matchedAccessLevel === "Super Admin" ? "Super Admin" : "Admin") : matchedRole) as any,
+        locality: "Hosur",
+        details: `Successful sign-in to ${displayRole} Portal.`,
+      });
+    } catch {
+      // Non-blocking log
+    }
+
     return response;
   } catch (error) {
     console.error("Login route error:", error);

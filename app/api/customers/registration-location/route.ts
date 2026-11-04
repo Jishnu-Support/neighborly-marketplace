@@ -88,11 +88,22 @@ export async function POST(request: Request) {
 
     const record = await saveCustomerRegistrationLocation({
       name,
+      phone: `+91 ${phone}`,
       phoneLast4: phone.slice(-4),
+      email,
+      doorNo,
+      street,
+      locality,
+      city: "Hosur",
+      pincode,
+      address,
+      emergencyPhones,
+      emergencyNames,
       locationStatus: locationStatus as "shared" | "denied" | "unavailable",
       latitude: shared ? (body.latitude as number) : null,
       longitude: shared ? (body.longitude as number) : null,
-      verificationStatus: "Active · Mobile verified",
+      verificationStatus: "Active · Mobile OTP verified",
+      registrationMethod: "Mobile + OTP Verification & Password",
     });
 
     const response = NextResponse.json(

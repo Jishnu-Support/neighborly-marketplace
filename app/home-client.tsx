@@ -11,6 +11,10 @@ import {
   CompanyAdBookingsManager,
 } from "./ad-booking-components";
 import { CompanyTransactionsManager } from "./company-transactions-components";
+import {
+  CompanyCustomerRegistrationsPanel,
+  CompanyActivityLogsPanel,
+} from "./customer-and-activity-components";
 import { defaultCategoryConfig, legacyDefaultCategoryConfig, type CategoryConfig, type CategorySector } from "./lib/category-config.shared";
 import { defaultRegistrationFormConfig, type RegistrationFormConfig, type RegistrationForm, type RegistrationField } from "./lib/registration-form-config.shared";
 import { buildAutomobileTaxonomyPaths as buildSharedAutomobileTaxonomyPaths, commercialVehicleSubcategories, getVehicleModelsForType as getSharedVehicleModelsForType } from "./lib/vehicle-taxonomy.shared";
@@ -245,12 +249,25 @@ type DemoEvent = {
 type CustomerRegistrationLocation = {
   id: string;
   name: string;
+  phone?: string;
   phoneLast4: string;
+  email?: string;
+  doorNo?: string;
+  street?: string;
+  locality?: string;
+  city?: string;
+  district?: string;
+  state?: string;
+  pincode?: string;
+  address?: string;
+  emergencyPhones?: [string, string];
+  emergencyNames?: [string, string];
   locationStatus: "shared" | "denied" | "unavailable";
   latitude: number | null;
   longitude: number | null;
   registeredAt: string;
   verificationStatus: string;
+  registrationMethod?: string;
 };
 type SosAlert = {
   id: string;
@@ -12614,9 +12631,49 @@ export default function Home() {
     window.setTimeout(() => setNotice(""), 3800);
   }
 
-  function recordEvent(action: string) {
+  function recordEvent(action: string, categoryOverride?: string, detailsOverride?: string) {
     const event: DemoEvent = { id: `${Date.now()}-${Math.random()}`, action, createdAt: new Date().toISOString() };
     setDemoData((current) => ({ ...current, events: [event, ...current.events].slice(0, 100) }));
+
+    const actLower = action.toLowerCase();
+    let category = categoryOverride || "General";
+    if (!categoryOverride) {
+      if (actLower.includes("whatsapp") || actLower.includes("call") || actLower.includes("lead") || actLower.includes("enquir")) {
+        category = "Lead";
+      } else if (actLower.includes("search") || actLower.includes("a-z")) {
+        category = "Search";
+      } else if (actLower.includes("register") || actLower.includes("signup") || actLower.includes("account created")) {
+        category = "Registration";
+      } else if (actLower.includes("login") || actLower.includes("signed in")) {
+        category = "Login";
+      } else if (actLower.includes("sos")) {
+        category = "SOS";
+      } else if (actLower.includes("view") || actLower.includes("profile") || actLower.includes("catalogue")) {
+        category = "View";
+      } else if (actLower.includes("order") || actLower.includes("booking") || actLower.includes("paid")) {
+        category = "Order";
+      } else if (actLower.includes("admin") || actLower.includes("approval") || actLower.includes("verified")) {
+        category = "Admin";
+      }
+    }
+
+    const actorName = currentCustomerProfile?.fullName || (role === "Company" ? (companyAccessLevel === "Super Admin" ? "Super Admin" : "Company Admin") : (role === "Business" ? "Business User" : (role === "Agent" ? "Field Agent" : (sessionIdentity || "Guest Visitor"))));
+    const actorPhone = currentCustomerProfile?.phone || (role === "Account" ? sessionIdentity : undefined);
+    const actorRole = role === "Company" ? (companyAccessLevel === "Super Admin" ? "Super Admin" : "Admin") : (role === "Business" ? "Business" : (role === "Agent" ? "Agent" : "Customer"));
+
+    fetch("/api/activity-logs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action,
+        category,
+        actorName,
+        actorPhone,
+        actorRole,
+        locality: selectedNeighborhood && selectedNeighborhood !== "All Hosur" ? selectedNeighborhood : "Hosur",
+        details: detailsOverride || action,
+      }),
+    }).catch(() => {});
   }
 
   const handleAdAction = (
@@ -13266,9 +13323,28 @@ export default function Home() {
     }
   }
 
-  async function registerCustomerLocation(input: { name: string; phone: string; password?: string; locationStatus: "shared" | "denied" | "unavailable"; latitude: number | null; longitude: number | null }) {
+  async function registerCustomerLocation(input: {
+    name: string;
+    phone: string;
+    password?: string;
+    email?: string;
+    doorNo?: string;
+    street?: string;
+    locality?: string;
+    pincode?: string;
+    address?: string;
+    emergencyPhone1?: string;
+    emergencyPhone2?: string;
+    locationStatus: "shared" | "denied" | "unavailable";
+    latitude: number | null;
+    longitude: number | null;
+  }) {
     try {
-      const response = await fetch("/api/customers/registration-location", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) });
+      const response = await fetch("/api/customers/registration-location", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
       const result = await response.json() as { registration?: { verificationStatus: string }; customer?: { name: string }; error?: string };
       if (!response.ok || !result.registration) throw new Error(result.error || "Could not complete registration.");
       setDialog(null);
@@ -13276,6 +13352,7 @@ export default function Home() {
       setRole("Discover");
       setPortalActiveTab("Overview");
       showNotice(`✓ Account activated! Welcome to Bizearch, ${input.name}.`);
+      recordEvent(`Customer registered account: ${input.name} (+91 ${input.phone})`, "Registration", `Customer ${input.name} registered from ${input.locality || "Hosur"}. Location status: ${input.locationStatus}.`);
     } catch (error) {
       showNotice(error instanceof Error ? error.message : "Could not complete registration.");
     }
@@ -24195,8 +24272,29 @@ function CompanyPortal({
   const pendingApprovalsCount = approvals.filter((b) => b.verificationStatus === "Pending Admin Approval").length;
 
   const tabNames = accessLevel === "Super Admin"
-    ? ["Overview", "Businesses", `Approvals${pendingApprovalsCount > 0 ? ` (${pendingApprovalsCount})` : ""}`, "Agents", "Transactions", "Advertisements", "Categories", "Registration forms", "Customer locations", "Admins", "Activity log", "Safety", "Profile details", "Settings"]
-    : ["Overview", "Businesses", `Approvals${pendingApprovalsCount > 0 ? ` (${pendingApprovalsCount})` : ""}`, "Agents", "Transactions", "Advertisements", "Categories", "Customer locations", "Activity log", "Safety", "Profile details", "Settings"];
+    ? ["Overview", "Businesses", `Approvals${pendingApprovalsCount > 0 ? ` (${pendingApprovalsCount})` : ""}`, "Agents", "Transactions", "Advertisements", "Categories", "Registration forms", "Customer registrations", "Admins", "Activity log", "Safety", "Profile details", "Settings"]
+    : ["Overview", "Businesses", `Approvals${pendingApprovalsCount > 0 ? ` (${pendingApprovalsCount})` : ""}`, "Agents", "Transactions", "Advertisements", "Categories", "Customer registrations", "Activity log", "Safety", "Profile details", "Settings"];
+
+  const loadCustomerRegistrations = useCallback(() => {
+    let cancelled = false;
+    setRegistrationLoading(true);
+    setRegistrationError("");
+    fetch("/api/company/customer-locations", { cache: "no-store" })
+      .then(async (response) => {
+        const result = (await response.json()) as { registrations?: CustomerRegistrationLocation[]; error?: string };
+        if (!response.ok) throw new Error(result.error || "Could not load registration locations.");
+        if (!cancelled) setCustomerRegistrations(result.registrations || []);
+      })
+      .catch((error) => {
+        if (!cancelled) setRegistrationError(error instanceof Error ? error.message : "Could not load registration locations.");
+      })
+      .finally(() => {
+        if (!cancelled) setRegistrationLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (accessLevel !== "Super Admin") return;
@@ -24219,20 +24317,9 @@ function CompanyPortal({
   }, [accessLevel]);
 
   useEffect(() => {
-    if (activeTab !== "Customer locations") return;
-    let cancelled = false;
-    setRegistrationLoading(true);
-    setRegistrationError("");
-    fetch("/api/company/customer-locations", { cache: "no-store" })
-      .then(async (response) => {
-        const result = await response.json() as { registrations?: CustomerRegistrationLocation[]; error?: string };
-        if (!response.ok) throw new Error(result.error || "Could not load registration locations.");
-        if (!cancelled) setCustomerRegistrations(result.registrations || []);
-      })
-      .catch((error) => { if (!cancelled) setRegistrationError(error instanceof Error ? error.message : "Could not load registration locations."); })
-      .finally(() => { if (!cancelled) setRegistrationLoading(false); });
-    return () => { cancelled = true; };
-  }, [activeTab]);
+    if (activeTab !== "Customer registrations" && activeTab !== "Customer locations") return;
+    return loadCustomerRegistrations();
+  }, [activeTab, loadCustomerRegistrations]);
 
   useEffect(() => {
     if (activeTab !== "Safety" || accessLevel !== "Super Admin") return;
@@ -24463,7 +24550,18 @@ function CompanyPortal({
         ))}
       </section>
     )}
-    {activeTab === "Customer locations" && <section className="panel tab-panel"><div className="eyebrow">CONSENTED REGISTRATION LOCATION</div><h2>Customer registration requests</h2><p>Only Company Admins can view this list. Exact coordinates are included only when the customer grants browser location access. Demo requests have a verified mobile number but do not activate an account.</p>{registrationLoading && <p>Loading registration records…</p>}{registrationError && <p className="form-error" role="alert">{registrationError}</p>}{!registrationLoading && !registrationError && customerRegistrations.length === 0 && <EmptyState title="No registration requests yet" text="Customer requests and any shared locations will appear here." />}{customerRegistrations.map((registration) => <div className="listing-row" key={registration.id}><span className="listing-icon lavender">⌖</span><span className="listing-name"><strong>{registration.name}</strong><small>Mobile ending {registration.phoneLast4} · {new Date(registration.registeredAt).toLocaleString()} · {registration.verificationStatus}</small>{registration.locationStatus === "shared" && registration.latitude !== null && registration.longitude !== null && <small>Coordinates: {registration.latitude.toFixed(5)}, {registration.longitude.toFixed(5)}</small>}</span><span className={`status-pill ${registration.locationStatus === "shared" ? "verified" : "pending"}`}>{registration.locationStatus === "shared" ? "Location shared" : registration.locationStatus === "denied" ? "Location denied" : "Location unavailable"}</span></div>)}</section>}    {activeTab === "Businesses" && <><section className="panel tab-panel"><div className="panel-heading"><div><div className="eyebrow">PARTNER DIRECTORY</div><h2>All registered businesses & common places (122 records)</h2></div><div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}><a href="/bizearch-all-122-businesses-and-common-places.xlsx" download="bizearch-all-122-businesses-and-common-places.xlsx" className="primary-button" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", padding: "8px 14px" }}>📊 Export Excel (.xlsx)</a><a href="/bizearch-all-122-businesses-and-common-places.csv" download="bizearch-all-122-businesses-and-common-places.csv" className="outline-button" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", padding: "8px 14px" }}>📄 Export CSV</a></div></div>{businesses.map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category} / {business.products.length} catalogue items / sample distance {business.distance} km</small><small style={{ color: "#166534", fontWeight: 700, display: "block", marginTop: "2px" }}>📞 Phone / WhatsApp: {businessPhoneFor(business)}</small>{business.address && <small>Address: {Object.values(business.address).filter(Boolean).join(", ")}</small>}{business.coordinates && <small>Coordinates: {business.coordinates.latitude.toFixed(6)}, {business.coordinates.longitude.toFixed(6)}</small>}{business.businessModes?.length ? <small>Activity: {business.businessModes.join(", ")}</small> : null}{business.vehicleTypes?.length ? <small>Vehicles: {business.vehicleTypes.join(", ")}</small> : null}{business.vehicleMakes?.length ? <small>Makes: {business.vehicleMakes.join(", ")}</small> : null}{business.vehicleModels?.length ? <small>Models: {business.vehicleModels.join(", ")}</small> : null}</span><span className={`status-pill ${business.subscribed ? "verified" : "pending"}`}>● {business.subscribed ? "Subscribed" : "Pending"}</span></div>)}</section></>}
+    {(activeTab === "Customer registrations" || activeTab === "Customer locations") && (
+      <CompanyCustomerRegistrationsPanel
+        registrations={customerRegistrations}
+        loading={registrationLoading}
+        error={registrationError}
+        onRefresh={loadCustomerRegistrations}
+        onViewCustomerActivity={(_name) => {
+          setActiveTab("Activity log");
+        }}
+      />
+    )}
+    {activeTab === "Businesses" && <><section className="panel tab-panel"><div className="panel-heading"><div><div className="eyebrow">PARTNER DIRECTORY</div><h2>All registered businesses & common places (122 records)</h2></div><div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}><a href="/bizearch-all-122-businesses-and-common-places.xlsx" download="bizearch-all-122-businesses-and-common-places.xlsx" className="primary-button" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", padding: "8px 14px" }}>📊 Export Excel (.xlsx)</a><a href="/bizearch-all-122-businesses-and-common-places.csv" download="bizearch-all-122-businesses-and-common-places.csv" className="outline-button" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", padding: "8px 14px" }}>📄 Export CSV</a></div></div>{businesses.map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category} / {business.products.length} catalogue items / sample distance {business.distance} km</small><small style={{ color: "#166534", fontWeight: 700, display: "block", marginTop: "2px" }}>📞 Phone / WhatsApp: {businessPhoneFor(business)}</small>{business.address && <small>Address: {Object.values(business.address).filter(Boolean).join(", ")}</small>}{business.coordinates && <small>Coordinates: {business.coordinates.latitude.toFixed(6)}, {business.coordinates.longitude.toFixed(6)}</small>}{business.businessModes?.length ? <small>Activity: {business.businessModes.join(", ")}</small> : null}{business.vehicleTypes?.length ? <small>Vehicles: {business.vehicleTypes.join(", ")}</small> : null}{business.vehicleMakes?.length ? <small>Makes: {business.vehicleMakes.join(", ")}</small> : null}{business.vehicleModels?.length ? <small>Models: {business.vehicleModels.join(", ")}</small> : null}</span><span className={`status-pill ${business.subscribed ? "verified" : "pending"}`}>● {business.subscribed ? "Subscribed" : "Pending"}</span></div>)}</section></>}
     {activeTab.startsWith("Approvals") && (
       <section className="panel tab-panel">
         <div className="panel-heading">
@@ -24834,7 +24932,11 @@ function CompanyPortal({
         )}
       </section>
     )}
-    {activeTab === "Activity log" && <section className="panel tab-panel"><div className="panel-heading"><div><div className="eyebrow">LOCAL DEMO AUDIT</div><h2>Recent activity</h2></div><span className="status-pill pending">Browser only</span></div><p>Events are stored locally in this browser and are not sent to the company.</p>{events.length ? events.map((event) => <div className="activity-row" key={event.id}><span className="activity-dot" /><strong>{event.action}</strong><small>{new Date(event.createdAt).toLocaleString()}</small></div>) : <EmptyState title="No activity recorded" text="Searches and selections will appear here as local demo events." />}</section>}
+    {activeTab === "Activity log" && (
+      <CompanyActivityLogsPanel
+        accessLevel={accessLevel}
+      />
+    )}
     {(activeTab === "Transactions" || activeTab === "Billing") && (
       <CompanyTransactionsManager
         businesses={businesses}
@@ -25266,7 +25368,18 @@ function Dialog({
   profileRole: "Account" | "Business" | "Agent" | "Company";
   profileIdentity: string;
   onLogin: (event: React.FormEvent<HTMLFormElement>) => void;
-  onRegisterCustomerLocation: (input: { name: string; phone: string; password?: string; locationStatus: "shared" | "denied" | "unavailable"; latitude: number | null; longitude: number | null }) => Promise<void>;
+  onRegisterCustomerLocation: (input: {
+    name: string;
+    phone: string;
+    password?: string;
+    emergencyPhone1?: string;
+    emergencyPhone2?: string;
+    locality?: string;
+    address?: string;
+    locationStatus: "shared" | "denied" | "unavailable";
+    latitude: number | null;
+    longitude: number | null;
+  }) => Promise<void>;
   onBusiness: (event: React.FormEvent<HTMLFormElement>) => void;
   businesses: Business[];
   categories: CategorySector[];
@@ -25551,7 +25664,17 @@ function Dialog({
     }
     const submitLocation = async (locationStatus: "shared" | "denied" | "unavailable", latitude: number | null = null, longitude: number | null = null) => {
       setRegistrationBusy(true);
-      await onRegisterCustomerLocation({ name, phone, password, locationStatus, latitude, longitude });
+      await onRegisterCustomerLocation({
+        name,
+        phone,
+        password,
+        emergencyPhone1: emergencyPhoneOne,
+        emergencyPhone2: emergencyPhoneTwo,
+        locality: "Hosur",
+        locationStatus,
+        latitude,
+        longitude,
+      });
       setRegistrationBusy(false);
     };
     if (!navigator.geolocation) {
