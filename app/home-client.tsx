@@ -15702,7 +15702,12 @@ export default function Home() {
               <div className="search-main" ref={searchContainerRef} style={{ position: "relative" }}>
                 <label htmlFor="what-search">{t.whatDoYouNeed}</label>
                 <div className="search-input-wrap">
-                  <span className="search-symbol">🔍</span>
+                  <span className="search-symbol" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#2e6840" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <circle cx="11" cy="11" r="8" />
+                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                  </span>
                   <input
                     id="what-search"
                     value={query}
@@ -15773,7 +15778,18 @@ export default function Home() {
                     title={isListening ? "Listening to your voice..." : "Voice search (tap to speak)"}
                     aria-label="Voice search"
                   >
-                    {isListening ? "🔴" : "🎙️"}
+                    {isListening ? (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", color: "#dc2626", fontWeight: 700, fontSize: "11px" }}>
+                        <span style={{ display: "inline-block", width: "7px", height: "7px", borderRadius: "50%", background: "#dc2626" }} />
+                      </span>
+                    ) : (
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3d6247" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                        <line x1="12" y1="19" x2="12" y2="23" />
+                        <line x1="8" y1="23" x2="16" y2="23" />
+                      </svg>
+                    )}
                   </button>
                   <button className="search-submit" onClick={() => searchNearby()}>
                     {t.findNearby} <span>↗</span>
@@ -15986,7 +16002,12 @@ export default function Home() {
                   {t.nearLocality}
                 </label>
                 <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "8px" }}>
-                  <span style={{ fontSize: "16px", color: "#62906a" }}>📍</span>
+                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2e6840" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                      <circle cx="12" cy="10" r="3" />
+                    </svg>
+                  </span>
                   <select
                     id="neighborhood-select"
                     value={selectedNeighborhood}
@@ -16023,39 +16044,39 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Smart Ad Targeting & Locality Indicator Banner */}
-            {adConfig.targetingSummary && (adConfig.targetingSummary.isLocationTargeted || adConfig.targetingSummary.isSearchTargeted) && (
+            {/* Professional Active Search & Locality Filter Status */}
+            {((query.trim() && (adConfig.targetingSummary?.isSearchTargeted || true)) || selectedNeighborhood !== "All Hosur") && (
               <div
                 style={{
-                  margin: "14px 0 8px",
-                  padding: "10px 14px",
-                  borderRadius: "10px",
-                  background: "linear-gradient(90deg, #f0fdf4 0%, #f7fee7 100%)",
-                  border: "1px solid #bbf7d0",
+                  margin: "12px 0 16px",
+                  padding: "9px 14px",
+                  borderRadius: "8px",
+                  background: "#f7faf7",
+                  border: "1px solid #dce6dc",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
                   flexWrap: "wrap",
                   gap: "10px",
-                  boxShadow: "0 2px 6px rgba(22, 101, 52, 0.05)",
+                  boxShadow: "0 1px 4px rgba(22, 60, 32, 0.04)",
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-                  <span style={{ fontSize: "16px" }}>🎯</span>
-                  <div style={{ fontSize: "12px", color: "#166534", fontWeight: 600 }}>
-                    {adConfig.targetingSummary.isSearchTargeted && (
-                      <span style={{ marginRight: "8px" }}>
-                        Search Matched: <strong style={{ color: "#065f46" }}>"{query.trim()}"</strong>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2e6840" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                  <div style={{ fontSize: "12px", color: "#22422b", fontWeight: 600 }}>
+                    {query.trim() && (
+                      <span style={{ marginRight: "10px" }}>
+                        Results for: <strong style={{ color: "#16592d", fontWeight: 700 }}>"{query.trim()}"</strong>
                       </span>
                     )}
-                    {adConfig.targetingSummary.isLocationTargeted && (
+                    {selectedNeighborhood !== "All Hosur" && (
                       <span>
-                        Surrounding Locality: <strong style={{ color: "#065f46" }}>📍 {selectedNeighborhood} ({radius} km radius)</strong>
+                        Locality: <strong style={{ color: "#16592d", fontWeight: 700 }}>{selectedNeighborhood} ({radius} km radius)</strong>
                       </span>
                     )}
-                    <span style={{ marginLeft: "6px", color: "#65a30d", fontSize: "11px", fontWeight: 500 }}>
-                      • {adConfig.targetingSummary.matchingAdsCount} matching ad{adConfig.targetingSummary.matchingAdsCount !== 1 ? "s" : ""} prioritized
-                    </span>
                   </div>
                 </div>
 
@@ -16066,16 +16087,16 @@ export default function Home() {
                       onClick={() => setSelectedNeighborhood("All Hosur")}
                       style={{
                         background: "#ffffff",
-                        border: "1px solid #86efac",
-                        color: "#166534",
+                        border: "1px solid #c8d9cc",
+                        color: "#244f31",
                         fontSize: "11px",
-                        fontWeight: 700,
-                        padding: "4px 9px",
+                        fontWeight: 600,
+                        padding: "4px 10px",
                         borderRadius: "6px",
                         cursor: "pointer",
                       }}
                     >
-                      Show All Hosur
+                      All Hosur ✕
                     </button>
                   )}
                   {query.trim() && (
@@ -16084,23 +16105,22 @@ export default function Home() {
                       onClick={() => setQuery("")}
                       style={{
                         background: "#ffffff",
-                        border: "1px solid #86efac",
-                        color: "#166534",
+                        border: "1px solid #c8d9cc",
+                        color: "#244f31",
                         fontSize: "11px",
-                        fontWeight: 700,
-                        padding: "4px 9px",
+                        fontWeight: 600,
+                        padding: "4px 10px",
                         borderRadius: "6px",
                         cursor: "pointer",
                       }}
                     >
-                      Clear Search
+                      Clear search ✕
                     </button>
                   )}
                 </div>
               </div>
             )}
 
-            
             {(() => {
               const categoriesSection = (
                 <div className="categories-browse-section">
@@ -16378,86 +16398,6 @@ export default function Home() {
                     >
                       {term}
                     </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {query.trim() && relatedProducts.length > 0 && (searchFilterTab === "all" || searchFilterTab === "products") && (
-              <div className="related-products-shelf" style={{ background: "#fbfdfa", border: "1px solid #e1ebe0", borderRadius: "12px", padding: "16px 18px 18px", margin: "0 0 24px", boxShadow: "0 2px 8px rgba(30,50,35,0.03)" }}>
-                <div className="related-shelf-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", gap: "8px", flexWrap: "wrap" }}>
-                  <div>
-                    <div className="shelf-eyebrow" style={{ font: "800 9px Manrope, sans-serif", letterSpacing: "0.8px", color: "#4b7a57", textTransform: "uppercase", marginBottom: "3px" }}>RELATED PRODUCTS & SERVICES</div>
-                    <h3 className="shelf-title" style={{ font: "700 14px Manrope, sans-serif", color: "#1a3020", margin: 0 }}>Popular items related to “{query.trim()}”</h3>
-                  </div>
-                  <span className="shelf-count" style={{ font: "700 10px Manrope, sans-serif", color: "#386244", background: "#e7f2e6", padding: "3px 9px", borderRadius: "12px", border: "1px solid #d5e5d4" }}>{relatedProducts.length} items</span>
-                </div>
-                <div className="related-products-scroll" style={{ display: "flex", flexDirection: "row", gap: "14px", overflowX: "auto", padding: "4px 2px 10px", WebkitOverflowScrolling: "touch" }}>
-                  {relatedProducts.map(({ product, business }) => (
-                    <div className="related-product-card" key={`${business.name}-${product.id}`} style={{ flex: "0 0 270px", width: "270px", minWidth: "270px", background: "#ffffff", border: "1px solid #e2ede0", borderRadius: "10px", padding: "14px 15px", display: "flex", flexDirection: "column", justifyContent: "space-between", boxSizing: "border-box" }}>
-                      <div>
-                        <div className="related-product-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px", marginBottom: "6px" }}>
-                          <span className="related-product-name" title={product.name} style={{ font: "700 12.5px Manrope, sans-serif", color: "#1c3222", lineHeight: 1.3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "165px" }}>{highlightMatch(product.name, query)}</span>
-                          <span className="related-product-price" style={{ font: "700 11.5px Manrope, sans-serif", color: "#256037", background: "#edf6ec", padding: "2px 7px", borderRadius: "5px", whiteSpace: "nowrap" }}>
-                            ₹{product.price.toLocaleString("en-IN")}{product.unit ? <small style={{ fontSize: "8.5px", color: "#6a7c6f", fontWeight: 500 }}> /{product.unit}</small> : null}
-                          </span>
-                        </div>
-                        <p className="related-product-desc" style={{ font: "10px/1.45 'DM Sans', sans-serif", color: "#6d7f71", margin: "6px 0 12px" }}>{highlightMatch(product.description, query)}</p>
-                      </div>
-                      <div className="related-product-footer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "6px", paddingTop: "10px", borderTop: "1px solid #f0f5ef", flexWrap: "wrap" }}>
-                        <button
-                          type="button"
-                          className="related-product-provider"
-                          style={{ border: "1px solid #e4eee3", background: "#f7faf6", display: "inline-flex", alignItems: "center", gap: "5px", font: "600 9.5px Manrope, sans-serif", color: "#36593e", cursor: "pointer", padding: "4px 8px", borderRadius: "5px", maxWidth: "140px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
-                          onClick={() => {
-                            setBusinessModalTab("products");
-                            setSelectedBusiness(business);
-                          }}
-                          title={`View ${business.name}`}
-                        >
-                          <span>{business.icon}</span>
-                          <span className="provider-name-truncate" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{business.name}</span>
-                          <span className="provider-dist" style={{ fontSize: "8.5px", color: "#7a8a7d" }}>· {businessDistance(business).toFixed(1)} km</span>
-                        </button>
-                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                          <button
-                            type="button"
-                            className="related-product-navigate-btn"
-                            style={{ border: "1px solid #c9dcc8", background: "#f3f8f2", color: "#2d693f", borderRadius: "5px", padding: "6px 9px", font: "700 9.5px Manrope, sans-serif", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px", whiteSpace: "nowrap" }}
-                            onClick={() => {
-                              setBusinessModalTab("navigation");
-                              setSelectedBusiness(business);
-                              recordEvent(`Product navigate clicked: ${product.name}`);
-                            }}
-                            title={`Navigate to ${business.name} from your location`}
-                          >
-                            <span>🧭</span> Navigate
-                          </button>
-                          <button
-                            type="button"
-                            className="related-product-order-btn"
-                            style={{ border: 0, background: "#0f766e", color: "#ffffff", borderRadius: "5px", padding: "6px 11px", font: "700 9.5px Manrope, sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}
-                            onClick={() => {
-                              setOrderingItem({ business, product });
-                              recordEvent(`Related product order clicked: ${product.name}`);
-                            }}
-                          >
-                            🛍️ Order
-                          </button>
-                          <button
-                            type="button"
-                            className="related-product-enquire-btn"
-                            style={{ border: 0, background: "#386b4b", color: "#ffffff", borderRadius: "5px", padding: "6px 11px", font: "700 9.5px Manrope, sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}
-                            onClick={() => {
-                              setEnquiryProduct({ business, product });
-                              recordEvent(`Related product enquiry: ${product.name}`);
-                            }}
-                          >
-                            Enquire ↗
-                          </button>
-                        </div>
-                      </div>
-                    </div>
                   ))}
                 </div>
               </div>
@@ -16770,6 +16710,86 @@ export default function Home() {
                   </div>
                 )}
               </>
+            )}
+
+            {query.trim() && relatedProducts.length > 0 && (searchFilterTab === "all" || searchFilterTab === "products") && (
+              <div className="related-products-shelf" style={{ background: "#fbfdfa", border: "1px solid #e1ebe0", borderRadius: "12px", padding: "16px 18px 18px", margin: "0 0 24px", boxShadow: "0 2px 8px rgba(30,50,35,0.03)" }}>
+                <div className="related-shelf-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", gap: "8px", flexWrap: "wrap" }}>
+                  <div>
+                    <div className="shelf-eyebrow" style={{ font: "800 9px Manrope, sans-serif", letterSpacing: "0.8px", color: "#4b7a57", textTransform: "uppercase", marginBottom: "3px" }}>RELATED PRODUCTS & SERVICES</div>
+                    <h3 className="shelf-title" style={{ font: "700 14px Manrope, sans-serif", color: "#1a3020", margin: 0 }}>Popular items related to “{query.trim()}”</h3>
+                  </div>
+                  <span className="shelf-count" style={{ font: "700 10px Manrope, sans-serif", color: "#386244", background: "#e7f2e6", padding: "3px 9px", borderRadius: "12px", border: "1px solid #d5e5d4" }}>{relatedProducts.length} items</span>
+                </div>
+                <div className="related-products-scroll" style={{ display: "flex", flexDirection: "row", gap: "14px", overflowX: "auto", padding: "4px 2px 10px", WebkitOverflowScrolling: "touch" }}>
+                  {relatedProducts.map(({ product, business }) => (
+                    <div className="related-product-card" key={`${business.name}-${product.id}`} style={{ flex: "0 0 270px", width: "270px", minWidth: "270px", background: "#ffffff", border: "1px solid #e2ede0", borderRadius: "10px", padding: "14px 15px", display: "flex", flexDirection: "column", justifyContent: "space-between", boxSizing: "border-box" }}>
+                      <div>
+                        <div className="related-product-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px", marginBottom: "6px" }}>
+                          <span className="related-product-name" title={product.name} style={{ font: "700 12.5px Manrope, sans-serif", color: "#1c3222", lineHeight: 1.3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "165px" }}>{highlightMatch(product.name, query)}</span>
+                          <span className="related-product-price" style={{ font: "700 11.5px Manrope, sans-serif", color: "#256037", background: "#edf6ec", padding: "2px 7px", borderRadius: "5px", whiteSpace: "nowrap" }}>
+                            ₹{product.price.toLocaleString("en-IN")}{product.unit ? <small style={{ fontSize: "8.5px", color: "#6a7c6f", fontWeight: 500 }}> /{product.unit}</small> : null}
+                          </span>
+                        </div>
+                        <p className="related-product-desc" style={{ font: "10px/1.45 'DM Sans', sans-serif", color: "#6d7f71", margin: "6px 0 12px" }}>{highlightMatch(product.description, query)}</p>
+                      </div>
+                      <div className="related-product-footer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "6px", paddingTop: "10px", borderTop: "1px solid #f0f5ef", flexWrap: "wrap" }}>
+                        <button
+                          type="button"
+                          className="related-product-provider"
+                          style={{ border: "1px solid #e4eee3", background: "#f7faf6", display: "inline-flex", alignItems: "center", gap: "5px", font: "600 9.5px Manrope, sans-serif", color: "#36593e", cursor: "pointer", padding: "4px 8px", borderRadius: "5px", maxWidth: "140px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                          onClick={() => {
+                            setBusinessModalTab("products");
+                            setSelectedBusiness(business);
+                          }}
+                          title={`View ${business.name}`}
+                        >
+                          <span>{business.icon}</span>
+                          <span className="provider-name-truncate" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{business.name}</span>
+                          <span className="provider-dist" style={{ fontSize: "8.5px", color: "#7a8a7d" }}>· {businessDistance(business).toFixed(1)} km</span>
+                        </button>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <button
+                            type="button"
+                            className="related-product-navigate-btn"
+                            style={{ border: "1px solid #c9dcc8", background: "#f3f8f2", color: "#2d693f", borderRadius: "5px", padding: "6px 9px", font: "700 9.5px Manrope, sans-serif", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px", whiteSpace: "nowrap" }}
+                            onClick={() => {
+                              setBusinessModalTab("navigation");
+                              setSelectedBusiness(business);
+                              recordEvent(`Product navigate clicked: ${product.name}`);
+                            }}
+                            title={`Navigate to ${business.name} from your location`}
+                          >
+                            <span>🧭</span> Navigate
+                          </button>
+                          <button
+                            type="button"
+                            className="related-product-order-btn"
+                            style={{ border: 0, background: "#0f766e", color: "#ffffff", borderRadius: "5px", padding: "6px 11px", font: "700 9.5px Manrope, sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}
+                            onClick={() => {
+                              setOrderingItem({ business, product });
+                              recordEvent(`Related product order clicked: ${product.name}`);
+                            }}
+                          >
+                            🛍️ Order
+                          </button>
+                          <button
+                            type="button"
+                            className="related-product-enquire-btn"
+                            style={{ border: 0, background: "#386b4b", color: "#ffffff", borderRadius: "5px", padding: "6px 11px", font: "700 9.5px Manrope, sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}
+                            onClick={() => {
+                              setEnquiryProduct({ business, product });
+                              recordEvent(`Related product enquiry: ${product.name}`);
+                            }}
+                          >
+                            Enquire ↗
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
                 </div>
               );

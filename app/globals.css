@@ -567,7 +567,7 @@ h1 em{font-family:var(--serif);font-weight:400;color:#507959;letter-spacing:-1px
 .hero-star{position:absolute;right:0;top:59px;color:#db9c60;font-size:21px}.hero-dot{position:absolute;border-radius:50%;background:#e3ad7f}.dot-one{width:8px;height:8px;left:27px;top:79px}.dot-two{width:5px;height:5px;right:49px;top:32px;background:#81a380}
 .search-panel{background:#fff;border:1px solid #e7ebe6;border-radius:10px;display:flex;align-items:center;padding:18px 21px;box-shadow:0 8px 28px rgba(42,67,47,.045);margin:0 0 41px}
 .search-main{flex:1}.search-panel label{font-size:9px;color:#858f87;letter-spacing:.85px;font-weight:700}.search-panel label strong{color:#3d6247}
-.search-input-wrap{display:flex;align-items:center;margin-top:8px}.search-symbol{font-size:26px;color:#719078;margin-right:10px;transform:rotate(-20deg)}
+.search-input-wrap{display:flex;align-items:center;margin-top:8px;background:#fbfdfa;border:1px solid #d8e2d9;border-radius:8px;padding:3px 6px 3px 10px;transition:border-color .2s,box-shadow .2s}.search-input-wrap:focus-within{border-color:#2a5e3a;background:#fff;box-shadow:0 0 0 3px rgba(42,94,58,.1)}.search-symbol{display:inline-flex;align-items:center;justify-content:center;color:#2e6840;margin-right:8px;transform:none}
 .search-input-wrap input{border:0;outline:0;flex:1;min-width:0;color:#304036;font-size:13px}.search-input-wrap input::placeholder{color:#adb4ad}
 .search-submit,.primary-button{border:0;background:#386b4b;color:white;padding:12px 16px;border-radius:6px;font-size:10px;font-weight:700;transition:background .2s}.search-submit:hover,.primary-button:hover{background:#28553a}.search-submit span{margin-left:13px}
 .search-divider{height:47px;width:1px;background:#edf0ec;margin:0 25px}
@@ -3836,13 +3836,15 @@ html, body {
 
   /* 7. Search Panel & Controls Full Width */
   .search-panel {
-    padding: 14px !important;
+    padding: 14px 16px !important;
     display: flex !important;
     flex-direction: column !important;
     gap: 12px !important;
     width: 100% !important;
     box-sizing: border-box !important;
-    margin-bottom: 24px !important;
+    margin-bottom: 20px !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 18px rgba(30,50,35,.05) !important;
   }
   .search-divider {
     display: none !important;
@@ -3850,9 +3852,13 @@ html, body {
   .neighborhood-control {
     width: 100% !important;
     flex-shrink: 1 !important;
+    padding-top: 10px !important;
+    border-top: 1px solid #edf2ee !important;
   }
   .radius-control {
     width: 100% !important;
+    padding-top: 10px !important;
+    border-top: 1px solid #edf2ee !important;
   }
   .search-submit {
     padding: 11px 14px !important;
