@@ -19,21 +19,24 @@ export async function POST(request: Request) {
     if (!isPortalRole(body.role) || typeof body.identity !== "string" || typeof body.password !== "string") {
       return NextResponse.json({ error: "Enter a valid portal, email and password." }, { status: 400 });
     }
-    if (body.role === "Company" ? (!isCompanyAccessLevel(body.accessLevel) && !isSuperAdminIdentity(body.identity)) : body.accessLevel !== undefined) {
-      return NextResponse.json({ error: "Choose a valid company account type." }, { status: 400 });
-    }
-    let accessLevel = body.role === "Company" ? (body.accessLevel as "Admin" | "Super Admin" || "Admin") : undefined;
-    if (body.role === "Company" && isSuperAdminIdentity(body.identity)) {
-      accessLevel = "Super Admin";
-    }
 
     let matchedRole: PortalRole | null = null;
-    let matchedAccessLevel: "Admin" | "Super Admin" | undefined = accessLevel;
+    let matchedAccessLevel: "Admin" | "Super Admin" | undefined = undefined;
 
-    if (await verifyCredentials(body.role, body.identity, body.password, accessLevel)) {
+    if (body.role === "Company") {
+      if (await verifyCredentials("Company", body.identity, body.password, "Super Admin")) {
+        matchedRole = "Company";
+        matchedAccessLevel = "Super Admin";
+      } else if (await verifyCredentials("Company", body.identity, body.password, "Admin")) {
+        matchedRole = "Company";
+        matchedAccessLevel = "Admin";
+      }
+    } else if (await verifyCredentials(body.role, body.identity, body.password)) {
       matchedRole = body.role;
-      matchedAccessLevel = accessLevel;
-    } else {
+      matchedAccessLevel = undefined;
+    }
+
+    if (!matchedRole) {
       // Auto-detect portal if user submitted credentials on a different portal tab:
       // 1. Check Business
       if (body.role !== "Business" && (await verifyCredentials("Business", body.identity, body.password))) {

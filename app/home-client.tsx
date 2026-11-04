@@ -24624,7 +24624,7 @@ function CompanyPortal({
           </label>
           <label>
             {companyAdminLabel("password", "Temporary password")}
-            <input name="password" type="password" minLength={10} autoComplete="new-password" placeholder="At least 10 characters" required />
+            <input name="password" type="password" minLength={6} autoComplete="new-password" placeholder="At least 6 characters" required />
           </label>
           <button className="primary-button" type="submit">Create Admin account</button>
           {adminError && <span className="form-error" role="alert">{adminError}</span>}

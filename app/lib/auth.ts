@@ -215,6 +215,7 @@ export async function getCustomerByIdentity(identity: string): Promise<CustomerA
   const customer = customers.find((c) => {
     if (!c.active) return false;
     if (c.email && c.email.toLowerCase() === normalizedIdentity) return true;
+    if (c.name && c.name.toLowerCase() === normalizedIdentity) return true;
     const cDigits = c.phone.replace(/\D/g, "");
     if (cleanDigits.length >= 8 && (cDigits === cleanDigits || cDigits.endsWith(cleanDigits) || cleanDigits.endsWith(cDigits))) {
       return true;
@@ -267,7 +268,11 @@ export async function verifyCredentials(role: PortalRole, identity: string, pass
       return (normalizedIdentity === adminEmail || normalizedIdentity === "admin@bizearch.in") && password === adminPassword;
     }
     if (accessLevel !== "Admin" && !isSuperAdminIdentity(normalizedIdentity)) return false;
-    const admin = (await readAdminRecords()).find((item) => item.email === normalizedIdentity && item.active);
+    const admin = (await readAdminRecords()).find(
+      (item) =>
+        (item.email.toLowerCase() === normalizedIdentity || item.name.toLowerCase() === normalizedIdentity) &&
+        item.active
+    );
     return Boolean(admin && passwordsMatch(password, admin.salt, admin.passwordHash));
   }
   if (role === "Account") {
@@ -460,8 +465,8 @@ export async function updateCompanyAdmin(input: {
   }
 
   if (typeof input.password === "string" && input.password.trim() !== "") {
-    if (input.password.length < 10) {
-      throw new Error("Password must be at least 10 characters.");
+    if (input.password.length < 6) {
+      throw new Error("Password must be at least 6 characters.");
     }
     const salt = randomBytes(16).toString("hex");
     selectedAdmin.salt = salt;
@@ -476,7 +481,7 @@ export async function updateCompanyAdmin(input: {
 export async function getCompanyAdminByIdentity(identity: string): Promise<CompanyAdmin | null> {
   const normalized = identity.trim().toLowerCase();
   const admins = await readAdminRecords();
-  const match = admins.find((a) => a.email.trim().toLowerCase() === normalized);
+  const match = admins.find((a) => a.email.trim().toLowerCase() === normalized || a.name.trim().toLowerCase() === normalized || a.id === identity);
   if (match) {
     const { salt: _s, passwordHash: _p, ...publicAdmin } = match;
     return publicAdmin;

@@ -108,6 +108,7 @@ export async function verifyAgentCredentials(identity: string, password: string)
   const agent = agents.find((a) => {
     if (!a.active) return false;
     if (a.email && a.email.toLowerCase() === normalizedIdentity) return true;
+    if (a.name && a.name.toLowerCase() === normalizedIdentity) return true;
     if (a.referralCode && a.referralCode.toLowerCase() === normalizedIdentity) return true;
     const aDigits = a.phone.replace(/\D/g, "");
     if (cleanDigits.length >= 8 && (aDigits === cleanDigits || aDigits.endsWith(cleanDigits) || cleanDigits.endsWith(aDigits))) {
@@ -140,6 +141,7 @@ export async function getAgentByIdentity(identity: string): Promise<AgentPartner
   const agent = agents.find((a) => {
     if (a.id === identity) return true;
     if (a.email && a.email.toLowerCase() === normalizedIdentity) return true;
+    if (a.name && a.name.toLowerCase() === normalizedIdentity) return true;
     if (a.referralCode && a.referralCode.toLowerCase() === normalizedIdentity) return true;
     const aDigits = a.phone.replace(/\D/g, "");
     if (cleanDigits.length >= 8 && (aDigits === cleanDigits || aDigits.endsWith(cleanDigits) || cleanDigits.endsWith(aDigits))) {

@@ -23,8 +23,8 @@ export async function POST(request: Request) {
     const name = typeof body.name === "string" ? body.name.trim() : "";
     const email = typeof body.email === "string" ? body.email.trim() : "";
     const password = typeof body.password === "string" ? body.password : "";
-    if (!name || name.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.length < 10) {
-      return NextResponse.json({ error: "Enter a name, valid email and password of at least 10 characters." }, { status: 400 });
+    if (!name || name.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.length < 6) {
+      return NextResponse.json({ error: "Enter a name, valid email and password of at least 6 characters." }, { status: 400 });
     }
     const admin = await registerCompanyAdmin(name, email, password);
     return NextResponse.json({ admin }, { status: 201 });
