@@ -354,7 +354,7 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
         try { sessionStorage.removeItem("neighborly_login_location"); } catch { /* Sign-in does not depend on browser storage. */ }
         setMessage("Sign in successful. Redirecting to portal…");
       }
-      window.location.replace(targetUrl);
+      setTimeout(() => { window.location.href = targetUrl; }, 150);
     } catch (error) {
       setIsSuccess(false);
       setMessage(error instanceof Error ? error.message : "Could not sign in. Please try again.");

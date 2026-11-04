@@ -12,6 +12,12 @@ export default function ErrorBoundary({
   useEffect(() => {
     console.error("Bizearch application error:", error);
 
+    // If it's an internal Next.js redirect thrown during navigation, route immediately
+    if (error?.digest?.startsWith("NEXT_REDIRECT") || error?.message?.includes("NEXT_REDIRECT")) {
+      window.location.href = "/";
+      return;
+    }
+
     // Automatically recover without showing error message to the user
     try {
       const attempts = parseInt(sessionStorage.getItem("bizearch_auto_retry") || "0", 10);
