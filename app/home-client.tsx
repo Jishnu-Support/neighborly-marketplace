@@ -402,7 +402,7 @@ const initialNotifications: MarketplaceNotification[] = [
 
 const NOTIF_STORAGE_KEY = "neighborly-notifications-v2";
 
-const STORAGE_KEY = "neighborly-demo-v3";
+const STORAGE_KEY = "neighborly-demo-v4";
 const vehicleTypeOptions = ["Two wheeler", "Three wheeler", "Four wheeler", "Multi wheel / commercial"];
 const vehicleMakesByType: Record<string, string[]> = {
   "Two wheeler": ["TVS", "Hero", "Honda", "Bajaj", "Royal Enfield", "Suzuki", "Yamaha", "KTM", "Jawa", "Yezdi", "Triumph", "BMW Motorrad", "Kawasaki", "Ducati", "Aprilia", "Vespa", "Ather Energy", "Ola Electric", "Revolt Motors", "Ampere", "Ultraviolette", "Simple Energy", "Other / not listed"],
@@ -1968,8 +1968,8 @@ const initialBusinesses: Business[] = [
     "phone": "+91 89403 00777",
     "address": {
       "doorNumber": "TVS Tower, No. 42/1-A",
-      "street": "Bagalur Main Road",
-      "area": "Avalapalli Hudco Circle",
+      "street": "Bagalur Road",
+      "area": "Opp. HUDCO Police Station, Avalapalli HUDCO",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -2041,13 +2041,13 @@ const initialBusinesses: Business[] = [
     "phone": "+91 80625 10258",
     "address": {
       "doorNumber": "Plot No. 14, ARENA Campus",
-      "street": "Bangalore - Salem NH 44 Bypass",
-      "area": "Opp. MGR Central Bus Stand",
+      "street": "NH 44 Bangalore - Salem Highway",
+      "area": "Perandapalli",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635126"
+      "pincode": "635109"
     },
     "coordinates": {
       "latitude": 12.7425,
@@ -2115,7 +2115,7 @@ const initialBusinesses: Business[] = [
     "address": {
       "doorNumber": "Survey No. 89/1B",
       "street": "NH 44 Bangalore - Salem Highway",
-      "area": "Near SIPCOT Phase 1 Entrance",
+      "area": "Mookandapalli, Near SIPCOT Phase 1",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -2283,8 +2283,8 @@ const initialBusinesses: Business[] = [
     "description": "Tata-owned Croma electronics superstore in Hosur. Large floor with phones, laptops, TVs, appliances and extended warranty service.",
     "distance": 1.6,
     "demoCoordinates": {
-      "latitude": 12.7418,
-      "longitude": 77.8335
+      "latitude": 12.738972,
+      "longitude": 77.83211
     },
     "rating": 4.5,
     "reviews": 412,
@@ -2312,9 +2312,9 @@ const initialBusinesses: Business[] = [
     "tag": "Popular nearby",
     "phone": "+91 88677 03202",
     "address": {
-      "doorNumber": "Ground & 1st Floor, Croma Landmark",
-      "street": "Bangalore - Salem NH 44 Highway",
-      "area": "Near MGR Central Bus Stand Flyover",
+      "doorNumber": "No. 75",
+      "street": "Bagalur Road",
+      "area": "Avalapalli HUDCO, Opp. Pantaloons",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -2322,8 +2322,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.7418,
-      "longitude": 77.8335
+      "latitude": 12.738972,
+      "longitude": 77.83211
     }
   },
   {
@@ -2384,9 +2384,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94432 53776",
     "address": {
-      "doorNumber": "No. 18, 1st Floor, Sri Balaji Complex",
-      "street": "Bagalur Main Road",
-      "area": "Avalapalli HUDCO Signal",
+      "doorNumber": "Building No. 69/15-A",
+      "street": "Bagalur Road",
+      "area": "T.N.H.W.C.S. Co-optex Complex, Surya Nagar",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -2469,9 +2469,9 @@ const initialBusinesses: Business[] = [
     "tag": "Local favourite",
     "phone": "+91 99656 16551",
     "address": {
-      "doorNumber": "No. 45",
-      "street": "MG Road (Mahatma Gandhi Road)",
-      "area": "Gandhi Statue Circle, Bazaar",
+      "doorNumber": "No. 60A",
+      "street": "Taluk Office Road",
+      "area": "Hanumanthapuram, Near Bagalur Circle",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -2623,9 +2623,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 75400 98451",
     "address": {
-      "doorNumber": "2nd Floor, Grand Plaza",
-      "street": "Bagalur Main Road",
-      "area": "Near Municipal Corporation Office",
+      "doorNumber": "Plot No. 12",
+      "street": "Outer Ring Road",
+      "area": "Opposite 3M Car Care",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -2700,9 +2700,9 @@ const initialBusinesses: Business[] = [
     "tag": "Local favourite",
     "phone": "+91 90036 33838",
     "address": {
-      "doorNumber": "Oasis Highway Plaza",
-      "street": "Bangalore - Salem NH 44 Highway",
-      "area": "Opp. Ashok Leyland Unit 1",
+      "doorNumber": "S.F. No. 367/1",
+      "street": "NH 44 Krishnagiri - Bangalore Highway",
+      "area": "Near Muthumariamman Kovil, Dharga, SIPCOT",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -2770,14 +2770,14 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 277199",
     "address": {
-      "doorNumber": "Highway Food Court Campus",
-      "street": "NH 44 Bangalore - Salem Highway",
-      "area": "Opp. Ashok Leyland Unit 1, SIPCOT",
+      "doorNumber": "Survey No. 527/2A",
+      "street": "Bagalur Road",
+      "area": "Saptagiri Nagar, Teachers Colony",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635126"
+      "pincode": "635109"
     },
     "coordinates": {
       "latitude": 12.7518,
@@ -2860,8 +2860,8 @@ const initialBusinesses: Business[] = [
     "phone": "04344 222417",
     "address": {
       "doorNumber": "Uzhavar Santhai Complex",
-      "street": "Denkanikottai Main Road",
-      "area": "Near Old Bus Stand & Sub-Jail Ground",
+      "street": "Ulavar Sandhai Road",
+      "area": "Shanthi Nagar, Near Old Bus Stand",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -2933,9 +2933,9 @@ const initialBusinesses: Business[] = [
     "tag": "Verified business",
     "phone": "04344 241590",
     "address": {
-      "doorNumber": "No. 84, Ground Floor",
+      "doorNumber": "No. 69/A, Ground Floor",
       "street": "Bagalur Main Road",
-      "area": "Opp. Avalapalli HUDCO Police Station",
+      "area": "Teachers Colony",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -3010,9 +3010,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 89406 08608",
     "address": {
-      "doorNumber": "No. 1, Hospital Road",
-      "street": "Denkanikottai Main Road",
-      "area": "Near Old Bus Stand",
+      "doorNumber": "Door No. 6/889",
+      "street": "Bagalur Road",
+      "area": "Near IOC Petrol Bunk, NGGO's Colony",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -3107,9 +3107,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 70943 91762",
     "address": {
-      "doorNumber": "No. 14, 1st Floor",
-      "street": "Kamaraj Colony 2nd Cross",
-      "area": "Near Railway Station Road",
+      "doorNumber": "No. 5/74 & 71",
+      "street": "Bagalur Road",
+      "area": "Avalapalli HUDCO, Near Pallavai Supermarket",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -3177,9 +3177,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 98400 77747",
     "address": {
-      "doorNumber": "Instyle Tower, No. 34",
+      "doorNumber": "No. 6/4-7",
       "street": "Nethaji Road",
-      "area": "Gandhi Nagar / Bazaar",
+      "area": "Near Bagalur Circle, Anna Nagar",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -3259,9 +3259,9 @@ const initialBusinesses: Business[] = [
     "tag": "Trusted brand",
     "phone": "04344 241515",
     "address": {
-      "doorNumber": "GRT Landmark, No. 110",
-      "street": "MG Road (Mahatma Gandhi Road)",
-      "area": "Near MGR Central Bus Stand Incline",
+      "doorNumber": "No. 6",
+      "street": "Bagalur Road",
+      "area": "Rajeev Nagar, Opp. New Dinnur Bus Stop",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -3336,14 +3336,14 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 297777",
     "address": {
-      "doorNumber": "Nilgiris Building, No. 19/2",
-      "street": "Denkanikottai Main Road",
-      "area": "Kamaraj Colony Junction",
+      "doorNumber": "Nilgiris Building",
+      "street": "SIPCOT Housing Colony Main Road",
+      "area": "SIPCOT Phase I",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635109"
+      "pincode": "635126"
     },
     "coordinates": {
       "latitude": 12.7328,
@@ -3670,8 +3670,8 @@ const initialBusinesses: Business[] = [
     "description": "Fortune Hosur — premium ITC Hotels property. Business and leisure hotel with spa, restaurant, conference rooms and modern amenities.",
     "distance": 3.2,
     "demoCoordinates": {
-      "latitude": 12.7602,
-      "longitude": 77.8085
+      "latitude": 12.726691,
+      "longitude": 77.852914
     },
     "rating": 4.8,
     "reviews": 522,
@@ -3693,18 +3693,18 @@ const initialBusinesses: Business[] = [
     "tag": "Premium stay",
     "phone": "04344 261111",
     "address": {
-      "doorNumber": "Plot No. 115/1",
-      "street": "Bangalore - Salem Highway NH 44",
-      "area": "SIPCOT Industrial Complex Phase 1",
+      "doorNumber": "No. 422",
+      "street": "NH 44 Bangalore - Salem Highway",
+      "area": "SIPCOT Phase II",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635126"
+      "pincode": "635109"
     },
     "coordinates": {
-      "latitude": 12.7602,
-      "longitude": 77.8085
+      "latitude": 12.726691,
+      "longitude": 77.852914
     }
   },
   {
@@ -3752,14 +3752,14 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 667600",
     "address": {
-      "doorNumber": "Plot No. 98-A",
-      "street": "SIPCOT Phase 1 Main Avenue",
-      "area": "Near Kauvery Hospital, SIPCOT",
+      "doorNumber": "D. No. 3/24",
+      "street": "Krishnagiri Main Road (NH 44)",
+      "area": "Seetharam Nagar",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635126"
+      "pincode": "635109"
     },
     "coordinates": {
       "latitude": 12.7585,
@@ -4253,9 +4253,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 95000 90728",
     "address": {
-      "doorNumber": "Velan Complex, No. 104",
-      "street": "Denkanikottai Main Road",
-      "area": "Near Old ASTC HUDCO Colony",
+      "doorNumber": "Survey No. 63/A1",
+      "street": "Denkanikotta Main Road",
+      "area": "Kumaran Nagar, Opp. Hosur Railway Station",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -4324,14 +4324,14 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 98949 23030",
     "address": {
-      "doorNumber": "Saravana Arcade, Plot No. 5",
-      "street": "Bangalore - Salem Highway NH 44",
-      "area": "Near SIPCOT Phase 1",
+      "doorNumber": "Ground Floor",
+      "street": "Krishnagiri Bye Pass Road",
+      "area": "Sanasandiram, Opp. Hotel Peppermint",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635126"
+      "pincode": "635109"
     },
     "coordinates": {
       "latitude": 12.754,
@@ -4687,14 +4687,14 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 80717 28966",
     "address": {
-      "doorNumber": "Reliance Digital Complex, No. 54",
-      "street": "Bagalur Main Road",
-      "area": "Near Sub-Collector Office / ASTC",
+      "doorNumber": "No. 206",
+      "street": "SIPCOT Housing Colony Main Road",
+      "area": "Mookandapalli, Near The Chennai Silks",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635109"
+      "pincode": "635126"
     },
     "coordinates": {
       "latitude": 12.7375,
@@ -4758,9 +4758,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94877 02745",
     "address": {
-      "doorNumber": "Samsung SmartPlaza, No. 32",
-      "street": "Bagalur Main Road",
-      "area": "Opp. Hosur City Municipal Corporation",
+      "doorNumber": "No. 14/7",
+      "street": "KG Swamy Complex, Bagalur Road",
+      "area": "Opposite Liberty Showroom",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -4967,9 +4967,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 242242",
     "address": {
-      "doorNumber": "Tanishq Boutique Landmark",
-      "street": "NH 44 Bangalore - Salem Bypass Road",
-      "area": "Near Central Bus Stand Flyover",
+      "doorNumber": "Plot No. 20 (P)",
+      "street": "Electrical & Electronic Estate, By-Pass Road",
+      "area": "Near Adyar Ananda Bhavan Hotel",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -5037,9 +5037,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 245530",
     "address": {
-      "doorNumber": "No. 27",
-      "street": "MG Road",
-      "area": "Near Gandhi Statue Circle",
+      "doorNumber": "No. 24",
+      "street": "Old Bangalore Road",
+      "area": "Hanumanthapuram",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -5174,9 +5174,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 98947 43444",
     "address": {
-      "doorNumber": "No. 62",
+      "doorNumber": "No. 53",
       "street": "MG Road",
-      "area": "Gandhi Nagar Bazaar",
+      "area": "Near Sub Post Office, Hanumanthapuram",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -5315,9 +5315,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 90039 13915",
     "address": {
-      "doorNumber": "Godrej Showroom, No. 102",
+      "doorNumber": "No. 77D1, 77E, 77F",
       "street": "Bagalur Main Road",
-      "area": "Near Avalapalli Hudco Signal",
+      "area": "Jothi Super Stores Complex",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -5385,14 +5385,14 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 93843 08844",
     "address": {
-      "doorNumber": "Royaloak Mall",
-      "street": "NH 44 Bangalore - Salem Highway",
-      "area": "Near MGR Central Bus Stand",
+      "doorNumber": "No. 1144",
+      "street": "Narasamma Colony",
+      "area": "Opposite Old Bus Stand",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635126"
+      "pincode": "635109"
     },
     "coordinates": {
       "latitude": 12.7432,
@@ -5533,14 +5533,14 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 83002 18220",
     "address": {
-      "doorNumber": "No. 81",
-      "street": "Bagalur Main Road",
-      "area": "Opp. Taluk Office Ground",
+      "doorNumber": "No. 2, 3 & 4",
+      "street": "Service Road",
+      "area": "STEP Colony, Near Dharga, Bangalore Highway",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635109"
+      "pincode": "635126"
     },
     "coordinates": {
       "latitude": 12.739,
@@ -5606,9 +5606,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 272727",
     "address": {
-      "doorNumber": "Kauvery Hospital Campus",
-      "street": "7th Cross, Station Road",
-      "area": "Shanthi Nagar, Near Railway Station",
+      "doorNumber": "No. 35",
+      "street": "Shanthi Nagar",
+      "area": "Opposite CSI Church",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -5675,9 +5675,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 99439 60910",
     "address": {
-      "doorNumber": "SBS Hospital Tower",
-      "street": "Old Bangalore Road",
-      "area": "Near Central Bus Stand",
+      "doorNumber": "No. 13",
+      "street": "Tank Street",
+      "area": "Anna Nagar",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -5740,9 +5740,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 63817 72286",
     "address": {
-      "doorNumber": "No. 63, 1st Floor",
-      "street": "Bagalur Main Road",
-      "area": "Near Avalapalli Hudco Circle",
+      "doorNumber": "1B, Sabari Complex",
+      "street": "Krishnagiri Bypass Road",
+      "area": "Next to GRT Building, Near HDFC Bank",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -5806,9 +5806,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 89030 00442",
     "address": {
-      "doorNumber": "No. 18",
-      "street": "Denkanikottai Road",
-      "area": "Opp. Uzhavar Santhai",
+      "doorNumber": "No. 38/7",
+      "street": "Bagalur Road",
+      "area": "Bagalur Housing Society, Opp. Unlimited Showroom",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -6634,14 +6634,14 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 81234 45446",
     "address": {
-      "doorNumber": "Grand Continent Hotel",
-      "street": "NH 44 Bangalore - Salem Highway",
-      "area": "SIPCOT Industrial Complex Phase 1",
+      "doorNumber": "No. 74/15, Ward No. 3",
+      "street": "Bagalur Road",
+      "area": "Avalapalli HUDCO",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635126"
+      "pincode": "635109"
     },
     "coordinates": {
       "latitude": 12.7595,
@@ -6700,9 +6700,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 292377",
     "address": {
-      "doorNumber": "Plot No. 97",
-      "street": "SIPCOT Phase 1 Main Road",
-      "area": "Opp. Kauvery Hospital, SIPCOT",
+      "doorNumber": "Plot No. 41",
+      "street": "NH 44 Highway, SIPCOT Phase 1",
+      "area": "Mookandapalli",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -6767,9 +6767,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 90423 21025",
     "address": {
-      "doorNumber": "Lakshmi Multiplex Complex",
-      "street": "Appavu Nagar Main Road",
-      "area": "Denkanikottai Road Junction",
+      "doorNumber": "No. 518/1A",
+      "street": "National Highway Service Road (NH 44)",
+      "area": "Plot No. 205-A, Phase VII, Avalapalli HUDCO",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -6832,12 +6832,12 @@ const initialBusinesses: Business[] = [
     "address": {
       "doorNumber": "Grand Cine Mall",
       "street": "Thally Main Road",
-      "area": "Near Avalapalli Junction",
+      "area": "Karnur Bus Stop, Near Anthivadi Stadium",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635109"
+      "pincode": "635110"
     },
     "coordinates": {
       "latitude": 12.727,
@@ -8249,9 +8249,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 242463",
     "address": {
-      "doorNumber": "MGR Central Bus Terminal Complex",
-      "street": "Bangalore - Salem Highway NH 44 Bypass",
-      "area": "Central Bus Stand Area",
+      "doorNumber": "Central Bus Terminus",
+      "street": "NH 44 Bangalore - Salem Highway",
+      "area": "Avalapalli HUDCO / New Bus Stand",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -8314,9 +8314,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 99440 35026",
     "address": {
-      "doorNumber": "HSRA Railway Station Junction",
-      "street": "Railway Station Road",
-      "area": "Shanthi Nagar",
+      "doorNumber": "Railway Station Complex",
+      "street": "Station Road / Railway Station Road",
+      "area": "Near Kamaraj Colony",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -8387,9 +8387,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 652172",
     "address": {
-      "doorNumber": "Hilltop Temple Complex",
-      "street": "Hill Temple Road",
-      "area": "Malai Kovil Hilltop",
+      "doorNumber": "Hill Top",
+      "street": "Malai Kovil Road",
+      "area": "Therpet",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -8452,14 +8452,14 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 97890 62403",
     "address": {
-      "doorNumber": "PWD Dam Administration Office",
+      "doorNumber": "Reservoir Campus",
       "street": "Kelavarapalli Dam Road",
-      "area": "Kelavarapalli",
+      "area": "Near Avalapalli",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
       "state": "Tamil Nadu",
-      "pincode": "635103"
+      "pincode": "635109"
     },
     "coordinates": {
       "latitude": 12.798,
@@ -8519,9 +8519,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 255417",
     "address": {
-      "doorNumber": "Rajaji Memorial Complex",
-      "street": "Thorapalli Heritage Village Road",
-      "area": "Thorapalli",
+      "doorNumber": "Rajaji Memorial House",
+      "street": "Thorapalli Agraharam Road, Off NH 44",
+      "area": "Thorapalli, Near Onnalvadi",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -8584,9 +8584,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 247666",
     "address": {
-      "doorNumber": "Municipal Corporation Headquarters",
-      "street": "Bagalur Main Road",
-      "area": "Administrative Zone, Near Sub-Collector Office",
+      "doorNumber": "Municipal Headquarters",
+      "street": "Bagalur Road",
+      "area": "Opposite Thillai Nagar",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -8648,9 +8648,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 244380",
     "address": {
-      "doorNumber": "HPO Building",
-      "street": "Taluk Office Road",
-      "area": "Court & Taluk Complex",
+      "doorNumber": "Head Post Office Building",
+      "street": "Taluk Office Complex",
+      "area": "Hanumanthapuram",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -8712,9 +8712,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 94432 64680",
     "address": {
-      "doorNumber": "Public Library Building",
-      "street": "Library Street",
-      "area": "Near Old Bus Stand",
+      "doorNumber": "Town Central Library",
+      "street": "Denkanikottai Road",
+      "area": "SBM Colony, Anthivadi",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -8777,9 +8777,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 220405",
     "address": {
-      "doorNumber": "District Headquarters Govt Hospital Campus",
-      "street": "Denkanikottai Main Road",
-      "area": "GH Colony, Near Old Bus Stand",
+      "doorNumber": "Govt Hospital Campus",
+      "street": "Denkanikottai Road",
+      "area": "Old Rayakottah HUDCO, Near Old Bus Stand",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -8949,9 +8949,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "04344 223145",
     "address": {
-      "doorNumber": "Vasanth & Co Plaza, No. 37",
-      "street": "Bagalur Main Road",
-      "area": "Near Hosur City Municipal Corporation",
+      "doorNumber": "No. 86-A",
+      "street": "Taluk Office Road",
+      "area": "Opposite Mummy Daddy Showroom",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -9022,9 +9022,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 99949 77985",
     "address": {
-      "doorNumber": "Sathya Towers, No. 56",
-      "street": "Netaji Road",
-      "area": "Near Gandhi Statue Circle",
+      "doorNumber": "No. 729/28",
+      "street": "Old Bangalore Road",
+      "area": "Near Bagalur Circle",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -10382,8 +10382,8 @@ const initialBusinesses: Business[] = [
     "description": "Premier engineering institution in Hosur established in 1987. Autonomous college accredited by NAAC and NBA, offering B.E., B.Tech, MBA, and MCA programs with top placements.",
     "distance": 5.1,
     "demoCoordinates": {
-      "latitude": 12.7262,
-      "longitude": 77.8685
+      "latitude": 12.716139,
+      "longitude": 77.869864
     },
     "rating": 4.6,
     "reviews": 380,
@@ -10399,7 +10399,7 @@ const initialBusinesses: Business[] = [
     "address": {
       "doorNumber": "Main Campus Administrative Block",
       "street": "Dr. M.G.R. Nagar",
-      "area": "Kumudepalli / Achettipalli",
+      "area": "Kumudepalli",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -10407,8 +10407,8 @@ const initialBusinesses: Business[] = [
       "pincode": "635130"
     },
     "coordinates": {
-      "latitude": 12.7262,
-      "longitude": 77.8685
+      "latitude": 12.716139,
+      "longitude": 77.869864
     }
   },
   {
@@ -10462,9 +10462,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 73388 20784",
     "address": {
-      "doorNumber": "Sri Chaitanya Campus",
-      "street": "Denkanikottai Main Road",
-      "area": "Near ASTC Hudco Colony",
+      "doorNumber": "Survey No. 36/7",
+      "street": "Via Bagalur Road",
+      "area": "Behind Trend City Layout, Santhapuram",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
@@ -10594,9 +10594,9 @@ const initialBusinesses: Business[] = [
     ],
     "phone": "+91 87541 34768",
     "address": {
-      "doorNumber": "Sri Krishna Convention Hall",
-      "street": "Bangalore - Salem Highway NH 44",
-      "area": "Near Central Bus Stand",
+      "doorNumber": "No. 50/2",
+      "street": "Nethaji Road",
+      "area": "Kamaraj Colony",
       "cityTown": "Hosur",
       "taluka": "Hosur Taluk",
       "district": "Krishnagiri",
