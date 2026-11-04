@@ -11352,6 +11352,7 @@ export default function Home() {
   const [filterWhatsApp, setFilterWhatsApp] = useState(false);
   const [recentlyViewed, setRecentlyViewed] = useState<Business[]>([]);
   const [dialog, setDialog] = useState<"login" | "business" | "sos" | "plans" | null>(null);
+  const [showAllBusinesses, setShowAllBusinesses] = useState(false);
   const [notice, setNotice] = useState("");
   const [adConfig, setAdConfig] = useState<AdConfig>(defaultAdConfig);
   const [rawAdConfig, setRawAdConfig] = useState<AdConfig>(defaultAdConfig);
@@ -15697,19 +15698,6 @@ export default function Home() {
 
         {role === "Discover" && (
           <div className="page-content discover-content">
-            <div className="welcome-row">
-              <div className="welcome-copy"><div className="eyebrow"><span /> {t.madeForAroundHere}</div>
-                <h1>{t.heroHeadingMain}<br /><em>{t.heroHeadingSub}</em></h1>
-                <p className="welcome-subtitle">{t.heroDesc}</p>
-                <button className="business-registration-cta" type="button" onClick={() => setDialog("business")}><strong>{t.registerBusiness}</strong><span aria-hidden="true">→</span></button>
-                <p className="business-registration-note">{t.registerBusinessNote}</p></div>
-              <div className="hero-illustration" aria-hidden="true">
-                <div className="sun-disc" /><div className="hero-plant">✿</div>
-                <div className="hero-house"><div className="house-roof" /><div className="house-body"><i /><i /></div><div className="house-door" /></div>
-                <span className="hero-dot dot-one" /><span className="hero-dot dot-two" /><span className="hero-star">✳</span>
-              </div>
-            </div>
-
             <div className="search-panel">
               <div className="search-main" ref={searchContainerRef} style={{ position: "relative" }}>
                 <label htmlFor="what-search">{t.whatDoYouNeed}</label>
@@ -16112,7 +16100,11 @@ export default function Home() {
               </div>
             )}
 
-            {/* Mode Switcher: Browse by Sector vs A–Z Directory */}
+            
+            {(() => {
+              const categoriesSection = (
+                <div className="categories-browse-section">
+                  {/* Mode Switcher: Browse by Sector vs A–Z Directory */}
             <div className="browse-mode-tabs" role="tablist" aria-label="Browse modes">
               <button
                 type="button"
@@ -16327,9 +16319,12 @@ export default function Home() {
                 })()}
               </>
             )}
+                </div>
+              );
 
-
-            {query.trim() && (
+              const resultsSection = (
+                <div className="results-browse-section" id="results">
+                  {query.trim() && (
               <div className="search-engine-toolbar">
                 <div className="search-engine-stats">
                   <div className="search-engine-count">
@@ -16776,6 +16771,68 @@ export default function Home() {
                 )}
               </>
             )}
+                </div>
+              );
+
+              if (query.trim()) {
+                return (
+                  <>
+                    {/* Search results appear immediately below search (above category) */}
+                    {resultsSection}
+                    <div style={{ marginTop: "32px", paddingTop: "24px", borderTop: "1px solid #e2ebe1" }}>
+                      <div className="eyebrow" style={{ marginBottom: "8px" }}>BROWSE BY SECTOR &amp; DIRECTORY</div>
+                      {categoriesSection}
+                    </div>
+                  </>
+                );
+              }
+
+              if (category !== "All") {
+                return (
+                  <>
+                    {/* When using sector category: sector & subcategories at top, results below */}
+                    {categoriesSection}
+                    <div style={{ marginTop: "16px" }}>
+                      {resultsSection}
+                    </div>
+                  </>
+                );
+              }
+
+              return (
+                <>
+                  {/* Clean home view: 22 sectors displayed cleanly */}
+                  {categoriesSection}
+                  {!showAllBusinesses ? (
+                    <div style={{ textAlign: "center", margin: "24px 0 20px" }}>
+                      <button
+                        type="button"
+                        className="outline-button"
+                        style={{ padding: "10px 22px", fontSize: "12px", fontWeight: 700, borderRadius: "8px", background: "#f8faf7", border: "1px solid #c8dbcc", color: "#225633", cursor: "pointer" }}
+                        onClick={() => setShowAllBusinesses(true)}
+                      >
+                        Or browse all {businesses.length} businesses across Hosur ↓
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ marginTop: "20px" }}>
+                      <div style={{ textAlign: "center", marginBottom: "14px" }}>
+                        <button
+                          type="button"
+                          className="text-link"
+                          style={{ fontSize: "11px", color: "#6a7d6e", background: "none", border: 0, cursor: "pointer", textDecoration: "underline" }}
+                          onClick={() => setShowAllBusinesses(false)}
+                        >
+                          ▲ Collapse all businesses
+                        </button>
+                      </div>
+                      {resultsSection}
+                    </div>
+                  )}
+                </>
+              );
+            })()}
+
             <section className="video-ad-panel mobile-video-ad" aria-label="Video advertisement">
               <div className="video-ad-heading"><span>{t.videoAd}</span><small>{t.localSpotlight}</small></div>
               <video key={adConfig.videoAd.sourceUrl} className="video-ad-player" controls muted loop playsInline poster={adConfig.videoAd.posterUrl || undefined} src={adConfig.videoAd.sourceUrl}>Your browser does not support embedded video.</video>
