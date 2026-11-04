@@ -1588,16 +1588,16 @@ export function getJishnuDefaultWhatsAppMessage(businessName: string): string {
 
 Greetings from Jishnu Infotech!
 
-We are reaching out as part of a testing process for Bizearch, our business directory platform.
+We are reaching out as part of our initiative to build a business directory that helps businesses grow and expand their reach.
 
-Could you please confirm whether *${businessName}* is your business name?
+Could you please confirm whether ${businessName} and the associated contact number are correct?
 
-Once confirmed, kindly reply with *"Okay"* or *"Noted"* to acknowledge this message.
+Once confirmed, kindly reply with "Okay" or "Noted" to acknowledge this message.
 
 Thank you for your time and cooperation!
 
-Regards,  
-*Team Jishnu Infotech*`;
+Regards,
+Team Jishnu Infotech`;
 }
 
 function businessWhatsAppUrl(business: Business, product?: Product): string {
