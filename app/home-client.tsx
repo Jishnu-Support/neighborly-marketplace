@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CompanyAccessLevel } from "./lib/auth";
@@ -1965,7 +1965,7 @@ const initialBusinesses: Business[] = [
       "Battery & motor check"
     ],
     "tag": "Verified business",
-    "phone": "+91 98420 37553",
+    "phone": "+91 89403 00777",
     "address": {
       "doorNumber": "TVS Tower, No. 42/1-A",
       "street": "Bagalur Main Road",
@@ -2038,7 +2038,7 @@ const initialBusinesses: Business[] = [
       "Wheels & tyres"
     ],
     "tag": "Authorized dealer",
-    "phone": "+91 97890 29947",
+    "phone": "+91 80625 10258",
     "address": {
       "doorNumber": "Plot No. 14, ARENA Campus",
       "street": "Bangalore - Salem NH 44 Bypass",
@@ -2111,7 +2111,7 @@ const initialBusinesses: Business[] = [
       "Wheels & tyres",
       "AC cooling recharge"
     ],
-    "phone": "+91 90800 61015",
+    "phone": "+91 94880 92030",
     "address": {
       "doorNumber": "Survey No. 89/1B",
       "street": "NH 44 Bangalore - Salem Highway",
@@ -2310,7 +2310,7 @@ const initialBusinesses: Business[] = [
       "MacBook Pro"
     ],
     "tag": "Popular nearby",
-    "phone": "+91 99440 59410",
+    "phone": "+91 88677 03202",
     "address": {
       "doorNumber": "Ground & 1st Floor, Croma Landmark",
       "street": "Bangalore - Salem NH 44 Highway",
@@ -2621,7 +2621,7 @@ const initialBusinesses: Business[] = [
       "Lunch",
       "Homestyle lunch"
     ],
-    "phone": "+91 94880 73085",
+    "phone": "+91 75400 98451",
     "address": {
       "doorNumber": "2nd Floor, Grand Plaza",
       "street": "Bagalur Main Road",
@@ -2698,7 +2698,7 @@ const initialBusinesses: Business[] = [
       "Biryani"
     ],
     "tag": "Local favourite",
-    "phone": "+91 94880 67701",
+    "phone": "+91 90036 33838",
     "address": {
       "doorNumber": "Oasis Highway Plaza",
       "street": "Bangalore - Salem NH 44 Highway",
@@ -2768,7 +2768,7 @@ const initialBusinesses: Business[] = [
       "Meal delivery",
       "Tiffin"
     ],
-    "phone": "+91 98420 82097",
+    "phone": "04344 277199",
     "address": {
       "doorNumber": "Highway Food Court Campus",
       "street": "NH 44 Bangalore - Salem Highway",
@@ -3008,7 +3008,7 @@ const initialBusinesses: Business[] = [
       "Pharmacies",
       "Lab tests"
     ],
-    "phone": "+91 99440 26290",
+    "phone": "+91 89406 08608",
     "address": {
       "doorNumber": "No. 1, Hospital Road",
       "street": "Denkanikottai Main Road",
@@ -3105,7 +3105,7 @@ const initialBusinesses: Business[] = [
       "Wellness consultation",
       "Haircut"
     ],
-    "phone": "+91 94880 31565",
+    "phone": "+91 70943 91762",
     "address": {
       "doorNumber": "No. 14, 1st Floor",
       "street": "Kamaraj Colony 2nd Cross",
@@ -3257,7 +3257,7 @@ const initialBusinesses: Business[] = [
       "Bangles"
     ],
     "tag": "Trusted brand",
-    "phone": "+91 82480 45238",
+    "phone": "04344 241515",
     "address": {
       "doorNumber": "GRT Landmark, No. 110",
       "street": "MG Road (Mahatma Gandhi Road)",
@@ -3691,7 +3691,7 @@ const initialBusinesses: Business[] = [
       "Guest houses"
     ],
     "tag": "Premium stay",
-    "phone": "+91 82480 17262",
+    "phone": "04344 261111",
     "address": {
       "doorNumber": "Plot No. 115/1",
       "street": "Bangalore - Salem Highway NH 44",
@@ -3750,7 +3750,7 @@ const initialBusinesses: Business[] = [
       "Short stays",
       "Corporate stay"
     ],
-    "phone": "04344 256555",
+    "phone": "04344 667600",
     "address": {
       "doorNumber": "Plot No. 98-A",
       "street": "SIPCOT Phase 1 Main Avenue",
@@ -4179,7 +4179,7 @@ const initialBusinesses: Business[] = [
       "Routine service",
       "Oil & filter"
     ],
-    "phone": "04344 283890",
+    "phone": "+91 99440 22660",
     "address": {
       "doorNumber": "No. 88",
       "street": "Mathigiri Main Road",
@@ -4251,7 +4251,7 @@ const initialBusinesses: Business[] = [
       "Routine service",
       "Brake & tyre care"
     ],
-    "phone": "+91 97890 15107",
+    "phone": "+91 95000 90728",
     "address": {
       "doorNumber": "Velan Complex, No. 104",
       "street": "Denkanikottai Main Road",
@@ -4322,7 +4322,7 @@ const initialBusinesses: Business[] = [
       "Two-wheeler service",
       "Routine service"
     ],
-    "phone": "+91 98420 54145",
+    "phone": "+91 98949 23030",
     "address": {
       "doorNumber": "Saravana Arcade, Plot No. 5",
       "street": "Bangalore - Salem Highway NH 44",
@@ -4464,7 +4464,7 @@ const initialBusinesses: Business[] = [
       "Battery & motor check",
       "Routine service"
     ],
-    "phone": "04344 263884",
+    "phone": "+91 95510 66229",
     "address": {
       "doorNumber": "No. 76",
       "street": "Bagalur Main Road",
@@ -4685,7 +4685,7 @@ const initialBusinesses: Business[] = [
       "HP",
       "Lenovo"
     ],
-    "phone": "+91 98420 75865",
+    "phone": "+91 80717 28966",
     "address": {
       "doorNumber": "Reliance Digital Complex, No. 54",
       "street": "Bagalur Main Road",
@@ -4756,7 +4756,7 @@ const initialBusinesses: Business[] = [
       "Bespoke refrigerator",
       "Bespoke washing machine"
     ],
-    "phone": "04344 238915",
+    "phone": "+91 94877 02745",
     "address": {
       "doorNumber": "Samsung SmartPlaza, No. 32",
       "street": "Bagalur Main Road",
@@ -4965,7 +4965,7 @@ const initialBusinesses: Business[] = [
       "Diamond",
       "Everyday earrings"
     ],
-    "phone": "+91 96290 25212",
+    "phone": "04344 242242",
     "address": {
       "doorNumber": "Tanishq Boutique Landmark",
       "street": "NH 44 Bangalore - Salem Bypass Road",
@@ -5035,7 +5035,7 @@ const initialBusinesses: Business[] = [
       "Women",
       "Blouse stitching"
     ],
-    "phone": "04344 248256",
+    "phone": "04344 245530",
     "address": {
       "doorNumber": "No. 27",
       "street": "MG Road",
@@ -5172,7 +5172,7 @@ const initialBusinesses: Business[] = [
       "Daily wear",
       "Sandals"
     ],
-    "phone": "+91 94880 55941",
+    "phone": "+91 98947 43444",
     "address": {
       "doorNumber": "No. 62",
       "street": "MG Road",
@@ -5313,7 +5313,7 @@ const initialBusinesses: Business[] = [
       "Seating",
       "Sofas & chairs"
     ],
-    "phone": "04344 245073",
+    "phone": "+91 90039 13915",
     "address": {
       "doorNumber": "Godrej Showroom, No. 102",
       "street": "Bagalur Main Road",
@@ -5383,7 +5383,7 @@ const initialBusinesses: Business[] = [
       "Dining sets",
       "Dining tables & chairs"
     ],
-    "phone": "+91 82480 22054",
+    "phone": "+91 93843 08844",
     "address": {
       "doorNumber": "Royaloak Mall",
       "street": "NH 44 Bangalore - Salem Highway",
@@ -5531,7 +5531,7 @@ const initialBusinesses: Business[] = [
       "Repairs",
       "Furniture assembly"
     ],
-    "phone": "+91 98420 64305",
+    "phone": "+91 83002 18220",
     "address": {
       "doorNumber": "No. 81",
       "street": "Bagalur Main Road",
@@ -5604,7 +5604,7 @@ const initialBusinesses: Business[] = [
       "Mobility care",
       "Eye care"
     ],
-    "phone": "04344 223179",
+    "phone": "04344 272727",
     "address": {
       "doorNumber": "Kauvery Hospital Campus",
       "street": "7th Cross, Station Road",
@@ -5673,7 +5673,7 @@ const initialBusinesses: Business[] = [
       "Physiotherapy assessment",
       "Physiotherapy session"
     ],
-    "phone": "+91 96290 41724",
+    "phone": "+91 99439 60910",
     "address": {
       "doorNumber": "SBS Hospital Tower",
       "street": "Old Bangalore Road",
@@ -5738,7 +5738,7 @@ const initialBusinesses: Business[] = [
       "Treatment",
       "Cleaning & fillings"
     ],
-    "phone": "+91 94880 82165",
+    "phone": "+91 63817 72286",
     "address": {
       "doorNumber": "No. 63, 1st Floor",
       "street": "Bagalur Main Road",
@@ -5804,7 +5804,7 @@ const initialBusinesses: Business[] = [
       "Appointments",
       "Eye examination"
     ],
-    "phone": "+91 98420 50897",
+    "phone": "+91 89030 00442",
     "address": {
       "doorNumber": "No. 18",
       "street": "Denkanikottai Road",
@@ -6632,7 +6632,7 @@ const initialBusinesses: Business[] = [
       "Guest house booking",
       "Tours & experiences"
     ],
-    "phone": "+91 82480 58822",
+    "phone": "+91 81234 45446",
     "address": {
       "doorNumber": "Grand Continent Hotel",
       "street": "NH 44 Bangalore - Salem Highway",
@@ -6698,7 +6698,7 @@ const initialBusinesses: Business[] = [
       "Short stays",
       "Guest house booking"
     ],
-    "phone": "04344 222824",
+    "phone": "04344 292377",
     "address": {
       "doorNumber": "Plot No. 97",
       "street": "SIPCOT Phase 1 Main Road",
@@ -6765,7 +6765,7 @@ const initialBusinesses: Business[] = [
       "Equipment hire",
       "Projector rental"
     ],
-    "phone": "+91 94880 55413",
+    "phone": "+91 90423 21025",
     "address": {
       "doorNumber": "Lakshmi Multiplex Complex",
       "street": "Appavu Nagar Main Road",
@@ -6828,7 +6828,7 @@ const initialBusinesses: Business[] = [
       "Show times",
       "Movie tickets"
     ],
-    "phone": "+91 94432 16632",
+    "phone": "04344 240437",
     "address": {
       "doorNumber": "Grand Cine Mall",
       "street": "Thally Main Road",
@@ -8385,7 +8385,7 @@ const initialBusinesses: Business[] = [
       "Temple rituals",
       "Public & Common Places"
     ],
-    "phone": "+91 97890 66379",
+    "phone": "04344 652172",
     "address": {
       "doorNumber": "Hilltop Temple Complex",
       "street": "Hill Temple Road",
@@ -8582,7 +8582,7 @@ const initialBusinesses: Business[] = [
       "Civic services & certificates",
       "Public tax & billing"
     ],
-    "phone": "+91 90800 34343",
+    "phone": "04344 247666",
     "address": {
       "doorNumber": "Municipal Corporation Headquarters",
       "street": "Bagalur Main Road",
@@ -8646,7 +8646,7 @@ const initialBusinesses: Business[] = [
       "Speed post & parcel delivery",
       "Citizen identity"
     ],
-    "phone": "+91 98420 54977",
+    "phone": "04344 244380",
     "address": {
       "doorNumber": "HPO Building",
       "street": "Taluk Office Road",
@@ -8775,7 +8775,7 @@ const initialBusinesses: Business[] = [
       "24/7 Casualty & emergency",
       "Public health"
     ],
-    "phone": "04344 272683",
+    "phone": "04344 220405",
     "address": {
       "doorNumber": "District Headquarters Govt Hospital Campus",
       "street": "Denkanikottai Main Road",
@@ -8947,7 +8947,7 @@ const initialBusinesses: Business[] = [
       "Water purifiers & geysers",
       "Appliance repair"
     ],
-    "phone": "+91 98420 73089",
+    "phone": "04344 223145",
     "address": {
       "doorNumber": "Vasanth & Co Plaza, No. 37",
       "street": "Bagalur Main Road",
@@ -9020,7 +9020,7 @@ const initialBusinesses: Business[] = [
       "Refrigerators",
       "Washing machines"
     ],
-    "phone": "+91 82480 81942",
+    "phone": "+91 99949 77985",
     "address": {
       "doorNumber": "Sathya Towers, No. 56",
       "street": "Netaji Road",
@@ -10395,7 +10395,7 @@ const initialBusinesses: Business[] = [
       "Education & Coaching",
       "Colleges & Universities"
     ],
-    "phone": "+91 82480 28926",
+    "phone": "04344 261020",
     "address": {
       "doorNumber": "Main Campus Administrative Block",
       "street": "Dr. M.G.R. Nagar",
@@ -10460,7 +10460,7 @@ const initialBusinesses: Business[] = [
       "Education & Coaching",
       "Competitive Exam Coaching"
     ],
-    "phone": "+91 98420 94521",
+    "phone": "+91 73388 20784",
     "address": {
       "doorNumber": "Sri Chaitanya Campus",
       "street": "Denkanikottai Main Road",
