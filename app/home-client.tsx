@@ -12208,6 +12208,7 @@ export default function Home() {
         }
       }
       setStorageReady(true);
+      try { window.sessionStorage.removeItem("bizearch_auto_retry"); } catch {}
     } catch (error) {
       setStorageError(error instanceof Error ? error.message : "Could not read this browser's demo storage.");
     }

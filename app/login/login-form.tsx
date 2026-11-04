@@ -352,23 +352,9 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
       const targetUrl = result.redirectUrl || (targetRole === "Account" ? "/" : `/?portal=${targetRole}`);
       if (targetRole === "Account") {
         try { sessionStorage.removeItem("neighborly_login_location"); } catch { /* Sign-in does not depend on browser storage. */ }
-        setMessage("Sign in successful. Your browser will ask whether to share your location for nearby results. You can decline and continue.");
-        if (navigator.geolocation) {
-          await new Promise<void>((resolve) => {
-            navigator.geolocation.getCurrentPosition(
-              (position) => {
-                try {
-                  sessionStorage.setItem("neighborly_login_location", JSON.stringify({ latitude: position.coords.latitude, longitude: position.coords.longitude }));
-                } catch { /* Continue sign-in if browser storage is unavailable. */ }
-                resolve();
-              },
-              () => resolve(),
-              { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 },
-            );
-          });
-        }
+        setMessage("Sign in successful. Redirecting to portal…");
       }
-      window.location.assign(targetUrl);
+      window.location.replace(targetUrl);
     } catch (error) {
       setIsSuccess(false);
       setMessage(error instanceof Error ? error.message : "Could not sign in. Please try again.");
