@@ -1583,14 +1583,38 @@ function businessRawPhone(phone: string): string {
   return phone.replace(/[^\d+]/g, "");
 }
 
+export function getJishnuDefaultWhatsAppMessage(businessName: string): string {
+  return `Hello,
+
+Greetings from Jishnu Infotech!
+
+We are reaching out as part of a testing process for Bizearch, our business directory platform.
+
+Could you please confirm whether *${businessName}* is your business name?
+
+Once confirmed, kindly reply with *"Okay"* or *"Noted"* to acknowledge this message.
+
+Thank you for your time and cooperation!
+
+Regards,  
+*Team Jishnu Infotech*`;
+}
+
 function businessWhatsAppUrl(business: Business, product?: Product): string {
   const phone = businessPhoneFor(business);
-  // Extract 10 digits for Indian numbers
+  // Extract 10 digits for Indian numbers, prefix with country code 91
   const digits = phone.replace(/\D/g, "");
-  const normalizedPhone = digits.length === 10 ? `91${digits}` : digits.startsWith("91") ? digits : `91${digits.slice(-10)}`;
-  const text = product
-    ? `Hello ${business.name}, I found your listing on Bizearch (bizearch.co) and would like to inquire about "${product.name}". Is it currently available?`
-    : `Hello ${business.name}, I found your listing on Bizearch (bizearch.co) and would like to inquire about your products and services.`;
+  const normalizedPhone =
+    digits.length === 10
+      ? `91${digits}`
+      : digits.startsWith("91") && digits.length === 12
+      ? digits
+      : digits.startsWith("0") && digits.length === 11
+      ? `91${digits.slice(1)}`
+      : digits.length > 10
+      ? digits
+      : `91${digits}`;
+  const text = getJishnuDefaultWhatsAppMessage(business.name);
   return `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(text)}`;
 }
 
@@ -12642,12 +12666,22 @@ export default function Home() {
       recordEvent(`Ad lead - Phone call: ${targetBiz?.name || currentAd.businessName || "Store"}`);
       window.open(`tel:${phone.replace(/\s+/g, "")}`, "_self");
     } else if (action === "whatsapp") {
-      const phone = (targetBiz?.phone || "9876543210").replace(/\D/g, "");
-      const msg = encodeURIComponent(
-        `Hi! I saw your ad on Bizearch Hosur (${currentAd.businessName || targetBiz?.name || "Store"}). I would like to inquire about your products and current promotions!`
-      );
-      recordEvent(`Ad lead - WhatsApp: ${targetBiz?.name || currentAd.businessName || "Store"}`);
-      window.open(`https://wa.me/91${phone.slice(-10)}?text=${msg}`, "_blank");
+      const bizName = currentAd.businessName || targetBiz?.name || "Store";
+      const phone = targetBiz ? businessPhoneFor(targetBiz) : ((currentAd as any).phone || "9876543210");
+      const digits = phone.replace(/\D/g, "");
+      const normalizedPhone =
+        digits.length === 10
+          ? `91${digits}`
+          : digits.startsWith("91") && digits.length === 12
+          ? digits
+          : digits.startsWith("0") && digits.length === 11
+          ? `91${digits.slice(1)}`
+          : digits.length > 10
+          ? digits
+          : `91${digits}`;
+      const msg = encodeURIComponent(getJishnuDefaultWhatsAppMessage(bizName));
+      recordEvent(`Ad lead - WhatsApp: ${bizName}`);
+      window.open(`https://wa.me/${normalizedPhone}?text=${msg}`, "_blank");
     } else if (action === "navigate") {
       if (targetBiz) {
         viewBusiness(targetBiz, "navigation");
