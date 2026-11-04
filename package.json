@@ -16,7 +16,8 @@
     "dev:next": "next dev --hostname 0.0.0.0",
     "build:next": "next build",
     "start:next": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "export:excel": "node scripts/export-all-records-excel.js"
   },
   "dependencies": {
     "dotenv": "^16.6.1",
@@ -27,7 +28,8 @@
     "next": "16.4.2",
     "pg": "^8.23.0",
     "react": "19.3.1",
-    "react-dom": "19.3.1"
+    "react-dom": "19.3.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
