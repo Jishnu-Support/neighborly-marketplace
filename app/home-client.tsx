@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CompanyAccessLevel } from "./lib/auth";
@@ -402,7 +402,7 @@ const initialNotifications: MarketplaceNotification[] = [
 
 const NOTIF_STORAGE_KEY = "neighborly-notifications-v2";
 
-const STORAGE_KEY = "neighborly-demo-v2";
+const STORAGE_KEY = "neighborly-demo-v3";
 const vehicleTypeOptions = ["Two wheeler", "Three wheeler", "Four wheeler", "Multi wheel / commercial"];
 const vehicleMakesByType: Record<string, string[]> = {
   "Two wheeler": ["TVS", "Hero", "Honda", "Bajaj", "Royal Enfield", "Suzuki", "Yamaha", "KTM", "Jawa", "Yezdi", "Triumph", "BMW Motorrad", "Kawasaki", "Ducati", "Aprilia", "Vespa", "Ather Energy", "Ola Electric", "Revolt Motors", "Ampere", "Ultraviolette", "Simple Energy", "Other / not listed"],
@@ -2467,7 +2467,7 @@ const initialBusinesses: Business[] = [
       "Cold drinks"
     ],
     "tag": "Local favourite",
-    "phone": "+91 94880 17597",
+    "phone": "+91 99656 16551",
     "address": {
       "doorNumber": "No. 45",
       "street": "MG Road (Mahatma Gandhi Road)",
@@ -2857,7 +2857,7 @@ const initialBusinesses: Business[] = [
       "Staples"
     ],
     "tag": "Government market",
-    "phone": "04344 252877",
+    "phone": "04344 222417",
     "address": {
       "doorNumber": "Uzhavar Santhai Complex",
       "street": "Denkanikottai Main Road",
@@ -2931,7 +2931,7 @@ const initialBusinesses: Business[] = [
       "Health screening"
     ],
     "tag": "Verified business",
-    "phone": "+91 94432 99400",
+    "phone": "04344 241590",
     "address": {
       "doorNumber": "No. 84, Ground Floor",
       "street": "Bagalur Main Road",
@@ -3175,7 +3175,7 @@ const initialBusinesses: Business[] = [
       "Ethnic wear",
       "Fashion accessories"
     ],
-    "phone": "04344 281001",
+    "phone": "+91 98400 77747",
     "address": {
       "doorNumber": "Instyle Tower, No. 34",
       "street": "Nethaji Road",
@@ -3334,7 +3334,7 @@ const initialBusinesses: Business[] = [
       "Pantry",
       "Staples"
     ],
-    "phone": "+91 94432 95728",
+    "phone": "04344 297777",
     "address": {
       "doorNumber": "Nilgiris Building, No. 19/2",
       "street": "Denkanikottai Main Road",
@@ -7617,7 +7617,7 @@ const initialBusinesses: Business[] = [
       "Competitive Exams",
       "TNPSC & Bank exams"
     ],
-    "phone": "04344 236961",
+    "phone": "+91 94434 80350",
     "address": {
       "doorNumber": "No. 22",
       "street": "Netaji Road",
@@ -10592,7 +10592,7 @@ const initialBusinesses: Business[] = [
       "Events & Weddings",
       "Venues & Mandapams"
     ],
-    "phone": "04344 262782",
+    "phone": "+91 87541 34768",
     "address": {
       "doorNumber": "Sri Krishna Convention Hall",
       "street": "Bangalore - Salem Highway NH 44",
@@ -16543,6 +16543,7 @@ export default function Home() {
                               })()}
                             </div>
                             <p>{highlightMatch(business.description, query)}</p>
+                            <div className="business-card-phone-display" style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", fontWeight: 700, color: "#166534", margin: "4px 0 8px" }}><span>📞 {businessPhoneFor(business)}</span></div>
                             <div className="business-footer">
                               <button
                                 type="button"
@@ -24462,7 +24463,7 @@ function CompanyPortal({
         ))}
       </section>
     )}
-    {activeTab === "Customer locations" && <section className="panel tab-panel"><div className="eyebrow">CONSENTED REGISTRATION LOCATION</div><h2>Customer registration requests</h2><p>Only Company Admins can view this list. Exact coordinates are included only when the customer grants browser location access. Demo requests have a verified mobile number but do not activate an account.</p>{registrationLoading && <p>Loading registration records…</p>}{registrationError && <p className="form-error" role="alert">{registrationError}</p>}{!registrationLoading && !registrationError && customerRegistrations.length === 0 && <EmptyState title="No registration requests yet" text="Customer requests and any shared locations will appear here." />}{customerRegistrations.map((registration) => <div className="listing-row" key={registration.id}><span className="listing-icon lavender">⌖</span><span className="listing-name"><strong>{registration.name}</strong><small>Mobile ending {registration.phoneLast4} · {new Date(registration.registeredAt).toLocaleString()} · {registration.verificationStatus}</small>{registration.locationStatus === "shared" && registration.latitude !== null && registration.longitude !== null && <small>Coordinates: {registration.latitude.toFixed(5)}, {registration.longitude.toFixed(5)}</small>}</span><span className={`status-pill ${registration.locationStatus === "shared" ? "verified" : "pending"}`}>{registration.locationStatus === "shared" ? "Location shared" : registration.locationStatus === "denied" ? "Location denied" : "Location unavailable"}</span></div>)}</section>}    {activeTab === "Businesses" && <><section className="panel tab-panel"><div className="panel-heading"><div><div className="eyebrow">PARTNER DIRECTORY</div><h2>All registered businesses & common places (122 records)</h2></div><div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}><a href="/bizearch-all-122-businesses-and-common-places.xlsx" download="bizearch-all-122-businesses-and-common-places.xlsx" className="primary-button" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", padding: "8px 14px" }}>📊 Export Excel (.xlsx)</a><a href="/bizearch-all-122-businesses-and-common-places.csv" download="bizearch-all-122-businesses-and-common-places.csv" className="outline-button" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", padding: "8px 14px" }}>📄 Export CSV</a></div></div>{businesses.map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category} / {business.products.length} catalogue items / sample distance {business.distance} km</small>{business.address && <small>Address: {Object.values(business.address).filter(Boolean).join(", ")}</small>}{business.coordinates && <small>Coordinates: {business.coordinates.latitude.toFixed(6)}, {business.coordinates.longitude.toFixed(6)}</small>}{business.businessModes?.length ? <small>Activity: {business.businessModes.join(", ")}</small> : null}{business.vehicleTypes?.length ? <small>Vehicles: {business.vehicleTypes.join(", ")}</small> : null}{business.vehicleMakes?.length ? <small>Makes: {business.vehicleMakes.join(", ")}</small> : null}{business.vehicleModels?.length ? <small>Models: {business.vehicleModels.join(", ")}</small> : null}</span><span className={`status-pill ${business.subscribed ? "verified" : "pending"}`}>● {business.subscribed ? "Subscribed" : "Pending"}</span></div>)}</section></>}
+    {activeTab === "Customer locations" && <section className="panel tab-panel"><div className="eyebrow">CONSENTED REGISTRATION LOCATION</div><h2>Customer registration requests</h2><p>Only Company Admins can view this list. Exact coordinates are included only when the customer grants browser location access. Demo requests have a verified mobile number but do not activate an account.</p>{registrationLoading && <p>Loading registration records…</p>}{registrationError && <p className="form-error" role="alert">{registrationError}</p>}{!registrationLoading && !registrationError && customerRegistrations.length === 0 && <EmptyState title="No registration requests yet" text="Customer requests and any shared locations will appear here." />}{customerRegistrations.map((registration) => <div className="listing-row" key={registration.id}><span className="listing-icon lavender">⌖</span><span className="listing-name"><strong>{registration.name}</strong><small>Mobile ending {registration.phoneLast4} · {new Date(registration.registeredAt).toLocaleString()} · {registration.verificationStatus}</small>{registration.locationStatus === "shared" && registration.latitude !== null && registration.longitude !== null && <small>Coordinates: {registration.latitude.toFixed(5)}, {registration.longitude.toFixed(5)}</small>}</span><span className={`status-pill ${registration.locationStatus === "shared" ? "verified" : "pending"}`}>{registration.locationStatus === "shared" ? "Location shared" : registration.locationStatus === "denied" ? "Location denied" : "Location unavailable"}</span></div>)}</section>}    {activeTab === "Businesses" && <><section className="panel tab-panel"><div className="panel-heading"><div><div className="eyebrow">PARTNER DIRECTORY</div><h2>All registered businesses & common places (122 records)</h2></div><div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}><a href="/bizearch-all-122-businesses-and-common-places.xlsx" download="bizearch-all-122-businesses-and-common-places.xlsx" className="primary-button" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", padding: "8px 14px" }}>📊 Export Excel (.xlsx)</a><a href="/bizearch-all-122-businesses-and-common-places.csv" download="bizearch-all-122-businesses-and-common-places.csv" className="outline-button" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", padding: "8px 14px" }}>📄 Export CSV</a></div></div>{businesses.map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category} / {business.products.length} catalogue items / sample distance {business.distance} km</small><small style={{ color: "#166534", fontWeight: 700, display: "block", marginTop: "2px" }}>📞 Phone / WhatsApp: {businessPhoneFor(business)}</small>{business.address && <small>Address: {Object.values(business.address).filter(Boolean).join(", ")}</small>}{business.coordinates && <small>Coordinates: {business.coordinates.latitude.toFixed(6)}, {business.coordinates.longitude.toFixed(6)}</small>}{business.businessModes?.length ? <small>Activity: {business.businessModes.join(", ")}</small> : null}{business.vehicleTypes?.length ? <small>Vehicles: {business.vehicleTypes.join(", ")}</small> : null}{business.vehicleMakes?.length ? <small>Makes: {business.vehicleMakes.join(", ")}</small> : null}{business.vehicleModels?.length ? <small>Models: {business.vehicleModels.join(", ")}</small> : null}</span><span className={`status-pill ${business.subscribed ? "verified" : "pending"}`}>● {business.subscribed ? "Subscribed" : "Pending"}</span></div>)}</section></>}
     {activeTab.startsWith("Approvals") && (
       <section className="panel tab-panel">
         <div className="panel-heading">
