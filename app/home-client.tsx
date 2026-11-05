@@ -1856,6 +1856,88 @@ function productImageFor(product: Product, business?: Business): string {
 
 const initialBusinesses: Business[] = [
   {
+    "name": "Jishnu Infotech",
+    "category": "Everyday services",
+    "subcategories": [
+      "IT & Technology Services",
+      "Software Development",
+      "Cloud Solutions",
+      "Website & App Development",
+      "Digital Marketing"
+    ],
+    "products": [
+      {
+        "id": "jishnu-platform-dev",
+        "name": "Web & Mobile App Development",
+        "description": "Custom full-stack web and mobile applications, eCommerce platforms, and hyperlocal systems.",
+        "price": 14999,
+        "unit": "starting"
+      },
+      {
+        "id": "jishnu-cloud-infra",
+        "name": "Cloud Infrastructure & Hosting",
+        "description": "High-availability cloud server deployment, database management, automated backups, and 99.9% uptime SLA.",
+        "price": 2999,
+        "unit": "month"
+      },
+      {
+        "id": "jishnu-it-consulting",
+        "name": "Enterprise IT Consulting & Digital Transformation",
+        "description": "Technology roadmap planning, business workflow automation, ERP integration, and system optimization.",
+        "price": 4999,
+        "unit": "consultation"
+      },
+      {
+        "id": "jishnu-seo-branding",
+        "name": "SEO & Hyperlocal Digital Marketing",
+        "description": "Search engine optimization, Google Business Profile management, local directory listing, and ad campaigns.",
+        "price": 3499,
+        "unit": "package"
+      }
+    ],
+    "description": "Official Technology & Platform Engineering Partner of Bizearch. Specializing in cloud infrastructure, custom software development, mobile apps, enterprise digital transformation, and IT consulting in Hosur.",
+    "distance": 0.5,
+    "demoCoordinates": {
+      "latitude": 12.746459,
+      "longitude": 77.833395
+    },
+    "coordinates": {
+      "latitude": 12.746459,
+      "longitude": 77.833395
+    },
+    "rating": 4.9,
+    "reviews": 128,
+    "price": "Tech solutions from ₹2,999",
+    "icon": "💻",
+    "color": "forest",
+    "subscribed": true,
+    "taxonomyTags": [
+      "IT & Technology Services",
+      "Software development",
+      "Cloud solutions",
+      "App development",
+      "Web development",
+      "Digital marketing",
+      "Hosting",
+      "Technology partner",
+      "Bizearch host"
+    ],
+    "tag": "Platform Partner",
+    "phone": "+91 94895 21482",
+    "email": "support@jishnuinfotech.com",
+    "address": {
+      "doorNumber": "Corporate Office",
+      "street": "Bagalur Road",
+      "area": "Hosur",
+      "cityTown": "Hosur",
+      "taluka": "Hosur Taluk",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "verificationStatus": "Approved"
+  },
+  {
     "name": "Jaya Bajaj – Hosur",
     "category": "Automobiles",
     "subcategories": [
@@ -14996,7 +15078,11 @@ export default function Home() {
             </div>
           </div>
           <div className="mobile-header-substrip" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "6px", overflowX: "auto" }}>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(255,255,255,0.85)", padding: "2px 8px", borderRadius: "12px", border: "1px solid rgba(226,232,240,0.8)", flexShrink: 0 }}>
+            <span
+              style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(255,255,255,0.85)", padding: "2px 8px", borderRadius: "12px", border: "1px solid rgba(226,232,240,0.8)", flexShrink: 0, cursor: "pointer" }}
+              onClick={() => window.open("https://www.google.com/maps?q=12.746459,77.833395", "_blank")}
+              title="Jishnu Infotech (12.746459, 77.833395) — Click to open on Google Maps"
+            >
               <span style={{ fontSize: "9px", textTransform: "uppercase", fontWeight: 700, color: "#64748b" }}>{t.poweredBy}</span>
               <img src="/jishnu-infotech-logo.png" alt="Jishnu Infotech" style={{ height: "18px", width: "auto", objectFit: "contain" }} />
             </span>
@@ -15032,7 +15118,13 @@ export default function Home() {
 
         <header className="topbar">
           <div className="breadcrumb" style={{ fontSize: "11px", color: "#879188", whiteSpace: "nowrap", flexShrink: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>{t.yourNeighborhood} <span>/</span> <strong>{role === "Discover" ? t.discover : role === "Account" ? t.myActivity : `${role} portal`}</strong></div>
-          <div className="topbar-partner-badge" aria-label="Powered by Jishnu Infotech" title="Jishnu Infotech — Innovate, Integrate, Inspire (Official Platform Host & Engineering Partner)" style={{ display: "flex", alignItems: "center", gap: "8px", whiteSpace: "nowrap", padding: "4px 10px", background: "rgba(241, 245, 249, 0.75)", border: "1px solid rgba(226, 232, 240, 0.8)", borderRadius: "999px", fontSize: "10px", color: "#64748b", flexShrink: 0, cursor: "pointer", transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)" }}>
+          <div
+            className="topbar-partner-badge"
+            aria-label="Powered by Jishnu Infotech"
+            title="Jishnu Infotech — Innovate, Integrate, Inspire (Location: 12.746459, 77.833395 · Click to view on Google Maps)"
+            onClick={() => window.open("https://www.google.com/maps?q=12.746459,77.833395", "_blank")}
+            style={{ display: "flex", alignItems: "center", gap: "8px", whiteSpace: "nowrap", padding: "4px 10px", background: "rgba(241, 245, 249, 0.75)", border: "1px solid rgba(226, 232, 240, 0.8)", borderRadius: "999px", fontSize: "10px", color: "#64748b", flexShrink: 0, cursor: "pointer", transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)" }}
+          >
             <span style={{ fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase", fontSize: "9px" }}>{t.poweredBy}</span>
             <img src="/jishnu-infotech-logo.png" alt="Jishnu Infotech" style={{ display: "block", height: "24px", width: "auto", maxWidth: "115px", objectFit: "contain", filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.05))" }} />
           </div>

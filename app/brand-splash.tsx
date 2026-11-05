@@ -227,8 +227,28 @@ export default function BrandSplash() {
                 <div className="partner-modal-item">
                   <div className="partner-modal-item-icon">📍</div>
                   <div>
-                    <strong>Hosur Digital Ecosystem</strong>
+                    <strong>Hosur Digital Ecosystem &amp; Headquarters</strong>
                     <p>Dedicated to accelerating digital transformation for Hosur industrial hubs, retail merchants, and local residents.</p>
+                    <div style={{ marginTop: "6px", fontSize: "12px", color: "#64748b" }}>
+                      <span>GPS Coordinates: <strong>12.746459, 77.833395</strong></span> · Hosur, Tamil Nadu
+                    </div>
+                    <a
+                      href="https://www.google.com/maps?q=12.746459,77.833395"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        marginTop: "6px",
+                        color: "#15803d",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                        textDecoration: "underline",
+                      }}
+                    >
+                      Navigate on Google Maps ↗
+                    </a>
                   </div>
                 </div>
                 <div className="partner-modal-item">
