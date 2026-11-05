@@ -145,6 +145,7 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
         const category = String(form.get("category") || "Everyday services").trim();
         const ownerName = String(form.get("ownerName") || "").trim();
         const gstin = String(form.get("gstin") || "").trim().toUpperCase();
+        const referralCode = String(form.get("referralCode") || form.get("referral") || "").trim().toUpperCase();
         const entityType = String(form.get("entityType") || "Sole Proprietorship").trim();
         const city = String(form.get("city") || "").trim();
         const state = String(form.get("state") || "").trim();
@@ -216,6 +217,7 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
               ownerName,
               entityType,
               website,
+              referralCode,
               password,
               coordinates: pinnedBusinessCoords,
             }),
@@ -546,6 +548,17 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
               <label>
                 Website / Online Store <span className="optional">(optional)</span>
                 <input name="website" type="url" placeholder="e.g. https://mybusiness.com" />
+              </label>
+            )}
+
+            {portal === "Business" && (
+              <label>
+                Agent referral code <span className="optional">(optional)</span>
+                <input
+                  name="referralCode"
+                  placeholder="e.g. BIZ-AGNT-1234 (optional)"
+                  style={{ textTransform: "uppercase" }}
+                />
               </label>
             )}
 

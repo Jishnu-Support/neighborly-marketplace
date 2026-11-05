@@ -1,7 +1,7 @@
 import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from "node:crypto";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { readAgentRecords } from "./agents";
+import { readAgentRecords, writeAgentRecords } from "./agents";
 import { resolveStorePath } from "./storage-paths";
 
 export type VerificationStatus =
@@ -78,6 +78,7 @@ export type StoredBusiness = {
   assignedAgentId?: string;
   assignedAgentName?: string;
   assignedAgentPhone?: string;
+  agentReferralCode?: string;
   agentVerification?: AgentVerificationDetails;
   adminApproval?: AdminApprovalDetails;
   rejectionReason?: string;
@@ -234,6 +235,8 @@ export async function registerBusinessAccount(input: {
   email?: string;
   password?: string;
   ownerName?: string;
+  referralCode?: string;
+  agentReferralCode?: string;
   locality?: string;
   doorNumber?: string;
   doorNo?: string;
@@ -284,17 +287,33 @@ export async function registerBusinessAccount(input: {
     pincode: input.pincode?.trim() || (existingIndex >= 0 ? records[existingIndex].address.pincode : ""),
   };
 
-  // Attempt to assign to a nearby active field agent if available
+  // Attempt to assign to agent matching referral code, or fallback to nearby active field agent
+  const refCode = (input.referralCode || input.agentReferralCode || "").trim().toUpperCase();
   let assignedAgentId: string | undefined;
   let assignedAgentName: string | undefined;
   let assignedAgentPhone: string | undefined;
+  let matchedAgentReferralCode: string | undefined = refCode || undefined;
+
   try {
     const agents = await readAgentRecords();
-    const activeAgent = agents.find((a) => a.active);
-    if (activeAgent) {
-      assignedAgentId = activeAgent.id;
-      assignedAgentName = activeAgent.name;
-      assignedAgentPhone = activeAgent.phone;
+    const matchedAgent = refCode
+      ? agents.find((a) => (a.referralCode || "").trim().toUpperCase() === refCode)
+      : undefined;
+
+    if (matchedAgent) {
+      assignedAgentId = matchedAgent.id;
+      assignedAgentName = matchedAgent.name;
+      assignedAgentPhone = matchedAgent.phone;
+      matchedAgentReferralCode = matchedAgent.referralCode;
+      matchedAgent.referredCount = (matchedAgent.referredCount || 0) + 1;
+      await writeAgentRecords(agents);
+    } else {
+      const activeAgent = agents.find((a) => a.active);
+      if (activeAgent) {
+        assignedAgentId = activeAgent.id;
+        assignedAgentName = activeAgent.name;
+        assignedAgentPhone = activeAgent.phone;
+      }
     }
   } catch {}
 
@@ -323,6 +342,17 @@ export async function registerBusinessAccount(input: {
     assignedAgentId,
     assignedAgentName,
     assignedAgentPhone,
+    agentReferralCode: matchedAgentReferralCode,
+    agentVerification: matchedAgentReferralCode
+      ? {
+          agentId: assignedAgentId || "",
+          agentName: assignedAgentName || "",
+          agentPhone: assignedAgentPhone || "",
+          agentReferralCode: matchedAgentReferralCode,
+          visitedAt: "",
+          uploadedImages: [],
+        }
+      : undefined,
     createdAt: existingIndex >= 0 ? records[existingIndex].createdAt : new Date().toISOString(),
     rating: 5,
     reviews: 0,

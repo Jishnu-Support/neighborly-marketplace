@@ -26,6 +26,8 @@ export async function POST(request: Request) {
       businessModes,
       coordinates,
       images,
+      referralCode,
+      referral,
     } = body;
 
     if (!name || typeof name !== "string" || name.trim().length < 2) {
@@ -80,6 +82,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "GST Number / Business Tax ID is mandatory." }, { status: 400 });
     }
 
+    const resolvedReferralCode =
+      typeof referralCode === "string" && referralCode.trim()
+        ? referralCode.trim().toUpperCase()
+        : typeof referral === "string" && referral.trim()
+        ? referral.trim().toUpperCase()
+        : undefined;
+
     const business = await registerBusinessAccount({
       name: name.trim(),
       category: category.trim(),
@@ -92,6 +101,7 @@ export async function POST(request: Request) {
       state: state.trim(),
       pincode: pincode.trim(),
       gstin: gstin.trim().toUpperCase(),
+      referralCode: resolvedReferralCode,
       ownerName: ownerName && typeof ownerName === "string" ? ownerName.trim() : undefined,
       entityType: entityType && typeof entityType === "string" ? entityType.trim() : undefined,
       email: email ? String(email).trim() : undefined,

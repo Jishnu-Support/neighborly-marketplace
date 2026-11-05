@@ -43,7 +43,7 @@ export async function readAgentRecords(): Promise<StoredAgentPartner[]> {
   }
 }
 
-async function writeAgentRecords(agents: StoredAgentPartner[]) {
+export async function writeAgentRecords(agents: StoredAgentPartner[]) {
   await mkdir(path.dirname(storePath), { recursive: true });
   const temporaryPath = `${storePath}.${process.pid}.tmp`;
   await writeFile(temporaryPath, JSON.stringify(agents, null, 2), { encoding: "utf8", mode: 0o600 });

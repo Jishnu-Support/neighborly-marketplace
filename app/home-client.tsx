@@ -13227,6 +13227,7 @@ export default function Home() {
       showNotice("GST Number / Business Tax ID is mandatory.");
       return;
     }
+    const referralCode = String(form.get("referral") || form.get("referralCode") || "").trim().toUpperCase();
     try {
       const response = await fetch("/api/businesses/register", {
         method: "POST",
@@ -13243,6 +13244,7 @@ export default function Home() {
           state: address.state || "Tamil Nadu",
           pincode: address.pincode || "635109",
           gstin: gstin.toUpperCase(),
+          referralCode,
           ownerName: String(form.get("ownerName") || name).trim(),
           description: `${businessModes.join(" & ")} in ${selectedCategories.length ? selectedCategories.join(", ") : selectedCategory}`,
           businessModes,
@@ -13315,6 +13317,7 @@ export default function Home() {
             color: "peach",
             subscribed: false,
             tag: "Awaiting verification",
+            agentReferralCode: referralCode || undefined,
             images: uploadedImages,
             image: uploadedImages[0] || undefined,
           },
@@ -21402,6 +21405,7 @@ function AgentPortal({
 }) {
   const [copied, setCopied] = useState(false);
   const [tab, setTab] = useState(initialTab || "Overview");
+  const [agentReferralCode, setAgentReferralCode] = useState("AGENT-PARTNER");
   const [verifications, setVerifications] = useState<AgentVerificationItem[]>([]);
   const [verificationsLoading, setVerificationsLoading] = useState(false);
   const [verifyingBusiness, setVerifyingBusiness] = useState<AgentVerificationItem | null>(null);
@@ -21412,6 +21416,19 @@ function AgentPortal({
   const [visitNotes, setVisitNotes] = useState("");
   const [submittingVerification, setSubmittingVerification] = useState(false);
 
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("neighborly_profile_Agent") || localStorage.getItem("neighborly_profile_v1_Agent");
+      if (raw) {
+        const p = JSON.parse(raw);
+        const match = p.bio?.match(/Code:\s*([A-Za-z0-9_-]+)/);
+        if (match && match[1]) {
+          setAgentReferralCode(match[1]);
+        }
+      }
+    } catch {}
+  }, []);
+
   const loadVerifications = () => {
     setVerificationsLoading(true);
     fetch("/api/agent/verifications", { cache: "no-store", credentials: "include" })
@@ -21419,6 +21436,31 @@ function AgentPortal({
         const result = (await response.json()) as { businesses?: AgentVerificationItem[] };
         if (response.ok && Array.isArray(result.businesses)) {
           setVerifications(result.businesses);
+          let currentCode = agentReferralCode;
+          try {
+            const raw = localStorage.getItem("neighborly_profile_Agent");
+            if (raw) {
+              const p = JSON.parse(raw);
+              const m = p.bio?.match(/Code:\s*([A-Za-z0-9_-]+)/);
+              if (m && m[1]) currentCode = m[1];
+            }
+          } catch {}
+          const refList = result.businesses
+            .filter((b) => {
+              const bRef = (b as any).agentReferralCode || b.agentVerification?.agentReferralCode;
+              if (bRef && currentCode && bRef.toUpperCase() === currentCode.toUpperCase()) return true;
+              return false;
+            })
+            .map((b) => ({
+              businessName: b.name,
+              category: b.category,
+              joined: b.createdAt ? new Date(b.createdAt).toLocaleDateString() : "Recent",
+              status: b.verificationStatus || "Pending Agent Visit",
+              commission: "₹500",
+            }));
+          if (refList.length > 0) {
+            setReferrals(refList);
+          }
         }
       })
       .catch(() => {})
@@ -21577,10 +21619,10 @@ function AgentPortal({
               <p>Businesses that use your code will be linked to your agent account when they register.</p>
             </div>
             <div className="code-box">
-              <code>AGENT-PARTNER</code>
+              <code>{agentReferralCode}</code>
               <button
                 onClick={() => {
-                  navigator.clipboard?.writeText("AGENT-PARTNER");
+                  navigator.clipboard?.writeText(agentReferralCode);
                   setCopied(true);
                   showNotice("Referral code copied.");
                 }}
@@ -26589,7 +26631,7 @@ function Dialog({
                 {businessPasswordError}
               </p>
             )}
-<div className="otp-row"><label>Business mobile OTP<input name="businessOtp" inputMode="numeric" autoComplete="one-time-code" placeholder="6-digit OTP" value={registrationOtp} onChange={(event) => { setRegistrationOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); setRegistrationOtpVerified(false); }} required /></label><div className="otp-actions"><button type="button" disabled={registrationOtpBusy} onClick={() => void requestRegistrationOtp("Business", "send", businessDetails.businessPhone)}>{registrationOtpBusy ? "Please wait…" : "Send OTP"}</button><button type="button" disabled={registrationOtpBusy || registrationOtp.length !== 6} onClick={() => void requestRegistrationOtp("Business", "verify", businessDetails.businessPhone)}>Verify OTP</button></div></div>{registrationDemoOtp && <p className="otp-demo-code" role="status">Demo OTP: <strong>{registrationDemoOtp}</strong> <span>For local testing only. No SMS was sent.</span></p>}{registrationOtpMessage && <p className={registrationOtpVerified ? "otp-verified" : "form-error"} role="status">{registrationOtpMessage}</p>}<label>GST Number / Business Tax ID *<input name="gstin" placeholder="e.g. 33AAAAA0000A1Z5 (15-digit GSTIN or Tax ID)" required style={{ textTransform: "uppercase" }} /></label><label>Agent referral code <span className="optional">(optional)</span><input name="referral" placeholder="e.g. NEIGHBOR-4821" /></label><label>Upload business proof <span className="optional">(GSTIN certificate, license or registration document)</span><input name="proof" type="file" accept=".pdf,.jpg,.jpeg,.png" /></label>
+<div className="otp-row"><label>Business mobile OTP<input name="businessOtp" inputMode="numeric" autoComplete="one-time-code" placeholder="6-digit OTP" value={registrationOtp} onChange={(event) => { setRegistrationOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); setRegistrationOtpVerified(false); }} required /></label><div className="otp-actions"><button type="button" disabled={registrationOtpBusy} onClick={() => void requestRegistrationOtp("Business", "send", businessDetails.businessPhone)}>{registrationOtpBusy ? "Please wait…" : "Send OTP"}</button><button type="button" disabled={registrationOtpBusy || registrationOtp.length !== 6} onClick={() => void requestRegistrationOtp("Business", "verify", businessDetails.businessPhone)}>Verify OTP</button></div></div>{registrationDemoOtp && <p className="otp-demo-code" role="status">Demo OTP: <strong>{registrationDemoOtp}</strong> <span>For local testing only. No SMS was sent.</span></p>}{registrationOtpMessage && <p className={registrationOtpVerified ? "otp-verified" : "form-error"} role="status">{registrationOtpMessage}</p>}<label>GST Number / Business Tax ID *<input name="gstin" placeholder="e.g. 33AAAAA0000A1Z5 (15-digit GSTIN or Tax ID)" required style={{ textTransform: "uppercase" }} /></label><label>Agent referral code <span className="optional">(optional)</span><input name="referral" placeholder="e.g. BIZ-AGNT-1234 (optional)" style={{ textTransform: "uppercase" }} /></label><label>Upload business proof <span className="optional">(GSTIN certificate, license or registration document)</span><input name="proof" type="file" accept=".pdf,.jpg,.jpeg,.png" /></label>
 <div className="business-images-upload-field" style={{ margin: "14px 0" }}>
   <label style={{ display: "block", marginBottom: "6px", fontWeight: 600, fontSize: "12px", color: "#25332c" }}>
     Upload business images <span className="optional" style={{ fontWeight: 400, color: "#778179", fontSize: "11px" }}>(Storefront, interior, products, or showcase photos)</span>
