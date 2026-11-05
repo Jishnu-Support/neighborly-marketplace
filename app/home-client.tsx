@@ -320,6 +320,7 @@ export type OrderItem = {
 export type OrderRecord = {
   id: string;
   businessName: string;
+  businessPhone?: string;
   customerName: string;
   customerPhone: string;
   customerAddress: string;
@@ -3111,43 +3112,52 @@ export default function Home() {
 
   useEffect(() => {
     try {
-      try { window.localStorage.removeItem("neighborly-demo-v1"); } catch {}
-      const saved = window.localStorage.getItem(STORAGE_KEY);
+      ["neighborly-demo-v1", "neighborly-demo-v2", "neighborly-demo-v3", "neighborly-demo-v4", "neighborly-demo-v5"].forEach((k) => {
+        try { window.localStorage.removeItem(k); } catch {}
+      });
+      const saved = window.localStorage.getItem("bizearch-customer-session-v1");
       if (saved) {
         const parsed: unknown = JSON.parse(saved);
         if (isDemoData(parsed)) {
-          const initialMap = new Map(initialBusinesses.map((b) => [b.name.toLowerCase(), b]));
-          const custom = (parsed.businesses || []).filter((b) => !initialMap.has(b.name.toLowerCase()));
-          setDemoData({
-            ...parsed,
-            businesses: [...custom, ...initialBusinesses],
+          setDemoData((prev) => ({
+            ...prev,
+            favorites: Array.isArray(parsed.favorites) ? parsed.favorites : [],
+            recentSearches: Array.isArray(parsed.recentSearches) ? parsed.recentSearches : [],
+            enquiries: Array.isArray(parsed.enquiries) ? parsed.enquiries : [],
             checkouts: Array.isArray(parsed.checkouts) ? parsed.checkouts : [],
             orders: Array.isArray(parsed.orders) ? parsed.orders : [],
-          });
+          }));
         }
       }
       setStorageReady(true);
       try { window.sessionStorage.removeItem("bizearch_auto_retry"); } catch {}
     } catch (error) {
-      setStorageError(error instanceof Error ? error.message : "Could not read this browser's demo storage.");
+      setStorageError(error instanceof Error ? error.message : "Could not read this browser storage.");
     }
   }, []);
 
   useEffect(() => {
     if (!storageReady) return;
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(demoData));
+      const toSave = {
+        favorites: demoData.favorites,
+        recentSearches: demoData.recentSearches,
+        enquiries: demoData.enquiries,
+        checkouts: demoData.checkouts,
+        orders: demoData.orders,
+      };
+      window.localStorage.setItem("bizearch-customer-session-v1", JSON.stringify(toSave));
       setStorageError("");
     } catch (error) {
-      setStorageError(error instanceof Error ? error.message : "Could not save demo data in this browser.");
+      setStorageError(error instanceof Error ? error.message : "Could not save session in this browser.");
     }
-  }, [demoData, storageReady]);
+  }, [demoData.favorites, demoData.recentSearches, demoData.enquiries, demoData.checkouts, demoData.orders, storageReady]);
 
   const loadRegisteredBusinesses = useCallback(() => {
     fetch("/api/businesses", { cache: "no-store" })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (!data || !Array.isArray(data.businesses) || data.businesses.length === 0) return;
+        if (!data || !Array.isArray(data.businesses)) return;
         const registered: Business[] = data.businesses.map((b: any) => ({
           name: b.name,
           category: b.category,
@@ -3186,15 +3196,10 @@ export default function Home() {
           icon: "🏢",
         }));
 
-        setDemoData((prev) => {
-          const existingNames = new Set(prev.businesses.map((item) => item.name.toLowerCase()));
-          const newToAdd = registered.filter((item) => !existingNames.has(item.name.toLowerCase()));
-          if (newToAdd.length === 0) return prev;
-          return {
-            ...prev,
-            businesses: [...newToAdd, ...prev.businesses],
-          };
-        });
+        setDemoData((prev) => ({
+          ...prev,
+          businesses: registered,
+        }));
       })
       .catch(() => {});
   }, []);
@@ -3819,8 +3824,10 @@ export default function Home() {
 
   function placeOrder(orderData: Omit<OrderRecord, "id" | "createdAt">) {
     const orderId = `ORD-${Math.floor(10000 + Math.random() * 90000)}`;
+    const bizMatch = demoData.businesses.find((b) => b.name.toLowerCase() === orderData.businessName.toLowerCase());
     const newOrder: OrderRecord = {
       ...orderData,
+      businessPhone: orderData.businessPhone || bizMatch?.phone || "",
       id: orderId,
       createdAt: new Date().toISOString(),
     };
@@ -3915,58 +3922,81 @@ export default function Home() {
         products: [...(prev.products || []), newProduct]
       } : prev);
     }
+    const currentBiz = demoData.businesses.find((b) => b.name === businessName);
+    const updatedProducts = currentBiz ? [...currentBiz.products, newProduct] : [newProduct];
     setDemoData((current) => ({
       ...current,
       businesses: current.businesses.map((business) =>
-        business.name === businessName ? { ...business, products: [...business.products, newProduct] } : business,
+        business.name === businessName ? { ...business, products: updatedProducts } : business,
       ),
     }));
+    fetch("/api/businesses", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: businessName, products: updatedProducts }),
+    }).catch(() => {});
     recordEvent("Business catalogue updated");
     showNotice(`"${product.name}" added to catalogue.`);
   }
 
   function updateProduct(businessName: string, productId: string, updated: Partial<Product>) {
+    let updatedProducts: Product[] = [];
     if (currentBusinessRecord && currentBusinessRecord.name === businessName) {
-      setCurrentBusinessRecord((prev: any) => prev ? {
-        ...prev,
-        products: (prev.products || []).map((p: any) => p.id === productId ? { ...p, ...updated } : p)
-      } : prev);
+      setCurrentBusinessRecord((prev: any) => {
+        if (!prev) return prev;
+        updatedProducts = (prev.products || []).map((p: any) => p.id === productId ? { ...p, ...updated } : p);
+        return { ...prev, products: updatedProducts };
+      });
     }
-    setDemoData((current) => ({
-      ...current,
-      businesses: current.businesses.map((business) =>
-        business.name === businessName
-          ? {
-              ...business,
-              products: business.products.map((p) =>
-                p.id === productId ? { ...p, ...updated } : p
-              ),
-            }
-          : business
-      ),
-    }));
+    setDemoData((current) => {
+      const biz = current.businesses.find((b) => b.name === businessName);
+      if (biz) {
+        updatedProducts = biz.products.map((p) => p.id === productId ? { ...p, ...updated } : p);
+      }
+      return {
+        ...current,
+        businesses: current.businesses.map((business) =>
+          business.name === businessName ? { ...business, products: updatedProducts } : business
+        ),
+      };
+    });
+    if (updatedProducts.length > 0) {
+      fetch("/api/businesses", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: businessName, products: updatedProducts }),
+      }).catch(() => {});
+    }
     recordEvent("Business catalogue item updated");
     showNotice("Catalogue item updated.");
   }
 
   function deleteProduct(businessName: string, productId: string) {
+    let updatedProducts: Product[] = [];
     if (currentBusinessRecord && currentBusinessRecord.name === businessName) {
-      setCurrentBusinessRecord((prev: any) => prev ? {
-        ...prev,
-        products: (prev.products || []).filter((p: any) => p.id !== productId)
-      } : prev);
+      setCurrentBusinessRecord((prev: any) => {
+        if (!prev) return prev;
+        updatedProducts = (prev.products || []).filter((p: any) => p.id !== productId);
+        return { ...prev, products: updatedProducts };
+      });
     }
-    setDemoData((current) => ({
-      ...current,
-      businesses: current.businesses.map((business) =>
-        business.name === businessName
-          ? {
-              ...business,
-              products: business.products.filter((p) => p.id !== productId),
-            }
-          : business
-      ),
-    }));
+    setDemoData((current) => {
+      const biz = current.businesses.find((b) => b.name === businessName);
+      if (biz) {
+        updatedProducts = biz.products.filter((p) => p.id !== productId);
+      }
+      return {
+        ...current,
+        businesses: current.businesses.map((business) =>
+          business.name === businessName ? { ...business, products: updatedProducts } : business
+        ),
+      };
+    });
+    fetch("/api/businesses", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: businessName, products: updatedProducts }),
+    }).catch(() => {});
     recordEvent("Business catalogue item deleted");
     showNotice("Catalogue item removed.");
   }
@@ -7646,6 +7676,32 @@ export default function Home() {
                       ✕ {t.clearFilters}
                     </button>
                   </div>
+                ) : businesses.length === 0 ? (
+                  <div className="empty-results zero-businesses-card" style={{ padding: "44px 20px", textAlign: "center", background: "#f8fbf8", border: "1.5px dashed #c8dbcc", borderRadius: "14px", margin: "24px 0" }}>
+                    <div style={{ fontSize: "44px", marginBottom: "12px" }}>🏪</div>
+                    <h3 style={{ fontSize: "19px", color: "#1a3a22", marginBottom: "8px", fontWeight: 800 }}>Welcome to Bizearch Hosur</h3>
+                    <p style={{ fontSize: "13.5px", color: "#4f6553", maxWidth: "500px", margin: "0 auto 20px", lineHeight: 1.5 }}>
+                      Hosur&apos;s verified local business &amp; services network. As real businesses register and get approved, they will appear here live with storefront catalogues, direct WhatsApp leads, and phone contacts.
+                    </p>
+                    <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
+                      <button
+                        type="button"
+                        className="primary-button"
+                        style={{ padding: "10px 22px", fontSize: "13px", fontWeight: 700 }}
+                        onClick={() => setDialog("business")}
+                      >
+                        ➕ Register Your Business
+                      </button>
+                      <button
+                        type="button"
+                        className="outline-button"
+                        style={{ padding: "10px 18px", fontSize: "13px", fontWeight: 700 }}
+                        onClick={() => openPortal("Company")}
+                      >
+                        👑 Super Admin Portal
+                      </button>
+                    </div>
+                  </div>
                 ) : (
                   <div className="empty-results">
                     <span>⌕</span>
@@ -7671,10 +7727,7 @@ export default function Home() {
                     )}
                     <div style={{ display: "flex", gap: "8px", justifyContent: "center", flexWrap: "wrap", marginTop: "12px" }}>
                       <button onClick={() => { setRadius(25); setCategory("All"); setQuery(""); setSearchFilterTab("all"); }}>Show all nearby</button>
-                      <button type="button" className="outline-button" onClick={() => { setCategory("All"); setCategoryPath([]); searchNearby("Car repair"); }}>Car repair</button>
-                      <button type="button" className="outline-button" onClick={() => { setCategory("All"); setCategoryPath([]); searchNearby("Dentist"); }}>Dentist</button>
-                      <button type="button" className="outline-button" onClick={() => { setCategory("All"); setCategoryPath([]); searchNearby("Samsung"); }}>Samsung</button>
-                      <button type="button" className="outline-button" onClick={() => { setCategory("All"); setCategoryPath([]); searchNearby("Gym"); }}>Gym</button>
+                      <button type="button" className="outline-button" onClick={() => { setCategory("All"); setCategoryPath([]); }}>All Categories</button>
                     </div>
                   </div>
                 )}
@@ -10500,49 +10553,58 @@ function OrderReceiptModal({
               <span className={`order-status-pill ${order.status}`}>{order.status}</span>
             </div>
 
-            <div style={{ display: "flex", gap: "8px", marginTop: "10px" }}>
-              <a
-                href={`tel:+919845012345`}
-                style={{
-                  flex: 1,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "6px",
-                  padding: "7px 10px",
-                  background: "#ffffff",
-                  border: "1px solid #c9dcc8",
-                  borderRadius: "6px",
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  color: "#1c4a29",
-                  textDecoration: "none",
-                }}
-              >
-                📞 Call Store
-              </a>
-              <a
-                href={`https://wa.me/919845012345?text=${encodeURIComponent(`Hi ${order.businessName}, checking on my order #${order.id} for ${order.items[0]?.name}.`)}`}
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  flex: 1,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "6px",
-                  padding: "7px 10px",
-                  background: "#25D366",
-                  color: "#ffffff",
-                  borderRadius: "6px",
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  textDecoration: "none",
-                }}
-              >
-                💬 WhatsApp
-              </a>
-            </div>
+            {(() => {
+              const phoneDigits = (order.businessPhone || "").replace(/\D/g, "");
+              const telHref = phoneDigits ? `tel:+${phoneDigits}` : "tel:";
+              const waHref = phoneDigits
+                ? `https://wa.me/${phoneDigits.startsWith("91") ? phoneDigits : `91${phoneDigits}`}?text=${encodeURIComponent(`Hi ${order.businessName}, checking on my order #${order.id} for ${order.items[0]?.name}.`)}`
+                : "#";
+              return (
+                <div style={{ display: "flex", gap: "8px", marginTop: "10px" }}>
+                  <a
+                    href={telHref}
+                    style={{
+                      flex: 1,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "6px",
+                      padding: "7px 10px",
+                      background: "#ffffff",
+                      border: "1px solid #c9dcc8",
+                      borderRadius: "6px",
+                      fontSize: "12px",
+                      fontWeight: 700,
+                      color: "#1c4a29",
+                      textDecoration: "none",
+                    }}
+                  >
+                    📞 Call Store
+                  </a>
+                  <a
+                    href={waHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      flex: 1,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "6px",
+                      padding: "7px 10px",
+                      background: "#25D366",
+                      color: "#ffffff",
+                      borderRadius: "6px",
+                      fontSize: "12px",
+                      fontWeight: 700,
+                      textDecoration: "none",
+                    }}
+                  >
+                    💬 WhatsApp
+                  </a>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Itemized summary */}
@@ -10907,7 +10969,7 @@ function CustomerOrdersManager({
                   🧾 View Receipt
                 </button>
                 <a
-                  href={`tel:+919845012345`}
+                  href={order.businessPhone ? `tel:+${order.businessPhone.replace(/\D/g, "")}` : "tel:"}
                   className="outline-button"
                   style={{ padding: "6px 12px", fontSize: "12px", textDecoration: "none" }}
                 >
@@ -15906,8 +15968,8 @@ function CompanyPortal({
                       </small>
                     </div>
 
-                    {isReadyForAdmin && (
-                      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                    {!isApproved && (
+                      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
                         <button
                           type="button"
                           className="primary-button"
@@ -15915,7 +15977,7 @@ function CompanyPortal({
                           disabled={isProcessing}
                           onClick={() => handleAdminApproval(biz.id, "approve")}
                         >
-                          {isProcessing ? "Processing..." : "✓ Approve & Publish Listing"}
+                          {isProcessing ? "Processing..." : isReadyForAdmin ? "✓ Approve & Publish Listing" : "✓ Super Admin Approve & Publish"}
                         </button>
                         <button
                           type="button"
