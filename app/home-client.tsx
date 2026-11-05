@@ -14361,12 +14361,16 @@ export default function Home() {
                 ? "👑"
                 : (role === "Business" && businessAccountBusinesses[0]?.name
                     ? businessAccountBusinesses[0].name[0]
-                    : (currentCustomerProfile?.fullName?.[0] || "C")).toUpperCase()}
+                    : (currentCustomerProfile?.fullName?.[0] || (sessionIdentity ? sessionIdentity[0] : "C"))).toUpperCase()}
             </div>
             <div>
               <strong style={{ fontSize: "14px", display: "block" }}>
                 {(authenticatedPortals.includes("Company") || role === "Company")
                   ? "Super Admin Console"
+                  : currentCustomerProfile?.fullName
+                  ? currentCustomerProfile.fullName
+                  : sessionIdentity && !sessionIdentity.includes("@neighborly.demo")
+                  ? sessionIdentity
                   : role === "Discover"
                   ? t.yourBizearchActivity
                   : `${role === "Account" ? "Customer" : role} Account`}
@@ -14374,6 +14378,8 @@ export default function Home() {
               <small style={{ fontSize: "11px", opacity: 0.85 }}>
                 {(authenticatedPortals.includes("Company") || role === "Company")
                   ? "System Administration · Master Control"
+                  : currentCustomerProfile?.locality
+                  ? `${currentCustomerProfile.locality} · Connected`
                   : "Connected"}
               </small>
             </div>
@@ -14461,25 +14467,12 @@ export default function Home() {
 
           <div>
             <div className="mobile-drawer-section-title">Browse Sectors ({categories.length - 1})</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
+            <div className="mobile-drawer-sectors-grid">
               {categories.slice(1).map((cat) => (
                 <button
                   key={cat.name}
                   type="button"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    padding: "7px 8px",
-                    borderRadius: "7px",
-                    border: "1px solid #e2ebe1",
-                    background: category === cat.name && browseMode === "sectors" ? "#e9f4eb" : "#fbfdfb",
-                    color: category === cat.name && browseMode === "sectors" ? "#1b5528" : "#3b4f41",
-                    fontSize: "11px",
-                    fontWeight: category === cat.name && browseMode === "sectors" ? 700 : 500,
-                    cursor: "pointer",
-                    textAlign: "left",
-                  }}
+                  className={`mobile-drawer-sector-btn ${category === cat.name && browseMode === "sectors" ? "active" : ""}`}
                   onClick={() => {
                     setBrowseMode("sectors");
                     setCategory(cat.name);
@@ -14488,9 +14481,10 @@ export default function Home() {
                     setRole("Discover");
                     setMobileMenuOpen(false);
                   }}
+                  title={translateCategory(cat.name, lang)}
                 >
-                  <span style={{ fontSize: "13px" }}><CategoryIcon name={cat.name} sector={cat.name} /></span>
-                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <span className="sector-icon"><CategoryIcon name={cat.name} sector={cat.name} /></span>
+                  <span className="sector-label">
                     {translateCategory(cat.name, lang)}
                   </span>
                 </button>
