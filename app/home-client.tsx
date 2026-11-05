@@ -2230,6 +2230,8 @@ export default function Home() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notificationFilter, setNotificationFilter] = useState<"all" | "unread">("all");
   const notificationsRef = useRef<HTMLDivElement>(null);
+  const mobileNotificationsRef = useRef<HTMLDivElement>(null);
+  const mobileNotificationsBtnRef = useRef<HTMLButtonElement>(null);
   const unreadCount = useMemo(() => notifications.filter((n) => !n.read).length, [notifications]);
   const displayedNotifications = useMemo(
     () => (notificationFilter === "unread" ? notifications.filter((n) => !n.read) : notifications),
@@ -2388,6 +2390,118 @@ export default function Home() {
     }
   }
 
+  const renderNotificationPopoverContent = () => (
+    <div className="notification-popover" role="dialog" aria-label="Notifications panel">
+      <div className="notification-header">
+        <div className="notification-header-title">
+          <span>Notifications</span>
+          {unreadCount > 0 && <span className="notification-count-pill">{unreadCount} new</span>}
+        </div>
+        <div className="notification-actions-top">
+          {unreadCount > 0 && (
+            <button
+              type="button"
+              className="notification-mark-all"
+              onClick={markAllNotificationsRead}
+            >
+              Mark all read
+            </button>
+          )}
+          <button
+            type="button"
+            className="notification-close-btn"
+            onClick={() => setNotificationsOpen(false)}
+            aria-label="Close notifications"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <div className="notification-tabs">
+        <button
+          type="button"
+          className={`notification-tab-btn ${notificationFilter === "all" ? "active" : ""}`}
+          onClick={() => setNotificationFilter("all")}
+        >
+          All ({notifications.length})
+        </button>
+        <button
+          type="button"
+          className={`notification-tab-btn ${notificationFilter === "unread" ? "active" : ""}`}
+          onClick={() => setNotificationFilter("unread")}
+        >
+          Unread ({unreadCount})
+        </button>
+      </div>
+
+      <div className="notification-list">
+        {displayedNotifications.length === 0 ? (
+          <div className="notification-empty">
+            <span className="notification-empty-icon">🎉</span>
+            <strong>You&apos;re all caught up!</strong>
+            <p>{notificationFilter === "unread" ? "No unread alerts at the moment." : "No notifications right now."}</p>
+          </div>
+        ) : (
+          displayedNotifications.map((notif) => (
+            <div
+              key={notif.id}
+              className={`notification-item ${!notif.read ? "unread" : ""}`}
+              onClick={() => { if (!notif.read) markNotificationRead(notif.id); }}
+            >
+              <span className={`notification-item-icon ${notif.type}`}>
+                {notif.type === "sos" ? "🚨" : notif.type === "enquiry" ? "💬" : notif.type === "offer" ? "🎁" : notif.type === "business" ? "🏢" : notif.type === "favorite" ? "⭐" : "🔔"}
+              </span>
+              <div className="notification-item-content">
+                <div className="notification-item-head">
+                  <span className="notification-item-title">{notif.title}</span>
+                  <span className="notification-item-time">{notif.timestamp}</span>
+                </div>
+                <p className="notification-item-msg">{notif.message}</p>
+                {notif.action && (
+                  <button
+                    type="button"
+                    className="notification-item-action"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleNotificationAction(notif);
+                    }}
+                  >
+                    {notif.linkText || "View"} ↗
+                  </button>
+                )}
+              </div>
+              <button
+                type="button"
+                className="notification-item-dismiss"
+                aria-label="Delete notification"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteNotification(notif.id);
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+
+      {notifications.length > 0 && (
+        <div className="notification-footer">
+          <button
+            type="button"
+            className="notification-clear-btn"
+            onClick={clearAllNotifications}
+          >
+            Clear all
+          </button>
+          <span>Hosur Community Alerts</span>
+        </div>
+      )}
+    </div>
+  );
+
   useEffect(() => {
     const onAddNotification = (event: Event) => {
       const notif = (event as CustomEvent).detail;
@@ -2430,17 +2544,29 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
+      const target = event.target as Node;
+      if (searchContainerRef.current && !searchContainerRef.current.contains(target)) {
         setSearchDropdownOpen(false);
       }
-      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+      if (notificationsOpen) {
+        if (
+          notificationsRef.current?.contains(target) ||
+          mobileNotificationsBtnRef.current?.contains(target) ||
+          mobileNotificationsRef.current?.contains(target)
+        ) {
+          return;
+        }
         setNotificationsOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    document.addEventListener("touchstart", handleClickOutside, { passive: true });
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [notificationsOpen]);
 
   useEffect(() => {
     const onAdsUpdated = (event: Event) => {
@@ -5612,6 +5738,7 @@ export default function Home() {
                 <span style={{ fontSize: "8px", opacity: 0.7 }}>▾</span>
               </button>
               <button
+                ref={mobileNotificationsBtnRef}
                 type="button"
                 className="mobile-notif-btn"
                 aria-label={`Notifications (${unreadCount} unread)`}
@@ -5903,117 +6030,7 @@ export default function Home() {
                 </svg>
                 {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
               </button>
-              {notificationsOpen && (
-                <div className="notification-popover" role="dialog" aria-label="Notifications panel">
-                  <div className="notification-header">
-                    <div className="notification-header-title">
-                      <span>Notifications</span>
-                      {unreadCount > 0 && <span className="notification-count-pill">{unreadCount} new</span>}
-                    </div>
-                    <div className="notification-actions-top">
-                      {unreadCount > 0 && (
-                        <button
-                          type="button"
-                          className="notification-mark-all"
-                          onClick={markAllNotificationsRead}
-                        >
-                          Mark all read
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        className="notification-close-btn"
-                        onClick={() => setNotificationsOpen(false)}
-                        aria-label="Close notifications"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="notification-tabs">
-                    <button
-                      type="button"
-                      className={`notification-tab-btn ${notificationFilter === "all" ? "active" : ""}`}
-                      onClick={() => setNotificationFilter("all")}
-                    >
-                      All ({notifications.length})
-                    </button>
-                    <button
-                      type="button"
-                      className={`notification-tab-btn ${notificationFilter === "unread" ? "active" : ""}`}
-                      onClick={() => setNotificationFilter("unread")}
-                    >
-                      Unread ({unreadCount})
-                    </button>
-                  </div>
-
-                  <div className="notification-list">
-                    {displayedNotifications.length === 0 ? (
-                      <div className="notification-empty">
-                        <span className="notification-empty-icon">🎉</span>
-                        <strong>You&apos;re all caught up!</strong>
-                        <p>{notificationFilter === "unread" ? "No unread alerts at the moment." : "No notifications right now."}</p>
-                      </div>
-                    ) : (
-                      displayedNotifications.map((notif) => (
-                        <div
-                          key={notif.id}
-                          className={`notification-item ${!notif.read ? "unread" : ""}`}
-                          onClick={() => { if (!notif.read) markNotificationRead(notif.id); }}
-                        >
-                          <span className={`notification-item-icon ${notif.type}`}>
-                            {notif.type === "sos" ? "🚨" : notif.type === "enquiry" ? "💬" : notif.type === "offer" ? "🎁" : notif.type === "business" ? "🏢" : notif.type === "favorite" ? "⭐" : "🔔"}
-                          </span>
-                          <div className="notification-item-content">
-                            <div className="notification-item-head">
-                              <span className="notification-item-title">{notif.title}</span>
-                              <span className="notification-item-time">{notif.timestamp}</span>
-                            </div>
-                            <p className="notification-item-msg">{notif.message}</p>
-                            {notif.action && (
-                              <button
-                                type="button"
-                                className="notification-item-action"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleNotificationAction(notif);
-                                }}
-                              >
-                                {notif.linkText || "View"} ↗
-                              </button>
-                            )}
-                          </div>
-                          <button
-                            type="button"
-                            className="notification-item-dismiss"
-                            aria-label="Delete notification"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteNotification(notif.id);
-                            }}
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                  {notifications.length > 0 && (
-                    <div className="notification-footer">
-                      <button
-                        type="button"
-                        className="notification-clear-btn"
-                        onClick={clearAllNotifications}
-                      >
-                        Clear all
-                      </button>
-                      <span>Hosur Community Alerts</span>
-                    </div>
-                  )}
-                </div>
-              )}
+              {notificationsOpen && renderNotificationPopoverContent()}
             </div>
             <div className="language-selector-pill" role="group" aria-label="Select language" style={{ display: "inline-flex", alignItems: "center", height: "32px", background: "#f0f4f1", borderRadius: "16px", border: "1px solid #d4ded6", padding: "2px 3px", gap: "2px", flexShrink: 0 }}>
               {(["en", "ta", "kn", "te"] as const).map((l) => (
@@ -8688,6 +8705,21 @@ export default function Home() {
             >
               🔤 Open Full A–Z Directory ↗
             </button>
+          </div>
+        </div>
+      )}
+      {/* Mobile Notification Popover & Backdrop */}
+      {notificationsOpen && (
+        <div
+          className="mobile-notif-overlay"
+          onClick={() => setNotificationsOpen(false)}
+        >
+          <div
+            ref={mobileNotificationsRef}
+            className="mobile-notification-container"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {renderNotificationPopoverContent()}
           </div>
         </div>
       )}

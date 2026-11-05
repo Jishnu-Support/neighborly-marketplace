@@ -3283,7 +3283,8 @@ html, body {
 .mobile-category-carousel,
 .mobile-drawer-overlay,
 .mobile-drawer-panel,
-.mobile-sheet-overlay {
+.mobile-sheet-overlay,
+.mobile-notif-overlay {
   display: none;
 }
 
@@ -3934,16 +3935,43 @@ html, body {
   }
 
   /* 8. Notification popover pinned on mobile */
-  .notification-popover {
-    position: fixed !important;
-    top: 80px !important;
-    left: 12px !important;
-    right: 12px !important;
-    width: auto !important;
-    max-width: none !important;
-    max-height: 80vh !important;
-    z-index: 1000 !important;
+  .mobile-notif-overlay {
+    display: flex !important;
+    position: fixed;
+    inset: 0;
+    background: rgba(18, 34, 23, 0.52);
+    backdrop-filter: blur(3px);
+    z-index: 1250;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 78px 12px 16px 12px;
+    animation: fadeIn 0.18s ease;
+    box-sizing: border-box;
+  }
+  .mobile-notification-container {
+    width: 100%;
+    max-width: 440px;
+    max-height: calc(85vh - 78px);
+    display: flex;
+    flex-direction: column;
+    animation: notifSlide 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .mobile-notification-container .notification-popover {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: calc(85vh - 78px) !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.32), 0 4px 16px rgba(0, 0, 0, 0.14) !important;
     border-radius: 14px !important;
+    border: 1px solid #c7d8c6 !important;
+  }
+  .mobile-notification-container .notification-list {
+    max-height: calc(65vh - 120px) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
   }
 
   /* 9. Mobile Scrolling Content Ad (Ticker) */
