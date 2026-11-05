@@ -16283,8 +16283,8 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Professional Active Search & Locality Filter Status */}
-            {((query.trim() && (adConfig.targetingSummary?.isSearchTargeted || true)) || selectedNeighborhood !== "All Hosur") && (
+            {/* Active Locality Filter Status (shown only when not searching) */}
+            {!query.trim() && selectedNeighborhood !== "All Hosur" && (
               <div
                 style={{
                   margin: "12px 0 16px",
@@ -16306,56 +16306,27 @@ export default function Home() {
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
                   </svg>
                   <div style={{ fontSize: "12px", color: "#22422b", fontWeight: 600 }}>
-                    {query.trim() && (
-                      <span style={{ marginRight: "10px" }}>
-                        Results for: <strong style={{ color: "#16592d", fontWeight: 700 }}>"{query.trim()}"</strong>
-                      </span>
-                    )}
-                    {selectedNeighborhood !== "All Hosur" && (
-                      <span>
-                        Locality: <strong style={{ color: "#16592d", fontWeight: 700 }}>{selectedNeighborhood} ({radius} km radius)</strong>
-                      </span>
-                    )}
+                    Locality: <strong style={{ color: "#16592d", fontWeight: 700 }}>{selectedNeighborhood} ({radius} km radius)</strong>
                   </div>
                 </div>
 
                 <div style={{ display: "flex", gap: "6px" }}>
-                  {selectedNeighborhood !== "All Hosur" && (
-                    <button
-                      type="button"
-                      onClick={() => setSelectedNeighborhood("All Hosur")}
-                      style={{
-                        background: "#ffffff",
-                        border: "1px solid #c8d9cc",
-                        color: "#244f31",
-                        fontSize: "11px",
-                        fontWeight: 600,
-                        padding: "4px 10px",
-                        borderRadius: "6px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      All Hosur ✕
-                    </button>
-                  )}
-                  {query.trim() && (
-                    <button
-                      type="button"
-                      onClick={() => setQuery("")}
-                      style={{
-                        background: "#ffffff",
-                        border: "1px solid #c8d9cc",
-                        color: "#244f31",
-                        fontSize: "11px",
-                        fontWeight: 600,
-                        padding: "4px 10px",
-                        borderRadius: "6px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Clear search ✕
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedNeighborhood("All Hosur")}
+                    style={{
+                      background: "#ffffff",
+                      border: "1px solid #c8d9cc",
+                      color: "#244f31",
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      padding: "4px 10px",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    All Hosur ✕
+                  </button>
                 </div>
               </div>
             )}
@@ -16583,64 +16554,20 @@ export default function Home() {
 
               const resultsSection = (
                 <div className="results-browse-section" id="results">
-                  {query.trim() && (
-              <div className="search-engine-toolbar">
-                <div className="search-engine-stats">
-                  <div className="search-engine-count">
-                    <span className="search-sparkle">⚡</span>
-                    <span>Found <strong>{results.length}</strong> verified providers &amp; <strong>{relatedProducts.length}</strong> products for <em>“{query.trim()}”</em> <span className="search-speed">({searchDurationMs}ms)</span></span>
-                  </div>
-                  {correctedQuery && correctedQuery.toLowerCase() !== query.trim().toLowerCase() && (
-                    <div className="search-did-you-mean">
-                      <span>Did you mean:</span>
-                      <button type="button" className="did-you-mean-btn" onClick={() => searchNearby(correctedQuery)}>{correctedQuery}</button>?
+                  {query.trim() && correctedQuery && correctedQuery.toLowerCase() !== query.trim().toLowerCase() && (
+                    <div style={{ margin: "6px 0 12px", fontSize: "12px", color: "#526e5a" }}>
+                      Did you mean:{" "}
+                      <button
+                        type="button"
+                        className="did-you-mean-btn"
+                        onClick={() => searchNearby(correctedQuery)}
+                        style={{ background: "none", border: 0, color: "#16592d", fontWeight: 700, textDecoration: "underline", cursor: "pointer", padding: 0 }}
+                      >
+                        {correctedQuery}
+                      </button>
+                      ?
                     </div>
                   )}
-                </div>
-                <div className="search-engine-controls">
-                  <div className="search-sort-group">
-                    <label htmlFor="search-sort-select">Sort by:</label>
-                    <select id="search-sort-select" className="search-sort-select" value={searchSort} onChange={(e) => setSearchSort(e.target.value as any)}>
-                      <option value="relevance">⚡ Most Relevant</option>
-                      <option value="distance">⌖ Nearest to me</option>
-                      <option value="rating">★ Highest Rated</option>
-                      <option value="price">🏷️ Lowest Starting Price</option>
-                      <option value="name">🔤 Name (A–Z)</option>
-                    </select>
-                  </div>
-                  <div className="search-type-filters">
-                    <button type="button" className={`search-filter-tab ${searchFilterTab === "all" ? "active" : ""}`} onClick={() => setSearchFilterTab("all")}>All ({results.length + relatedProducts.length})</button>
-                    <button type="button" className={`search-filter-tab ${searchFilterTab === "businesses" ? "active" : ""}`} onClick={() => setSearchFilterTab("businesses")}>Businesses ({results.length})</button>
-                    <button type="button" className={`search-filter-tab ${searchFilterTab === "products" ? "active" : ""}`} onClick={() => setSearchFilterTab("products")}>Products ({relatedProducts.length})</button>
-                  </div>
-                  <button type="button" className="search-clear-all-btn" onClick={() => { setQuery(""); setCategory("All"); setCategoryPath([]); setSearchFilterTab("all"); }}>✕ Reset search</button>
-                </div>
-              </div>
-            )}
-
-            {query.trim() && relatedSearches.length > 0 && (
-              <div className="related-searches-bar" aria-label="Related searches" style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", margin: "16px 0 20px", padding: "10px 14px", background: "#f5f8f5", border: "1px solid #dbe6da", borderRadius: "10px" }}>
-                <span className="related-searches-label" style={{ font: "700 11.5px Manrope, sans-serif", color: "#274b32", display: "inline-flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
-                  <span className="related-search-icon" style={{ fontSize: "13px" }}>🔍</span> Related searches:
-                </span>
-                <div className="related-searches-pills" style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-                  {relatedSearches.map((term) => (
-                    <button
-                      key={term}
-                      type="button"
-                      className="related-search-pill"
-                      style={{ border: "1px solid #c9d9cb", background: "#ffffff", color: "#26432f", padding: "5px 13px", borderRadius: "20px", font: "600 11px Manrope, sans-serif", cursor: "pointer", display: "inline-flex", alignItems: "center", whiteSpace: "nowrap" }}
-                      onClick={() => {
-                        setQuery(term);
-                        recordEvent(`Related search clicked: ${term}`);
-                      }}
-                    >
-                      {term}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {(searchFilterTab === "all" || searchFilterTab === "businesses") && (
               <>
@@ -17026,6 +16953,65 @@ export default function Home() {
                         </div>
                       </div>
                     </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {query.trim() && relatedSearches.length > 0 && (
+              <div
+                className="related-searches-bar"
+                aria-label="Related searches"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  flexWrap: "wrap",
+                  margin: "24px 0 16px",
+                  padding: "12px 16px",
+                  background: "#f5f8f5",
+                  border: "1px solid #dbe6da",
+                  borderRadius: "10px",
+                }}
+              >
+                <span
+                  className="related-searches-label"
+                  style={{
+                    font: "700 11.5px Manrope, sans-serif",
+                    color: "#274b32",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  <span className="related-search-icon" style={{ fontSize: "13px" }}>🔍</span> Related searches:
+                </span>
+                <div className="related-searches-pills" style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                  {relatedSearches.map((term) => (
+                    <button
+                      key={term}
+                      type="button"
+                      className="related-search-pill"
+                      style={{
+                        border: "1px solid #c9d9cb",
+                        background: "#ffffff",
+                        color: "#26432f",
+                        padding: "5px 13px",
+                        borderRadius: "20px",
+                        font: "600 11px Manrope, sans-serif",
+                        cursor: "pointer",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        whiteSpace: "nowrap",
+                      }}
+                      onClick={() => {
+                        setQuery(term);
+                        recordEvent(`Related search clicked: ${term}`);
+                      }}
+                    >
+                      {term}
+                    </button>
                   ))}
                 </div>
               </div>
