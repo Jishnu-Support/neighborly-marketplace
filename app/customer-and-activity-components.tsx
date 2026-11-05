@@ -29,7 +29,7 @@ export type CustomerRegistrationRecord = {
 export type ActivityLogRecord = {
   id: string;
   action: string;
-  category: "Registration" | "Login" | "Search" | "Lead" | "View" | "SOS" | "Order" | "Admin" | "General";
+  category: "Registration" | "Login" | "Search" | "Lead" | "View" | "SOS" | "Order" | "Admin" | "General" | "Call" | "Advertisement" | "Customer Care";
   actorName: string;
   actorPhone?: string;
   actorRole: "Customer" | "Business" | "Agent" | "Admin" | "Super Admin" | "Guest";
@@ -629,6 +629,8 @@ export function CompanyActivityLogsPanel({
   const [logs, setLogs] = useState<ActivityLogRecord[]>([]);
   const [stats, setStats] = useState({
     total: 0,
+    calls: 0,
+    ads: 0,
     leads: 0,
     searches: 0,
     registrations: 0,
@@ -668,6 +670,8 @@ export function CompanyActivityLogsPanel({
 
   const categoryPills: { id: string; label: string; icon: string; color: string }[] = [
     { id: "All", label: "All Activities", icon: "📋", color: "#374151" },
+    { id: "Call", label: "Call Logs", icon: "📞", color: "#0284c7" },
+    { id: "Advertisement", label: "Ad Activity", icon: "📢", color: "#ea580c" },
     { id: "Lead", label: "Customer Leads", icon: "💬", color: "#059669" },
     { id: "Search", label: "Searches", icon: "🔍", color: "#d97706" },
     { id: "Registration", label: "Registrations", icon: "📝", color: "#7c3aed" },
@@ -805,6 +809,26 @@ export function CompanyActivityLogsPanel({
             {stats.registrations + stats.logins}
           </div>
           <div style={{ fontSize: "10px", color: "#6b21a8" }}>Accounts & Sessions</div>
+        </div>
+
+        <div style={{ background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: "8px", padding: "12px 14px" }}>
+          <div style={{ fontSize: "10px", color: "#0369a1", fontWeight: 700, textTransform: "uppercase" }}>
+            Phone Calls Placed
+          </div>
+          <div style={{ fontSize: "22px", fontWeight: 800, color: "#0284c7", marginTop: "2px" }}>
+            {stats.calls || 0}
+          </div>
+          <div style={{ fontSize: "10px", color: "#0369a1" }}>Calls triggered on portal</div>
+        </div>
+
+        <div style={{ background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: "8px", padding: "12px 14px" }}>
+          <div style={{ fontSize: "10px", color: "#c2410c", fontWeight: 700, textTransform: "uppercase" }}>
+            Ad Views & Clicks
+          </div>
+          <div style={{ fontSize: "22px", fontWeight: 800, color: "#ea580c", marginTop: "2px" }}>
+            {stats.ads || 0}
+          </div>
+          <div style={{ fontSize: "10px", color: "#c2410c" }}>Ad impressions & interactions</div>
         </div>
 
         <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "8px", padding: "12px 14px" }}>
@@ -961,6 +985,9 @@ export function CompanyActivityLogsPanel({
       <div style={{ display: "grid", gap: "10px" }}>
         {logs.map((log) => {
           const categoryBadgeColor: Record<string, { bg: string; text: string; border: string }> = {
+            Call: { bg: "#f0f9ff", text: "#0369a1", border: "#bae6fd" },
+            Advertisement: { bg: "#fff7ed", text: "#c2410c", border: "#fed7aa" },
+            "Customer Care": { bg: "#ecfdf5", text: "#047857", border: "#a7f3d0" },
             Lead: { bg: "#ecfdf5", text: "#065f46", border: "#a7f3d0" },
             Search: { bg: "#fffbeb", text: "#92400e", border: "#fde68a" },
             Registration: { bg: "#faf5ff", text: "#6b21a8", border: "#e9d5ff" },
@@ -1004,7 +1031,13 @@ export function CompanyActivityLogsPanel({
                   marginTop: "2px",
                 }}
               >
-                {log.category === "Lead"
+                {log.category === "Call"
+                  ? "📞"
+                  : log.category === "Advertisement"
+                  ? "📢"
+                  : log.category === "Customer Care"
+                  ? "🎧"
+                  : log.category === "Lead"
                   ? "💬"
                   : log.category === "Search"
                   ? "🔍"

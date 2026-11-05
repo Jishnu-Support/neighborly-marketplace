@@ -11,6 +11,9 @@ export type ActivityLogCategory =
   | "SOS"
   | "Order"
   | "Admin"
+  | "Call"
+  | "Advertisement"
+  | "Customer Care"
   | "General";
 
 export type ActivityActorRole =
@@ -103,6 +106,8 @@ export async function listActivityLogs(filter?: {
 
   const stats = {
     total: allLogs.length,
+    calls: allLogs.filter((l) => l.category === "Call").length,
+    ads: allLogs.filter((l) => l.category === "Advertisement").length,
     leads: allLogs.filter((l) => l.category === "Lead").length,
     searches: allLogs.filter((l) => l.category === "Search").length,
     registrations: allLogs.filter((l) => l.category === "Registration").length,

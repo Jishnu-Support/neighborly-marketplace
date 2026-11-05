@@ -14,6 +14,7 @@ import {
 } from "./ad-booking.shared";
 export { resolveScheduledAds, createSampleViewRecords, createSampleClickRecords };
 import { type AdConfig } from "./ad-config.shared";
+import { saveActivityLog } from "./activity-logs";
 
 const bookingsFilePath =
   process.env.NEIGHBORLY_AD_BOOKINGS_STORE ||
@@ -356,6 +357,28 @@ export async function recordAdImpression(
   }
 
   await saveAdBookings(bookings);
+
+  // Record separate advertisement activity log for Company Admins & Super Admins
+  try {
+    await saveActivityLog({
+      action: `Ad viewed: ${booking.businessName} (${surfaceLabels[surface]})`,
+      category: "Advertisement",
+      actorName: viewerDetails?.viewerName || "Visitor",
+      actorPhone: viewerDetails?.viewerPhone || "",
+      actorRole: (viewerDetails?.viewerRole as any) || "Customer",
+      locality: viewerDetails?.locality || "Hosur",
+      details: `Advertisement impression on ${surfaceLabels[surface]} for ${booking.businessName} (Booking #${booking.id}).`,
+      metadata: {
+        adBookingId,
+        businessName: booking.businessName,
+        surface,
+        device: viewerDetails?.device || "Mobile / Web",
+      },
+    });
+  } catch {
+    // Non-blocking log
+  }
+
   return { success: true, viewsCount: booking.viewsCount, booking, record: newRecord };
 }
 
@@ -427,5 +450,45 @@ export async function recordAdClick(
   }
 
   await saveAdBookings(bookings);
+
+  // Record advertisement interaction & call activity log
+  try {
+    if (action === "call") {
+      await saveActivityLog({
+        action: `Phone Call: ${booking.businessName} (${booking.contactPhone || "Ad Dialer"})`,
+        category: "Call",
+        actorName: viewerDetails?.viewerName || "Visitor",
+        actorPhone: viewerDetails?.viewerPhone || "",
+        actorRole: "Customer",
+        locality: viewerDetails?.locality || "Hosur",
+        details: `User clicked direct Call button on ${booking.businessName}'s advertisement billboard.`,
+        metadata: {
+          adBookingId,
+          businessName: booking.businessName,
+          targetPhone: booking.contactPhone,
+          targetType: "Business Ad",
+        },
+      });
+    }
+
+    await saveActivityLog({
+      action: `Ad Interaction: ${booking.businessName} (${actionLabels[action] || action})`,
+      category: "Advertisement",
+      actorName: viewerDetails?.viewerName || "Visitor",
+      actorPhone: viewerDetails?.viewerPhone || "",
+      actorRole: "Customer",
+      locality: viewerDetails?.locality || "Hosur",
+      details: `Lead clicked "${actionLabels[action] || action}" on ${booking.businessName}'s ad campaign.`,
+      metadata: {
+        adBookingId,
+        businessName: booking.businessName,
+        action,
+        device: viewerDetails?.device || "Mobile / Web",
+      },
+    });
+  } catch {
+    // Non-blocking log
+  }
+
   return { success: true, clicksCount: booking.clicksCount, booking, record: newRecord };
 }

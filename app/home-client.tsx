@@ -20,6 +20,7 @@ import { defaultRegistrationFormConfig, type RegistrationFormConfig, type Regist
 import { buildAutomobileTaxonomyPaths as buildSharedAutomobileTaxonomyPaths, commercialVehicleSubcategories, getVehicleModelsForType as getSharedVehicleModelsForType } from "./lib/vehicle-taxonomy.shared";
 import AtoZDirectory from "./atoz-directory";
 import { atozCatalog, type AtoZItem } from "./lib/atoz-catalog";
+import { defaultSupportConfig, type SupportConfig } from "./lib/support-config.shared";
 
 const subcategoriesSummary: Record<string, string> = {
   Automobiles: "Sales · Service → Two wheelers · Three wheelers · Four wheelers · Heavy vehicles",
@@ -11309,6 +11310,9 @@ export default function Home() {
   const [role, setRole] = useState<Role>("Discover");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authenticatedPortals, setAuthenticatedPortals] = useState<PortalRole[]>([]);
+  const [customerCareConfig, setCustomerCareConfig] = useState<SupportConfig>(defaultSupportConfig);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement | null>(null);
   const [companyAccessLevel, setCompanyAccessLevel] = useState<CompanyAccessLevel>("Admin");
   const [sessionIdentity, setSessionIdentity] = useState("");
   const [currentCustomerProfile, setCurrentCustomerProfile] = useState<MemberProfile | null>(null);
@@ -11454,6 +11458,42 @@ export default function Home() {
   );
   const activeOrdersCount = useMemo(() => (demoData.orders || []).filter((o) => o.status !== "completed" && o.status !== "cancelled").length, [demoData.orders]);
   const savedCount = demoData.favorites.length;
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/support-config", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data?.config) {
+          setCustomerCareConfig(data.config);
+        }
+      })
+      .catch(() => {});
+    const handleSupportUpdate = (e: Event) => {
+      const custom = e as CustomEvent<SupportConfig>;
+      if (custom.detail) {
+        setCustomerCareConfig(custom.detail);
+      }
+    };
+    window.addEventListener("neighborly-support-config-updated", handleSupportUpdate);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("neighborly-support-config-updated", handleSupportUpdate);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!profileDropdownOpen) return;
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setProfileDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [profileDropdownOpen]);
 
   useEffect(() => {
     try {
@@ -12677,6 +12717,37 @@ export default function Home() {
       }),
     }).catch(() => {});
   }
+
+  const handleTriggerCall = useCallback(
+    (
+      targetName: string,
+      targetPhone: string,
+      targetType: "Business" | "Customer Care" | "Emergency" = "Business",
+      metadata?: { businessId?: string; businessName?: string }
+    ) => {
+      try {
+        recordEvent(`Call placed: ${targetName} (${targetPhone})`, "Call", `Phone call initiated to ${targetName} (${targetPhone})`);
+        void fetch("/api/activity-logs/call", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            targetName,
+            targetPhone,
+            targetType,
+            businessId: metadata?.businessId,
+            businessName: metadata?.businessName,
+            callerEmail: currentCustomerProfile?.email || (sessionIdentity && sessionIdentity.includes("@") ? sessionIdentity : undefined),
+            callerName: currentCustomerProfile?.fullName || (sessionIdentity || undefined),
+            callerPhone: currentCustomerProfile?.phone || undefined,
+            callerRole: role === "Discover" ? "Customer" : role,
+          }),
+        }).catch(() => {});
+      } catch {
+        // ignore
+      }
+    },
+    [currentCustomerProfile, role, sessionIdentity, recordEvent]
+  );
 
   const handleAdAction = (
     currentAd: { adBookingId?: string; businessName?: string; title?: string },
@@ -14786,15 +14857,9 @@ export default function Home() {
                   fontSize: (authenticatedPortals.includes("Company") || role === "Company") ? "14px" : "12px",
                 }}
                 onClick={() => {
-                  if (authenticatedPortals.includes("Company") || role === "Company") {
-                    setRole("Company");
-                    setPortalActiveTab("Admins");
-                    window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Admins" } }));
-                  } else {
-                    openProfileView("Profile details");
-                  }
+                  setProfileDropdownOpen((prev) => !prev);
                 }}
-                title={(authenticatedPortals.includes("Company") || role === "Company") ? "Company Administration Profile" : "My Profile & Settings"}
+                title="Account Menu (Profile, Settings, Log out)"
               >
                 {(authenticatedPortals.includes("Company") || role === "Company")
                   ? "👑"
@@ -14802,14 +14867,164 @@ export default function Home() {
                       ? businessAccountBusinesses[0].name[0]
                       : (currentCustomerProfile?.fullName?.[0] || "C")).toUpperCase()}
               </button>
+              {profileDropdownOpen && (
+                <div
+                  ref={profileMenuRef}
+                  className="top-profile-dropdown"
+                  style={{
+                    position: "absolute",
+                    top: "calc(100% + 8px)",
+                    right: 0,
+                    width: "230px",
+                    background: "#ffffff",
+                    borderRadius: "14px",
+                    boxShadow: "0 10px 30px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08)",
+                    border: "1px solid #e2e8f0",
+                    zIndex: 1000,
+                    padding: "8px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "4px",
+                  }}
+                >
+                  <div style={{ padding: "8px 10px 10px", borderBottom: "1px solid #f1f5f9" }}>
+                    <div style={{ fontWeight: 700, fontSize: "13px", color: "#1e293b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {(authenticatedPortals.includes("Company") || role === "Company")
+                        ? (companyAccessLevel === "Super Admin" ? "👑 Super Admin" : "Company Admin")
+                        : (currentCustomerProfile?.fullName || sessionIdentity || "Customer Account")}
+                    </div>
+                    <div style={{ fontSize: "11px", color: "#64748b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {(authenticatedPortals.includes("Company") || role === "Company")
+                        ? (sessionIdentity || "admin@bizearch.in")
+                        : (currentCustomerProfile?.email || sessionIdentity || "Hosur Neighborhood Member")}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProfileDropdownOpen(false);
+                      if (authenticatedPortals.includes("Company") || role === "Company") {
+                        setRole("Company");
+                        setPortalActiveTab("Profile details");
+                        window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Profile details" } }));
+                      } else {
+                        openProfileView("Profile details");
+                      }
+                    }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      padding: "9px 12px",
+                      borderRadius: "8px",
+                      border: "none",
+                      background: "transparent",
+                      color: "#1e293b",
+                      fontSize: "12.5px",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      textAlign: "left",
+                      width: "100%",
+                    }}
+                  >
+                    <span style={{ fontSize: "15px" }}>👤</span>
+                    <span>Profile</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProfileDropdownOpen(false);
+                      if (authenticatedPortals.includes("Company") || role === "Company") {
+                        setRole("Company");
+                        setPortalActiveTab("Settings");
+                        window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Settings" } }));
+                      } else {
+                        openProfileView("Settings");
+                      }
+                    }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      padding: "9px 12px",
+                      borderRadius: "8px",
+                      border: "none",
+                      background: "transparent",
+                      color: "#1e293b",
+                      fontSize: "12.5px",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      textAlign: "left",
+                      width: "100%",
+                    }}
+                  >
+                    <span style={{ fontSize: "15px" }}>⚙️</span>
+                    <span>Settings</span>
+                  </button>
+
+                  <div style={{ height: "1px", background: "#f1f5f9", margin: "4px 0" }} />
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProfileDropdownOpen(false);
+                      void logOut();
+                    }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      padding: "9px 12px",
+                      borderRadius: "8px",
+                      border: "none",
+                      background: "#fef2f2",
+                      color: "#dc2626",
+                      fontSize: "12.5px",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      textAlign: "left",
+                      width: "100%",
+                    }}
+                  >
+                    <span style={{ fontSize: "15px" }}>🚪</span>
+                    <span>Log out</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
-          <div className="mobile-header-substrip">
-            <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(255,255,255,0.85)", padding: "2px 8px", borderRadius: "12px", border: "1px solid rgba(226,232,240,0.8)" }}>
+          <div className="mobile-header-substrip" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "6px", overflowX: "auto" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(255,255,255,0.85)", padding: "2px 8px", borderRadius: "12px", border: "1px solid rgba(226,232,240,0.8)", flexShrink: 0 }}>
               <span style={{ fontSize: "9px", textTransform: "uppercase", fontWeight: 700, color: "#64748b" }}>{t.poweredBy}</span>
               <img src="/jishnu-infotech-logo.png" alt="Jishnu Infotech" style={{ height: "18px", width: "auto", objectFit: "contain" }} />
             </span>
-            <span style={{ fontWeight: 700, color: "#225a33" }}>
+            <a
+              href={`tel:${customerCareConfig.phone.replace(/[^0-9+]/g, "")}`}
+              onClick={() => handleTriggerCall("Customer Care Support", customerCareConfig.phone, "Customer Care")}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "4px",
+                background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                color: "#ffffff",
+                padding: "3px 9px",
+                borderRadius: "999px",
+                fontSize: "10.5px",
+                fontWeight: 700,
+                textDecoration: "none",
+                boxShadow: "0 2px 5px rgba(5,150,105,0.25)",
+                whiteSpace: "nowrap",
+                letterSpacing: "0.01em",
+                flexShrink: 0,
+              }}
+              title={`Call Customer Care Support Helpline: ${customerCareConfig.phone}`}
+            >
+              <span>📞</span>
+              <span>Customer care support</span>
+            </a>
+            <span style={{ fontWeight: 700, color: "#225a33", whiteSpace: "nowrap", flexShrink: 0 }}>
               {(authenticatedPortals.includes("Company") || role === "Company") ? "Company Portal" : role === "Discover" ? "Explore Hosur" : role === "Account" ? "Customer Portal" : `${role} Portal`}
             </span>
           </div>
@@ -14821,6 +15036,30 @@ export default function Home() {
             <span style={{ fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase", fontSize: "9px" }}>{t.poweredBy}</span>
             <img src="/jishnu-infotech-logo.png" alt="Jishnu Infotech" style={{ display: "block", height: "24px", width: "auto", maxWidth: "115px", objectFit: "contain", filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.05))" }} />
           </div>
+          <a
+            href={`tel:${customerCareConfig.phone.replace(/[^0-9+]/g, "")}`}
+            onClick={() => handleTriggerCall("Customer Care Support", customerCareConfig.phone, "Customer Care")}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              background: "#ecfdf5",
+              color: "#065f46",
+              border: "1px solid #a7f3d0",
+              padding: "4px 12px",
+              borderRadius: "999px",
+              fontSize: "11px",
+              fontWeight: 700,
+              textDecoration: "none",
+              whiteSpace: "nowrap",
+              cursor: "pointer",
+              transition: "all 0.15s ease",
+            }}
+            title={`Customer Care Support Helpline: ${customerCareConfig.phone} (${customerCareConfig.hours})`}
+          >
+            <span style={{ fontSize: "12px" }}>📞</span>
+            <span>Customer care support: <strong>{customerCareConfig.phone}</strong></span>
+          </a>
           <div className="topbar-actions" style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "nowrap", flexShrink: 0, marginLeft: "auto" }}>
             <button
               className="location-chip"
@@ -16606,7 +16845,7 @@ export default function Home() {
                                 className="business-card-call-btn"
                                 href={`tel:${businessRawPhone(businessPhoneFor(business))}`}
                                 onClick={() => {
-                                  recordEvent(`Business call clicked: ${business.name}`);
+                                  handleTriggerCall(business.name, businessPhoneFor(business), "Business", { businessId: business.id, businessName: business.name });
                                 }}
                                 title={`Call ${business.name} at ${businessPhoneFor(business)}`}
                               >
@@ -17057,6 +17296,7 @@ export default function Home() {
           initialTab={businessModalTab}
           onClaim={(biz) => setClaimBusiness(biz)}
           onRate={(biz) => setReviewBusiness(biz)}
+          onTriggerCall={handleTriggerCall}
         />
       )}
       {enquiryProduct && <EnquiryDialog business={enquiryProduct.business} product={enquiryProduct.product} close={() => setEnquiryProduct(null)} submit={submitEnquiry} />}
@@ -17785,6 +18025,27 @@ function EnquiryRow({ enquiry }: { enquiry: DemoEnquiry }) {
   return <div className="enquiry-row"><div className="enquiry-icon">↗</div><div className="listing-name"><strong>{enquiry.productName}</strong><small>{enquiry.businessName} · {new Date(enquiry.createdAt).toLocaleString()}</small><p>{enquiry.message}</p></div><span className="status-pill pending">Local draft</span></div>;
 }
 
+function triggerCallLog(
+  targetName: string,
+  targetPhone: string,
+  targetType: "Business" | "Customer Care" | "Emergency" = "Business",
+  metadata?: { businessId?: string; businessName?: string }
+) {
+  try {
+    void fetch("/api/activity-logs/call", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        targetName,
+        targetPhone,
+        targetType,
+        businessId: metadata?.businessId,
+        businessName: metadata?.businessName,
+      }),
+    }).catch(() => {});
+  } catch {}
+}
+
 function BusinessDetailDialog({
   business,
   distanceKm,
@@ -17797,6 +18058,7 @@ function BusinessDetailDialog({
   initialTab = "products",
   onClaim,
   onRate,
+  onTriggerCall,
 }: {
   business: Business;
   distanceKm: number;
@@ -17809,6 +18071,7 @@ function BusinessDetailDialog({
   initialTab?: "products" | "reviews" | "navigation";
   onClaim?: (business: Business) => void;
   onRate?: (business: Business) => void;
+  onTriggerCall?: (targetName: string, targetPhone: string, targetType?: "Business" | "Customer Care" | "Emergency", metadata?: { businessId?: string; businessName?: string }) => void;
 }) {
   const [activeTab, setActiveTab] = useState<"products" | "reviews" | "navigation">(initialTab);
   const [travelMode, setTravelMode] = useState<"driving" | "two-wheeler" | "walking">("driving");
@@ -17992,6 +18255,9 @@ function BusinessDetailDialog({
             <a
               href={`tel:${rawPhone}`}
               className="business-call-button-primary"
+              onClick={() => {
+                (onTriggerCall || triggerCallLog)(business.name, rawPhone, "Business", { businessId: business.id, businessName: business.name });
+              }}
               title={`Call ${business.name}`}
             >
               📞 Call Now
@@ -18163,6 +18429,9 @@ function BusinessDetailDialog({
                           <a
                             className="catalog-action-btn call"
                             href={`tel:${rawPhone}`}
+                            onClick={() => {
+                              (onTriggerCall || triggerCallLog)(`${business.name} (${product.name})`, rawPhone, "Business", { businessId: business.id, businessName: business.name });
+                            }}
                             title={`Call ${business.name} about ${product.name}`}
                           >
                             📞 Call
@@ -25035,20 +25304,193 @@ function CompanyPortal({
       />
     )}
     {activeTab === "Settings" && (
-      <ProfileAndSettingsPanel
-        role="Company"
-        label={accessLevel}
-        identity={identity}
-        initialSubTab="settings"
-        onNavigateTab={(t) => setActiveTab(t)}
-        onOpenPortal={onOpenPortal}
-        onLanguageChange={onLanguageChange}
-        showNotice={showNotice}
-      />
+      <>
+        <CompanyCustomerCareManager
+          accessLevel={accessLevel}
+          showNotice={showNotice}
+          onConfigUpdated={(cfg) => {
+            window.dispatchEvent(new CustomEvent("neighborly-support-config-updated", { detail: cfg }));
+          }}
+        />
+        <ProfileAndSettingsPanel
+          role="Company"
+          label={accessLevel}
+          identity={identity}
+          initialSubTab="settings"
+          onNavigateTab={(t) => setActiveTab(t)}
+          onOpenPortal={onOpenPortal}
+          onLanguageChange={onLanguageChange}
+          showNotice={showNotice}
+        />
+      </>
     )}
   </div>;
 }
 
+
+function CompanyCustomerCareManager({
+  accessLevel,
+  showNotice,
+  onConfigUpdated,
+}: {
+  accessLevel: CompanyAccessLevel;
+  showNotice: (msg: string) => void;
+  onConfigUpdated?: (config: SupportConfig) => void;
+}) {
+  const [support, setSupport] = useState<SupportConfig>(defaultSupportConfig);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [savedSuccess, setSavedSuccess] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/company/support-config", { cache: "no-store", credentials: "include" })
+      .then(async (res) => {
+        if (!res.ok) throw new Error("Could not load support configuration.");
+        return (await res.json()) as { config?: SupportConfig };
+      })
+      .then((data) => {
+        if (!cancelled && data.config) {
+          setSupport(data.config);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err instanceof Error ? err.message : "Error loading helpline settings");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    setError("");
+    setSavedSuccess(false);
+    try {
+      const res = await fetch("/api/company/support-config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(support),
+      });
+      const data = (await res.json()) as { config?: SupportConfig; error?: string };
+      if (!res.ok || !data.config) {
+        throw new Error(data.error || "Failed to update support configuration");
+      }
+      setSupport(data.config);
+      setSavedSuccess(true);
+      showNotice("✓ Customer care helpline details saved & updated across portal!");
+      onConfigUpdated?.(data.config);
+      window.setTimeout(() => setSavedSuccess(false), 4000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update helpline details");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="settings-section-card" style={{ marginBottom: "20px", border: "1px solid #bbf7d0", background: "#fcfdfc" }}>
+      <div className="settings-card-header">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
+          <div>
+            <h3 style={{ color: "#166534" }}><span>🎧</span> Customer Care Support Helpline Management</h3>
+            <p style={{ margin: 0 }}>Configure the direct call helpline displayed between Jishnu Infotech and Explore Hosur.</p>
+          </div>
+          <span style={{ fontSize: "11px", fontWeight: 700, padding: "3px 8px", borderRadius: "6px", background: "#ecfdf5", color: "#047857", border: "1px solid #a7f3d0" }}>
+            {accessLevel.toUpperCase()} CONTROL
+          </span>
+        </div>
+      </div>
+
+      {loading ? (
+        <p style={{ padding: "16px 20px", color: "#64748b" }}>Loading customer care details...</p>
+      ) : (
+        <form onSubmit={handleSave} style={{ padding: "16px 20px" }}>
+          {error && <p className="form-error" style={{ color: "#dc2626", marginBottom: "12px" }}>{error}</p>}
+          {savedSuccess && <p style={{ color: "#16a34a", fontWeight: 600, marginBottom: "12px" }}>✓ Saved successfully! Activity log has recorded this change.</p>}
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "14px", marginBottom: "16px" }}>
+            <div>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "5px" }}>
+                Helpline Phone Number (Direct Dialer)
+              </label>
+              <input
+                type="text"
+                value={support.phone}
+                onChange={(e) => setSupport({ ...support, phone: e.target.value })}
+                placeholder="+91 94432 12345"
+                required
+                style={{ width: "100%", padding: "8px 12px", borderRadius: "7px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+              />
+              <small style={{ color: "#64748b", fontSize: "11px" }}>This number opens directly in the customer's mobile dial pad.</small>
+            </div>
+
+            <div>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "5px" }}>
+                Support Email Address
+              </label>
+              <input
+                type="email"
+                value={support.email}
+                onChange={(e) => setSupport({ ...support, email: e.target.value })}
+                placeholder="support@bizearch.in"
+                required
+                style={{ width: "100%", padding: "8px 12px", borderRadius: "7px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+              />
+              <small style={{ color: "#64748b", fontSize: "11px" }}>Official support contact email.</small>
+            </div>
+
+            <div>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "5px" }}>
+                Operational Support Hours
+              </label>
+              <input
+                type="text"
+                value={support.hours}
+                onChange={(e) => setSupport({ ...support, hours: e.target.value })}
+                placeholder="8:00 AM - 9:00 PM (All Days)"
+                required
+                style={{ width: "100%", padding: "8px 12px", borderRadius: "7px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+              />
+              <small style={{ color: "#64748b", fontSize: "11px" }}>Active help desk hours displayed on hover / tooltips.</small>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px", borderTop: "1px solid #e2e8f0", paddingTop: "14px" }}>
+            <div style={{ fontSize: "11.5px", color: "#64748b" }}>
+              {support.updatedAt && (
+                <span>Last updated by <strong>{support.updatedBy || "Admin"}</strong> on {new Date(support.updatedAt).toLocaleString()}</span>
+              )}
+            </div>
+            <button
+              type="submit"
+              disabled={saving}
+              style={{
+                background: "#166534",
+                color: "#ffffff",
+                border: "none",
+                borderRadius: "7px",
+                padding: "8px 18px",
+                fontSize: "12.5px",
+                fontWeight: 700,
+                cursor: saving ? "not-allowed" : "pointer",
+                opacity: saving ? 0.7 : 1,
+              }}
+            >
+              {saving ? "Saving Changes..." : "Save Customer Care Details"}
+            </button>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+}
 
 function CompanyCategoryManager({ accessLevel }: { accessLevel: CompanyAccessLevel }) {
   const [config, setConfig] = useState<CategoryConfig>(defaultCategoryConfig);
