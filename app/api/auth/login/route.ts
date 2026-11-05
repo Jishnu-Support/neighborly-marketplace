@@ -91,7 +91,7 @@ export async function POST(request: Request) {
     let identity = body.identity.trim().toLowerCase();
     if (matchedRole === "Business") {
       const biz = await getBusinessByIdentity(body.identity);
-      if (biz) identity = biz.phone || biz.email || identity;
+      if (biz) identity = biz.phone || biz.email || biz.name || identity;
     } else if (matchedRole === "Account") {
       const cust = await getCustomerByIdentity(body.identity);
       if (cust) identity = cust.phone || cust.email || identity;

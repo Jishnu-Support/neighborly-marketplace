@@ -751,8 +751,13 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
         ) : (
           <>
             <label>
-              Email or mobile number
-              <input name="identity" autoComplete="username" placeholder="you@example.com or 9876543210" required />
+              {portal === "Business" ? "Business name, email or mobile number" : "Email or mobile number"}
+              <input
+                name="identity"
+                autoComplete="username"
+                placeholder={portal === "Business" ? "e.g. Jishnu Infotech, email or mobile" : "you@example.com or 9876543210"}
+                required
+              />
             </label>
             <label>
               Password
