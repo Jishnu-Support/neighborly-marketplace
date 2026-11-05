@@ -172,18 +172,9 @@ export async function readAdBookings(): Promise<AdBookingRequest[]> {
       }
       return bookings;
     }
-    return getInitialSampleBookings();
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
-      console.warn("Could not read ad bookings store, returning defaults:", error);
-    }
-    const initial = getInitialSampleBookings();
-    try {
-      await saveAdBookings(initial);
-    } catch {
-      // ignore
-    }
-    return initial;
+    return [];
+  } catch {
+    return [];
   }
 }
 

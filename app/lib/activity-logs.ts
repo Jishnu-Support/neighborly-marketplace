@@ -269,22 +269,13 @@ export function getDefaultSeedActivityLogs(): ActivityLogRecord[] {
 
 export function sanitizeActivityLogs(records: ActivityLogRecord[]): { logs: ActivityLogRecord[]; changed: boolean } {
   if (!Array.isArray(records) || records.length === 0) {
-    const seed = getDefaultSeedActivityLogs();
-    return { logs: seed, changed: true };
+    return { logs: [], changed: false };
   }
 
   // Detect spam flooding (e.g. 500 identical records of the same ad view)
   const actionCounts = new Map<string, number>();
   for (const r of records) {
     actionCounts.set(r.action, (actionCounts.get(r.action) || 0) + 1);
-  }
-
-  let hasSpam = false;
-  for (const count of actionCounts.values()) {
-    if (count > 5 && count / records.length > 0.3) {
-      hasSpam = true;
-      break;
-    }
   }
 
   // Deduplicate rapid repeat actions from the same actor
@@ -305,21 +296,7 @@ export function sanitizeActivityLogs(records: ActivityLogRecord[]): { logs: Acti
     deduped.push(r);
   }
 
-  let finalLogs = deduped;
-  let changed = deduped.length !== records.length;
-
-  // If the log was stripped of diversity due to duplicate spam wiping out other categories,
-  // or if there are few categories, merge with seed logs so all categories are represented.
-  const categoriesPresent = new Set(finalLogs.map((l) => l.category));
-  if (finalLogs.length < 15 || categoriesPresent.size < 4 || hasSpam) {
-    const seed = getDefaultSeedActivityLogs();
-    const existingActions = new Set(finalLogs.map((l) => l.action));
-    const toAdd = seed.filter((s) => !existingActions.has(s.action));
-    finalLogs = [...finalLogs, ...toAdd];
-    changed = true;
-  }
-
-  return { logs: finalLogs.slice(0, 1000), changed };
+  return { logs: deduped.slice(0, 1000), changed: deduped.length !== records.length };
 }
 
 export async function readActivityLogs(): Promise<ActivityLogRecord[]> {
@@ -333,16 +310,13 @@ export async function readActivityLogs(): Promise<ActivityLogRecord[]> {
       }
       return logs;
     }
+    return [];
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      const seed = getDefaultSeedActivityLogs();
-      writeActivityLogs(seed).catch(() => {});
-      return seed;
+      return [];
     }
   }
-  const seed = getDefaultSeedActivityLogs();
-  writeActivityLogs(seed).catch(() => {});
-  return seed;
+  return [];
 }
 
 export async function resetAndSeedActivityLogs(): Promise<ActivityLogRecord[]> {

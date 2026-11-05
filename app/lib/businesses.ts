@@ -143,19 +143,13 @@ export async function readBusinessRecords(): Promise<StoredBusiness[]> {
   try {
     const raw = await readFile(storePath, "utf8");
     const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      await writeBusinessRecords([defaultDemoBusiness]);
-      return [defaultDemoBusiness];
+    if (Array.isArray(parsed)) {
+      return parsed as StoredBusiness[];
     }
-    return parsed as StoredBusiness[];
+    return [];
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      try {
-        await writeBusinessRecords([defaultDemoBusiness]);
-        return [defaultDemoBusiness];
-      } catch {
-        return [defaultDemoBusiness];
-      }
+      return [];
     }
     throw error;
   }

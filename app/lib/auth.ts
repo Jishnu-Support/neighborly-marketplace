@@ -77,10 +77,7 @@ async function createStoredAdmin(name: string, email: string, password: string, 
   return { id, name, email, active: true, createdAt: new Date().toISOString(), salt, passwordHash: hashPassword(password, salt) };
 }
 
-const defaultAdmins: { name: string; email: string; defaultPassword: string }[] = [
-  { name: "Keerthana E", email: "keerthanabhuvaneshwari22@gmail.com", defaultPassword: "AdminPassword123!" },
-  { name: "Dharshan R", email: "dharshanrameshreddy@gmail.com", defaultPassword: "AdminPassword123!" },
-];
+const defaultAdmins: { name: string; email: string; defaultPassword: string }[] = [];
 
 async function readAdminRecords(): Promise<StoredAdmin[]> {
   let records: StoredAdmin[] = [];
@@ -94,27 +91,19 @@ async function readAdminRecords(): Promise<StoredAdmin[]> {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
   }
 
-  // Ensure default company admin accounts (Keerthana E and Dharshan R) are never removed
-  let modified = false;
-  for (const def of defaultAdmins) {
-    const normalized = def.email.trim().toLowerCase();
-    const existing = records.find((a) => a.email.trim().toLowerCase() === normalized);
-    if (!existing) {
-      const salt = randomBytes(16).toString("hex");
-      records.push({
-        id: randomUUID(),
-        name: def.name,
-        email: normalized,
-        active: true,
-        createdAt: new Date().toISOString(),
-        salt,
-        passwordHash: hashPassword(def.defaultPassword, salt),
-      });
-      modified = true;
-    }
-  }
-
-  if (modified) {
+  // Ensure Company Super Admin is always present
+  const hasSuper = records.some((a) => a.email.toLowerCase() === "admin@bizearch.in");
+  if (!hasSuper) {
+    const salt = "00112233445566778899aabbccddeeff";
+    records.unshift({
+      id: "super-admin-bizearch",
+      name: "Company Super Admin",
+      email: "admin@bizearch.in",
+      active: true,
+      createdAt: "2026-01-01T00:00:00.000Z",
+      salt,
+      passwordHash: "9d8729034e6821b84867b060b5f57d7bb539855645793cec8482e155fa84953a2130997e514bbc9f125d8aca4519811f2986b078f353470521aad175cf12fd12",
+    });
     try {
       await writeAdminRecords(records);
     } catch {
@@ -132,64 +121,20 @@ async function writeCustomerRecords(customers: StoredCustomer[]) {
   await rename(temporaryPath, customerStorePath);
 }
 
-const defaultCustomers: { name: string; phone: string; locality: string; defaultPassword: string }[] = [
-  { name: "Murali", phone: "919962775630", locality: "Bagalur Road", defaultPassword: "Neighbor123!" },
-];
+const defaultCustomers: { name: string; phone: string; locality: string; defaultPassword: string }[] = [];
 
 export async function readCustomerRecords(): Promise<StoredCustomer[]> {
-  let records: StoredCustomer[] = [];
   try {
     const raw = await readFile(customerStorePath, "utf8");
     const parsed = JSON.parse(raw) as unknown;
     if (Array.isArray(parsed)) {
-      records = parsed as StoredCustomer[];
+      return parsed as StoredCustomer[];
     }
+    return [];
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    return [];
   }
-
-  let modified = false;
-  for (const def of defaultCustomers) {
-    const cleanPhone = def.phone.replace(/\D/g, "");
-    const existing = records.find((c) => {
-      const cClean = c.phone.replace(/\D/g, "");
-      return cClean === cleanPhone || cClean.endsWith(cleanPhone) || cleanPhone.endsWith(cClean);
-    });
-    if (!existing) {
-      const salt = randomBytes(16).toString("hex");
-      records.push({
-        id: "cust-murali-9962775630",
-        name: def.name,
-        phone: def.phone,
-        doorNo: "",
-        street: "",
-        locality: def.locality,
-        city: "Hosur",
-        district: "Krishnagiri",
-        state: "Tamil Nadu",
-        pincode: "635109",
-        address: `${def.locality}, Hosur - 635109`,
-        emergencyPhones: ["", ""],
-        emergencyNames: ["", ""],
-        emergencyRelations: ["Family", ""],
-        active: true,
-        createdAt: new Date().toISOString(),
-        salt,
-        passwordHash: hashPassword(def.defaultPassword, salt),
-      });
-      modified = true;
-    }
-  }
-
-  if (modified) {
-    try {
-      await writeCustomerRecords(records);
-    } catch {
-      // Ignore initial write errors
-    }
-  }
-
-  return records;
 }
 
 export async function registerCustomerAccount(input: {
