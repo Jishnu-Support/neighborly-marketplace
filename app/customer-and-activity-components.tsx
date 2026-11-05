@@ -759,6 +759,39 @@ export function CompanyActivityLogsPanel({
           >
             {loading ? "Refreshing..." : "↻ Refresh"}
           </button>
+          <button
+            type="button"
+            className="outline-button"
+            onClick={async () => {
+              setLoading(true);
+              try {
+                const res = await fetch("/api/company/activity-logs", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ action: "deduplicate" }),
+                });
+                const data = await res.json();
+                if (data.logs) setLogs(data.logs);
+                if (data.stats) setStats(data.stats);
+              } catch {}
+              setLoading(false);
+            }}
+            disabled={loading}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              fontSize: "12px",
+              padding: "8px 12px",
+              background: "#fffbeb",
+              borderColor: "#fde68a",
+              color: "#92400e",
+              fontWeight: 600,
+            }}
+            title="Remove runaway duplicate impressions and restore diverse activity records"
+          >
+            🧹 Clean & Deduplicate
+          </button>
         </div>
       </div>
 

@@ -11869,78 +11869,51 @@ export default function Home() {
     return { customerId, viewerName, viewerPhone, viewerRole, viewedDate, viewedTime, locality, device };
   }
 
-  // Automatically record view impression when a customer views an ad on Discover
+  const recordedImpressionsRef = useRef<Map<string, number>>(new Map());
+
+  // Automatically record view impression when a customer views an ad on Discover (throttled & loop-protected)
   useEffect(() => {
     if (role !== "Discover") return;
-    const currentAd = adConfig.imageAds[activeAd];
-    if (!currentAd?.adBookingId) return;
+    const currentAd = adConfig.imageAds?.[activeAd];
+    const adBookingId = currentAd?.adBookingId;
+    if (!adBookingId) return;
+
+    const now = Date.now();
+    const lastTime = recordedImpressionsRef.current.get(`poster:${adBookingId}`) || 0;
+    // Debounce / throttle: record at most once per 10 minutes per ad per session
+    if (now - lastTime < 10 * 60 * 1000) return;
+    recordedImpressionsRef.current.set(`poster:${adBookingId}`, now);
 
     const viewer = getViewerInfo();
     fetch("/api/ads/impression", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        adBookingId: currentAd.adBookingId,
+        adBookingId,
         surface: "poster",
         ...viewer,
       }),
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.booking) {
-          setAdBookings((prev) =>
-            prev.map((b) => (b.id === data.booking.id ? data.booking : b))
-          );
-        } else if (data.viewsCount) {
-          setAdBookings((prev) =>
-            prev.map((b) =>
-              b.id === currentAd.adBookingId
-                ? {
-                    ...b,
-                    viewsCount: data.viewsCount,
-                    lastViewedAt: new Date().toISOString(),
-                  }
-                : b
-            )
-          );
-        }
-      })
-      .catch(() => {});
-  }, [activeAd, role, adConfig.imageAds]);
+    }).catch(() => {});
+  }, [activeAd, role]);
 
   const handleVideoAdImpression = () => {
-    if (!adConfig.videoAd?.adBookingId) return;
+    const videoAdId = adConfig.videoAd?.adBookingId;
+    if (!videoAdId) return;
+    const now = Date.now();
+    const lastTime = recordedImpressionsRef.current.get(`video:${videoAdId}`) || 0;
+    if (now - lastTime < 10 * 60 * 1000) return;
+    recordedImpressionsRef.current.set(`video:${videoAdId}`, now);
+
     const viewer = getViewerInfo();
     fetch("/api/ads/impression", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        adBookingId: adConfig.videoAd.adBookingId,
+        adBookingId: videoAdId,
         surface: "video",
         ...viewer,
       }),
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.booking) {
-          setAdBookings((prev) =>
-            prev.map((b) => (b.id === data.booking.id ? data.booking : b))
-          );
-        } else if (data.viewsCount) {
-          setAdBookings((prev) =>
-            prev.map((b) =>
-              b.id === adConfig.videoAd?.adBookingId
-                ? {
-                    ...b,
-                    viewsCount: data.viewsCount,
-                    lastViewedAt: new Date().toISOString(),
-                  }
-                : b
-            )
-          );
-        }
-      })
-      .catch(() => {});
+    }).catch(() => {});
   };
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentSession } from "@/app/lib/auth";
-import { listActivityLogs } from "@/app/lib/activity-logs";
+import { listActivityLogs, resetAndSeedActivityLogs, readActivityLogs } from "@/app/lib/activity-logs";
 
 export async function GET(request: Request) {
   const session = await getCurrentSession();
@@ -23,4 +23,29 @@ export async function GET(request: Request) {
 
   const result = await listActivityLogs({ category, role, query, limit });
   return NextResponse.json(result, { headers: { "Cache-Control": "no-store" } });
+}
+
+export async function POST(request: Request) {
+  const session = await getCurrentSession();
+  if (
+    session?.role !== "Company" ||
+    (session.accessLevel !== "Admin" && session.accessLevel !== "Super Admin")
+  ) {
+    return NextResponse.json(
+      { error: "Company Admin or Super Admin access is required." },
+      { status: 403 }
+    );
+  }
+
+  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+  const action = typeof body.action === "string" ? body.action : "deduplicate";
+
+  if (action === "reset" || action === "deduplicate") {
+    await resetAndSeedActivityLogs();
+    const result = await listActivityLogs({ category: "All", role: "All", limit: 250 });
+    return NextResponse.json({ success: true, ...result });
+  }
+
+  const result = await listActivityLogs({ category: "All", role: "All", limit: 250 });
+  return NextResponse.json({ success: true, ...result });
 }
