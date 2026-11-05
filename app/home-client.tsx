@@ -18122,14 +18122,19 @@ function BusinessDetailDialog({
     ? [business.address.doorNumber, business.address.street, business.address.area, "Hosur", business.address.pincode].filter(Boolean).join(", ")
     : "Hosur, Tamil Nadu";
 
-  // Destination query for Google Maps matching the genuine Hosur place
+  // Fallback destination text query if coordinates are absent
   const destinationQuery = encodeURIComponent(
     `${business.name}, ${[business.address?.doorNumber, business.address?.street, business.address?.area, "Hosur", "Tamil Nadu " + (business.address?.pincode || "635109")].filter(Boolean).join(", ")}`
   );
 
-  // Google Maps directions embed showing route between Origin and Destination
+  // Exact coordinates destination target (latitude,longitude) prioritized for accurate map search and turn-by-turn navigation
+  const destinationTarget = coordinates
+    ? `${coordinates.latitude},${coordinates.longitude}`
+    : destinationQuery;
+
+  // Google Maps directions embed showing route between Origin and Destination coordinates
   const googleRouteEmbedUrl = coordinates
-    ? `https://maps.google.com/maps?saddr=${origin.latitude},${origin.longitude}&daddr=${destinationQuery}&output=embed`
+    ? `https://maps.google.com/maps?saddr=${origin.latitude},${origin.longitude}&daddr=${destinationTarget}&output=embed`
     : `https://maps.google.com/maps?q=${destinationQuery}&output=embed`;
 
   // OpenStreetMap embed fallback
@@ -18148,14 +18153,14 @@ function BusinessDetailDialog({
 
   const activeMapUrl = mapProvider === "google" ? googleRouteEmbedUrl : osmEmbedUrl;
 
-  // Google Maps external turn-by-turn navigation URL
+  // Google Maps external turn-by-turn navigation URL using exact coordinates
   // Omitting origin when device GPS is used allows Google Maps app to route from the user's real location
   const googleDirectionsUrl = isLiveUserLocation
-    ? `https://www.google.com/maps/dir/?api=1&origin=${origin.latitude},${origin.longitude}&destination=${destinationQuery}&travelmode=${travelMode === "walking" ? "walking" : travelMode === "two-wheeler" ? "two-wheeler" : "driving"}`
-    : `https://www.google.com/maps/dir/?api=1&destination=${destinationQuery}&travelmode=${travelMode === "walking" ? "walking" : travelMode === "two-wheeler" ? "two-wheeler" : "driving"}`;
+    ? `https://www.google.com/maps/dir/?api=1&origin=${origin.latitude},${origin.longitude}&destination=${destinationTarget}&travelmode=${travelMode === "walking" ? "walking" : travelMode === "two-wheeler" ? "two-wheeler" : "driving"}`
+    : `https://www.google.com/maps/dir/?api=1&destination=${destinationTarget}&travelmode=${travelMode === "walking" ? "walking" : travelMode === "two-wheeler" ? "two-wheeler" : "driving"}`;
 
-  // Direct Google Maps place pin search URL
-  const googleMapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${destinationQuery}`;
+  // Direct Google Maps place pin search URL using exact coordinates
+  const googleMapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${destinationTarget}`;
 
   // OpenStreetMap directions external URL
   const osmDirectionsUrl = coordinates
