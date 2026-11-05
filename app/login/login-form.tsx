@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
+import { MapPinModal, type Coordinates } from "../map-pin-modal";
 
 export type PortalRole = "Account" | "Business" | "Agent";
 
@@ -41,6 +42,9 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
   const [regPassword, setRegPassword] = useState("");
   const [regConfirmPassword, setRegConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showBusinessPinModal, setShowBusinessPinModal] = useState(false);
+  const [pinnedBusinessCoords, setPinnedBusinessCoords] = useState<Coordinates | null>(null);
+  const [businessNameInput, setBusinessNameInput] = useState("");
   const info = portalInfo[portal];
 
   async function handleOtp(action: "send" | "verify", phone: string) {
@@ -213,6 +217,7 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
               entityType,
               website,
               password,
+              coordinates: pinnedBusinessCoords,
             }),
           });
           const result = (await response.json()) as { error?: string; business?: any };
@@ -585,6 +590,46 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
                     <input name="pincode" placeholder="e.g. 635109" required maxLength={10} style={{ background: "#fff" }} />
                   </label>
                 </div>
+
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px", marginTop: "4px", paddingTop: "8px", borderTop: "1px dashed #d4e4d6" }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowBusinessPinModal(true)}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      background: "#285536",
+                      color: "#ffffff",
+                      padding: "7px 14px",
+                      borderRadius: "7px",
+                      fontSize: "11.5px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      border: "none",
+                    }}
+                  >
+                    <span>📍 Pin location on map</span>
+                  </button>
+                  {pinnedBusinessCoords ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <span style={{ fontSize: "11px", color: "#166534", fontWeight: 700 }}>
+                        ✓ Pinned: {pinnedBusinessCoords.latitude.toFixed(6)}, {pinnedBusinessCoords.longitude.toFixed(6)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setShowBusinessPinModal(true)}
+                        style={{ background: "none", border: "none", color: "#15803d", textDecoration: "underline", fontSize: "11px", cursor: "pointer", fontWeight: 600 }}
+                      >
+                        Adjust
+                      </button>
+                    </div>
+                  ) : (
+                    <span style={{ fontSize: "10.5px", color: "#617565" }}>
+                      Pinpoint exact storefront on interactive map
+                    </span>
+                  )}
+                </div>
               </div>
             )}
 
@@ -764,6 +809,18 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
         <Link href="/login?portal=Agent">Agent</Link>
         <Link href="/company-login">Company</Link>
       </nav>
+
+      <MapPinModal
+        isOpen={showBusinessPinModal}
+        onClose={() => setShowBusinessPinModal(false)}
+        onConfirm={(coords) => {
+          setPinnedBusinessCoords(coords);
+          setShowBusinessPinModal(false);
+        }}
+        initialCoordinates={pinnedBusinessCoords}
+        title="Pin Business Location on Map"
+        businessName={businessNameInput || "Business Registration"}
+      />
     </section>
   </main>;
 }

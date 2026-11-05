@@ -21,6 +21,7 @@ import { buildAutomobileTaxonomyPaths as buildSharedAutomobileTaxonomyPaths, com
 import AtoZDirectory from "./atoz-directory";
 import { atozCatalog, type AtoZItem } from "./lib/atoz-catalog";
 import { defaultSupportConfig, type SupportConfig } from "./lib/support-config.shared";
+import { MapPinModal } from "./map-pin-modal";
 
 const subcategoriesSummary: Record<string, string> = {
   Automobiles: "Sales · Service → Two wheelers · Three wheelers · Four wheelers · Heavy vehicles",
@@ -13439,6 +13440,33 @@ export default function Home() {
     showNotice(`✓ Photos updated for "${businessName}"!`);
   }
 
+  function updateBusinessLocation(businessName: string, coordinates: Coordinates) {
+    if (currentBusinessRecord && currentBusinessRecord.name === businessName) {
+      setCurrentBusinessRecord((prev: any) => prev ? {
+        ...prev,
+        coordinates,
+        demoCoordinates: coordinates,
+      } : prev);
+    }
+    setDemoData((prev) => ({
+      ...prev,
+      businesses: prev.businesses.map((b) =>
+        b.name === businessName ? { ...b, coordinates, demoCoordinates: coordinates } : b
+      ),
+    }));
+    try {
+      const raw = localStorage.getItem("neighborly-custom-businesses-v1");
+      if (raw) {
+        const list = JSON.parse(raw);
+        if (Array.isArray(list)) {
+          const updated = list.map((b: any) => b.name === businessName ? { ...b, coordinates, demoCoordinates: coordinates } : b);
+          localStorage.setItem("neighborly-custom-businesses-v1", JSON.stringify(updated));
+        }
+      }
+    } catch {}
+    showNotice(`✓ Location pin updated for "${businessName}" (${coordinates.latitude.toFixed(6)}, ${coordinates.longitude.toFixed(6)})!`);
+  }
+
   function verifyBusinessLocation() {
     if (!navigator.geolocation) {
       showNotice("Location verification is not available in this browser.");
@@ -17264,6 +17292,7 @@ export default function Home() {
             onViewInvoice={(invoice) => setSubscriptionReceipt(invoice)}
             verifyLocation={verifyBusinessLocation}
             onUpdateBusinessPhotos={updateBusinessPhotos}
+            onUpdateBusinessLocation={updateBusinessLocation}
             onAddProduct={addProduct}
             onUpdateProduct={updateProduct}
             onDeleteProduct={deleteProduct}
@@ -20828,6 +20857,7 @@ function BusinessPortal({
   onViewInvoice,
   verifyLocation,
   onUpdateBusinessPhotos,
+  onUpdateBusinessLocation,
   onAddProduct,
   onUpdateProduct,
   onDeleteProduct,
@@ -20853,6 +20883,7 @@ function BusinessPortal({
   onViewInvoice?: (record: CheckoutRequest) => void;
   verifyLocation: () => void;
   onUpdateBusinessPhotos?: (businessName: string, images: string[]) => void;
+  onUpdateBusinessLocation?: (businessName: string, coordinates: Coordinates) => void;
   onAddProduct: (businessName: string, product: Omit<Product, "id">) => void;
   onUpdateProduct?: (businessName: string, productId: string, updated: Partial<Product>) => void;
   onDeleteProduct?: (businessName: string, productId: string) => void;
@@ -20861,6 +20892,7 @@ function BusinessPortal({
   showNotice: (message: string) => void;
 }) {
   const [tab, setTab] = useState(initialTab || "Overview");
+  const [editingPinBusiness, setEditingPinBusiness] = useState<Business | null>(null);
   const accountBusinessName = businesses[0]?.name;
   const accountEnquiries = enquiries.filter((item) => accountBusinessName && item.businessName && item.businessName.toLowerCase() === accountBusinessName.toLowerCase());
   const accountCheckouts = checkouts.filter((item) => accountBusinessName && item.businessName && item.businessName.toLowerCase() === accountBusinessName.toLowerCase());
@@ -21168,11 +21200,77 @@ function BusinessPortal({
                     </div>
                   )}
                 </div>
+
+                {/* Business Map Pin & Location Card */}
+                <div style={{ background: "#f8faf8", border: "1px solid #dce5dc", borderRadius: "10px", padding: "16px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px", marginBottom: "12px" }}>
+                    <div>
+                      <strong style={{ fontSize: "13px", color: "#254e32", display: "block" }}>
+                        📍 Storefront Location &amp; Map Pin
+                      </strong>
+                      <span style={{ fontSize: "11px", color: "#6a7e70" }}>
+                        {business.coordinates || business.demoCoordinates
+                          ? `Pinned at: ${(business.coordinates || business.demoCoordinates)!.latitude.toFixed(6)}, ${(business.coordinates || business.demoCoordinates)!.longitude.toFixed(6)}`
+                          : "No precise GPS map pin set yet."}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setEditingPinBusiness(business)}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        background: "#285536",
+                        color: "#ffffff",
+                        padding: "7px 14px",
+                        borderRadius: "7px",
+                        fontSize: "11.5px",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        border: "none",
+                      }}
+                    >
+                      <span>📍 Pin location on map</span>
+                    </button>
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px", background: "#ffffff", border: "1px solid #e2e8f0", padding: "10px 12px", borderRadius: "8px", fontSize: "12px" }}>
+                    <div style={{ color: "#334155" }}>
+                      <span><strong>Address:</strong> {[business.address?.doorNumber, business.address?.street, business.address?.area, business.address?.cityTown, business.address?.state, business.address?.pincode].filter(Boolean).join(", ") || "Hosur, Tamil Nadu"}</span>
+                    </div>
+                    {(business.coordinates || business.demoCoordinates) && (
+                      <a
+                        href={`https://www.google.com/maps?q=${(business.coordinates || business.demoCoordinates)!.latitude},${(business.coordinates || business.demoCoordinates)!.longitude}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "#16a34a", fontWeight: 700, fontSize: "11.5px", textDecoration: "underline" }}
+                      >
+                        View on Google Maps ↗
+                      </a>
+                    )}
+                  </div>
+                </div>
               </div>
             );
           })
         ) : (
           <EmptyState title="No business profile yet" text="Complete your business registration to set up your profile." />
+        )}
+        {editingPinBusiness && (
+          <MapPinModal
+            isOpen={Boolean(editingPinBusiness)}
+            onClose={() => setEditingPinBusiness(null)}
+            onConfirm={(coords) => {
+              if (onUpdateBusinessLocation) {
+                onUpdateBusinessLocation(editingPinBusiness.name, coords);
+              }
+              setEditingPinBusiness(null);
+            }}
+            initialCoordinates={editingPinBusiness.coordinates || editingPinBusiness.demoCoordinates}
+            title="Update Storefront Location Pin"
+            businessName={editingPinBusiness.name}
+          />
         )}
       </section>
     )}
@@ -26029,6 +26127,7 @@ function Dialog({
   const [businessCategoryError, setBusinessCategoryError] = useState("");
   const [businessAddress, setBusinessAddress] = useState<BusinessAddress>({ doorNumber: "", street: "", area: "", cityTown: "", taluka: "", district: "", state: "", pincode: "" });
   const [businessCoordinates, setBusinessCoordinates] = useState<Coordinates | null>(null);
+  const [showRegPinModal, setShowRegPinModal] = useState(false);
   const [businessLocationMessage, setBusinessLocationMessage] = useState("");
   const [businessLocationError, setBusinessLocationError] = useState("");
   const [businessModes, setBusinessModes] = useState<string[]>([]);
@@ -26385,7 +26484,53 @@ function Dialog({
           {regEnabled(businessForm, "businessName") && <label>{regLabel(businessForm, "businessName", "Business name")}<input name="businessName" placeholder="e.g. Sree Velan TVS" defaultValue={businessDetails.businessName} required={regField(businessForm, "businessName")?.required ?? true} /></label>}
           <fieldset className="registration-taxonomy address-fields"><legend>Business address</legend><div className="registration-address-grid">
           {[{ key: "doorNumber", label: "Door No." }, { key: "street", label: "Street" }, { key: "area", label: "Area" }, { key: "cityTown", label: "City / town" }, { key: "taluka", label: "Taluka" }, { key: "district", label: "District" }, { key: "state", label: "State" }, { key: "pincode", label: "Pincode" }].map(({ key, label }) => <label className="registration-address-field" key={key}>{label}<input name={key} value={businessAddress[key as keyof BusinessAddress]} onChange={(event) => setBusinessAddress((current) => ({ ...current, [key]: event.target.value }))} required maxLength={key === "pincode" ? 10 : 100} inputMode={key === "pincode" ? "numeric" : undefined} pattern={key === "pincode" ? "[0-9]{6}" : undefined} title={key === "pincode" ? "Enter a 6-digit pincode" : undefined} /></label>)}
-        </div><button type="button" className="outline-button location-fetch-button" onClick={fetchBusinessCoordinates}>{businessCoordinates ? "Refresh business location pin" : "Capture business location pin"}</button>{businessLocationMessage && <p className="location-result" role="status">{businessLocationMessage}</p>}{businessLocationError && <p className="form-error" role="alert">{businessLocationError}</p>}<p className="fine-print">A precise location pin is required so customers can view your business on the map and get directions.</p></fieldset>
+        </div>
+        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center", marginTop: "10px" }}>
+          <button
+            type="button"
+            className="primary-button"
+            style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#166534", color: "#ffffff", padding: "8px 16px", borderRadius: "8px", fontWeight: 700, fontSize: "12px", border: "none", cursor: "pointer" }}
+            onClick={() => setShowRegPinModal(true)}
+          >
+            <span>📍 Pin location on map</span>
+          </button>
+          <button
+            type="button"
+            className="outline-button location-fetch-button"
+            onClick={fetchBusinessCoordinates}
+          >
+            {businessCoordinates ? "Use Device GPS" : "Capture device GPS"}
+          </button>
+        </div>
+        {businessCoordinates && (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px", background: "#f0fdf4", border: "1px solid #bbf7d0", padding: "8px 12px", borderRadius: "8px", fontSize: "12px", color: "#166534", marginTop: "8px" }}>
+            <span>✓ <strong>Pinned Coordinates:</strong> {businessCoordinates.latitude.toFixed(6)}, {businessCoordinates.longitude.toFixed(6)}</span>
+            <button
+              type="button"
+              onClick={() => setShowRegPinModal(true)}
+              style={{ background: "none", border: "none", color: "#15803d", textDecoration: "underline", cursor: "pointer", fontSize: "11px", fontWeight: 700 }}
+            >
+              Adjust on map →
+            </button>
+          </div>
+        )}
+        {businessLocationMessage && !businessCoordinates && <p className="location-result" role="status">{businessLocationMessage}</p>}
+        {businessLocationError && <p className="form-error" role="alert">{businessLocationError}</p>}
+        <p className="fine-print">A precise location pin is required so customers can view your business on the map and get directions.</p>
+        </fieldset>
+        <MapPinModal
+          isOpen={showRegPinModal}
+          onClose={() => setShowRegPinModal(false)}
+          onConfirm={(coords) => {
+            setBusinessCoordinates(coords);
+            setBusinessLocationError("");
+            setBusinessLocationMessage(`✓ Pinned on map: ${coords.latitude.toFixed(6)}, ${coords.longitude.toFixed(6)}`);
+            setShowRegPinModal(false);
+          }}
+          initialCoordinates={businessCoordinates}
+          title="Pin Business Location on Map"
+          businessName={businessDetails.businessName || "New Business Registration"}
+        />
           <fieldset className="registration-taxonomy">
             <legend>Business category</legend>
             <p>Select Sales, Service, or both.</p>
