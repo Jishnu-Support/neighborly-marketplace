@@ -6,10 +6,9 @@ import {
   type PlatformPaymentStatus,
 } from "./transactions.shared";
 import { readAdBookings } from "./ad-bookings";
+import { resolveStorePath } from "./storage-paths";
 
-const transactionsFilePath =
-  process.env.NEIGHBORLY_TRANSACTIONS_STORE ||
-  path.join(process.cwd(), ".neighborly-transactions.json");
+const transactionsFilePath = resolveStorePath("NEIGHBORLY_TRANSACTIONS_STORE", ".neighborly-transactions.json");
 
 function getInitialSampleTransactions(): PlatformTransaction[] {
   const now = new Date();

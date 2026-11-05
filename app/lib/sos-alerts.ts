@@ -26,7 +26,9 @@ type StoredSosAlert = SosAlert & { requestKey?: string };
 type NewSosAlert = Omit<SosAlert, "id" | "createdAt" | "deliveryStatus">;
 type CreateSosAlertResult = { alert: SosAlert; created: boolean };
 
-const storePath = process.env.NEIGHBORLY_SOS_ALERT_STORE || path.join(process.cwd(), ".neighborly-sos-alerts.json");
+import { resolveStorePath } from "./storage-paths";
+
+const storePath = resolveStorePath("NEIGHBORLY_SOS_ALERT_STORE", ".neighborly-sos-alerts.json");
 const lockPath = `${storePath}.lock`;
 const LOCK_TIMEOUT_MS = 5000;
 const STALE_LOCK_MS = 30_000;

@@ -2,7 +2,9 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
 
-const mediaDirectory = process.env.NEIGHBORLY_AD_MEDIA_STORE || path.join(process.cwd(), ".neighborly-ad-media");
+import { resolveStorePath } from "@/app/lib/storage-paths";
+
+const mediaDirectory = resolveStorePath("NEIGHBORLY_AD_MEDIA_STORE", ".neighborly-ad-media");
 const mimeTypes: Record<string, string> = {
   jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", gif: "image/gif",
   mp4: "video/mp4", webm: "video/webm", mp3: "audio/mpeg", mpeg: "audio/mpeg", mpga: "audio/mpeg", mp2: "audio/mpeg", m4a: "audio/mp4", wav: "audio/wav", ogg: "audio/ogg",

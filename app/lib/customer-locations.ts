@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { saveActivityLog } from "./activity-logs";
+import { resolveStorePath } from "./storage-paths";
 
 export type CustomerRegistrationLocation = {
   id: string;
@@ -49,9 +50,7 @@ export type NewCustomerRegistrationLocation = {
   registrationMethod?: string;
 };
 
-const recordsPath =
-  process.env.NEIGHBORLY_CUSTOMER_LOCATION_STORE ||
-  path.join(process.cwd(), ".neighborly-customer-locations.json");
+const recordsPath = resolveStorePath("NEIGHBORLY_CUSTOMER_LOCATION_STORE", ".neighborly-customer-locations.json");
 
 async function readRecords(): Promise<CustomerRegistrationLocation[]> {
   try {

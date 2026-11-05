@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { verifyAgentCredentials } from "./agents";
 import { verifyBusinessCredentials } from "./businesses";
 import { listCustomerRegistrationLocations } from "./customer-locations";
+import { resolveStorePath } from "./storage-paths";
 
 export type PortalRole = "Account" | "Business" | "Agent" | "Company";
 export type CompanyAccessLevel = "Admin" | "Super Admin";
@@ -42,8 +43,8 @@ const demoAccounts: Record<Exclude<PortalRole, "Company">, { identity: string; p
   Business: { identity: "business@neighborly.demo", password: "Business123!" },
   Agent: { identity: "agent@neighborly.demo", password: "Agent123!" },
 };
-const adminStorePath = process.env.NEIGHBORLY_ADMIN_STORE || path.join(process.cwd(), ".neighborly-admins.json");
-const customerStorePath = process.env.NEIGHBORLY_CUSTOMER_STORE || path.join(process.cwd(), ".neighborly-customers.json");
+const adminStorePath = resolveStorePath("NEIGHBORLY_ADMIN_STORE", ".neighborly-admins.json");
+const customerStorePath = resolveStorePath("NEIGHBORLY_CUSTOMER_STORE", ".neighborly-customers.json");
 
 function signingSecret() {
   if (process.env.NEIGHBORLY_AUTH_SECRET) return process.env.NEIGHBORLY_AUTH_SECRET;

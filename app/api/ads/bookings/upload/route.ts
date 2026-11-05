@@ -2,10 +2,9 @@ import { randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
+import { resolveStorePath } from "@/app/lib/storage-paths";
 
-const mediaDirectory =
-  process.env.NEIGHBORLY_AD_MEDIA_STORE ||
-  path.join(process.cwd(), ".neighborly-ad-media");
+const mediaDirectory = resolveStorePath("NEIGHBORLY_AD_MEDIA_STORE", ".neighborly-ad-media");
 
 const allowedTypes: Record<string, { extension: string; maxBytes: number }> = {
   "image/jpeg": { extension: "jpg", maxBytes: 15 * 1024 * 1024 },

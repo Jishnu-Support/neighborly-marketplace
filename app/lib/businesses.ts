@@ -2,6 +2,7 @@ import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from "node:crypt
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { readAgentRecords } from "./agents";
+import { resolveStorePath } from "./storage-paths";
 
 export type VerificationStatus =
   | "Pending Agent Visit"
@@ -87,7 +88,7 @@ export type StoredBusiness = {
 
 export type PublicBusiness = Omit<StoredBusiness, "salt" | "passwordHash">;
 
-const storePath = process.env.NEIGHBORLY_BUSINESS_STORE || path.join(process.cwd(), ".neighborly-businesses.json");
+const storePath = resolveStorePath("NEIGHBORLY_BUSINESS_STORE", ".neighborly-businesses.json");
 
 function hashPassword(password: string, salt: string) {
   return scryptSync(password, salt, 64).toString("hex");

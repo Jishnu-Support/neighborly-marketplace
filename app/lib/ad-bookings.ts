@@ -1,5 +1,6 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { resolveStorePath } from "./storage-paths";
 import {
   type AdBookingRequest,
   type AdSlotTiming,
@@ -16,9 +17,7 @@ export { resolveScheduledAds, createSampleViewRecords, createSampleClickRecords 
 import { type AdConfig } from "./ad-config.shared";
 import { saveActivityLog } from "./activity-logs";
 
-const bookingsFilePath =
-  process.env.NEIGHBORLY_AD_BOOKINGS_STORE ||
-  path.join(process.cwd(), ".neighborly-ad-bookings.json");
+const bookingsFilePath = resolveStorePath("NEIGHBORLY_AD_BOOKINGS_STORE", ".neighborly-ad-bookings.json");
 
 function getInitialSampleBookings(): AdBookingRequest[] {
   const today = new Date();

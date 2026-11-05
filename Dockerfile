@@ -36,8 +36,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
-# Ensure the app working directory and data files are writable by nextjs user
-RUN chown -R nextjs:nodejs /app
+# Ensure the app working directory and persistent volume mount are writable by nextjs user
+RUN mkdir -p /app/data && chown -R nextjs:nodejs /app /app/data
 
 USER nextjs
 

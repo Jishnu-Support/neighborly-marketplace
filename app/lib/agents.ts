@@ -1,6 +1,7 @@
 import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from "node:crypto";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { resolveStorePath } from "./storage-paths";
 
 export type AgentPartner = {
   id: string;
@@ -18,7 +19,7 @@ export type StoredAgentPartner = AgentPartner & {
   passwordHash: string;
 };
 
-const storePath = process.env.NEIGHBORLY_AGENT_STORE || path.join(process.cwd(), ".neighborly-agents.json");
+const storePath = resolveStorePath("NEIGHBORLY_AGENT_STORE", ".neighborly-agents.json");
 
 function hashPassword(password: string, salt: string) {
   return scryptSync(password, salt, 64).toString("hex");

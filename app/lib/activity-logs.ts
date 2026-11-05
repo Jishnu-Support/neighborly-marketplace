@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { resolveStorePath } from "./storage-paths";
 
 export type ActivityLogCategory =
   | "Registration"
@@ -41,9 +42,7 @@ export type NewActivityLog = Omit<ActivityLogRecord, "id" | "timestamp"> & {
   timestamp?: string;
 };
 
-const activityLogsStorePath =
-  process.env.NEIGHBORLY_ACTIVITY_LOGS_STORE ||
-  path.join(process.cwd(), ".neighborly-activity-logs.json");
+const activityLogsStorePath = resolveStorePath("NEIGHBORLY_ACTIVITY_LOGS_STORE", ".neighborly-activity-logs.json");
 
 export async function readActivityLogs(): Promise<ActivityLogRecord[]> {
   try {

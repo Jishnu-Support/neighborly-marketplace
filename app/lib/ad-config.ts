@@ -2,7 +2,9 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { defaultAdConfig, type AdConfig } from "./ad-config.shared";
 
-const configPath = process.env.NEIGHBORLY_AD_CONFIG_STORE || path.join(process.cwd(), ".neighborly-ad-config.json");
+import { resolveStorePath } from "./storage-paths";
+
+const configPath = resolveStorePath("NEIGHBORLY_AD_CONFIG_STORE", ".neighborly-ad-config.json");
 
 export async function readAdConfig(): Promise<AdConfig> {
   try {

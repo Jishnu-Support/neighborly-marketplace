@@ -2,7 +2,9 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { defaultRegistrationFormConfig, type RegistrationFormConfig, type RegistrationForm } from "./registration-form-config.shared";
 
-const configPath = process.env.NEIGHBORLY_REGISTRATION_FORM_CONFIG_STORE || path.join(process.cwd(), ".neighborly-registration-forms.json");
+import { resolveStorePath } from "./storage-paths";
+
+const configPath = resolveStorePath("NEIGHBORLY_REGISTRATION_FORM_CONFIG_STORE", ".neighborly-registration-forms.json");
 export function validateRegistrationFormConfig(input: unknown): input is RegistrationFormConfig {
   if (!input || typeof input !== "object" || !Array.isArray((input as RegistrationFormConfig).forms)) return false;
   const forms = (input as RegistrationFormConfig).forms;

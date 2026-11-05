@@ -2,11 +2,10 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { saveActivityLog } from "./activity-logs";
 import { type SupportConfig, defaultSupportConfig } from "./support-config.shared";
+import { resolveStorePath } from "./storage-paths";
 export { type SupportConfig, defaultSupportConfig };
 
-const supportConfigStorePath =
-  process.env.NEIGHBORLY_SUPPORT_CONFIG_STORE ||
-  path.join(process.cwd(), ".neighborly-support-config.json");
+const supportConfigStorePath = resolveStorePath("NEIGHBORLY_SUPPORT_CONFIG_STORE", ".neighborly-support-config.json");
 
 export async function readSupportConfig(): Promise<SupportConfig> {
   try {

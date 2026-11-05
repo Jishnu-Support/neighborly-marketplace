@@ -2,7 +2,9 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { defaultCategoryConfig, legacyDefaultCategoryConfig, type CategoryConfig, type CategorySector } from "./category-config.shared";
 
-const configPath = process.env.NEIGHBORLY_CATEGORY_CONFIG_STORE || path.join(process.cwd(), ".neighborly-category-config.json");
+import { resolveStorePath } from "./storage-paths";
+
+const configPath = resolveStorePath("NEIGHBORLY_CATEGORY_CONFIG_STORE", ".neighborly-category-config.json");
 
 function buildTree(paths: string[][]) {
   const roots: { name: string; children: { name: string; children: any[] }[] }[] = [];

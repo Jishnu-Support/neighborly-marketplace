@@ -4,7 +4,9 @@ import path from "node:path";
 import { NextResponse } from "next/server";
 import { getCurrentSession } from "@/app/lib/auth";
 
-const mediaDirectory = process.env.NEIGHBORLY_AD_MEDIA_STORE || path.join(process.cwd(), ".neighborly-ad-media");
+import { resolveStorePath } from "@/app/lib/storage-paths";
+
+const mediaDirectory = resolveStorePath("NEIGHBORLY_AD_MEDIA_STORE", ".neighborly-ad-media");
 const allowedImages: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
