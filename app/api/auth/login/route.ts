@@ -16,9 +16,9 @@ import { saveActivityLog } from "@/app/lib/activity-logs";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json() as { role?: unknown; accessLevel?: unknown; identity?: unknown; password?: unknown };
+    const body = (await request.json()) as { role?: unknown; accessLevel?: unknown; identity?: unknown; password?: unknown };
     if (!isPortalRole(body.role) || typeof body.identity !== "string" || typeof body.password !== "string") {
-      return NextResponse.json({ error: "Enter a valid portal, email and password." }, { status: 400 });
+      return NextResponse.json({ error: "Enter a valid portal, email/mobile and password." }, { status: 400 });
     }
 
     let matchedRole: PortalRole | null = null;
@@ -38,36 +38,54 @@ export async function POST(request: Request) {
     }
 
     if (!matchedRole) {
-      // Auto-detect portal if user submitted credentials on a different portal tab:
-      // 1. Check Business
-      if (body.role !== "Business" && (await verifyCredentials("Business", body.identity, body.password))) {
-        matchedRole = "Business";
-        matchedAccessLevel = undefined;
+      // Credentials did not match the portal the user is signing into.
+      // Check which portal these credentials belong to, and provide an exact, helpful guidance message
+      // rather than auto-redirecting to an unintended portal:
+      const isSuperAdmin = await verifyCredentials("Company", body.identity, body.password, "Super Admin");
+      const isAdmin = !isSuperAdmin && (await verifyCredentials("Company", body.identity, body.password, "Admin"));
+      if (isSuperAdmin || isAdmin) {
+        return NextResponse.json(
+          {
+            error: "These credentials belong to a Company Admin account. The Customer portal accepts Customer / User accounts only. Please use the Company portal below to sign in.",
+          },
+          { status: 401 }
+        );
       }
-      // 2. Check Agent
-      else if (body.role !== "Agent" && (await verifyCredentials("Agent", body.identity, body.password))) {
-        matchedRole = "Agent";
-        matchedAccessLevel = undefined;
-      }
-      // 3. Check Customer (Account)
-      else if (body.role !== "Account" && (await verifyCredentials("Account", body.identity, body.password))) {
-        matchedRole = "Account";
-        matchedAccessLevel = undefined;
-      }
-      // 4. Check Company
-      else if (body.role !== "Company") {
-        if (await verifyCredentials("Company", body.identity, body.password, "Super Admin")) {
-          matchedRole = "Company";
-          matchedAccessLevel = "Super Admin";
-        } else if (await verifyCredentials("Company", body.identity, body.password, "Admin")) {
-          matchedRole = "Company";
-          matchedAccessLevel = "Admin";
-        }
-      }
-    }
 
-    if (!matchedRole) {
-      return NextResponse.json({ error: "Email or password is incorrect, or this account is inactive." }, { status: 401 });
+      if (body.role !== "Business" && (await verifyCredentials("Business", body.identity, body.password))) {
+        return NextResponse.json(
+          {
+            error: "These credentials belong to a Business Partner account. Please switch to the Business portal below to sign in.",
+          },
+          { status: 401 }
+        );
+      }
+
+      if (body.role !== "Agent" && (await verifyCredentials("Agent", body.identity, body.password))) {
+        return NextResponse.json(
+          {
+            error: "These credentials belong to a Neighborhood Agent account. Please switch to the Agent portal below to sign in.",
+          },
+          { status: 401 }
+        );
+      }
+
+      if (body.role !== "Account" && (await verifyCredentials("Account", body.identity, body.password))) {
+        return NextResponse.json(
+          {
+            error: "These credentials belong to a Customer account. Please switch to the Customer portal below to sign in.",
+          },
+          { status: 401 }
+        );
+      }
+
+      const portalLabel = body.role === "Account" ? "customer" : body.role.toLowerCase();
+      return NextResponse.json(
+        {
+          error: `Invalid ${portalLabel} credentials. Please check your mobile or email, or click 'Create an account' to register.`,
+        },
+        { status: 401 }
+      );
     }
 
     let identity = body.identity.trim().toLowerCase();
