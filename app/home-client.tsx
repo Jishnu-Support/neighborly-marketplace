@@ -5675,55 +5675,136 @@ export default function Home() {
         </div>
 
         <div className="mobile-drawer-body">
-          {/* Emergency SOS Quick Dial Card */}
-          <div className="mobile-drawer-sos-card">
-            <div className="drawer-sos-header">
-              <span className="drawer-sos-badge">🚨 EMERGENCY SOS</span>
-              <span style={{ fontSize: "11px", color: "#991b1b", fontWeight: 700 }}>24×7 Helplines</span>
+          {/* Emergency SOS Quick Dial Strip (Compact & Crisp) */}
+          <div
+            style={{
+              margin: "10px 14px 12px",
+              padding: "9px 12px",
+              background: "#fff5f5",
+              border: "1px solid #fecaca",
+              borderRadius: "10px",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <span style={{ fontSize: "13px" }}>🚨</span>
+                <span style={{ fontSize: "11.5px", fontWeight: 700, color: "#991b1b", letterSpacing: "0.01em" }}>
+                  24×7 Helplines
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setDialog("sos");
+                }}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  padding: "0",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  color: "#dc2626",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "2px",
+                  textDecoration: "underline",
+                }}
+              >
+                GPS Alert ↗
+              </button>
             </div>
-            <p className="drawer-sos-desc">
-              Immediate 1-tap direct dialers for ambulance, police, fire, and national emergency dispatch.
-            </p>
-            <div className="drawer-sos-grid">
-              <a href="tel:108" className="drawer-sos-call-btn ambulance" onClick={() => handleTriggerCall("Ambulance Service", "108", "Emergency")}>
-                <span>🚑</span>
-                <span className="drawer-sos-label">
-                  <strong>108</strong>
-                  <small>Ambulance</small>
-                </span>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "6px" }}>
+              <a
+                href="tel:108"
+                onClick={() => handleTriggerCall("Ambulance Service", "108", "Emergency")}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "6px 2px",
+                  background: "#ffffff",
+                  border: "1px solid #fed7aa",
+                  borderRadius: "7px",
+                  textDecoration: "none",
+                  color: "#9a3412",
+                  textAlign: "center",
+                }}
+              >
+                <span style={{ fontSize: "12px" }}>🚑</span>
+                <strong style={{ fontSize: "11.5px", fontWeight: 800, lineHeight: 1.1 }}>108</strong>
+                <small style={{ fontSize: "9px", color: "#c2410c", fontWeight: 600 }}>Medical</small>
               </a>
-              <a href="tel:100" className="drawer-sos-call-btn police" onClick={() => handleTriggerCall("Police Control", "100", "Emergency")}>
-                <span>🚓</span>
-                <span className="drawer-sos-label">
-                  <strong>100</strong>
-                  <small>Police</small>
-                </span>
+
+              <a
+                href="tel:100"
+                onClick={() => handleTriggerCall("Police Control", "100", "Emergency")}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "6px 2px",
+                  background: "#ffffff",
+                  border: "1px solid #bfdbfe",
+                  borderRadius: "7px",
+                  textDecoration: "none",
+                  color: "#1e40af",
+                  textAlign: "center",
+                }}
+              >
+                <span style={{ fontSize: "12px" }}>🚓</span>
+                <strong style={{ fontSize: "11.5px", fontWeight: 800, lineHeight: 1.1 }}>100</strong>
+                <small style={{ fontSize: "9px", color: "#2563eb", fontWeight: 600 }}>Police</small>
               </a>
-              <a href="tel:101" className="drawer-sos-call-btn fire" onClick={() => handleTriggerCall("Fire Station", "101", "Emergency")}>
-                <span>🚒</span>
-                <span className="drawer-sos-label">
-                  <strong>101</strong>
-                  <small>Fire</small>
-                </span>
+
+              <a
+                href="tel:101"
+                onClick={() => handleTriggerCall("Fire Station", "101", "Emergency")}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "6px 2px",
+                  background: "#ffffff",
+                  border: "1px solid #fecaca",
+                  borderRadius: "7px",
+                  textDecoration: "none",
+                  color: "#991b1b",
+                  textAlign: "center",
+                }}
+              >
+                <span style={{ fontSize: "12px" }}>🚒</span>
+                <strong style={{ fontSize: "11.5px", fontWeight: 800, lineHeight: 1.1 }}>101</strong>
+                <small style={{ fontSize: "9px", color: "#dc2626", fontWeight: 600 }}>Fire</small>
               </a>
-              <a href="tel:112" className="drawer-sos-call-btn helpline" onClick={() => handleTriggerCall("National Helpline", "112", "Emergency")}>
-                <span>🛡️</span>
-                <span className="drawer-sos-label">
-                  <strong>112</strong>
-                  <small>National SOS</small>
-                </span>
+
+              <a
+                href="tel:112"
+                onClick={() => handleTriggerCall("National Helpline", "112", "Emergency")}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "6px 2px",
+                  background: "#ffffff",
+                  border: "1px solid #bfdbfe",
+                  borderRadius: "7px",
+                  textDecoration: "none",
+                  color: "#1e3a8a",
+                  textAlign: "center",
+                }}
+              >
+                <span style={{ fontSize: "12px" }}>🛡️</span>
+                <strong style={{ fontSize: "11.5px", fontWeight: 800, lineHeight: 1.1 }}>112</strong>
+                <small style={{ fontSize: "9px", color: "#1d4ed8", fontWeight: 600 }}>National</small>
               </a>
             </div>
-            <button
-              type="button"
-              className="drawer-sos-alert-trigger"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                setDialog("sos");
-              }}
-            >
-              <span>📡 Broadcast GPS Emergency Alert →</span>
-            </button>
           </div>
 
           <div>
