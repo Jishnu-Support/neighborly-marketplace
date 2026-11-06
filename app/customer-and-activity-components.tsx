@@ -442,7 +442,7 @@ export function CompanyCustomerRegistrationsPanel({
                   <div style={{ display: "flex", gap: "6px", marginTop: "6px" }}>
                     <a
                       href={`https://wa.me/${waPhone}?text=${encodeURIComponent(
-                        `Hello ${r.name},\n\nGreetings from Bizearch!\n\nWe are checking in regarding your account on Bizearch. Please let us know if you need any assistance or have any queries.\n\nThank you!\nTeam Bizearch`
+                        `Hi ${r.name}, Greetings from Bizearch! We are checking in regarding your Bizearch account. Please let us know if you have any questions or need any help. Thanks! - Team Bizearch`
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"

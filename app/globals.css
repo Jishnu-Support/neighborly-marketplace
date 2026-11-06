@@ -4559,5 +4559,152 @@ html, body {
   background: linear-gradient(135deg, #059669 0%, #047857 100%);
 }
 
+/* Mobile-First Touch & Usability Enhancements for Forms, Modals & Auth */
+@media (max-width: 640px) {
+  .login-page {
+    padding: 12px 14px 40px !important;
+  }
+  .login-page-header {
+    height: 56px !important;
+    margin-bottom: 12px !important;
+  }
+  .login-page-header .brand {
+    font-size: 19px !important;
+  }
+  .portal-login-card {
+    margin-top: 16px !important;
+    padding: 24px 18px !important;
+    border-radius: 14px !important;
+    width: 100% !important;
+  }
+  .portal-login-card h1 {
+    font-size: 22px !important;
+    letter-spacing: -0.5px !important;
+    margin: 10px 0 6px !important;
+  }
+  .portal-login-description {
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+    margin-bottom: 16px !important;
+  }
+  .stacked-form {
+    gap: 14px !important;
+  }
+  .stacked-form > label,
+  .otp-row label {
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    gap: 6px !important;
+  }
+  /* Prevent aggressive iOS & Android auto-zoom by ensuring minimum 16px font-size */
+  .stacked-form input:not([type=checkbox]),
+  .stacked-form textarea,
+  .stacked-form select {
+    font-size: 16px !important;
+    padding: 12px 14px !important;
+    min-height: 48px !important;
+    border-radius: 8px !important;
+  }
+  .phone-input {
+    min-height: 48px !important;
+    border-radius: 8px !important;
+    padding-left: 12px !important;
+  }
+  .phone-input > span {
+    font-size: 14px !important;
+  }
+  .phone-input input {
+    font-size: 16px !important;
+    min-height: 46px !important;
+    padding: 10px 8px !important;
+  }
+  .primary-button.full-button,
+  .outline-button.full-button {
+    min-height: 48px !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    border-radius: 8px !important;
+    padding: 12px 16px !important;
+  }
+  /* Touch-friendly OTP row on mobile */
+  .otp-row {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+  .otp-row label {
+    width: 100% !important;
+  }
+  .otp-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  .otp-actions button {
+    min-height: 44px !important;
+    padding: 10px 12px !important;
+    font-size: 13px !important;
+    border-radius: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .otp-demo-code {
+    font-size: 12px !important;
+    padding: 10px 12px !important;
+    border-radius: 8px !important;
+    line-height: 1.5 !important;
+  }
+  .otp-demo-code strong {
+    font-size: 14px !important;
+  }
+  .otp-demo-code span {
+    display: block !important;
+    margin-top: 3px !important;
+    font-size: 11px !important;
+  }
+  .login-portal-options {
+    gap: 6px !important;
+    margin-top: 20px !important;
+  }
+  .login-portal-options a {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+  }
+  .modal-backdrop {
+    padding: 10px !important;
+    align-items: flex-end !important;
+  }
+  .modal {
+    width: 100% !important;
+    max-height: 92vh !important;
+    padding: 24px 18px 20px !important;
+    border-radius: 18px 18px 12px 12px !important;
+  }
+  .modal h2 {
+    font-size: 20px !important;
+  }
+  .modal > p {
+    font-size: 12px !important;
+  }
+  .modal-switch {
+    font-size: 12px !important;
+    margin-top: 14px !important;
+  }
+  .modal-switch button {
+    font-size: 13px !important;
+    padding: 4px 6px !important;
+  }
+  .fine-print {
+    font-size: 10.5px !important;
+    line-height: 1.5 !important;
+  }
+}
+
+
 
 

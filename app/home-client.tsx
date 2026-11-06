@@ -1561,9 +1561,9 @@ function businessRawPhone(phone: string): string {
 export function getJishnuDefaultWhatsAppMessage(businessName: string, productName?: string): string {
   const cleanName = (businessName || "").trim();
   if (productName && productName.trim()) {
-    return `Hello ${cleanName},\n\nI found *${productName.trim()}* on your Bizearch profile and would like to enquire about its availability and pricing.\n\nCould you please share the details?\n\nThank you!`;
+    return `Hi ${cleanName}, I saw *${productName.trim()}* on your Bizearch profile. Is it available? Could you please share details & pricing? Thanks!`;
   }
-  return `Hello ${cleanName},\n\nI found your business listing on Bizearch and would like to enquire about your products and services.\n\nCould you please share more details?\n\nThank you!`;
+  return `Hi ${cleanName}, I found your listing on Bizearch and would like to enquire about your products & services. Could you please share details? Thanks!`;
 }
 
 function businessWhatsAppUrl(business: Business, product?: Product): string {
@@ -20444,8 +20444,8 @@ function Dialog({
                   style={{
                     background: "none",
                     border: 0,
-                    padding: "2px 0",
-                    fontSize: "11px",
+                    padding: "8px 4px",
+                    fontSize: "12px",
                     fontWeight: 600,
                     color: "#275937",
                     cursor: "pointer",

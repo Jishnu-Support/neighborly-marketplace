@@ -1062,8 +1062,8 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
                 style={{
                   background: "none",
                   border: 0,
-                  padding: "2px 0",
-                  fontSize: "11px",
+                  padding: "8px 4px",
+                  fontSize: "12px",
                   fontWeight: 600,
                   color: "#275937",
                   cursor: "pointer",
