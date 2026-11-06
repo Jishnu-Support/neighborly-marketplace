@@ -226,16 +226,16 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
               ownerName,
               entityType,
               website,
-              agentCode: referralCode?.trim() || "JIT",
-              referralCode: referralCode?.trim() || "JIT",
+              agentCode: referralCode?.trim() || undefined,
+              referralCode: referralCode?.trim() || undefined,
               password,
               coordinates: pinnedBusinessCoords,
             }),
           });
-          const result = (await response.json()) as { error?: string; business?: any };
+          const result = (await response.json()) as { error?: string; business?: any; message?: string };
           if (!response.ok) throw new Error(result.error || "Could not complete business registration.");
           setIsSuccess(true);
-          setMessage(`✓ Business "${name}" registered successfully! Loading your business portal...`);
+          setMessage(result.message || `✓ Business "${name}" registered successfully! Loading your business portal...`);
           try {
             const combinedAddr = [doorNo, street, locality, city, state, pincode].filter(Boolean).join(", ");
             const freshBizProfile = {
@@ -563,10 +563,10 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
 
             {portal === "Business" && (
               <label>
-                Agent Code <span className="optional">(optional — defaults to JIT)</span>
+                Agent Referral Code <span className="optional">(optional — leave blank to let company assign an agent)</span>
                 <input
                   name="referralCode"
-                  placeholder="e.g. JIT (leave blank for default JIT)"
+                  placeholder="e.g. JIT (optional — leave blank for company selection)"
                   style={{ textTransform: "uppercase" }}
                 />
               </label>

@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { registerBusinessAccount } from "@/app/lib/businesses";
-import { createSessionToken, AUTH_COOKIE, authCookieOptions } from "@/app/lib/auth";
+import { createSessionToken, AUTH_COOKIE, authCookieOptions, getCurrentSession, getCompanyAdminByIdentity } from "@/app/lib/auth";
+import { getAgentByIdentity } from "@/app/lib/agents";
 import { consumeVerifiedRegistrationOtp } from "@/app/lib/registration-otp";
 
 export async function POST(request: Request) {
   try {
+    const session = await getCurrentSession(request);
     const body = await request.json();
     const {
       name,
@@ -43,16 +45,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Please enter a valid mobile number." }, { status: 400 });
     }
 
-    const otpConsumed = consumeVerifiedRegistrationOtp("Business", cleanPhone);
-    if (!otpConsumed && cleanPhone !== "9876543210" && !cleanPhone.endsWith("9876543210")) {
-      return NextResponse.json({ error: "Please verify your mobile number with OTP first." }, { status: 400 });
+    const isCompanyCreator = Boolean(session && session.role === "Company");
+    const isAgentCreator = Boolean(session && session.role === "Agent");
+
+    // OTP verification required only for self-registration, not for authenticated Company Admins or Agents
+    if (!isCompanyCreator && !isAgentCreator) {
+      const otpConsumed = consumeVerifiedRegistrationOtp("Business", cleanPhone);
+      if (!otpConsumed && cleanPhone !== "9876543210" && !cleanPhone.endsWith("9876543210")) {
+        return NextResponse.json({ error: "Please verify your mobile number with OTP first." }, { status: 400 });
+      }
     }
 
-    if (!password || typeof password !== "string" || password.length < 6) {
-      return NextResponse.json({ error: "Password must be at least 6 characters long." }, { status: 400 });
-    }
+    const defaultBizPassword = password && typeof password === "string" && password.length >= 6
+      ? password
+      : `Biz@${cleanPhone.slice(-4) || "1234"}`;
 
-    // Mandatory address validation as requested
+    // Mandatory address validation
     if (!doorNo || typeof doorNo !== "string" || !doorNo.trim()) {
       return NextResponse.json({ error: "Door / Shop / Building No. is mandatory." }, { status: 400 });
     }
@@ -77,7 +85,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Pincode / Postal code is mandatory." }, { status: 400 });
     }
 
-    // Mandatory GST NO. / Business Tax ID as requested
+    // Mandatory GST NO. / Business Tax ID
     if (!gstin || typeof gstin !== "string" || gstin.trim().length < 4) {
       return NextResponse.json({ error: "GST Number / Business Tax ID is mandatory." }, { status: 400 });
     }
@@ -110,13 +118,29 @@ export async function POST(request: Request) {
     const resolvedReferralCode =
       typeof rawAgentInput === "string" && rawAgentInput.trim()
         ? rawAgentInput.trim().toUpperCase()
-        : "JIT";
+        : "";
+
+    let creatorRole: "Company" | "Agent" | "Business" = "Business";
+    let creatorIdentity: string | undefined = undefined;
+    let creatorName: string | undefined = undefined;
+
+    if (isCompanyCreator) {
+      creatorRole = "Company";
+      creatorIdentity = session?.identity;
+      const admin = await getCompanyAdminByIdentity(session?.identity || "");
+      creatorName = admin?.name || (session?.identity === "admin@bizearch.in" ? "Super Admin" : "Company Admin");
+    } else if (isAgentCreator) {
+      creatorRole = "Agent";
+      creatorIdentity = session?.identity;
+      const agent = await getAgentByIdentity(session?.identity || "");
+      creatorName = agent?.name || "Agent";
+    }
 
     const business = await registerBusinessAccount({
       name: name.trim(),
       category: category.trim(),
       phone: phone.trim(),
-      password,
+      password: defaultBizPassword,
       doorNo: doorNo.trim(),
       street: street.trim(),
       locality: locality.trim(),
@@ -124,8 +148,8 @@ export async function POST(request: Request) {
       state: state.trim(),
       pincode: pincode.trim(),
       gstin: gstin.trim().toUpperCase(),
-      referralCode: resolvedReferralCode,
-      agentReferralCode: resolvedReferralCode,
+      referralCode: resolvedReferralCode || undefined,
+      agentReferralCode: resolvedReferralCode || undefined,
       ownerName: ownerName && typeof ownerName === "string" ? ownerName.trim() : undefined,
       entityType: entityType && typeof entityType === "string" ? entityType.trim() : undefined,
       email: email ? String(email).trim() : undefined,
@@ -134,10 +158,36 @@ export async function POST(request: Request) {
       businessModes: Array.isArray(businessModes) ? businessModes : undefined,
       coordinates: validatedCoordinates,
       images: Array.isArray(images) ? images : undefined,
+      creatorRole,
+      creatorIdentity,
+      creatorName,
     });
 
+    if (isCompanyCreator) {
+      return NextResponse.json({
+        success: true,
+        business,
+        message: `✓ Business "${business.name}" registered and automatically approved into live directory!`,
+      });
+    }
+
+    if (isAgentCreator) {
+      return NextResponse.json({
+        success: true,
+        business,
+        message: `✓ Business "${business.name}" registered and verified by you! Submitted for Company Admin approval.`,
+      });
+    }
+
+    // Standard business registration: set auth cookie for business
     const token = createSessionToken("Business", business.phone);
-    const response = NextResponse.json({ success: true, business });
+    const response = NextResponse.json({
+      success: true,
+      business,
+      message: resolvedReferralCode
+        ? `✓ Business "${business.name}" registered! Assigned to agent for field verification.`
+        : `✓ Business "${business.name}" registered! Sent to Company Admin records to select an agent.`,
+    });
     response.cookies.set(AUTH_COOKIE, token, authCookieOptions);
 
     return response;

@@ -3,7 +3,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CompanyAccessLevel } from "./lib/auth";
 import { defaultAdConfig, type AdConfig } from "./lib/ad-config.shared";
-import { type AdBookingRequest, resolveScheduledAds, findNearestNeighborhood, NEIGHBORHOOD_CENTROIDS } from "./lib/ad-booking.shared";
+import { type AdBookingRequest, resolveScheduledAds, findNearestNeighborhood, NEIGHBORHOOD_CENTROIDS, calculateDistanceMeters } from "./lib/ad-booking.shared";
 import {
   AdBookingDialog,
   AdReceiptModal,
@@ -4190,7 +4190,7 @@ export default function Home() {
       return;
     }
     const rawReferral = String(form.get("referral") || form.get("referralCode") || form.get("agentCode") || "").trim().toUpperCase();
-    const referralCode = rawReferral || "JIT";
+    const referralCode = rawReferral || undefined;
     try {
       const response = await fetch("/api/businesses/register", {
         method: "POST",
@@ -12187,7 +12187,7 @@ type AgentVerificationItem = {
   coordinates?: Coordinates | null;
   images?: string[];
   photos?: string[];
-  verificationStatus?: "Pending Agent Visit" | "Pending Admin Approval" | "Approved" | "Rejected";
+  verificationStatus?: "Pending Agent Assignment" | "Pending Agent Visit" | "Pending Admin Approval" | "Approved" | "Rejected";
   assignedAgentId?: string;
   assignedAgentName?: string;
   assignedAgentPhone?: string;
@@ -12200,6 +12200,7 @@ type AgentVerificationItem = {
     uploadedImages: string[];
     notes?: string;
     verifiedGps?: { latitude: number; longitude: number } | null;
+    distanceMeters?: number;
   };
   createdAt: string;
 };
@@ -12227,6 +12228,35 @@ function AgentPortal({
   const [gpsLoading, setGpsLoading] = useState(false);
   const [visitNotes, setVisitNotes] = useState("");
   const [submittingVerification, setSubmittingVerification] = useState(false);
+
+  // Field agent direct onboarding state
+  const [showAgentOnboardModal, setShowAgentOnboardModal] = useState(false);
+  const [onboardForm, setOnboardForm] = useState({
+    name: "",
+    category: "Everyday services",
+    phone: "",
+    email: "",
+    ownerName: "",
+    gstin: "APPLIED / UNREGISTERED",
+    doorNo: "",
+    street: "",
+    locality: "",
+    city: "Hosur",
+    state: "Tamil Nadu",
+    pincode: "635109",
+    latitude: 12.7409,
+    longitude: 77.8253,
+    notes: "",
+  });
+  const [onboardPhotos, setOnboardPhotos] = useState<string[]>([]);
+  const [onboardGpsLoading, setOnboardGpsLoading] = useState(false);
+  const [onboardSubmitting, setOnboardSubmitting] = useState(false);
+  const [onboardPhotoUploading, setOnboardPhotoUploading] = useState(false);
+
+  const verificationDistance = useMemo(() => {
+    if (!verifyingBusiness?.coordinates || !verifiedGps) return null;
+    return calculateDistanceMeters(verifyingBusiness.coordinates, verifiedGps);
+  }, [verifyingBusiness, verifiedGps]);
 
   useEffect(() => {
     try {
@@ -12364,10 +12394,143 @@ function AgentPortal({
     );
   }
 
+  function handleCaptureOnboardGps() {
+    setOnboardGpsLoading(true);
+    if (!navigator.geolocation) {
+      showNotice("Geolocation is not supported by your browser");
+      setOnboardGpsLoading(false);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setOnboardForm((prev) => ({
+          ...prev,
+          latitude: Number(pos.coords.latitude.toFixed(6)),
+          longitude: Number(pos.coords.longitude.toFixed(6)),
+        }));
+        setOnboardGpsLoading(false);
+        showNotice(`✓ On-site GPS captured: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`);
+      },
+      (err) => {
+        setOnboardGpsLoading(false);
+        showNotice(`Could not get GPS: ${err.message}`);
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  }
+
+  async function handleOnboardPhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setOnboardPhotoUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/businesses/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      if (data.url) {
+        setOnboardPhotos((prev) => [...prev, data.url]);
+        showNotice("✓ Storefront photo uploaded.");
+      }
+    } catch (err) {
+      showNotice(err instanceof Error ? err.message : "Failed to upload photo");
+    } finally {
+      setOnboardPhotoUploading(false);
+    }
+  }
+
+  async function handleAgentOnboardSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!onboardForm.name.trim()) {
+      showNotice("Please enter a business name.");
+      return;
+    }
+    if (!onboardForm.phone.trim()) {
+      showNotice("Please enter a mobile phone number.");
+      return;
+    }
+    if (onboardPhotos.length === 0) {
+      showNotice("Please upload at least 1 storefront photo taken on-site.");
+      return;
+    }
+    setOnboardSubmitting(true);
+    try {
+      const res = await fetch("/api/businesses/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: onboardForm.name.trim(),
+          category: onboardForm.category,
+          phone: onboardForm.phone.trim(),
+          email: onboardForm.email.trim(),
+          ownerName: onboardForm.ownerName.trim(),
+          gstin: onboardForm.gstin.trim() || "APPLIED / UNREGISTERED",
+          doorNo: onboardForm.doorNo.trim() || "1",
+          street: onboardForm.street.trim() || "Main Road",
+          locality: onboardForm.locality.trim() || "Hosur Center",
+          city: onboardForm.city.trim() || "Hosur",
+          state: onboardForm.state.trim() || "Tamil Nadu",
+          pincode: onboardForm.pincode.trim() || "635109",
+          coordinates: {
+            latitude: Number(onboardForm.latitude),
+            longitude: Number(onboardForm.longitude),
+          },
+          images: onboardPhotos,
+          uploadedImages: onboardPhotos,
+          notes: onboardForm.notes || `Onboarded and verified on-site by field agent (Referral: ${agentReferralCode})`,
+          agentCode: agentReferralCode,
+        }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Failed to onboard business");
+      showNotice("✓ Business onboarded & auto-verified on-site! Sent to Company for publication approval.");
+      setShowAgentOnboardModal(false);
+      setOnboardPhotos([]);
+      setOnboardForm({
+        name: "",
+        category: "Everyday services",
+        phone: "",
+        email: "",
+        ownerName: "",
+        gstin: "APPLIED / UNREGISTERED",
+        doorNo: "",
+        street: "",
+        locality: "",
+        city: "Hosur",
+        state: "Tamil Nadu",
+        pincode: "635109",
+        latitude: 12.7409,
+        longitude: 77.8253,
+        notes: "",
+      });
+      loadVerifications();
+    } catch (err) {
+      showNotice(err instanceof Error ? err.message : "Failed to onboard business");
+    } finally {
+      setOnboardSubmitting(false);
+    }
+  }
+
   async function handleSubmitVerification() {
     if (!verifyingBusiness) return;
     if (uploadedPhotos.length === 0) {
       showNotice("Please upload at least one storefront photo from your visit.");
+      return;
+    }
+    if (!verifiedGps) {
+      showNotice("Please capture your storefront GPS coordinates to verify physical on-site presence.");
+      return;
+    }
+    const dist = verifyingBusiness.coordinates
+      ? calculateDistanceMeters(verifyingBusiness.coordinates, verifiedGps)
+      : null;
+    if (dist !== null && dist > 50) {
+      showNotice(`⚠️ Location discrepancy: You are ${Math.round(dist)}m away from the registered pin. Verification requires being within 20–50 metres of the business.`);
       return;
     }
     setSubmittingVerification(true);
@@ -12443,6 +12606,14 @@ function AgentPortal({
                 }}
               >
                 {copied ? "Copied ✓" : "Copy code ↗"}
+              </button>
+              <button
+                type="button"
+                className="primary-button"
+                style={{ fontSize: "12px", padding: "8px 14px" }}
+                onClick={() => setShowAgentOnboardModal(true)}
+              >
+                + Onboard Business
               </button>
             </div>
           </section>
@@ -12522,9 +12693,19 @@ function AgentPortal({
                 As an authorized field agent, visit new businesses in Hosur, confirm their location, and upload their storefront photo to submit for Admin approval.
               </p>
             </div>
-            <button className="outline-button" onClick={loadVerifications}>
-              {verificationsLoading ? "Refreshing..." : "↻ Refresh Queue"}
-            </button>
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
+              <button
+                type="button"
+                className="primary-button"
+                style={{ fontSize: "12px", padding: "8px 14px" }}
+                onClick={() => setShowAgentOnboardModal(true)}
+              >
+                + Onboard Local Business
+              </button>
+              <button className="outline-button" onClick={loadVerifications}>
+                {verificationsLoading ? "Refreshing..." : "↻ Refresh Queue"}
+              </button>
+            </div>
           </div>
 
           {verificationsLoading ? (
@@ -12698,9 +12879,9 @@ function AgentPortal({
             {/* GPS Verification */}
             <div style={{ marginBottom: "16px" }}>
               <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "6px" }}>
-                1. Storefront GPS Verification
+                1. Storefront GPS Verification (Proximity match within 20–50 metres)
               </label>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
                 <button
                   type="button"
                   className="outline-button"
@@ -12712,10 +12893,31 @@ function AgentPortal({
                 </button>
                 {verifiedGps && (
                   <span style={{ fontSize: "11.5px", color: "#166534", fontWeight: 600 }}>
-                    ✓ {verifiedGps.latitude.toFixed(4)}, {verifiedGps.longitude.toFixed(4)}
+                    ✓ {verifiedGps.latitude.toFixed(5)}, {verifiedGps.longitude.toFixed(5)}
                   </span>
                 )}
               </div>
+              {verifyingBusiness.coordinates ? (
+                verificationDistance !== null ? (
+                  verificationDistance <= 50 ? (
+                    <div style={{ marginTop: "8px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "6px", padding: "8px 12px", fontSize: "12px", color: "#166534", fontWeight: 600 }}>
+                      ✓ GPS Proximity Matched: {Math.round(verificationDistance)}m from registered storefront (within 50m allowable threshold).
+                    </div>
+                  ) : (
+                    <div style={{ marginTop: "8px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "6px", padding: "8px 12px", fontSize: "12px", color: "#991b1b", fontWeight: 600 }}>
+                      ⚠️ Proximity Discrepancy: {Math.round(verificationDistance)}m away from registered pin. You must be on-site within 20–50 metres of the storefront to complete verification.
+                    </div>
+                  )
+                ) : (
+                  <p style={{ margin: "6px 0 0", fontSize: "11.5px", color: "#64748b" }}>
+                    Registered pin: {verifyingBusiness.coordinates.latitude.toFixed(5)}, {verifyingBusiness.coordinates.longitude.toFixed(5)}. Click &ldquo;Capture My Current GPS&rdquo; above to match proximity.
+                  </p>
+                )
+              ) : (
+                <p style={{ margin: "6px 0 0", fontSize: "11.5px", color: "#64748b" }}>
+                  Please capture your live GPS coordinates on-site.
+                </p>
+              )}
             </div>
 
             {/* Photo Upload */}
@@ -12795,11 +12997,282 @@ function AgentPortal({
                 type="button"
                 className="primary-button"
                 onClick={handleSubmitVerification}
-                disabled={submittingVerification || photoUploading}
+                disabled={
+                  submittingVerification ||
+                  photoUploading ||
+                  !verifiedGps ||
+                  (verificationDistance !== null && verificationDistance > 50)
+                }
               >
                 {submittingVerification ? "Submitting..." : "Approve Visit & Forward to Admin →"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Field Agent Direct Onboard Modal */}
+      {showAgentOnboardModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.6)",
+            display: "grid",
+            placeItems: "center",
+            zIndex: 9999,
+            padding: "20px",
+          }}
+          onClick={() => setShowAgentOnboardModal(false)}
+        >
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: "14px",
+              padding: "24px",
+              maxWidth: "540px",
+              width: "100%",
+              maxHeight: "90vh",
+              overflowY: "auto",
+              boxShadow: "0 20px 25px -5px rgba(0,0,0,0.2)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #e2e8f0", paddingBottom: "12px", marginBottom: "16px" }}>
+              <div>
+                <span style={{ fontSize: "11px", fontWeight: 700, color: "#166534", textTransform: "uppercase" }}>FIELD AGENT DIRECT ONBOARDING</span>
+                <h3 style={{ margin: "2px 0 0", fontSize: "18px", color: "#0f172a" }}>Onboard &amp; Verify Local Business</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAgentOnboardModal(false)}
+                style={{ background: "none", border: 0, fontSize: "20px", cursor: "pointer", color: "#64748b" }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <p style={{ fontSize: "12px", color: "#475569", margin: "0 0 16px" }}>
+              As an authorized partner, onboarding this business will automatically verify their location and submit them directly to Company for publication approval.
+            </p>
+
+            <form onSubmit={handleAgentOnboardSubmit} style={{ display: "grid", gap: "12px" }}>
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>
+                  Business Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Sri Krishna Sweets & Bakery"
+                  value={onboardForm.name}
+                  onChange={(e) => setOnboardForm((p) => ({ ...p, name: e.target.value }))}
+                  style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
+                />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>
+                    Category / Sector *
+                  </label>
+                  <select
+                    value={onboardForm.category}
+                    onChange={(e) => setOnboardForm((p) => ({ ...p, category: e.target.value }))}
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px", background: "#fff" }}
+                  >
+                    {["Automobiles", "Electronics", "Electricals", "Hardware", "Home Appliances", "Fashion", "Home & furniture", "Food & dining", "Health & wellness", "Sports & fitness", "Travel", "Entertainment", "Everyday services", "Books & Stationery"].map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>
+                    Mobile Number *
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    placeholder="10-digit mobile"
+                    value={onboardForm.phone}
+                    onChange={(e) => setOnboardForm((p) => ({ ...p, phone: e.target.value }))}
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>
+                    Owner Name
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Proprietor / Manager"
+                    value={onboardForm.ownerName}
+                    onChange={(e) => setOnboardForm((p) => ({ ...p, ownerName: e.target.value }))}
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>
+                    GST / Tax ID
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="GSTIN or NOT APPLICABLE"
+                    value={onboardForm.gstin}
+                    onChange={(e) => setOnboardForm((p) => ({ ...p, gstin: e.target.value }))}
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "10px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>
+                    Door / Shop No. *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Shop #12"
+                    value={onboardForm.doorNo}
+                    onChange={(e) => setOnboardForm((p) => ({ ...p, doorNo: e.target.value }))}
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>
+                    Street / Road / Landmark *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Bagalur Road"
+                    value={onboardForm.street}
+                    onChange={(e) => setOnboardForm((p) => ({ ...p, street: e.target.value }))}
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>
+                    Area / Locality *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Ram Nagar"
+                    value={onboardForm.locality}
+                    onChange={(e) => setOnboardForm((p) => ({ ...p, locality: e.target.value }))}
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>
+                    PIN code *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="635109"
+                    value={onboardForm.pincode}
+                    onChange={(e) => setOnboardForm((p) => ({ ...p, pincode: e.target.value }))}
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
+                  />
+                </div>
+              </div>
+
+              {/* On-site GPS capture */}
+              <div style={{ background: "#f8fafc", padding: "12px", borderRadius: "8px", border: "1px solid #cbd5e1" }}>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "6px" }}>
+                  📍 On-site Storefront GPS Coordinates *
+                </label>
+                <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    className="outline-button"
+                    onClick={handleCaptureOnboardGps}
+                    disabled={onboardGpsLoading}
+                    style={{ fontSize: "12px", padding: "6px 12px" }}
+                  >
+                    {onboardGpsLoading ? "Capturing GPS..." : "📍 Capture My Current GPS"}
+                  </button>
+                  <span style={{ fontSize: "12px", color: "#166534", fontWeight: 600 }}>
+                    {onboardForm.latitude.toFixed(5)}, {onboardForm.longitude.toFixed(5)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Storefront Photo Upload */}
+              <div style={{ background: "#f8fafc", padding: "12px", borderRadius: "8px", border: "1px solid #cbd5e1" }}>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "6px" }}>
+                  📸 Upload Storefront Photo (Taken On-site) *
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleOnboardPhotoUpload}
+                  disabled={onboardPhotoUploading}
+                  style={{ fontSize: "12px" }}
+                />
+                {onboardPhotoUploading && <p style={{ fontSize: "11px", color: "#64748b", margin: "4px 0 0" }}>Uploading storefront image...</p>}
+                {onboardPhotos.length > 0 && (
+                  <div style={{ display: "flex", gap: "8px", marginTop: "10px", flexWrap: "wrap" }}>
+                    {onboardPhotos.map((url, idx) => (
+                      <div key={idx} style={{ position: "relative" }}>
+                        <img
+                          src={url}
+                          alt="Storefront"
+                          style={{ width: "80px", height: "60px", objectFit: "cover", borderRadius: "6px", border: "1px solid #94a3b8" }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setOnboardPhotos((prev) => prev.filter((_, i) => i !== idx))}
+                          style={{ position: "absolute", top: "-5px", right: "-5px", background: "#dc2626", color: "#fff", border: 0, borderRadius: "50%", width: "18px", height: "18px", fontSize: "10px", cursor: "pointer" }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>
+                  Onboarding Notes / Remarks
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Physical storefront verified on-site. Owner onboarded with Hosur marketplace."
+                  value={onboardForm.notes}
+                  onChange={(e) => setOnboardForm((p) => ({ ...p, notes: e.target.value }))}
+                  style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12px" }}
+                />
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "8px" }}>
+                <button
+                  type="button"
+                  className="outline-button"
+                  onClick={() => setShowAgentOnboardModal(false)}
+                  disabled={onboardSubmitting}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="primary-button"
+                  disabled={onboardSubmitting || onboardPhotoUploading || onboardPhotos.length === 0}
+                >
+                  {onboardSubmitting ? "Onboarding..." : "Onboard & Auto-Verify Business →"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -15497,7 +15970,7 @@ function CompanyPortal({
     coordinates?: Coordinates | null;
     images?: string[];
     photos?: string[];
-    verificationStatus?: "Pending Agent Visit" | "Pending Admin Approval" | "Approved" | "Rejected";
+    verificationStatus?: "Pending Agent Assignment" | "Pending Agent Visit" | "Pending Admin Approval" | "Approved" | "Rejected";
     assignedAgentId?: string;
     assignedAgentName?: string;
     assignedAgentPhone?: string;
@@ -15510,6 +15983,7 @@ function CompanyPortal({
       uploadedImages: string[];
       notes?: string;
       verifiedGps?: { latitude: number; longitude: number } | null;
+      distanceMeters?: number;
     };
     adminApproval?: {
       adminEmail: string;
@@ -15525,15 +15999,41 @@ function CompanyPortal({
   const [approvalsLoading, setApprovalsLoading] = useState(false);
   const [approvalsError, setApprovalsError] = useState("");
   const [processingApprovalId, setProcessingApprovalId] = useState<string | null>(null);
+  const [availableAgents, setAvailableAgents] = useState<Array<{ id: string; name: string; email: string; phone?: string; referralCode?: string }>>([]);
+  const [showCompanyRegisterModal, setShowCompanyRegisterModal] = useState(false);
+  const [companyBizForm, setCompanyBizForm] = useState({
+    name: "",
+    category: "Everyday services",
+    phone: "",
+    email: "",
+    ownerName: "",
+    gstin: "NOT APPLICABLE",
+    doorNo: "",
+    street: "",
+    locality: "",
+    city: "Hosur",
+    state: "Tamil Nadu",
+    pincode: "635109",
+    latitude: 12.7409,
+    longitude: 77.8253,
+    assignedAgentId: "company",
+  });
+  const [companyBizSubmitting, setCompanyBizSubmitting] = useState(false);
+  const [companyGpsLoading, setCompanyGpsLoading] = useState(false);
 
   const loadApprovals = () => {
     setApprovalsLoading(true);
     setApprovalsError("");
     fetch("/api/company/business-approvals", { cache: "no-store", credentials: "include" })
       .then(async (response) => {
-        const result = (await response.json()) as { businesses?: BusinessApprovalRecord[]; error?: string };
+        const result = (await response.json()) as {
+          businesses?: BusinessApprovalRecord[];
+          agents?: Array<{ id: string; name: string; email: string; phone?: string; referralCode?: string }>;
+          error?: string;
+        };
         if (!response.ok) throw new Error(result.error || "Could not load business approvals.");
-        setApprovals(result.businesses || []);
+        if (result.businesses) setApprovals(result.businesses);
+        if (result.agents) setAvailableAgents(result.agents);
       })
       .catch((error) => {
         setApprovalsError(error instanceof Error ? error.message : "Could not load business approvals.");
@@ -15544,6 +16044,123 @@ function CompanyPortal({
   useEffect(() => {
     loadApprovals();
   }, []);
+
+  async function handleAssignOrTransferAgent(businessId: string, agentId: string, isTransfer = false) {
+    setProcessingApprovalId(businessId);
+    try {
+      const response = await fetch("/api/company/business-approvals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          businessId,
+          action: isTransfer ? "transfer_agent" : "assign_agent",
+          agentId,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Failed to update agent assignment.");
+      showNotice(isTransfer ? "✓ Business transferred to agent successfully." : "✓ Agent assigned and field verification dispatched.");
+      loadApprovals();
+      window.dispatchEvent(new Event("neighborly-businesses-refresh"));
+    } catch (err) {
+      showNotice(err instanceof Error ? err.message : "Failed to assign/transfer agent.");
+    } finally {
+      setProcessingApprovalId(null);
+    }
+  }
+
+  function handleCaptureCompanyGps() {
+    setCompanyGpsLoading(true);
+    if (!navigator.geolocation) {
+      showNotice("Geolocation is not supported by your browser");
+      setCompanyGpsLoading(false);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCompanyBizForm((prev) => ({
+          ...prev,
+          latitude: Number(pos.coords.latitude.toFixed(6)),
+          longitude: Number(pos.coords.longitude.toFixed(6)),
+        }));
+        setCompanyGpsLoading(false);
+        showNotice(`✓ GPS coordinates pinned: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`);
+      },
+      (err) => {
+        setCompanyGpsLoading(false);
+        showNotice(`Could not get GPS: ${err.message}`);
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  }
+
+  async function handleCompanyRegisterSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!companyBizForm.name.trim()) {
+      showNotice("Business name is required.");
+      return;
+    }
+    if (!companyBizForm.phone.trim()) {
+      showNotice("Mobile phone is required.");
+      return;
+    }
+    setCompanyBizSubmitting(true);
+    try {
+      const selectedAgent = availableAgents.find((a) => a.id === companyBizForm.assignedAgentId);
+      const res = await fetch("/api/businesses/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: companyBizForm.name.trim(),
+          category: companyBizForm.category,
+          phone: companyBizForm.phone.trim(),
+          email: companyBizForm.email.trim(),
+          ownerName: companyBizForm.ownerName.trim(),
+          gstin: companyBizForm.gstin.trim() || "NOT APPLICABLE",
+          doorNo: companyBizForm.doorNo.trim() || "1",
+          street: companyBizForm.street.trim() || "Main Road",
+          locality: companyBizForm.locality.trim() || "Hosur Center",
+          city: companyBizForm.city.trim() || "Hosur",
+          state: companyBizForm.state.trim() || "Tamil Nadu",
+          pincode: companyBizForm.pincode.trim() || "635109",
+          coordinates: {
+            latitude: Number(companyBizForm.latitude),
+            longitude: Number(companyBizForm.longitude),
+          },
+          referralCode: selectedAgent?.referralCode || (companyBizForm.assignedAgentId === "company" ? "COMPANY" : undefined),
+        }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Failed to register business.");
+      showNotice("✓ Business registered and published live in Hosur directory! (Auto-approved for Company)");
+      setShowCompanyRegisterModal(false);
+      setCompanyBizForm({
+        name: "",
+        category: "Everyday services",
+        phone: "",
+        email: "",
+        ownerName: "",
+        gstin: "NOT APPLICABLE",
+        doorNo: "",
+        street: "",
+        locality: "",
+        city: "Hosur",
+        state: "Tamil Nadu",
+        pincode: "635109",
+        latitude: 12.7409,
+        longitude: 77.8253,
+        assignedAgentId: "company",
+      });
+      loadApprovals();
+      window.dispatchEvent(new Event("neighborly-businesses-refresh"));
+    } catch (err) {
+      showNotice(err instanceof Error ? err.message : "Failed to register business.");
+    } finally {
+      setCompanyBizSubmitting(false);
+    }
+  }
 
   async function handleAdminApproval(businessId: string, action: "approve" | "reject", notes?: string) {
     setProcessingApprovalId(businessId);
@@ -15566,7 +16183,7 @@ function CompanyPortal({
     }
   }
 
-  const pendingApprovalsCount = approvals.filter((b) => b.verificationStatus === "Pending Admin Approval").length;
+  const pendingApprovalsCount = approvals.filter((b) => b.verificationStatus === "Pending Admin Approval" || b.verificationStatus === "Pending Agent Assignment").length;
 
   const tabNames = accessLevel === "Super Admin"
     ? ["Overview", "Businesses", `Approvals${pendingApprovalsCount > 0 ? ` (${pendingApprovalsCount})` : ""}`, "Agents", "Transactions", "Advertisements", "Categories", "Registration forms", "Customer registrations", "Admins", "Activity log", "Safety", "Profile details", "Settings"]
@@ -15858,7 +16475,7 @@ function CompanyPortal({
         }}
       />
     )}
-    {activeTab === "Businesses" && <><section className="panel tab-panel"><div className="panel-heading"><div><div className="eyebrow">PARTNER DIRECTORY</div><h2>All registered businesses & common places ({businesses.length} records)</h2></div><div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}><a href="/bizearch-all-122-businesses-and-common-places.xlsx" download="bizearch-all-122-businesses-and-common-places.xlsx" className="primary-button" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", padding: "8px 14px" }}>📊 Export Excel (.xlsx)</a><a href="/bizearch-all-122-businesses-and-common-places.csv" download="bizearch-all-122-businesses-and-common-places.csv" className="outline-button" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", padding: "8px 14px" }}>📄 Export CSV</a></div></div>{businesses.map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category} / {business.products.length} catalogue items / sample distance {business.distance} km</small><small style={{ color: "#166534", fontWeight: 700, display: "block", marginTop: "2px" }}>📞 Phone / WhatsApp: {businessPhoneFor(business)}</small>{business.address && <small>Address: {Object.values(business.address).filter(Boolean).join(", ")}</small>}{business.coordinates && <small>Coordinates: {business.coordinates.latitude.toFixed(6)}, {business.coordinates.longitude.toFixed(6)}</small>}{business.businessModes?.length ? <small>Activity: {business.businessModes.join(", ")}</small> : null}{business.vehicleTypes?.length ? <small>Vehicles: {business.vehicleTypes.join(", ")}</small> : null}{business.vehicleMakes?.length ? <small>Makes: {business.vehicleMakes.join(", ")}</small> : null}{business.vehicleModels?.length ? <small>Models: {business.vehicleModels.join(", ")}</small> : null}</span><span className={`status-pill ${business.subscribed ? "verified" : "pending"}`}>● {business.subscribed ? "Subscribed" : "Pending"}</span></div>)}</section></>}
+    {activeTab === "Businesses" && <><section className="panel tab-panel"><div className="panel-heading"><div><div className="eyebrow">PARTNER DIRECTORY</div><h2>All registered businesses & common places ({businesses.length} records)</h2></div><div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}><button type="button" className="primary-button" style={{ fontSize: "12px", padding: "8px 14px", display: "inline-flex", alignItems: "center", gap: "6px" }} onClick={() => setShowCompanyRegisterModal(true)}>+ Register Business (Auto-Approved)</button><a href="/bizearch-all-122-businesses-and-common-places.xlsx" download="bizearch-all-122-businesses-and-common-places.xlsx" className="primary-button" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", padding: "8px 14px" }}>📊 Export Excel (.xlsx)</a><a href="/bizearch-all-122-businesses-and-common-places.csv" download="bizearch-all-122-businesses-and-common-places.csv" className="outline-button" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", padding: "8px 14px" }}>📄 Export CSV</a></div></div>{businesses.map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category} / {business.products.length} catalogue items / sample distance {business.distance} km</small><small style={{ color: "#166534", fontWeight: 700, display: "block", marginTop: "2px" }}>📞 Phone / WhatsApp: {businessPhoneFor(business)}</small>{business.address && <small>Address: {Object.values(business.address).filter(Boolean).join(", ")}</small>}{business.coordinates && <small>Coordinates: {business.coordinates.latitude.toFixed(6)}, {business.coordinates.longitude.toFixed(6)}</small>}{business.businessModes?.length ? <small>Activity: {business.businessModes.join(", ")}</small> : null}{business.vehicleTypes?.length ? <small>Vehicles: {business.vehicleTypes.join(", ")}</small> : null}{business.vehicleMakes?.length ? <small>Makes: {business.vehicleMakes.join(", ")}</small> : null}{business.vehicleModels?.length ? <small>Models: {business.vehicleModels.join(", ")}</small> : null}</span><span className={`status-pill ${business.subscribed ? "verified" : "pending"}`}>● {business.subscribed ? "Subscribed" : "Pending"}</span></div>)}</section></>}
     {activeTab.startsWith("Approvals") && (
       <section className="panel tab-panel">
         <div className="panel-heading">
@@ -15869,9 +16486,19 @@ function CompanyPortal({
               Review physical field visits conducted by local agents, verify storefront photographs, and authorize businesses to go live in the public directory.
             </p>
           </div>
-          <button className="outline-button" onClick={loadApprovals}>
-            {approvalsLoading ? "Refreshing..." : "↻ Refresh Approvals"}
-          </button>
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
+            <button
+              type="button"
+              className="primary-button"
+              style={{ fontSize: "12px", padding: "8px 14px", display: "inline-flex", alignItems: "center", gap: "6px" }}
+              onClick={() => setShowCompanyRegisterModal(true)}
+            >
+              + Register Business
+            </button>
+            <button className="outline-button" onClick={loadApprovals}>
+              {approvalsLoading ? "Refreshing..." : "↻ Refresh Approvals"}
+            </button>
+          </div>
         </div>
 
         {approvalsLoading ? (
@@ -15884,6 +16511,7 @@ function CompanyPortal({
         ) : (
           <div style={{ display: "grid", gap: "16px", marginTop: "16px" }}>
             {approvals.map((biz) => {
+              const isUnassigned = biz.verificationStatus === "Pending Agent Assignment";
               const isReadyForAdmin = biz.verificationStatus === "Pending Admin Approval";
               const isPendingAgent = biz.verificationStatus === "Pending Agent Visit";
               const isApproved = biz.verificationStatus === "Approved";
@@ -15895,7 +16523,7 @@ function CompanyPortal({
                   key={biz.id}
                   style={{
                     background: "#fff",
-                    border: `1.5px solid ${isReadyForAdmin ? "#f59e0b" : isApproved ? "#10b981" : "#e2e8f0"}`,
+                    border: `1.5px solid ${isUnassigned ? "#f59e0b" : isReadyForAdmin ? "#3b82f6" : isApproved ? "#10b981" : "#e2e8f0"}`,
                     borderRadius: "12px",
                     padding: "18px",
                     display: "flex",
@@ -15912,11 +16540,11 @@ function CompanyPortal({
                           {biz.category}
                         </span>
                         <span
-                          className={`status-pill ${isApproved ? "verified" : isReadyForAdmin ? "pending" : "pending"}`}
+                          className={`status-pill ${isApproved ? "verified" : isReadyForAdmin ? "pending" : isUnassigned ? "pending" : "pending"}`}
                           style={{
-                            background: isApproved ? "#f0fdf4" : isReadyForAdmin ? "#fef3c7" : "#f1f5f9",
-                            color: isApproved ? "#166534" : isReadyForAdmin ? "#b45309" : "#475569",
-                            borderColor: isApproved ? "#bbf7d0" : isReadyForAdmin ? "#fde68a" : "#cbd5e1",
+                            background: isApproved ? "#f0fdf4" : isReadyForAdmin ? "#eff6ff" : isUnassigned ? "#fffbeb" : "#f1f5f9",
+                            color: isApproved ? "#166534" : isReadyForAdmin ? "#1d4ed8" : isUnassigned ? "#b45309" : "#475569",
+                            borderColor: isApproved ? "#bbf7d0" : isReadyForAdmin ? "#bfdbfe" : isUnassigned ? "#fde68a" : "#cbd5e1",
                           }}
                         >
                           ● {biz.verificationStatus || "Pending Agent Visit"}
@@ -15967,6 +16595,83 @@ function CompanyPortal({
                     )}
                   </div>
 
+                  {/* Pending Agent Assignment Callout */}
+                  {isUnassigned && (
+                    <div style={{ background: "#fffbeb", border: "1.5px solid #f59e0b", borderRadius: "8px", padding: "14px" }}>
+                      <div style={{ fontSize: "13px", fontWeight: 700, color: "#92400e", marginBottom: "4px" }}>
+                        ⚠️ Awaiting Agent Assignment (Registered Without Referral Code)
+                      </div>
+                      <p style={{ margin: "0 0 10px", fontSize: "12px", color: "#78350f" }}>
+                        This business was registered without an agent referral code. Select an authorized agent partner from company records to dispatch for physical on-site verification:
+                      </p>
+                      <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+                        <select
+                          id={`assign-agent-select-${biz.id}`}
+                          defaultValue=""
+                          style={{ padding: "8px 12px", borderRadius: "6px", border: "1px solid #d97706", fontSize: "12px", background: "#fff", minWidth: "220px" }}
+                        >
+                          <option value="" disabled>-- Select Agent from Records --</option>
+                          <option value="company">Super Admin / Company Admin (Verify Directly)</option>
+                          {availableAgents.map((ag) => (
+                            <option key={ag.id} value={ag.id}>
+                              {ag.name} ({ag.referralCode || "Code N/A"}{ag.phone ? ` · ${ag.phone}` : ""})
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          className="primary-button"
+                          style={{ padding: "8px 16px", fontSize: "12px", background: "#d97706", borderColor: "#b45309" }}
+                          disabled={isProcessing}
+                          onClick={() => {
+                            const sel = document.getElementById(`assign-agent-select-${biz.id}`) as HTMLSelectElement;
+                            if (!sel || !sel.value) {
+                              showNotice("Please select an agent from the dropdown first.");
+                              return;
+                            }
+                            handleAssignOrTransferAgent(biz.id, sel.value, false);
+                          }}
+                        >
+                          Assign Agent &amp; Dispatch Field Visit →
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Transfer Agent control */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 12px", background: "#f8fafc", borderRadius: "6px", border: "1px solid #e2e8f0", flexWrap: "wrap", fontSize: "12px" }}>
+                    <span style={{ color: "#475569", fontWeight: 600 }}>Assigned Agent:</span>
+                    <span style={{ color: "#0f172a", fontWeight: 700 }}>{biz.assignedAgentName || "None / Company"}</span>
+                    <div style={{ marginLeft: "auto", display: "inline-flex", gap: "6px", alignItems: "center" }}>
+                      <select
+                        id={`transfer-select-${biz.id}`}
+                        defaultValue=""
+                        style={{ padding: "4px 8px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "11.5px", background: "#fff" }}
+                      >
+                        <option value="" disabled>Transfer to Agent...</option>
+                        <option value="company">Company Admin (Self)</option>
+                        {availableAgents.map((ag) => (
+                          <option key={ag.id} value={ag.id}>
+                            {ag.name} ({ag.referralCode || "Code N/A"})
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        className="outline-button"
+                        style={{ padding: "4px 10px", fontSize: "11px" }}
+                        disabled={isProcessing}
+                        onClick={() => {
+                          const sel = document.getElementById(`transfer-select-${biz.id}`) as HTMLSelectElement;
+                          if (!sel || !sel.value) return;
+                          handleAssignOrTransferAgent(biz.id, sel.value, true);
+                        }}
+                      >
+                        Transfer Agent ↗
+                      </button>
+                    </div>
+                  </div>
+
                   {/* Agent Field Verification Card */}
                   {biz.agentVerification ? (
                     <div style={{ background: "#f8fafc", border: "1px solid #cbd5e1", borderRadius: "8px", padding: "14px" }}>
@@ -15989,6 +16694,11 @@ function CompanyPortal({
                             : "Not recorded"}
                         </div>
                       </div>
+                      {biz.agentVerification.distanceMeters !== undefined && (
+                        <div style={{ marginTop: "8px", padding: "8px 10px", background: biz.agentVerification.distanceMeters <= 50 ? "#f0fdf4" : "#fef2f2", borderRadius: "6px", border: `1px solid ${biz.agentVerification.distanceMeters <= 50 ? "#bbf7d0" : "#fecaca"}`, fontSize: "12px", color: biz.agentVerification.distanceMeters <= 50 ? "#166534" : "#991b1b", fontWeight: 600 }}>
+                          📍 Storefront Proximity Match: {Math.round(biz.agentVerification.distanceMeters)}m from registered storefront ({biz.agentVerification.distanceMeters <= 50 ? "✓ Within 20–50m tolerance" : "⚠️ Discrepancy > 50m"})
+                        </div>
+                      )}
                       {biz.agentVerification.notes && (
                         <div style={{ marginTop: "8px", padding: "8px 10px", background: "#fff", borderRadius: "6px", border: "1px solid #e2e8f0", fontSize: "12px", color: "#334155" }}>
                           <strong>Agent Remarks:</strong> &ldquo;{biz.agentVerification.notes}&rdquo;
@@ -16273,6 +16983,258 @@ function CompanyPortal({
           showNotice={showNotice}
         />
       </>
+    )}
+
+    {/* Company Admin Direct Business Registration Modal */}
+    {showCompanyRegisterModal && (
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(0, 0, 0, 0.6)",
+          display: "grid",
+          placeItems: "center",
+          zIndex: 9999,
+          padding: "20px",
+        }}
+        onClick={() => setShowCompanyRegisterModal(false)}
+      >
+        <div
+          style={{
+            background: "#fff",
+            borderRadius: "14px",
+            padding: "24px",
+            maxWidth: "540px",
+            width: "100%",
+            maxHeight: "90vh",
+            overflowY: "auto",
+            boxShadow: "0 20px 25px -5px rgba(0,0,0,0.2)",
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #e2e8f0", paddingBottom: "12px", marginBottom: "16px" }}>
+            <div>
+              <span style={{ fontSize: "11px", fontWeight: 700, color: "#166534", textTransform: "uppercase" }}>COMPANY DIRECT ONBOARDING</span>
+              <h3 style={{ margin: "2px 0 0", fontSize: "18px", color: "#0f172a" }}>Register Business (Immediate Auto-Approval)</h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowCompanyRegisterModal(false)}
+              style={{ background: "none", border: 0, fontSize: "20px", cursor: "pointer", color: "#64748b" }}
+            >
+              ✕
+            </button>
+          </div>
+
+          <p style={{ fontSize: "12px", color: "#475569", margin: "0 0 16px" }}>
+            Businesses registered by Company Admins or Super Admins are automatically verified and published live immediately in the public directory without requiring approvals.
+          </p>
+
+          <form onSubmit={handleCompanyRegisterSubmit} style={{ display: "grid", gap: "12px" }}>
+            <div>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>
+                Business Name *
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Titan Watch Works & Service"
+                value={companyBizForm.name}
+                onChange={(e) => setCompanyBizForm((p) => ({ ...p, name: e.target.value }))}
+                style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
+              />
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>
+                  Category / Sector *
+                </label>
+                <select
+                  value={companyBizForm.category}
+                  onChange={(e) => setCompanyBizForm((p) => ({ ...p, category: e.target.value }))}
+                  style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px", background: "#fff" }}
+                >
+                  {["Automobiles", "Electronics", "Electricals", "Hardware", "Home Appliances", "Fashion", "Home & furniture", "Food & dining", "Health & wellness", "Sports & fitness", "Travel", "Entertainment", "Everyday services", "Books & Stationery"].map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>
+                  Mobile Number *
+                </label>
+                <input
+                  type="tel"
+                  required
+                  placeholder="10-digit mobile"
+                  value={companyBizForm.phone}
+                  onChange={(e) => setCompanyBizForm((p) => ({ ...p, phone: e.target.value }))}
+                  style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>
+                  Owner Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="Proprietor / Manager"
+                  value={companyBizForm.ownerName}
+                  onChange={(e) => setCompanyBizForm((p) => ({ ...p, ownerName: e.target.value }))}
+                  style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
+                />
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>
+                  GSTIN / Tax ID
+                </label>
+                <input
+                  type="text"
+                  placeholder="GSTIN or NOT APPLICABLE"
+                  value={companyBizForm.gstin}
+                  onChange={(e) => setCompanyBizForm((p) => ({ ...p, gstin: e.target.value }))}
+                  style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "10px" }}>
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>
+                  Door / Shop No. *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Shop #1"
+                  value={companyBizForm.doorNo}
+                  onChange={(e) => setCompanyBizForm((p) => ({ ...p, doorNo: e.target.value }))}
+                  style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
+                />
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>
+                  Street / Road / Landmark *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. MG Road, Hosur"
+                  value={companyBizForm.street}
+                  onChange={(e) => setCompanyBizForm((p) => ({ ...p, street: e.target.value }))}
+                  style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>
+                  Area / Locality *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Hosur Center"
+                  value={companyBizForm.locality}
+                  onChange={(e) => setCompanyBizForm((p) => ({ ...p, locality: e.target.value }))}
+                  style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
+                />
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>
+                  PIN code *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="635109"
+                  value={companyBizForm.pincode}
+                  onChange={(e) => setCompanyBizForm((p) => ({ ...p, pincode: e.target.value }))}
+                  style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
+                />
+              </div>
+            </div>
+
+            {/* Coordinates */}
+            <div style={{ background: "#f8fafc", padding: "12px", borderRadius: "8px", border: "1px solid #cbd5e1" }}>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "6px" }}>
+                📍 GPS Location Coordinates (Mandatory) *
+              </label>
+              <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  className="outline-button"
+                  onClick={handleCaptureCompanyGps}
+                  disabled={companyGpsLoading}
+                  style={{ fontSize: "12px", padding: "6px 12px" }}
+                >
+                  {companyGpsLoading ? "Pinning GPS..." : "📍 Get Current GPS"}
+                </button>
+                <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                  <input
+                    type="number"
+                    step="0.000001"
+                    placeholder="Lat"
+                    value={companyBizForm.latitude}
+                    onChange={(e) => setCompanyBizForm((p) => ({ ...p, latitude: Number(e.target.value) }))}
+                    style={{ width: "95px", padding: "4px 6px", fontSize: "12px", borderRadius: "4px", border: "1px solid #cbd5e1" }}
+                  />
+                  <input
+                    type="number"
+                    step="0.000001"
+                    placeholder="Lng"
+                    value={companyBizForm.longitude}
+                    onChange={(e) => setCompanyBizForm((p) => ({ ...p, longitude: Number(e.target.value) }))}
+                    style={{ width: "95px", padding: "4px 6px", fontSize: "12px", borderRadius: "4px", border: "1px solid #cbd5e1" }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Agent Attribution */}
+            <div>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>
+                Assigned Partner / Verification Agent
+              </label>
+              <select
+                value={companyBizForm.assignedAgentId}
+                onChange={(e) => setCompanyBizForm((p) => ({ ...p, assignedAgentId: e.target.value }))}
+                style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px", background: "#fff" }}
+              >
+                <option value="company">Super Admin / Company Admin acts as Agent</option>
+                {availableAgents.map((ag) => (
+                  <option key={ag.id} value={ag.id}>
+                    {ag.name} ({ag.referralCode || "Code N/A"}{ag.phone ? ` · ${ag.phone}` : ""})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "8px" }}>
+              <button
+                type="button"
+                className="outline-button"
+                onClick={() => setShowCompanyRegisterModal(false)}
+                disabled={companyBizSubmitting}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="primary-button"
+                disabled={companyBizSubmitting}
+              >
+                {companyBizSubmitting ? "Publishing..." : "Register & Publish Live Immediately →"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     )}
   </div>;
 }
@@ -17483,7 +18445,7 @@ function Dialog({
                 {businessPasswordError}
               </p>
             )}
-<div className="otp-row"><label>Business mobile OTP<input name="businessOtp" inputMode="numeric" autoComplete="one-time-code" placeholder="6-digit OTP" value={registrationOtp} onChange={(event) => { setRegistrationOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); setRegistrationOtpVerified(false); }} required /></label><div className="otp-actions"><button type="button" disabled={registrationOtpBusy} onClick={() => void requestRegistrationOtp("Business", "send", businessDetails.businessPhone)}>{registrationOtpBusy ? "Please wait…" : "Send OTP"}</button><button type="button" disabled={registrationOtpBusy || registrationOtp.length !== 6} onClick={() => void requestRegistrationOtp("Business", "verify", businessDetails.businessPhone)}>Verify OTP</button></div></div>{registrationDemoOtp && <p className="otp-demo-code" role="status">Demo OTP: <strong>{registrationDemoOtp}</strong> <span>For local testing only. No SMS was sent.</span></p>}{registrationOtpMessage && <p className={registrationOtpVerified ? "otp-verified" : "form-error"} role="status">{registrationOtpMessage}</p>}<label>GST Number / Business Tax ID *<input name="gstin" placeholder="e.g. 33AAAAA0000A1Z5 (15-digit GSTIN or Tax ID)" required style={{ textTransform: "uppercase" }} /></label><label>Agent Code <span className="optional">(optional — defaults to JIT)</span><input name="referral" placeholder="e.g. JIT (leave blank for default JIT)" style={{ textTransform: "uppercase" }} /></label><label>Upload business proof <span className="optional">(GSTIN certificate, license or registration document)</span><input name="proof" type="file" accept=".pdf,.jpg,.jpeg,.png" /></label>
+<div className="otp-row"><label>Business mobile OTP<input name="businessOtp" inputMode="numeric" autoComplete="one-time-code" placeholder="6-digit OTP" value={registrationOtp} onChange={(event) => { setRegistrationOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); setRegistrationOtpVerified(false); }} required /></label><div className="otp-actions"><button type="button" disabled={registrationOtpBusy} onClick={() => void requestRegistrationOtp("Business", "send", businessDetails.businessPhone)}>{registrationOtpBusy ? "Please wait…" : "Send OTP"}</button><button type="button" disabled={registrationOtpBusy || registrationOtp.length !== 6} onClick={() => void requestRegistrationOtp("Business", "verify", businessDetails.businessPhone)}>Verify OTP</button></div></div>{registrationDemoOtp && <p className="otp-demo-code" role="status">Demo OTP: <strong>{registrationDemoOtp}</strong> <span>For local testing only. No SMS was sent.</span></p>}{registrationOtpMessage && <p className={registrationOtpVerified ? "otp-verified" : "form-error"} role="status">{registrationOtpMessage}</p>}<label>GST Number / Business Tax ID *<input name="gstin" placeholder="e.g. 33AAAAA0000A1Z5 (15-digit GSTIN or Tax ID)" required style={{ textTransform: "uppercase" }} /></label><label>Agent Referral Code <span className="optional">(optional — leave blank to let company assign an agent)</span><input name="referral" placeholder="e.g. JIT (optional — leave blank for company selection)" style={{ textTransform: "uppercase" }} /></label><label>Upload business proof <span className="optional">(GSTIN certificate, license or registration document)</span><input name="proof" type="file" accept=".pdf,.jpg,.jpeg,.png" /></label>
 <div className="business-images-upload-field" style={{ margin: "14px 0" }}>
   <label style={{ display: "block", marginBottom: "6px", fontWeight: 600, fontSize: "12px", color: "#25332c" }}>
     Upload business images <span className="optional" style={{ fontWeight: 400, color: "#778179", fontSize: "11px" }}>(Storefront, interior, products, or showcase photos)</span>

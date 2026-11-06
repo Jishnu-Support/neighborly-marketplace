@@ -316,6 +316,13 @@ export function calculateDistanceKm(
   return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+export function calculateDistanceMeters(
+  origin: { latitude: number; longitude: number },
+  destination: { latitude: number; longitude: number }
+): number {
+  return Math.round(calculateDistanceKm(origin, destination) * 1000);
+}
+
 export const NEIGHBORHOOD_CENTROIDS: Record<string, { latitude: number; longitude: number }> = {
   "Bagalur Road": { latitude: 12.741, longitude: 77.834 },
   "SIPCOT Phase 1": { latitude: 12.756, longitude: 77.801 },

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentSession, getCompanyAdminByIdentity } from "@/app/lib/auth";
-import { listBusinessesForAdminApproval, submitAdminBusinessApproval } from "@/app/lib/businesses";
+import { listBusinessesForAdminApproval, submitAdminBusinessApproval, assignBusinessAgent } from "@/app/lib/businesses";
+import { listAgentPartners } from "@/app/lib/agents";
 
 export async function GET(request: Request) {
   const session = await getCurrentSession(request);
@@ -9,7 +10,8 @@ export async function GET(request: Request) {
   }
 
   const businesses = await listBusinessesForAdminApproval();
-  return NextResponse.json({ businesses }, { headers: { "Cache-Control": "no-store" } });
+  const agents = await listAgentPartners();
+  return NextResponse.json({ businesses, agents }, { headers: { "Cache-Control": "no-store" } });
 }
 
 export async function POST(request: Request) {
@@ -26,7 +28,7 @@ export async function POST(request: Request) {
   }
 
   const businessId = typeof body.businessId === "string" ? body.businessId.trim() : "";
-  const action = body.action === "reject" ? "reject" : "approve";
+  const action = typeof body.action === "string" ? body.action : "approve";
   const notes = typeof body.notes === "string" ? body.notes.trim() : "";
 
   if (!businessId) {
@@ -35,11 +37,29 @@ export async function POST(request: Request) {
 
   try {
     const admin = await getCompanyAdminByIdentity(session.identity);
+    const adminName = admin?.name || (session.identity === "admin@bizearch.in" ? "Super Admin" : "Company Administrator");
+
+    if (action === "assign_agent" || action === "transfer_agent") {
+      const agentId = typeof body.agentId === "string" ? body.agentId.trim() : "";
+      if (!agentId) {
+        return NextResponse.json({ error: "Please select an agent partner to assign or transfer." }, { status: 400 });
+      }
+
+      const updated = await assignBusinessAgent({
+        businessId,
+        agentId,
+        adminName,
+        adminEmail: session.identity,
+      });
+
+      return NextResponse.json({ success: true, business: updated, message: "✓ Business successfully assigned / transferred to agent." });
+    }
+
     const updated = await submitAdminBusinessApproval({
       businessId,
       adminEmail: session.identity,
-      adminName: admin?.name || (session.identity === "admin@bizearch.in" ? "Super Admin" : "Company Administrator"),
-      action,
+      adminName,
+      action: action === "reject" ? "reject" : "approve",
       notes,
     });
 
