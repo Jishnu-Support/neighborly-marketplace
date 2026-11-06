@@ -2121,6 +2121,55 @@ export default function Home() {
   const [adBookingWizardOpen, setAdBookingWizardOpen] = useState(false);
   const [activeAdReceipt, setActiveAdReceipt] = useState<AdBookingRequest | null>(null);
   const [activeAd, setActiveAd] = useState(0);
+
+  // Lock background/body scrolling whenever a mobile sheet or modal dialog is open
+  // so only the popup/sheet itself can be scrolled without bleeding into the background
+  useEffect(() => {
+    const isAnyModalOrSheetOpen =
+      mobileLocalitySheetOpen ||
+      mobileLangSheetOpen ||
+      mobileCategorySheetOpen ||
+      Boolean(dialog) ||
+      Boolean(selectedBusiness) ||
+      Boolean(reviewBusiness) ||
+      Boolean(orderingItem) ||
+      Boolean(enquiryProduct) ||
+      Boolean(activeReceipt) ||
+      Boolean(subscriptionCheckout) ||
+      Boolean(subscriptionReceipt) ||
+      adBookingWizardOpen ||
+      Boolean(activeAdReceipt);
+
+    if (!isAnyModalOrSheetOpen) return;
+
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    const originalBodyTouchAction = document.body.style.touchAction;
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
+
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+      document.body.style.touchAction = originalBodyTouchAction;
+    };
+  }, [
+    mobileLocalitySheetOpen,
+    mobileLangSheetOpen,
+    mobileCategorySheetOpen,
+    dialog,
+    selectedBusiness,
+    reviewBusiness,
+    orderingItem,
+    enquiryProduct,
+    activeReceipt,
+    subscriptionCheckout,
+    subscriptionReceipt,
+    adBookingWizardOpen,
+    activeAdReceipt,
+  ]);
   const categories = useMemo(() => [{ name: "All", icon: "✳" }, ...categoryConfig.sectors], [categoryConfig]);
   const businesses = demoData.businesses;
   // The Business portal represents one business account, so it matches
@@ -8468,7 +8517,13 @@ export default function Home() {
 
       {/* Mobile Locality Bottom Sheet */}
       {mobileLocalitySheetOpen && (
-        <div className="mobile-sheet-overlay" onClick={() => setMobileLocalitySheetOpen(false)}>
+        <div
+          className="mobile-sheet-overlay"
+          onClick={() => setMobileLocalitySheetOpen(false)}
+          onTouchMove={(e) => {
+            if (e.target === e.currentTarget) e.preventDefault();
+          }}
+        >
           <div className="mobile-sheet-container" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Select Locality in Hosur">
             <div className="mobile-sheet-handle" />
             <div className="mobile-sheet-head">
@@ -8530,7 +8585,20 @@ export default function Home() {
               <span>{locationEnabled ? "GPS Active (Tap to Refresh)" : "Use My Live Device GPS Location"}</span>
             </button>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px", maxHeight: "50vh", overflowY: "auto" }}>
+            <div
+              className="mobile-sheet-scrollable"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "6px",
+                maxHeight: "50vh",
+                overflowY: "auto",
+                overscrollBehavior: "contain",
+                WebkitOverflowScrolling: "touch",
+                touchAction: "pan-y",
+              }}
+              onTouchMove={(e) => e.stopPropagation()}
+            >
               {HOSUR_NEIGHBORHOODS.filter((nh) =>
                 !localitySearchInput || nh.toLowerCase().includes(localitySearchInput.toLowerCase()) || translateNeighborhood(nh, lang).toLowerCase().includes(localitySearchInput.toLowerCase())
               ).map((nh) => (
@@ -8573,7 +8641,13 @@ export default function Home() {
 
       {/* Mobile Language Bottom Sheet */}
       {mobileLangSheetOpen && (
-        <div className="mobile-sheet-overlay" onClick={() => setMobileLangSheetOpen(false)}>
+        <div
+          className="mobile-sheet-overlay"
+          onClick={() => setMobileLangSheetOpen(false)}
+          onTouchMove={(e) => {
+            if (e.target === e.currentTarget) e.preventDefault();
+          }}
+        >
           <div className="mobile-sheet-container" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Select Language">
             <div className="mobile-sheet-handle" />
             <div className="mobile-sheet-head">
@@ -8590,7 +8664,18 @@ export default function Home() {
               </button>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <div
+              className="mobile-sheet-scrollable"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "8px",
+                overscrollBehavior: "contain",
+                WebkitOverflowScrolling: "touch",
+                touchAction: "pan-y",
+              }}
+              onTouchMove={(e) => e.stopPropagation()}
+            >
               {[
                 { code: "en" as const, label: "English", sub: "English (Default)" },
                 { code: "ta" as const, label: "தமிழ்", sub: "Tamil (தமிழ்)" },
@@ -8641,7 +8726,13 @@ export default function Home() {
 
       {/* Mobile Category Bottom Sheet */}
       {mobileCategorySheetOpen && (
-        <div className="mobile-sheet-overlay" onClick={() => setMobileCategorySheetOpen(false)}>
+        <div
+          className="mobile-sheet-overlay"
+          onClick={() => setMobileCategorySheetOpen(false)}
+          onTouchMove={(e) => {
+            if (e.target === e.currentTarget) e.preventDefault();
+          }}
+        >
           <div className="mobile-sheet-container" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Browse Categories">
             <div className="mobile-sheet-handle" />
             <div className="mobile-sheet-head">
@@ -8658,7 +8749,21 @@ export default function Home() {
               </button>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", maxHeight: "55vh", overflowY: "auto", marginBottom: "12px" }}>
+            <div
+              className="mobile-sheet-scrollable"
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "8px",
+                maxHeight: "55vh",
+                overflowY: "auto",
+                marginBottom: "12px",
+                overscrollBehavior: "contain",
+                WebkitOverflowScrolling: "touch",
+                touchAction: "pan-y",
+              }}
+              onTouchMove={(e) => e.stopPropagation()}
+            >
               <button
                 type="button"
                 style={{

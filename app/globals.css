@@ -3910,6 +3910,8 @@ html, body {
     z-index: 1300;
     align-items: flex-end;
     animation: fadeIn 0.2s ease;
+    overscroll-behavior: contain !important;
+    touch-action: none !important;
   }
   .mobile-sheet-container {
     background: #ffffff;
@@ -3924,6 +3926,16 @@ html, body {
     overflow-y: auto;
     overflow-x: hidden;
     box-sizing: border-box;
+    overscroll-behavior: contain !important;
+    overscroll-behavior-y: contain !important;
+    touch-action: pan-y !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .mobile-sheet-scrollable {
+    overscroll-behavior: contain !important;
+    overscroll-behavior-y: contain !important;
+    touch-action: pan-y !important;
+    -webkit-overflow-scrolling: touch !important;
   }
   @keyframes sheetSlideUp {
     from { transform: translateY(100%); }
