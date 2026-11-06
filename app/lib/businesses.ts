@@ -232,18 +232,21 @@ export async function registerBusinessAccount(input: {
     pincode: input.pincode?.trim() || (existingIndex >= 0 ? records[existingIndex].address.pincode : ""),
   };
 
-  // Attempt to assign to agent matching referral code, or fallback to nearby active field agent
-  const refCode = (input.referralCode || input.agentReferralCode || "").trim().toUpperCase();
-  let assignedAgentId: string | undefined;
-  let assignedAgentName: string | undefined;
-  let assignedAgentPhone: string | undefined;
-  let matchedAgentReferralCode: string | undefined = refCode || undefined;
+  // Attempt to assign to agent matching referral code, or fallback to default agent JIT
+  const rawRef = (input.referralCode || input.agentReferralCode || "").trim().toUpperCase();
+  const refCode = rawRef || "JIT";
+  let assignedAgentId: string = "agent-jit-default";
+  let assignedAgentName: string = "JIT";
+  let assignedAgentPhone: string = "9043022219";
+  let matchedAgentReferralCode: string = refCode;
 
   try {
     const agents = await readAgentRecords();
-    const matchedAgent = refCode
-      ? agents.find((a) => (a.referralCode || "").trim().toUpperCase() === refCode)
-      : undefined;
+    const matchedAgent = agents.find(
+      (a) =>
+        (a.referralCode || "").trim().toUpperCase() === refCode ||
+        (a.name || "").trim().toUpperCase() === refCode
+    );
 
     if (matchedAgent) {
       assignedAgentId = matchedAgent.id;
@@ -253,11 +256,14 @@ export async function registerBusinessAccount(input: {
       matchedAgent.referredCount = (matchedAgent.referredCount || 0) + 1;
       await writeAgentRecords(agents);
     } else {
-      const activeAgent = agents.find((a) => a.active);
-      if (activeAgent) {
-        assignedAgentId = activeAgent.id;
-        assignedAgentName = activeAgent.name;
-        assignedAgentPhone = activeAgent.phone;
+      const jitAgent = agents.find((a) => (a.referralCode || "").trim().toUpperCase() === "JIT" || (a.name || "").trim().toUpperCase() === "JIT");
+      if (jitAgent) {
+        assignedAgentId = jitAgent.id;
+        assignedAgentName = jitAgent.name;
+        assignedAgentPhone = jitAgent.phone;
+        matchedAgentReferralCode = "JIT";
+        jitAgent.referredCount = (jitAgent.referredCount || 0) + 1;
+        await writeAgentRecords(agents);
       }
     }
   } catch {}
@@ -288,16 +294,14 @@ export async function registerBusinessAccount(input: {
     assignedAgentName,
     assignedAgentPhone,
     agentReferralCode: matchedAgentReferralCode,
-    agentVerification: matchedAgentReferralCode
-      ? {
-          agentId: assignedAgentId || "",
-          agentName: assignedAgentName || "",
-          agentPhone: assignedAgentPhone || "",
-          agentReferralCode: matchedAgentReferralCode,
-          visitedAt: "",
-          uploadedImages: [],
-        }
-      : undefined,
+    agentVerification: {
+      agentId: assignedAgentId,
+      agentName: assignedAgentName,
+      agentPhone: assignedAgentPhone,
+      agentReferralCode: matchedAgentReferralCode,
+      visitedAt: "",
+      uploadedImages: [],
+    },
     createdAt: existingIndex >= 0 ? records[existingIndex].createdAt : new Date().toISOString(),
     rating: 5,
     reviews: 0,

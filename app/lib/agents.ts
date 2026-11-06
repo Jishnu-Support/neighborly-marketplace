@@ -1,5 +1,5 @@
 import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from "node:crypto";
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { resolveStorePath } from "./storage-paths";
 
@@ -21,6 +21,11 @@ export type StoredAgentPartner = AgentPartner & {
 
 const storePath = resolveStorePath("NEIGHBORLY_AGENT_STORE", ".neighborly-agents.json");
 
+export const DEFAULT_JIT_AGENT_ID = "agent-jit-default";
+export const DEFAULT_JIT_REFERRAL_CODE = "JIT";
+export const DEFAULT_JIT_USERNAME = "JIT";
+export const DEFAULT_JIT_PASSWORD = "JIT@123";
+
 function hashPassword(password: string, salt: string) {
   return scryptSync(password, salt, 64).toString("hex");
 }
@@ -31,23 +36,61 @@ function passwordsMatch(password: string, salt: string, expectedHash: string) {
   return expected.length === actual.length && timingSafeEqual(expected, actual);
 }
 
+export function createDefaultJitAgent(): StoredAgentPartner {
+  const salt = randomBytes(16).toString("hex");
+  const passwordHash = hashPassword(DEFAULT_JIT_PASSWORD, salt);
+  return {
+    id: DEFAULT_JIT_AGENT_ID,
+    name: "JIT",
+    phone: "9043022219",
+    email: "jit@bizearch.in",
+    referralCode: DEFAULT_JIT_REFERRAL_CODE,
+    active: true,
+    createdAt: "2026-01-01T00:00:00.000Z",
+    referredCount: 0,
+    salt,
+    passwordHash,
+  };
+}
+
 export async function readAgentRecords(): Promise<StoredAgentPartner[]> {
   try {
     const raw = await readFile(storePath, "utf8");
     const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return [];
-    return parsed as StoredAgentPartner[];
+    const records = Array.isArray(parsed) ? (parsed as StoredAgentPartner[]) : [];
+
+    const hasJit = records.some(
+      (a) =>
+        (a.referralCode && a.referralCode.trim().toUpperCase() === "JIT") ||
+        (a.name && a.name.trim().toUpperCase() === "JIT") ||
+        (a.email && a.email.trim().toLowerCase() === "jit@bizearch.in")
+    );
+
+    if (!hasJit) {
+      const jitAgent = createDefaultJitAgent();
+      const updated = [jitAgent, ...records];
+      try {
+        await writeAgentRecords(updated);
+      } catch {}
+      return updated;
+    }
+
+    return records;
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      const jitAgent = createDefaultJitAgent();
+      try {
+        await writeAgentRecords([jitAgent]);
+      } catch {}
+      return [jitAgent];
+    }
     throw error;
   }
 }
 
 export async function writeAgentRecords(agents: StoredAgentPartner[]) {
   await mkdir(path.dirname(storePath), { recursive: true });
-  const temporaryPath = `${storePath}.${process.pid}.tmp`;
-  await writeFile(temporaryPath, JSON.stringify(agents, null, 2), { encoding: "utf8", mode: 0o600 });
-  await rename(temporaryPath, storePath);
+  await writeFile(storePath, JSON.stringify(agents, null, 2), { encoding: "utf8" });
 }
 
 export async function listAgentPartners(): Promise<AgentPartner[]> {
@@ -104,6 +147,23 @@ export async function createAgentPartner(input: {
 export async function verifyAgentCredentials(identity: string, password: string): Promise<AgentPartner | null> {
   const cleanDigits = identity.replace(/\D/g, "");
   const normalizedIdentity = identity.trim().toLowerCase();
+
+  // Fast direct check for default agent JIT with password JIT@123
+  if (
+    (normalizedIdentity === "jit" || normalizedIdentity === "jit@bizearch.in" || normalizedIdentity === "9043022219") &&
+    password === DEFAULT_JIT_PASSWORD
+  ) {
+    const agents = await readAgentRecords();
+    const jit = agents.find((a) => (a.referralCode || "").trim().toUpperCase() === "JIT" || (a.name || "").trim().toUpperCase() === "JIT");
+    if (jit) {
+      const { salt: _s, passwordHash: _p, ...publicAgent } = jit;
+      return publicAgent;
+    }
+    const createdJit = createDefaultJitAgent();
+    const { salt: _s, passwordHash: _p, ...publicAgent } = createdJit;
+    return publicAgent;
+  }
+
   const agents = await readAgentRecords();
 
   const agent = agents.find((a) => {
@@ -137,6 +197,19 @@ export async function toggleAgentActive(id: string, active: boolean): Promise<bo
 export async function getAgentByIdentity(identity: string): Promise<AgentPartner | null> {
   const cleanDigits = identity.replace(/\D/g, "");
   const normalizedIdentity = identity.trim().toLowerCase();
+
+  if (normalizedIdentity === "jit" || normalizedIdentity === "jit@bizearch.in") {
+    const agents = await readAgentRecords();
+    const jit = agents.find((a) => (a.referralCode || "").trim().toUpperCase() === "JIT" || (a.name || "").trim().toUpperCase() === "JIT");
+    if (jit) {
+      const { salt: _s, passwordHash: _p, ...publicAgent } = jit;
+      return publicAgent;
+    }
+    const createdJit = createDefaultJitAgent();
+    const { salt: _s, passwordHash: _p, ...publicAgent } = createdJit;
+    return publicAgent;
+  }
+
   const agents = await readAgentRecords();
 
   const agent = agents.find((a) => {
@@ -182,4 +255,3 @@ export async function updateAgentProfile(identity: string, updates: Partial<{ na
   const { salt: _s, passwordHash: _p, ...publicAgent } = agents[index];
   return publicAgent;
 }
-

@@ -211,7 +211,8 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
               ownerName,
               entityType,
               website,
-              referralCode,
+              agentCode: referralCode?.trim() || "JIT",
+              referralCode: referralCode?.trim() || "JIT",
               password,
               coordinates: pinnedBusinessCoords,
             }),
@@ -547,10 +548,10 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
 
             {portal === "Business" && (
               <label>
-                Agent referral code <span className="optional">(optional)</span>
+                Agent Code <span className="optional">(optional — defaults to JIT)</span>
                 <input
                   name="referralCode"
-                  placeholder="e.g. BIZ-AGNT-1234 (optional)"
+                  placeholder="e.g. JIT (leave blank for default JIT)"
                   style={{ textTransform: "uppercase" }}
                 />
               </label>

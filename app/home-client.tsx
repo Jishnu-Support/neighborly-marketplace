@@ -4167,7 +4167,8 @@ export default function Home() {
       showNotice("GST Number / Business Tax ID is mandatory.");
       return;
     }
-    const referralCode = String(form.get("referral") || form.get("referralCode") || "").trim().toUpperCase();
+    const rawReferral = String(form.get("referral") || form.get("referralCode") || form.get("agentCode") || "").trim().toUpperCase();
+    const referralCode = rawReferral || "JIT";
     try {
       const response = await fetch("/api/businesses/register", {
         method: "POST",
@@ -4185,6 +4186,7 @@ export default function Home() {
           pincode: address.pincode || "635109",
           gstin: gstin.toUpperCase(),
           referralCode,
+          agentCode: referralCode,
           ownerName: String(form.get("ownerName") || name).trim(),
           description: `${businessModes.join(" & ")} in ${selectedCategories.length ? selectedCategories.join(", ") : selectedCategory}`,
           businessModes,
@@ -17456,7 +17458,7 @@ function Dialog({
                 {businessPasswordError}
               </p>
             )}
-<div className="otp-row"><label>Business mobile OTP<input name="businessOtp" inputMode="numeric" autoComplete="one-time-code" placeholder="6-digit OTP" value={registrationOtp} onChange={(event) => { setRegistrationOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); setRegistrationOtpVerified(false); }} required /></label><div className="otp-actions"><button type="button" disabled={registrationOtpBusy} onClick={() => void requestRegistrationOtp("Business", "send", businessDetails.businessPhone)}>{registrationOtpBusy ? "Please wait…" : "Send OTP"}</button><button type="button" disabled={registrationOtpBusy || registrationOtp.length !== 6} onClick={() => void requestRegistrationOtp("Business", "verify", businessDetails.businessPhone)}>Verify OTP</button></div></div>{registrationDemoOtp && <p className="otp-demo-code" role="status">Demo OTP: <strong>{registrationDemoOtp}</strong> <span>For local testing only. No SMS was sent.</span></p>}{registrationOtpMessage && <p className={registrationOtpVerified ? "otp-verified" : "form-error"} role="status">{registrationOtpMessage}</p>}<label>GST Number / Business Tax ID *<input name="gstin" placeholder="e.g. 33AAAAA0000A1Z5 (15-digit GSTIN or Tax ID)" required style={{ textTransform: "uppercase" }} /></label><label>Agent referral code <span className="optional">(optional)</span><input name="referral" placeholder="e.g. BIZ-AGNT-1234 (optional)" style={{ textTransform: "uppercase" }} /></label><label>Upload business proof <span className="optional">(GSTIN certificate, license or registration document)</span><input name="proof" type="file" accept=".pdf,.jpg,.jpeg,.png" /></label>
+<div className="otp-row"><label>Business mobile OTP<input name="businessOtp" inputMode="numeric" autoComplete="one-time-code" placeholder="6-digit OTP" value={registrationOtp} onChange={(event) => { setRegistrationOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); setRegistrationOtpVerified(false); }} required /></label><div className="otp-actions"><button type="button" disabled={registrationOtpBusy} onClick={() => void requestRegistrationOtp("Business", "send", businessDetails.businessPhone)}>{registrationOtpBusy ? "Please wait…" : "Send OTP"}</button><button type="button" disabled={registrationOtpBusy || registrationOtp.length !== 6} onClick={() => void requestRegistrationOtp("Business", "verify", businessDetails.businessPhone)}>Verify OTP</button></div></div>{registrationDemoOtp && <p className="otp-demo-code" role="status">Demo OTP: <strong>{registrationDemoOtp}</strong> <span>For local testing only. No SMS was sent.</span></p>}{registrationOtpMessage && <p className={registrationOtpVerified ? "otp-verified" : "form-error"} role="status">{registrationOtpMessage}</p>}<label>GST Number / Business Tax ID *<input name="gstin" placeholder="e.g. 33AAAAA0000A1Z5 (15-digit GSTIN or Tax ID)" required style={{ textTransform: "uppercase" }} /></label><label>Agent Code <span className="optional">(optional — defaults to JIT)</span><input name="referral" placeholder="e.g. JIT (leave blank for default JIT)" style={{ textTransform: "uppercase" }} /></label><label>Upload business proof <span className="optional">(GSTIN certificate, license or registration document)</span><input name="proof" type="file" accept=".pdf,.jpg,.jpeg,.png" /></label>
 <div className="business-images-upload-field" style={{ margin: "14px 0" }}>
   <label style={{ display: "block", marginBottom: "6px", fontWeight: 600, fontSize: "12px", color: "#25332c" }}>
     Upload business images <span className="optional" style={{ fontWeight: 400, color: "#778179", fontSize: "11px" }}>(Storefront, interior, products, or showcase photos)</span>
