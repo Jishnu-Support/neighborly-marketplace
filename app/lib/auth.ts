@@ -10,7 +10,7 @@ import { resolveStorePath } from "./storage-paths";
 export type PortalRole = "Account" | "Business" | "Agent" | "Company";
 export type CompanyAccessLevel = "Admin" | "Super Admin";
 export type AuthSession = { role: PortalRole; identity: string; expiresAt: number; accessLevel?: CompanyAccessLevel };
-export type CompanyAdmin = { id: string; name: string; email: string; active: boolean; createdAt: string };
+export type CompanyAdmin = { id: string; name: string; email: string; active: boolean; createdAt: string; emergencyPhone?: string };
 type StoredAdmin = CompanyAdmin & { salt: string; passwordHash: string };
 
 export type CustomerAccount = {
@@ -468,6 +468,7 @@ export async function updateCompanyAdmin(input: {
   email?: string;
   active?: boolean;
   password?: string;
+  emergencyPhone?: string;
 }): Promise<CompanyAdmin | null> {
   const admins = await readAdminRecords();
   const selectedAdmin = admins.find((admin) => admin.id === input.id);
@@ -496,6 +497,10 @@ export async function updateCompanyAdmin(input: {
 
   if (typeof input.active === "boolean") {
     selectedAdmin.active = input.active;
+  }
+
+  if (typeof input.emergencyPhone === "string") {
+    selectedAdmin.emergencyPhone = input.emergencyPhone.trim();
   }
 
   if (typeof input.password === "string" && input.password.trim() !== "") {

@@ -56,6 +56,7 @@ export type StoredBusiness = {
   name: string;
   category: string;
   phone: string;
+  emergencyPhone?: string;
   email: string;
   ownerName: string;
   salt: string;
@@ -219,6 +220,7 @@ export async function registerBusinessAccount(input: {
   name: string;
   category: string;
   phone: string;
+  emergencyPhone?: string;
   email?: string;
   password?: string;
   ownerName?: string;
@@ -396,6 +398,7 @@ export async function registerBusinessAccount(input: {
     name: input.name.trim(),
     category: input.category.trim() || "Everyday services",
     phone: input.phone.trim(),
+    emergencyPhone: input.emergencyPhone?.trim() || (existingIndex >= 0 ? records[existingIndex].emergencyPhone : undefined) || input.phone.trim(),
     email: normalizedEmail,
     ownerName: input.ownerName?.trim() || input.name.trim(),
     salt,
@@ -670,6 +673,7 @@ export async function updateBusinessProfile(idOrIdentity: string, updates: Parti
   name: string;
   category: string;
   phone: string;
+  emergencyPhone?: string;
   email: string;
   ownerName: string;
   description: string;
@@ -702,6 +706,7 @@ export async function updateBusinessProfile(idOrIdentity: string, updates: Parti
   if (updates.name) current.name = updates.name.trim();
   if (updates.category) current.category = updates.category.trim();
   if (updates.phone) current.phone = updates.phone.trim();
+  if (updates.emergencyPhone !== undefined) current.emergencyPhone = updates.emergencyPhone.trim();
   if (updates.email !== undefined) current.email = updates.email.trim().toLowerCase();
   if (updates.ownerName !== undefined) current.ownerName = updates.ownerName.trim();
   if (updates.description !== undefined) current.description = updates.description.trim();

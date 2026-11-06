@@ -44,7 +44,10 @@ export async function GET(request: Request) {
         email: session.identity,
         active: true,
         createdAt: "2026-01-01T00:00:00.000Z",
+        emergencyPhone: "+91 94895 21482",
       };
+    } else if (admin && !admin.emergencyPhone) {
+      admin.emergencyPhone = "+91 94895 21482";
     }
     return NextResponse.json({
       role: "Company",
@@ -119,11 +122,18 @@ export async function PATCH(request: Request) {
         ? { latitude: rawCoords.latitude, longitude: rawCoords.longitude }
         : undefined;
 
+      const emergencyPhone = typeof body.emergencyPhone === "string" && body.emergencyPhone.trim()
+        ? body.emergencyPhone.trim()
+        : Array.isArray(body.emergencyPhones) && typeof body.emergencyPhones[0] === "string" && body.emergencyPhones[0].trim()
+        ? body.emergencyPhones[0].trim()
+        : undefined;
+
       const updated = await updateBusinessProfile(session.identity, {
         name: typeof body.name === "string" ? body.name : undefined,
         ownerName: typeof body.ownerName === "string" ? body.ownerName : undefined,
         category: typeof body.category === "string" ? body.category : undefined,
         phone: typeof body.phone === "string" ? body.phone : undefined,
+        emergencyPhone,
         email: typeof body.email === "string" ? body.email : undefined,
         description: typeof body.description === "string" ? body.description : undefined,
         website: typeof body.website === "string" ? body.website : undefined,
@@ -148,10 +158,17 @@ export async function PATCH(request: Request) {
     }
 
     if (session.role === "Agent") {
+      const emergencyPhone = typeof body.emergencyPhone === "string" && body.emergencyPhone.trim()
+        ? body.emergencyPhone.trim()
+        : Array.isArray(body.emergencyPhones) && typeof body.emergencyPhones[0] === "string" && body.emergencyPhones[0].trim()
+        ? body.emergencyPhones[0].trim()
+        : undefined;
+
       const updated = await updateAgentProfile(session.identity, {
         name: typeof body.name === "string" ? body.name : undefined,
         phone: typeof body.phone === "string" ? body.phone : undefined,
         email: typeof body.email === "string" ? body.email : undefined,
+        emergencyPhone,
       });
 
       return NextResponse.json({ success: true, agent: updated });
@@ -159,12 +176,19 @@ export async function PATCH(request: Request) {
 
     if (session.role === "Company") {
       const admin = await getCompanyAdminByIdentity(session.identity);
+      const emergencyPhone = typeof body.emergencyPhone === "string" && body.emergencyPhone.trim()
+        ? body.emergencyPhone.trim()
+        : Array.isArray(body.emergencyPhones) && typeof body.emergencyPhones[0] === "string" && body.emergencyPhones[0].trim()
+        ? body.emergencyPhones[0].trim()
+        : undefined;
+
       if (admin) {
         const updated = await updateCompanyAdmin({
           id: admin.id,
           name: typeof body.name === "string" ? body.name : undefined,
           email: typeof body.email === "string" ? body.email : undefined,
           password: typeof body.password === "string" && body.password.trim() ? body.password : undefined,
+          emergencyPhone,
         });
         return NextResponse.json({ success: true, adminProfile: updated });
       }

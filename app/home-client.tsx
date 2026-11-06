@@ -188,6 +188,7 @@ type Business = {
   name: string;
   category: string;
   phone?: string;
+  emergencyPhone?: string;
   address?: BusinessAddress;
   coordinates?: Coordinates | null;
   businessModes?: string[];
@@ -4200,6 +4201,7 @@ export default function Home() {
     }
     const rawReferral = String(form.get("referral") || form.get("referralCode") || form.get("agentCode") || "").trim().toUpperCase();
     const referralCode = rawReferral || undefined;
+    const emergencyPhone = String(form.get("emergencyPhone") || "").trim() || phone;
     try {
       const response = await fetch("/api/businesses/register", {
         method: "POST",
@@ -4208,6 +4210,7 @@ export default function Home() {
           name,
           category: selectedCategory,
           phone,
+          emergencyPhone,
           password,
           doorNo: address.doorNumber || "Shop 1",
           street: address.street || "Main Road",
@@ -11676,6 +11679,7 @@ function BusinessProfileEditorView({
   const [ownerName, setOwnerName] = useState(business?.ownerName || "");
   const [category, setCategory] = useState(business?.category || "Automobiles");
   const [phone, setPhone] = useState(business?.phone || "");
+  const [emergencyPhone, setEmergencyPhone] = useState(business?.emergencyPhone || business?.phone || "");
   const [email, setEmail] = useState(business?.email || "");
   const [gstin, setGstin] = useState(business?.gstin || "");
   const [description, setDescription] = useState(business?.description || "");
@@ -11703,6 +11707,7 @@ function BusinessProfileEditorView({
     setOwnerName(business.ownerName || "");
     setCategory(business.category || "Automobiles");
     setPhone(business.phone || "");
+    setEmergencyPhone(business.emergencyPhone || business.phone || "");
     setEmail(business.email || "");
     setGstin(business.gstin || "");
     setDescription(business.description || "");
@@ -11802,6 +11807,7 @@ function BusinessProfileEditorView({
       ownerName: ownerName.trim(),
       category: category.trim(),
       phone: phone.trim(),
+      emergencyPhone: emergencyPhone.trim() || phone.trim(),
       email: email.trim().toLowerCase(),
       gstin: gstin.trim().toUpperCase(),
       description: description.trim(),
@@ -12070,6 +12076,26 @@ function BusinessProfileEditorView({
                   placeholder="e.g. 9876543210"
                   required
                   style={{ flex: 1, padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+                />
+              </div>
+            </label>
+
+            <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "11.5px", fontWeight: 700, color: "#991b1b" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span>Emergency Contact Mobile *</span>
+                <span style={{ fontSize: "10px", color: "#dc2626", fontWeight: 700 }}>1-Tap SOS &amp; WhatsApp Alert</span>
+              </div>
+              <div style={{ display: "flex", gap: "6px" }}>
+                <span style={{ padding: "10px 12px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "8px", fontSize: "13px", fontWeight: 700, color: "#991b1b" }}>
+                  🇮🇳 +91
+                </span>
+                <input
+                  type="tel"
+                  value={emergencyPhone}
+                  onChange={(e) => setEmergencyPhone(e.target.value)}
+                  placeholder="e.g. 9843210987"
+                  required
+                  style={{ flex: 1, padding: "10px 12px", borderRadius: "8px", border: "1.5px solid #fecaca", fontSize: "13px" }}
                 />
               </div>
             </label>
@@ -14517,9 +14543,9 @@ function ProfileAndSettingsPanel({
             bio: `${b.category || "Local Business"} · Verified Merchant in Hosur`,
             avatarInitials: (b.name ? b.name[0] : "B").toUpperCase(),
             avatarBg: "#0f766e",
-            emergencyPhones: ["", ""],
-            emergencyNames: ["", ""],
-            emergencyRelations: ["", ""],
+            emergencyPhones: [b.emergencyPhone || b.phone || "", ""],
+            emergencyNames: [b.ownerName || "Business Owner", ""],
+            emergencyRelations: ["Store Manager / Emergency", ""],
           });
           return;
         }
@@ -14540,9 +14566,9 @@ function ProfileAndSettingsPanel({
             bio: `Agent Referral Partner (Code: ${a.referralCode})`,
             avatarInitials: (a.name ? a.name[0] : "A").toUpperCase(),
             avatarBg: "#7c3aed",
-            emergencyPhones: ["", ""],
-            emergencyNames: ["", ""],
-            emergencyRelations: ["", ""],
+            emergencyPhones: [a.emergencyPhone || a.phone || "", ""],
+            emergencyNames: [a.name || "Agent", ""],
+            emergencyRelations: ["Agent Safety Contact", ""],
           });
           return;
         }
@@ -14550,7 +14576,7 @@ function ProfileAndSettingsPanel({
           const adm = data.adminProfile;
           setProfile({
             fullName: adm.name || "Company Administrator",
-            phone: "",
+            phone: adm.emergencyPhone || "+91 94895 21482",
             email: adm.email || "",
             doorNo: "",
             street: "",
@@ -14563,9 +14589,9 @@ function ProfileAndSettingsPanel({
             bio: `${data.accessLevel || "Admin"} · Bizearch Administration`,
             avatarInitials: (adm.name ? adm.name[0] : "A").toUpperCase(),
             avatarBg: "#1e3a8a",
-            emergencyPhones: ["", ""],
-            emergencyNames: ["", ""],
-            emergencyRelations: ["", ""],
+            emergencyPhones: [adm.emergencyPhone || "+91 94895 21482", ""],
+            emergencyNames: [adm.name || "Admin Safety Officer", ""],
+            emergencyRelations: ["Admin Safety Dispatch", ""],
           });
           return;
         }
@@ -19707,6 +19733,11 @@ function Dialog({
   const [showBusinessPassword, setShowBusinessPassword] = useState(false);
   const [businessPasswordError, setBusinessPasswordError] = useState("");
   const [emergencyProfile, setEmergencyProfile] = useState({ customerName: "", customerPhone: "", emergencyPhones: ["", ""] as [string, string] });
+  const [showEditEmergencyPhone, setShowEditEmergencyPhone] = useState(false);
+  const [quickEmergencyPhone, setQuickEmergencyPhone] = useState("");
+  const [quickEmergencyName, setQuickEmergencyName] = useState("");
+  const [quickEmergencySaving, setQuickEmergencySaving] = useState(false);
+  const [quickEmergencySuccess, setQuickEmergencySuccess] = useState("");
   const [sosBusy, setSosBusy] = useState(false);
   const [sosError, setSosError] = useState("");
   const [selectedEmergencyType, setSelectedEmergencyType] = useState<EmergencyType | "">("");
@@ -19857,10 +19888,129 @@ function Dialog({
   useEffect(() => {
     if (kind !== "sos") return;
     try {
-      const saved = JSON.parse(window.localStorage.getItem(profileStorageKey(profileRole, profileIdentity)) || window.localStorage.getItem("neighborly-emergency-profile-v1") || "null") as (Partial<MemberProfile> & { customerName?: string; customerPhone?: string }) | null;
-      if (saved) setEmergencyProfile({ customerName: saved.fullName || saved.customerName || "", customerPhone: saved.phone || saved.customerPhone || "", emergencyPhones: [saved.emergencyPhones?.[0] || "", saved.emergencyPhones?.[1] || ""] });
+      const saved = JSON.parse(
+        window.localStorage.getItem(profileStorageKey(profileRole, profileIdentity)) ||
+        window.localStorage.getItem(`neighborly_profile_${profileRole}`) ||
+        window.localStorage.getItem("neighborly-emergency-profile-v1") ||
+        "null"
+      ) as (Partial<MemberProfile> & { customerName?: string; customerPhone?: string; emergencyPhone?: string }) | null;
+      if (saved) {
+        const p1 = saved.emergencyPhones?.[0] || saved.emergencyPhone || "";
+        const p2 = saved.emergencyPhones?.[1] || "";
+        setEmergencyProfile({
+          customerName: saved.fullName || saved.customerName || "",
+          customerPhone: saved.phone || saved.customerPhone || "",
+          emergencyPhones: [p1, p2],
+        });
+        if (p1) setQuickEmergencyPhone(p1);
+        if (saved.emergencyNames?.[0]) setQuickEmergencyName(saved.emergencyNames[0]);
+      }
     } catch { /* The user can enter the details directly in the SOS form. */ }
+
+    // Fetch live profile from database to ensure up-to-date emergency contact for all roles
+    fetch("/api/profile", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!data) return;
+        if (data.customer) {
+          const c = data.customer;
+          const p1 = c.emergencyPhones?.[0] || "";
+          const p2 = c.emergencyPhones?.[1] || "";
+          setEmergencyProfile({
+            customerName: c.name || "Customer",
+            customerPhone: c.phone || "",
+            emergencyPhones: [p1, p2],
+          });
+          if (p1) setQuickEmergencyPhone(p1);
+          if (c.emergencyNames?.[0]) setQuickEmergencyName(c.emergencyNames[0]);
+        } else if (data.business) {
+          const b = data.business;
+          const p1 = b.emergencyPhone || b.phone || "";
+          setEmergencyProfile({
+            customerName: b.ownerName || b.name || "Business Merchant",
+            customerPhone: b.phone || "",
+            emergencyPhones: [p1, ""],
+          });
+          if (p1) setQuickEmergencyPhone(p1);
+          setQuickEmergencyName(b.ownerName || b.name || "Business Owner");
+        } else if (data.agent) {
+          const a = data.agent;
+          const p1 = a.emergencyPhone || a.phone || "";
+          setEmergencyProfile({
+            customerName: a.name || "Agent Partner",
+            customerPhone: a.phone || "",
+            emergencyPhones: [p1, ""],
+          });
+          if (p1) setQuickEmergencyPhone(p1);
+          setQuickEmergencyName(a.name || "Agent");
+        } else if (data.adminProfile) {
+          const adm = data.adminProfile;
+          const p1 = adm.emergencyPhone || "+91 94895 21482";
+          setEmergencyProfile({
+            customerName: adm.name || "Company Admin",
+            customerPhone: p1,
+            emergencyPhones: [p1, ""],
+          });
+          if (p1) setQuickEmergencyPhone(p1);
+          setQuickEmergencyName(adm.name || "Admin Safety Officer");
+        }
+      })
+      .catch(() => {});
   }, [kind, profileRole, profileIdentity]);
+
+  async function saveQuickEmergencyContact(e?: React.FormEvent) {
+    if (e) e.preventDefault();
+    const cleanDigits = quickEmergencyPhone.replace(/\D/g, "");
+    if (cleanDigits.length < 8) {
+      setSosError("Please enter a valid emergency mobile number (at least 8–10 digits).");
+      return;
+    }
+    setQuickEmergencySaving(true);
+    setSosError("");
+    const newEmergencyPhones: [string, string] = [quickEmergencyPhone.trim(), emergencyProfile.emergencyPhones[1] || ""];
+    const updated = {
+      ...emergencyProfile,
+      emergencyPhones: newEmergencyPhones,
+      customerName: quickEmergencyName.trim() || emergencyProfile.customerName || "Hosur Resident",
+    };
+    setEmergencyProfile(updated);
+
+    try {
+      const storageKey = profileStorageKey(profileRole, profileIdentity);
+      const existing = JSON.parse(window.localStorage.getItem(storageKey) || "{}");
+      const next = {
+        ...existing,
+        emergencyPhones: newEmergencyPhones,
+        emergencyPhone: quickEmergencyPhone.trim(),
+        emergencyNames: [quickEmergencyName.trim() || "Emergency Contact", ""],
+      };
+      window.localStorage.setItem(storageKey, JSON.stringify(next));
+      window.localStorage.setItem(`neighborly_profile_${profileRole}`, JSON.stringify(next));
+      window.localStorage.setItem("neighborly-emergency-profile-v1", JSON.stringify(updated));
+    } catch {}
+
+    try {
+      await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          emergencyPhone: quickEmergencyPhone.trim(),
+          emergencyPhones: newEmergencyPhones,
+          emergencyNames: [quickEmergencyName.trim() || "Emergency Contact", ""],
+        }),
+      });
+      setQuickEmergencySuccess("✓ Emergency number registered for SOS!");
+      setShowEditEmergencyPhone(false);
+      setTimeout(() => setQuickEmergencySuccess(""), 3500);
+    } catch {
+      setQuickEmergencySuccess("✓ Saved locally on device.");
+      setShowEditEmergencyPhone(false);
+      setTimeout(() => setQuickEmergencySuccess(""), 3500);
+    } finally {
+      setQuickEmergencySaving(false);
+    }
+  }
   async function recordSos(
     location: { locationStatus: "shared" | "unavailable"; latitude: number | null; longitude: number | null; accuracyMeters: number | null },
     profileOverride?: { customerName: string; customerPhone: string; emergencyPhones: [string, string] }
@@ -20309,7 +20459,7 @@ function Dialog({
                 {businessPasswordError}
               </p>
             )}
-<div className="otp-row"><label>Business mobile OTP<input name="businessOtp" inputMode="numeric" autoComplete="one-time-code" placeholder="6-digit OTP" value={registrationOtp} onChange={(event) => { setRegistrationOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); setRegistrationOtpVerified(false); }} required /></label><div className="otp-actions"><button type="button" disabled={registrationOtpBusy} onClick={() => void requestRegistrationOtp("Business", "send", businessDetails.businessPhone)}>{registrationOtpBusy ? "Please wait…" : "Send OTP"}</button><button type="button" disabled={registrationOtpBusy || registrationOtp.length !== 6} onClick={() => void requestRegistrationOtp("Business", "verify", businessDetails.businessPhone)}>Verify OTP</button></div></div>{registrationDemoOtp && <p className="otp-demo-code" role="status">Demo OTP: <strong>{registrationDemoOtp}</strong> <span>For local testing only. No SMS was sent.</span></p>}{registrationOtpMessage && <p className={registrationOtpVerified ? "otp-verified" : "form-error"} role="status">{registrationOtpMessage}</p>}<label>GST Number / Business Tax ID *<input name="gstin" placeholder="e.g. 33AAAAA0000A1Z5 (15-digit GSTIN or Tax ID)" required style={{ textTransform: "uppercase" }} /></label><label>Agent Referral Code <span className="optional">(optional — leave blank to let company assign an agent)</span><input name="referral" placeholder="e.g. JIT (optional — leave blank for company selection)" style={{ textTransform: "uppercase" }} /></label><label>Upload business proof <span className="optional">(GSTIN certificate, license or registration document)</span><input name="proof" type="file" accept=".pdf,.jpg,.jpeg,.png" /></label>
+<div className="otp-row"><label>Business mobile OTP<input name="businessOtp" inputMode="numeric" autoComplete="one-time-code" placeholder="6-digit OTP" value={registrationOtp} onChange={(event) => { setRegistrationOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); setRegistrationOtpVerified(false); }} required /></label><div className="otp-actions"><button type="button" disabled={registrationOtpBusy} onClick={() => void requestRegistrationOtp("Business", "send", businessDetails.businessPhone)}>{registrationOtpBusy ? "Please wait…" : "Send OTP"}</button><button type="button" disabled={registrationOtpBusy || registrationOtp.length !== 6} onClick={() => void requestRegistrationOtp("Business", "verify", businessDetails.businessPhone)}>Verify OTP</button></div></div>{registrationDemoOtp && <p className="otp-demo-code" role="status">Demo OTP: <strong>{registrationDemoOtp}</strong> <span>For local testing only. No SMS was sent.</span></p>}{registrationOtpMessage && <p className={registrationOtpVerified ? "otp-verified" : "form-error"} role="status">{registrationOtpMessage}</p>}<label>GST Number / Business Tax ID *<input name="gstin" placeholder="e.g. 33AAAAA0000A1Z5 (15-digit GSTIN or Tax ID)" required style={{ textTransform: "uppercase" }} /></label><label>Emergency Contact Mobile * <span className="optional">(for 1-tap SOS and WhatsApp distress alerts)</span><input name="emergencyPhone" type="tel" placeholder="+91 98765 43210" defaultValue={businessDetails.businessPhone} required minLength={8} /></label><label>Agent Referral Code <span className="optional">(optional — leave blank to let company assign an agent)</span><input name="referral" placeholder="e.g. JIT (optional — leave blank for company selection)" style={{ textTransform: "uppercase" }} /></label><label>Upload business proof <span className="optional">(GSTIN certificate, license or registration document)</span><input name="proof" type="file" accept=".pdf,.jpg,.jpeg,.png" /></label>
 <div className="business-images-upload-field" style={{ margin: "14px 0" }}>
   <label style={{ display: "block", marginBottom: "6px", fontWeight: 600, fontSize: "12px", color: "#25332c" }}>
     Upload business images <span className="optional" style={{ fontWeight: 400, color: "#778179", fontSize: "11px" }}>(Storefront, interior, products, or showcase photos)</span>
@@ -20461,184 +20611,402 @@ function Dialog({
         <div className="fine-print">100% money-back guarantee within 7 days. Instant activation and official GST tax receipt upon completion.</div></>}
       {kind === "sos" && (
         <>
-          <div style={{ textAlign: "center", marginBottom: "16px" }}>
+          <div style={{ textAlign: "center", marginBottom: "12px" }}>
             <div style={{
               display: "inline-flex",
               alignItems: "center",
               gap: "6px",
               background: "#fef2f2",
               border: "1px solid #fecaca",
-              padding: "4px 12px",
+              padding: "3px 10px",
               borderRadius: "999px",
-              fontSize: "11px",
+              fontSize: "10px",
               fontWeight: 800,
               color: "#dc2626",
               letterSpacing: "0.04em",
               textTransform: "uppercase",
-              marginBottom: "8px",
+              marginBottom: "4px",
             }}>
-              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#dc2626", display: "inline-block", boxShadow: "0 0 0 3px rgba(220,38,38,0.25)" }} />
-              <span>24×7 Emergency Response</span>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#dc2626", display: "inline-block", boxShadow: "0 0 0 3px rgba(220,38,38,0.25)" }} />
+              <span>24×7 EMERGENCY RESPONSE</span>
             </div>
-            <h2 style={{ fontSize: "22px", fontWeight: 800, color: "#0f172a", margin: "2px 0 6px" }}>
+            <h2 style={{ fontSize: "19px", fontWeight: 800, color: "#0f172a", margin: "0 0 3px" }}>
               Emergency SOS &amp; Helplines
             </h2>
-            <p style={{ fontSize: "12px", color: "#64748b", margin: 0, maxWidth: "420px", marginLeft: "auto", marginRight: "auto" }}>
-              Tap any helpline for instant direct connection, or broadcast your live GPS location to emergency responders.
+            <p style={{ fontSize: "11px", color: "#64748b", margin: 0 }}>
+              1-tap direct Call &amp; WhatsApp connection to emergency responders and personal contacts.
             </p>
           </div>
 
-          {/* 1-Tap Emergency Helplines Section */}
-          <div style={{ marginBottom: "18px" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-              <div style={{ fontSize: "11px", fontWeight: 800, color: "#991b1b", textTransform: "uppercase", letterSpacing: "0.04em", display: "flex", alignItems: "center", gap: "6px" }}>
+          {/* 1-Tap Emergency Helplines with Dual Call & WhatsApp */}
+          <div style={{ marginBottom: "12px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
+              <div style={{ fontSize: "10px", fontWeight: 800, color: "#991b1b", textTransform: "uppercase", letterSpacing: "0.04em", display: "flex", alignItems: "center", gap: "5px" }}>
                 <span>🚨</span>
-                <span>Immediate Direct Call Dialers</span>
+                <span>Direct Dialers &amp; WhatsApp</span>
               </div>
-              <span style={{ fontSize: "10.5px", color: "#64748b", fontWeight: 600 }}>Toll-Free Helpline</span>
+              <span style={{ fontSize: "9.5px", color: "#64748b", fontWeight: 600 }}>Toll-Free Helpline</span>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "8px" }}>
               {/* 112 National Helpline */}
-              <a
-                href="tel:112"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "12px 14px",
-                  borderRadius: "10px",
-                  background: "#eff6ff",
-                  border: "1.5px solid #bfdbfe",
-                  textDecoration: "none",
-                  color: "#1e3a8a",
-                  boxShadow: "0 2px 6px rgba(30, 58, 138, 0.05)",
-                  transition: "transform 0.1s ease",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
-                  <span style={{ fontSize: "24px", lineHeight: 1, flexShrink: 0 }}>🛡️</span>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: "17px", fontWeight: 800, lineHeight: 1.15, color: "#1e3a8a" }}>112</div>
-                    <div style={{ fontSize: "11.5px", fontWeight: 700, color: "#2563eb", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>National SOS</div>
-                    <div style={{ fontSize: "9.5px", color: "#64748b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>All-in-One Helpline</div>
+              <div style={{ background: "#eff6ff", border: "1.5px solid #bfdbfe", borderRadius: "10px", padding: "8px 10px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "6px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span style={{ fontSize: "18px", lineHeight: 1 }}>🛡️</span>
+                  <div>
+                    <div style={{ fontSize: "15px", fontWeight: 900, color: "#1e3a8a", lineHeight: 1.1 }}>112</div>
+                    <div style={{ fontSize: "10px", fontWeight: 700, color: "#2563eb", lineHeight: 1.1 }}>National SOS</div>
                   </div>
                 </div>
-                <span style={{ background: "#2563eb", color: "#ffffff", fontSize: "10.5px", fontWeight: 700, padding: "5px 9px", borderRadius: "6px", flexShrink: 0, marginLeft: "6px" }}>
-                  Call
-                </span>
-              </a>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px" }}>
+                  <a
+                    href="tel:112"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "3px",
+                      background: "#2563eb",
+                      color: "#ffffff",
+                      fontSize: "10px",
+                      fontWeight: 700,
+                      padding: "5px 4px",
+                      borderRadius: "6px",
+                      textDecoration: "none",
+                    }}
+                  >
+                    <span>📞</span>
+                    <span>Call</span>
+                  </a>
+                  <a
+                    href={`https://wa.me/919489521482?text=${encodeURIComponent("🚨 EMERGENCY 112 SOS: Immediate emergency response required in Hosur!")}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "3px",
+                      background: "#16a34a",
+                      color: "#ffffff",
+                      fontSize: "10px",
+                      fontWeight: 700,
+                      padding: "5px 4px",
+                      borderRadius: "6px",
+                      textDecoration: "none",
+                    }}
+                  >
+                    <span>💬</span>
+                    <span>WhatsApp</span>
+                  </a>
+                </div>
+              </div>
 
               {/* 108 Ambulance */}
-              <a
-                href="tel:108"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "12px 14px",
-                  borderRadius: "10px",
-                  background: "#fff7ed",
-                  border: "1.5px solid #fed7aa",
-                  textDecoration: "none",
-                  color: "#9a3412",
-                  boxShadow: "0 2px 6px rgba(154, 52, 18, 0.05)",
-                  transition: "transform 0.1s ease",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
-                  <span style={{ fontSize: "24px", lineHeight: 1, flexShrink: 0 }}>🚑</span>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: "17px", fontWeight: 800, lineHeight: 1.15, color: "#9a3412" }}>108</div>
-                    <div style={{ fontSize: "11.5px", fontWeight: 700, color: "#ea580c", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Ambulance</div>
-                    <div style={{ fontSize: "9.5px", color: "#64748b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Medical Emergency</div>
+              <div style={{ background: "#fff7ed", border: "1.5px solid #fed7aa", borderRadius: "10px", padding: "8px 10px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "6px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span style={{ fontSize: "18px", lineHeight: 1 }}>🚑</span>
+                  <div>
+                    <div style={{ fontSize: "15px", fontWeight: 900, color: "#9a3412", lineHeight: 1.1 }}>108</div>
+                    <div style={{ fontSize: "10px", fontWeight: 700, color: "#ea580c", lineHeight: 1.1 }}>Ambulance</div>
                   </div>
                 </div>
-                <span style={{ background: "#ea580c", color: "#ffffff", fontSize: "10.5px", fontWeight: 700, padding: "5px 9px", borderRadius: "6px", flexShrink: 0, marginLeft: "6px" }}>
-                  Call
-                </span>
-              </a>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px" }}>
+                  <a
+                    href="tel:108"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "3px",
+                      background: "#ea580c",
+                      color: "#ffffff",
+                      fontSize: "10px",
+                      fontWeight: 700,
+                      padding: "5px 4px",
+                      borderRadius: "6px",
+                      textDecoration: "none",
+                    }}
+                  >
+                    <span>📞</span>
+                    <span>Call</span>
+                  </a>
+                  <a
+                    href={`https://wa.me/919489521482?text=${encodeURIComponent("🚑 MEDICAL EMERGENCY (108): Urgent Ambulance required in Hosur!")}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "3px",
+                      background: "#16a34a",
+                      color: "#ffffff",
+                      fontSize: "10px",
+                      fontWeight: 700,
+                      padding: "5px 4px",
+                      borderRadius: "6px",
+                      textDecoration: "none",
+                    }}
+                  >
+                    <span>💬</span>
+                    <span>WhatsApp</span>
+                  </a>
+                </div>
+              </div>
 
               {/* 100 Police */}
-              <a
-                href="tel:100"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "12px 14px",
-                  borderRadius: "10px",
-                  background: "#f0fdf4",
-                  border: "1.5px solid #bbf7d0",
-                  textDecoration: "none",
-                  color: "#166534",
-                  boxShadow: "0 2px 6px rgba(22, 101, 52, 0.05)",
-                  transition: "transform 0.1s ease",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
-                  <span style={{ fontSize: "24px", lineHeight: 1, flexShrink: 0 }}>🚓</span>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: "17px", fontWeight: 800, lineHeight: 1.15, color: "#166534" }}>100</div>
-                    <div style={{ fontSize: "11.5px", fontWeight: 700, color: "#16a34a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Police</div>
-                    <div style={{ fontSize: "9.5px", color: "#64748b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Police Control Room</div>
+              <div style={{ background: "#f0fdf4", border: "1.5px solid #bbf7d0", borderRadius: "10px", padding: "8px 10px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "6px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span style={{ fontSize: "18px", lineHeight: 1 }}>🚓</span>
+                  <div>
+                    <div style={{ fontSize: "15px", fontWeight: 900, color: "#166534", lineHeight: 1.1 }}>100</div>
+                    <div style={{ fontSize: "10px", fontWeight: 700, color: "#16a34a", lineHeight: 1.1 }}>Police</div>
                   </div>
                 </div>
-                <span style={{ background: "#16a34a", color: "#ffffff", fontSize: "10.5px", fontWeight: 700, padding: "5px 9px", borderRadius: "6px", flexShrink: 0, marginLeft: "6px" }}>
-                  Call
-                </span>
-              </a>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px" }}>
+                  <a
+                    href="tel:100"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "3px",
+                      background: "#16a34a",
+                      color: "#ffffff",
+                      fontSize: "10px",
+                      fontWeight: 700,
+                      padding: "5px 4px",
+                      borderRadius: "6px",
+                      textDecoration: "none",
+                    }}
+                  >
+                    <span>📞</span>
+                    <span>Call</span>
+                  </a>
+                  <a
+                    href={`https://wa.me/919498181212?text=${encodeURIComponent("🚓 POLICE EMERGENCY (100): Urgent police assistance required in Hosur!")}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "3px",
+                      background: "#16a34a",
+                      color: "#ffffff",
+                      fontSize: "10px",
+                      fontWeight: 700,
+                      padding: "5px 4px",
+                      borderRadius: "6px",
+                      textDecoration: "none",
+                    }}
+                  >
+                    <span>💬</span>
+                    <span>WhatsApp</span>
+                  </a>
+                </div>
+              </div>
 
               {/* 101 Fire */}
-              <a
-                href="tel:101"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "12px 14px",
-                  borderRadius: "10px",
-                  background: "#fef2f2",
-                  border: "1.5px solid #fecaca",
-                  textDecoration: "none",
-                  color: "#991b1b",
-                  boxShadow: "0 2px 6px rgba(153, 27, 27, 0.05)",
-                  transition: "transform 0.1s ease",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
-                  <span style={{ fontSize: "24px", lineHeight: 1, flexShrink: 0 }}>🚒</span>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: "17px", fontWeight: 800, lineHeight: 1.15, color: "#991b1b" }}>101</div>
-                    <div style={{ fontSize: "11.5px", fontWeight: 700, color: "#dc2626", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Fire &amp; Rescue</div>
-                    <div style={{ fontSize: "9.5px", color: "#64748b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Hosur Fire Station</div>
+              <div style={{ background: "#fef2f2", border: "1.5px solid #fecaca", borderRadius: "10px", padding: "8px 10px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "6px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span style={{ fontSize: "18px", lineHeight: 1 }}>🚒</span>
+                  <div>
+                    <div style={{ fontSize: "15px", fontWeight: 900, color: "#991b1b", lineHeight: 1.1 }}>101</div>
+                    <div style={{ fontSize: "10px", fontWeight: 700, color: "#dc2626", lineHeight: 1.1 }}>Fire &amp; Rescue</div>
                   </div>
                 </div>
-                <span style={{ background: "#dc2626", color: "#ffffff", fontSize: "10.5px", fontWeight: 700, padding: "5px 9px", borderRadius: "6px", flexShrink: 0, marginLeft: "6px" }}>
-                  Call
-                </span>
-              </a>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px" }}>
+                  <a
+                    href="tel:101"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "3px",
+                      background: "#dc2626",
+                      color: "#ffffff",
+                      fontSize: "10px",
+                      fontWeight: 700,
+                      padding: "5px 4px",
+                      borderRadius: "6px",
+                      textDecoration: "none",
+                    }}
+                  >
+                    <span>📞</span>
+                    <span>Call</span>
+                  </a>
+                  <a
+                    href={`https://wa.me/919489521482?text=${encodeURIComponent("🚒 FIRE EMERGENCY (101): Immediate Fire & Rescue required in Hosur!")}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "3px",
+                      background: "#16a34a",
+                      color: "#ffffff",
+                      fontSize: "10px",
+                      fontWeight: 700,
+                      padding: "5px 4px",
+                      borderRadius: "6px",
+                      textDecoration: "none",
+                    }}
+                  >
+                    <span>💬</span>
+                    <span>WhatsApp</span>
+                  </a>
+                </div>
+              </div>
             </div>
+          </div>
+
+          {/* User's Dedicated Emergency Contact (All Roles: Customers, Businesses, Agents, Admins) */}
+          <div style={{ background: "#f8fafc", border: "1.5px solid #cbd5e1", borderRadius: "10px", padding: "10px 12px", marginBottom: "12px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                <span style={{ fontSize: "13px" }}>👤</span>
+                <strong style={{ fontSize: "10.5px", color: "#1e293b", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                  Your Emergency Contact
+                </strong>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowEditEmergencyPhone(!showEditEmergencyPhone)}
+                style={{ background: "none", border: "none", color: "#2563eb", fontSize: "10.5px", fontWeight: 700, cursor: "pointer", textDecoration: "underline", padding: 0 }}
+              >
+                {showEditEmergencyPhone ? "✕ Close" : "Edit Number ✎"}
+              </button>
+            </div>
+
+            {quickEmergencySuccess && (
+              <div style={{ background: "#ecfdf5", border: "1px solid #a7f3d0", color: "#065f46", fontSize: "11px", fontWeight: 700, padding: "5px 8px", borderRadius: "6px", marginBottom: "6px" }}>
+                {quickEmergencySuccess}
+              </div>
+            )}
+
+            {showEditEmergencyPhone || (!emergencyProfile.emergencyPhones[0] && !quickEmergencyPhone) ? (
+              <form onSubmit={saveQuickEmergencyContact} style={{ margin: "2px 0 0" }}>
+                <p style={{ fontSize: "10.5px", color: "#64748b", margin: "0 0 6px" }}>
+                  Enter an emergency contact number for 1-tap Call &amp; WhatsApp distress alerts:
+                </p>
+                <div style={{ display: "flex", gap: "6px", marginBottom: "6px" }}>
+                  <input
+                    type="text"
+                    value={quickEmergencyName}
+                    onChange={(e) => setQuickEmergencyName(e.target.value)}
+                    placeholder="Name (e.g. Spouse / Owner)"
+                    style={{ width: "42%", padding: "6px 8px", fontSize: "11.5px", border: "1px solid #cbd5e1", borderRadius: "6px" }}
+                  />
+                  <input
+                    type="tel"
+                    value={quickEmergencyPhone}
+                    onChange={(e) => setQuickEmergencyPhone(e.target.value)}
+                    placeholder="Mobile Number *"
+                    required
+                    style={{ flex: 1, padding: "6px 8px", fontSize: "11.5px", border: "1px solid #cbd5e1", borderRadius: "6px" }}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={quickEmergencySaving}
+                  style={{
+                    width: "100%",
+                    padding: "7px 12px",
+                    background: "#166534",
+                    color: "#ffffff",
+                    borderRadius: "6px",
+                    border: "none",
+                    fontWeight: 700,
+                    fontSize: "11px",
+                    cursor: "pointer",
+                  }}
+                >
+                  {quickEmergencySaving ? "Saving..." : "💾 Save Emergency Number"}
+                </button>
+              </form>
+            ) : (
+              <div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "11.5px", fontWeight: 700, color: "#0f172a", marginBottom: "8px" }}>
+                  <span>{emergencyProfile.customerName || "Hosur Resident"}</span>
+                  <span style={{ color: "#2563eb", fontFamily: "monospace", letterSpacing: "0.5px" }}>
+                    {emergencyProfile.emergencyPhones[0] || quickEmergencyPhone}
+                  </span>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
+                  <a
+                    href={`tel:${(emergencyProfile.emergencyPhones[0] || quickEmergencyPhone).replace(/\D/g, "")}`}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "5px",
+                      background: "#1e293b",
+                      color: "#ffffff",
+                      padding: "7px 10px",
+                      borderRadius: "7px",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      textDecoration: "none",
+                    }}
+                  >
+                    <span>📞</span>
+                    <span>Call Contact</span>
+                  </a>
+                  <a
+                    href={`https://wa.me/91${(emergencyProfile.emergencyPhones[0] || quickEmergencyPhone).replace(/\D/g, "")}?text=${encodeURIComponent(
+                      `🚨 EMERGENCY DISTRESS ALERT!\nPlease help! Immediate SOS alert from ${emergencyProfile.customerName || "me"} via Bizearch Hosur Safety Network.`
+                    )}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "5px",
+                      background: "#16a34a",
+                      color: "#ffffff",
+                      padding: "7px 10px",
+                      borderRadius: "7px",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      textDecoration: "none",
+                    }}
+                  >
+                    <span>💬</span>
+                    <span>WhatsApp SOS</span>
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* GPS Broadcast Section */}
-          <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "12px", padding: "16px", marginBottom: "16px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <span style={{ fontSize: "14px" }}>📍</span>
-                <strong style={{ fontSize: "12.5px", color: "#0f172a" }}>Broadcast Live GPS Distress Alert</strong>
+          <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "10px", padding: "12px", marginBottom: "12px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                <span style={{ fontSize: "13px" }}>📍</span>
+                <strong style={{ fontSize: "11.5px", color: "#0f172a" }}>Broadcast Live GPS Distress Alert</strong>
               </div>
-              <span style={{ fontSize: "10px", background: "#fef2f2", color: "#b91c1c", border: "1px solid #fecaca", padding: "2px 8px", borderRadius: "999px", fontWeight: 700 }}>
+              <span style={{ fontSize: "9.5px", background: "#fef2f2", color: "#b91c1c", border: "1px solid #fecaca", padding: "1px 6px", borderRadius: "999px", fontWeight: 700 }}>
                 GPS-Enabled
               </span>
             </div>
-            <p style={{ fontSize: "11.5px", color: "#64748b", margin: "0 0 12px" }}>
-              Select emergency category to capture live GPS location and notify emergency responders:
+            <p style={{ fontSize: "10.5px", color: "#64748b", margin: "0 0 8px" }}>
+              Select category to capture live GPS location and broadcast alert:
             </p>
 
-            {/* Clean Category Chips */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "8px", marginBottom: "14px" }}>
-              {emergencyTypes.map((item) => {
+            {/* Clean Category Chips (Zero truncation) */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "10px" }}>
+              {[
+                { id: "police" as EmergencyType, title: "Police", icon: "👮" },
+                { id: "medical" as EmergencyType, title: "Medical", icon: "🚑" },
+                { id: "fire" as EmergencyType, title: "Fire", icon: "🚒" },
+                { id: "women-safety" as EmergencyType, title: "Women Safety", icon: "🛡️" },
+                { id: "general" as EmergencyType, title: "Other Alert", icon: "⚠️" },
+              ].map((item) => {
                 const isSelected = selectedEmergencyType === item.id;
                 return (
                   <button
@@ -20651,48 +21019,34 @@ function Dialog({
                       setSosResult(null);
                     }}
                     style={{
-                      display: "flex",
+                      flex: "1 1 auto",
+                      display: "inline-flex",
                       alignItems: "center",
-                      gap: "8px",
-                      padding: "9px 12px",
-                      borderRadius: "8px",
+                      justifyContent: "center",
+                      gap: "4px",
+                      padding: "6px 9px",
+                      borderRadius: "7px",
                       border: isSelected ? "2px solid #dc2626" : "1px solid #cbd5e1",
                       background: isSelected ? "#fef2f2" : "#ffffff",
                       color: isSelected ? "#991b1b" : "#334155",
                       fontWeight: isSelected ? 800 : 600,
-                      fontSize: "11.5px",
+                      fontSize: "11px",
+                      whiteSpace: "nowrap",
                       cursor: "pointer",
-                      textAlign: "left",
-                      boxShadow: isSelected ? "0 2px 8px rgba(220, 38, 38, 0.12)" : "none",
+                      boxShadow: isSelected ? "0 2px 6px rgba(220, 38, 38, 0.12)" : "none",
                       transition: "all 0.15s ease",
                     }}
                   >
-                    <span style={{ fontSize: "16px", lineHeight: 1 }}>{item.icon}</span>
-                    <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.title}</span>
+                    <span>{item.icon}</span>
+                    <span>{item.title}</span>
                   </button>
                 );
               })}
             </div>
 
-            {/* Profile info & Emergency contacts */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px", padding: "8px 12px", background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", fontSize: "11px", color: "#475569", marginBottom: "12px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <span>👤</span>
-                <span><strong>{emergencyProfile.customerName || "Hosur Resident"}</strong> ({emergencyProfile.customerPhone || "Active Device"})</span>
-              </div>
-              <button
-                type="button"
-                onClick={onOpenProfile}
-                disabled={sosBusy}
-                style={{ background: "none", border: "none", color: "#2563eb", fontWeight: 700, fontSize: "11px", cursor: "pointer", padding: 0, textDecoration: "underline" }}
-              >
-                Edit Emergency Contacts →
-              </button>
-            </div>
-
             <form onSubmit={submitSos} style={{ margin: 0 }}>
               {sosError && (
-                <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#b91c1c", padding: "9px 12px", borderRadius: "8px", fontSize: "11.5px", fontWeight: 600, marginBottom: "10px" }}>
+                <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#b91c1c", padding: "7px 10px", borderRadius: "7px", fontSize: "11px", fontWeight: 600, marginBottom: "8px" }}>
                   ⚠️ {sosError}
                 </div>
               )}
@@ -20701,20 +21055,20 @@ function Dialog({
                 disabled={sosBusy}
                 style={{
                   width: "100%",
-                  padding: "13px 20px",
-                  borderRadius: "10px",
+                  padding: "11px 16px",
+                  borderRadius: "9px",
                   border: "none",
                   background: "linear-gradient(135deg, #dc2626 0%, #991b1b 100%)",
                   color: "#ffffff",
-                  fontSize: "13.5px",
+                  fontSize: "13px",
                   fontWeight: 800,
                   letterSpacing: "0.02em",
                   cursor: sosBusy ? "wait" : "pointer",
-                  boxShadow: "0 4px 14px rgba(220, 38, 38, 0.35)",
+                  boxShadow: "0 3px 10px rgba(220, 38, 38, 0.3)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  gap: "8px",
+                  gap: "7px",
                 }}
               >
                 <span>🚨</span>
@@ -20728,14 +21082,14 @@ function Dialog({
           </div>
 
           {sosResult && (
-            <div style={{ background: "#f0fdf4", border: "1.5px solid #86efac", borderRadius: "12px", padding: "16px", marginBottom: "16px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#166534", marginBottom: "6px" }}>
-                <span style={{ fontSize: "18px" }}>✅</span>
-                <strong style={{ fontSize: "13px" }}>
+            <div style={{ background: "#f0fdf4", border: "1.5px solid #86efac", borderRadius: "10px", padding: "12px", marginBottom: "12px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#166534", marginBottom: "4px" }}>
+                <span style={{ fontSize: "16px" }}>✅</span>
+                <strong style={{ fontSize: "12.5px" }}>
                   {emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.title || "Emergency"} Alert Recorded &amp; Broadcast
                 </strong>
               </div>
-              <div style={{ fontSize: "11.5px", color: "#374151", marginBottom: "10px" }}>
+              <div style={{ fontSize: "11px", color: "#374151", marginBottom: "8px" }}>
                 <div><strong>Alert ID:</strong> #{sosResult.id} · Recorded {new Date(sosResult.createdAt).toLocaleTimeString()}</div>
                 <div>
                   <strong>Location:</strong>{" "}
@@ -20746,32 +21100,32 @@ function Dialog({
               </div>
 
               {sosResult.locationStatus === "shared" && sosResult.latitude !== null && sosResult.longitude !== null && (
-                <div style={{ marginBottom: "12px" }}>
+                <div style={{ marginBottom: "10px" }}>
                   <a
                     href={`https://www.google.com/maps?q=${sosResult.latitude},${sosResult.longitude}`}
                     target="_blank"
                     rel="noreferrer"
-                    style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "12px", color: "#15803d", fontWeight: 700, textDecoration: "underline" }}
+                    style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "11.5px", color: "#15803d", fontWeight: 700, textDecoration: "underline" }}
                   >
                     📍 Open GPS Pin in Google Maps ↗
                   </a>
                 </div>
               )}
 
-              {/* Action buttons */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "8px" }}>
+              {/* Action buttons: Call responder + WhatsApp Contact + Call Contact */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "6px" }}>
                 <a
                   href={`tel:${emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.phone || "112"}`}
                   style={{
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    gap: "6px",
+                    gap: "5px",
                     background: "#166534",
                     color: "#ffffff",
-                    padding: "9px 12px",
-                    borderRadius: "8px",
-                    fontSize: "12px",
+                    padding: "8px 10px",
+                    borderRadius: "7px",
+                    fontSize: "11px",
                     fontWeight: 700,
                     textDecoration: "none",
                   }}
@@ -20779,44 +21133,67 @@ function Dialog({
                   <span>📞</span>
                   <span>Call Responder ({emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.phone || "112"})</span>
                 </a>
-                {sosResult.emergencyPhones.map((phone, index) => {
+
+                {sosResult.emergencyPhones.filter(Boolean).map((phone, index) => {
                   const coordinates =
                     sosResult.latitude !== null && sosResult.longitude !== null
-                      ? `Coordinates: https://maps.google.com/?q=${sosResult.latitude.toFixed(6)},${sosResult.longitude.toFixed(6)}`
+                      ? `https://maps.google.com/?q=${sosResult.latitude.toFixed(6)},${sosResult.longitude.toFixed(6)}`
                       : "Location unavailable";
-                  const message = encodeURIComponent(
-                    `EMERGENCY SOS (${emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.title || "General"}) from ${sosResult.customerName}. Please send help! ${coordinates}`
+                  const waMessage = encodeURIComponent(
+                    `🚨 EMERGENCY SOS DISTRESS ALERT!\nType: ${emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.title || "General Emergency"}\nFrom: ${sosResult.customerName}\nLive GPS Coordinates: ${coordinates}\nPlease send help urgently!`
                   );
                   return (
-                    <a
-                      key={`sos-action-${index}`}
-                      href={`sms:${phone}?body=${message}`}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "6px",
-                        background: "#ffffff",
-                        border: "1px solid #cbd5e1",
-                        color: "#1e293b",
-                        padding: "9px 12px",
-                        borderRadius: "8px",
-                        fontSize: "12px",
-                        fontWeight: 700,
-                        textDecoration: "none",
-                      }}
-                    >
-                      <span>💬</span>
-                      <span>SMS Contact ({phone})</span>
-                    </a>
+                    <Fragment key={`sos-action-group-${index}`}>
+                      <a
+                        href={`https://wa.me/91${phone.replace(/\D/g, "")}?text=${waMessage}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "5px",
+                          background: "#25D366",
+                          color: "#ffffff",
+                          padding: "8px 10px",
+                          borderRadius: "7px",
+                          fontSize: "11px",
+                          fontWeight: 700,
+                          textDecoration: "none",
+                        }}
+                      >
+                        <span>💬</span>
+                        <span>WhatsApp Contact ({phone})</span>
+                      </a>
+                      <a
+                        href={`tel:${phone.replace(/\D/g, "")}`}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "5px",
+                          background: "#ffffff",
+                          border: "1px solid #cbd5e1",
+                          color: "#1e293b",
+                          padding: "8px 10px",
+                          borderRadius: "7px",
+                          fontSize: "11px",
+                          fontWeight: 700,
+                          textDecoration: "none",
+                        }}
+                      >
+                        <span>📞</span>
+                        <span>Call ({phone})</span>
+                      </a>
+                    </Fragment>
                   );
                 })}
               </div>
             </div>
           )}
 
-          <div style={{ fontSize: "11px", color: "#94a3b8", textAlign: "center", marginTop: "10px" }}>
-            If you are in immediate life-threatening danger, dial <strong>112</strong> or <strong>108</strong> directly.
+          <div style={{ fontSize: "10.5px", color: "#94a3b8", textAlign: "center", marginTop: "8px" }}>
+            In immediate danger, dial <strong>112</strong> or <strong>108</strong> directly.
           </div>
         </>
       )}

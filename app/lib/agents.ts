@@ -7,6 +7,7 @@ export type AgentPartner = {
   id: string;
   name: string;
   phone: string;
+  emergencyPhone?: string;
   email?: string;
   referralCode: string;
   active: boolean;
@@ -279,7 +280,7 @@ export async function getAgentByIdentity(identity: string): Promise<AgentPartner
   return publicAgent;
 }
 
-export async function updateAgentProfile(identity: string, updates: Partial<{ name: string; phone: string; email: string }>): Promise<AgentPartner | null> {
+export async function updateAgentProfile(identity: string, updates: Partial<{ name: string; phone: string; email: string; emergencyPhone?: string }>): Promise<AgentPartner | null> {
   const cleanDigits = identity.replace(/\D/g, "");
   const normalizedIdentity = identity.trim().toLowerCase();
   const agents = await readAgentRecords();
@@ -300,6 +301,7 @@ export async function updateAgentProfile(identity: string, updates: Partial<{ na
   if (updates.name) agents[index].name = updates.name.trim();
   if (updates.phone) agents[index].phone = updates.phone.trim();
   if (updates.email !== undefined) agents[index].email = updates.email.trim().toLowerCase();
+  if (updates.emergencyPhone !== undefined) agents[index].emergencyPhone = updates.emergencyPhone.trim();
 
   await writeAgentRecords(agents);
   const { salt: _s, passwordHash: _p, ...publicAgent } = agents[index];
