@@ -3,6 +3,7 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { readAgentRecords, writeAgentRecords } from "./agents";
 import { resolveStorePath } from "./storage-paths";
+import { NEIGHBORHOOD_CENTROIDS } from "./ad-booking.shared";
 
 export type VerificationStatus =
   | "Pending Agent Visit"
@@ -106,7 +107,30 @@ export async function readBusinessRecords(): Promise<StoredBusiness[]> {
     const raw = await readFile(storePath, "utf8");
     const parsed = JSON.parse(raw) as unknown;
     if (Array.isArray(parsed)) {
-      return parsed as StoredBusiness[];
+      const records = parsed as StoredBusiness[];
+      let modified = false;
+      for (const b of records) {
+        if (!b.coordinates || typeof b.coordinates.latitude !== "number" || typeof b.coordinates.longitude !== "number") {
+          if (b.agentVerification?.verifiedGps?.latitude && b.agentVerification?.verifiedGps?.longitude) {
+            b.coordinates = {
+              latitude: b.agentVerification.verifiedGps.latitude,
+              longitude: b.agentVerification.verifiedGps.longitude,
+            };
+            modified = true;
+          } else {
+            const areaKey = b.address?.area || "";
+            const centroid = NEIGHBORHOOD_CENTROIDS[areaKey] || { latitude: 12.7409, longitude: 77.8253 };
+            b.coordinates = { latitude: centroid.latitude, longitude: centroid.longitude };
+            modified = true;
+          }
+        }
+      }
+      if (modified) {
+        try {
+          await writeBusinessRecords(records);
+        } catch {}
+      }
+      return records;
     }
     return [];
   } catch (error) {
@@ -199,6 +223,16 @@ export async function registerBusinessAccount(input: {
   images?: string[];
   products?: BusinessProduct[];
 }): Promise<PublicBusiness> {
+  if (
+    !input.coordinates ||
+    typeof input.coordinates.latitude !== "number" ||
+    typeof input.coordinates.longitude !== "number" ||
+    !Number.isFinite(input.coordinates.latitude) ||
+    !Number.isFinite(input.coordinates.longitude)
+  ) {
+    throw new Error("Business location GPS coordinates are mandatory. Please pin your storefront location on the map.");
+  }
+
   const cleanPhone = input.phone.replace(/\D/g, "");
   const normalizedEmail = (input.email || "").trim().toLowerCase();
   const records = await readBusinessRecords();

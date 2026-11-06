@@ -192,6 +192,21 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
           return;
         }
 
+        // Mandatory Business GPS Coordinates
+        if (
+          !pinnedBusinessCoords ||
+          typeof pinnedBusinessCoords.latitude !== "number" ||
+          typeof pinnedBusinessCoords.longitude !== "number" ||
+          !Number.isFinite(pinnedBusinessCoords.latitude) ||
+          !Number.isFinite(pinnedBusinessCoords.longitude)
+        ) {
+          setIsSuccess(false);
+          setMessage("Business location GPS coordinates are mandatory. Please click 'Pin location on map' to pin your storefront on the map.");
+          setShowBusinessPinModal(true);
+          setBusy(false);
+          return;
+        }
+
         try {
           const response = await fetch("/api/businesses/register", {
             method: "POST",
@@ -599,44 +614,50 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
                   </label>
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px", marginTop: "4px", paddingTop: "8px", borderTop: "1px dashed #d4e4d6" }}>
-                  <button
-                    type="button"
-                    onClick={() => setShowBusinessPinModal(true)}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      background: "#285536",
-                      color: "#ffffff",
-                      padding: "7px 14px",
-                      borderRadius: "7px",
-                      fontSize: "11.5px",
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      border: "none",
-                    }}
-                  >
-                    <span>📍 Pin location on map</span>
-                  </button>
-                  {pinnedBusinessCoords ? (
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                      <span style={{ fontSize: "11px", color: "#166534", fontWeight: 700 }}>
-                        ✓ Pinned: {pinnedBusinessCoords.latitude.toFixed(6)}, {pinnedBusinessCoords.longitude.toFixed(6)}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setShowBusinessPinModal(true)}
-                        style={{ background: "none", border: "none", color: "#15803d", textDecoration: "underline", fontSize: "11px", cursor: "pointer", fontWeight: 600 }}
-                      >
-                        Adjust
-                      </button>
+                <div
+                  style={{
+                    marginTop: "8px",
+                    padding: "10px 12px",
+                    background: pinnedBusinessCoords ? "#f0fdf4" : "#fef2f2",
+                    border: `1.5px solid ${pinnedBusinessCoords ? "#86efac" : "#fca5a5"}`,
+                    borderRadius: "8px",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
+                    <div>
+                      <div style={{ fontSize: "11px", fontWeight: 800, color: pinnedBusinessCoords ? "#166534" : "#991b1b", display: "flex", alignItems: "center", gap: "5px" }}>
+                        <span>📍 Storefront GPS Coordinates *</span>
+                        <span style={{ fontSize: "9px", background: pinnedBusinessCoords ? "#dcfce7" : "#fee2e2", color: pinnedBusinessCoords ? "#166534" : "#991b1b", padding: "1px 6px", borderRadius: "4px", fontWeight: 800 }}>
+                          {pinnedBusinessCoords ? "MANDATORY PINNED" : "MANDATORY REQUIRED"}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: "10px", color: pinnedBusinessCoords ? "#15803d" : "#b91c1c", marginTop: "3px" }}>
+                        {pinnedBusinessCoords
+                          ? `✓ Pinned: ${pinnedBusinessCoords.latitude.toFixed(6)}, ${pinnedBusinessCoords.longitude.toFixed(6)}`
+                          : "⚠️ Store location must be pinned so customers can navigate accurately to your shop"}
+                      </div>
                     </div>
-                  ) : (
-                    <span style={{ fontSize: "10.5px", color: "#617565" }}>
-                      Pinpoint exact storefront on interactive map
-                    </span>
-                  )}
+                    <button
+                      type="button"
+                      onClick={() => setShowBusinessPinModal(true)}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        background: pinnedBusinessCoords ? "#15803d" : "#dc2626",
+                        color: "#ffffff",
+                        padding: "7px 14px",
+                        borderRadius: "7px",
+                        fontSize: "11.5px",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        border: "none",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
+                      }}
+                    >
+                      <span>{pinnedBusinessCoords ? "📍 Adjust location pin" : "📍 Pin location on map *"}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

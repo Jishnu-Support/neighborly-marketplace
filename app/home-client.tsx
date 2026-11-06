@@ -3,7 +3,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CompanyAccessLevel } from "./lib/auth";
 import { defaultAdConfig, type AdConfig } from "./lib/ad-config.shared";
-import { type AdBookingRequest, resolveScheduledAds, findNearestNeighborhood } from "./lib/ad-booking.shared";
+import { type AdBookingRequest, resolveScheduledAds, findNearestNeighborhood, NEIGHBORHOOD_CENTROIDS } from "./lib/ad-booking.shared";
 import {
   AdBookingDialog,
   AdReceiptModal,
@@ -2130,6 +2130,14 @@ export default function Home() {
   // the registered business attached to that account, or falls back to the top listing.
   const businessAccountBusinesses = useMemo(() => {
     if (currentBusinessRecord) {
+      const bizCoords = (currentBusinessRecord.coordinates && typeof currentBusinessRecord.coordinates.latitude === "number")
+        ? currentBusinessRecord.coordinates
+        : (currentBusinessRecord.agentVerification?.verifiedGps?.latitude)
+        ? currentBusinessRecord.agentVerification.verifiedGps
+        : (currentBusinessRecord.address?.area && NEIGHBORHOOD_CENTROIDS[currentBusinessRecord.address.area])
+        ? NEIGHBORHOOD_CENTROIDS[currentBusinessRecord.address.area]
+        : { latitude: 12.7409, longitude: 77.8253 };
+
       const b: Business = {
         name: currentBusinessRecord.name,
         category: currentBusinessRecord.category,
@@ -2151,10 +2159,11 @@ export default function Home() {
         images: currentBusinessRecord.images || currentBusinessRecord.photos || [],
         businessModes: currentBusinessRecord.businessModes || ["In-store Sales", "Customer Service"],
         address: currentBusinessRecord.address,
+        coordinates: bizCoords,
+        demoCoordinates: bizCoords,
         icon: "🏢",
         color: "warm",
         price: "₹₹",
-        demoCoordinates: { latitude: 12.7409, longitude: 77.8253 },
         verificationStatus: currentBusinessRecord.verificationStatus,
       };
       return [b];
@@ -3191,43 +3200,56 @@ export default function Home() {
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (!data || !Array.isArray(data.businesses)) return;
-        const registered: Business[] = data.businesses.map((b: any) => ({
-          name: b.name,
-          category: b.category,
-          subcategories: b.categories || [b.category],
-          description: b.description || `${b.category} in Hosur`,
-          phone: b.phone,
-          email: b.email || "",
-          distance: 1.5,
-          distanceKm: 1.5,
-          rating: b.rating || 5,
-          reviews: b.reviews || 0,
-          subscribed: b.subscribed ?? true,
-          products: Array.isArray(b.products)
-            ? b.products.map((p: any, idx: number) => ({
-                id: p.id || `reg-p-${idx}`,
-                name: p.name,
-                price: typeof p.price === "number" ? p.price : Number(p.price) || 0,
-                description: p.description || "",
-                unit: "unit",
-              }))
-            : [],
-          photos: b.images || [],
-          images: b.images || [],
-          businessModes: b.businessModes || ["In-store Sales", "Customer Service"],
-          address: b.address
-            ? {
-                doorNumber: b.address.doorNumber || "",
-                street: b.address.street || "",
-                area: b.address.area || "Hosur",
-                cityTown: b.address.cityTown || "Hosur",
-                district: b.address.district || "Krishnagiri",
-                state: b.address.state || "Tamil Nadu",
-                pincode: b.address.pincode || "635109",
-              }
-            : undefined,
-          icon: "🏢",
-        }));
+        const registered: Business[] = data.businesses.map((b: any) => {
+          const bizCoords =
+            b.coordinates && typeof b.coordinates.latitude === "number" && typeof b.coordinates.longitude === "number"
+              ? b.coordinates
+              : b.agentVerification?.verifiedGps?.latitude && b.agentVerification?.verifiedGps?.longitude
+              ? b.agentVerification.verifiedGps
+              : b.address?.area && NEIGHBORHOOD_CENTROIDS[b.address.area]
+              ? NEIGHBORHOOD_CENTROIDS[b.address.area]
+              : { latitude: 12.7409, longitude: 77.8253 };
+
+          return {
+            name: b.name,
+            category: b.category,
+            subcategories: b.categories || [b.category],
+            description: b.description || `${b.category} in Hosur`,
+            phone: b.phone,
+            email: b.email || "",
+            distance: 1.5,
+            distanceKm: 1.5,
+            rating: b.rating || 5,
+            reviews: b.reviews || 0,
+            subscribed: b.subscribed ?? true,
+            products: Array.isArray(b.products)
+              ? b.products.map((p: any, idx: number) => ({
+                  id: p.id || `reg-p-${idx}`,
+                  name: p.name,
+                  price: typeof p.price === "number" ? p.price : Number(p.price) || 0,
+                  description: p.description || "",
+                  unit: "unit",
+                }))
+              : [],
+            photos: b.images || [],
+            images: b.images || [],
+            businessModes: b.businessModes || ["In-store Sales", "Customer Service"],
+            coordinates: bizCoords,
+            demoCoordinates: bizCoords,
+            address: b.address
+              ? {
+                  doorNumber: b.address.doorNumber || "",
+                  street: b.address.street || "",
+                  area: b.address.area || "Hosur",
+                  cityTown: b.address.cityTown || "Hosur",
+                  district: b.address.district || "Krishnagiri",
+                  state: b.address.state || "Tamil Nadu",
+                  pincode: b.address.pincode || "635109",
+                }
+              : undefined,
+            icon: "🏢",
+          };
+        });
 
         setDemoData((prev) => ({
           ...prev,
@@ -8888,8 +8910,17 @@ function BusinessDetailDialog({
   const phone = businessPhoneFor(business);
   const rawPhone = businessRawPhone(phone);
 
-  // Fallback coordinates from business.coordinates OR business.demoCoordinates
-  const coordinates = business.coordinates || business.demoCoordinates;
+  // Guaranteed GPS coordinates from business.coordinates OR business.demoCoordinates OR agent verified GPS OR locality centroid
+  const coordinates =
+    (business.coordinates && typeof business.coordinates.latitude === "number" && typeof business.coordinates.longitude === "number")
+      ? business.coordinates
+      : (business.demoCoordinates && typeof business.demoCoordinates.latitude === "number" && typeof business.demoCoordinates.longitude === "number")
+      ? business.demoCoordinates
+      : (business as any).agentVerification?.verifiedGps?.latitude
+      ? (business as any).agentVerification.verifiedGps
+      : (business.address?.area && NEIGHBORHOOD_CENTROIDS[business.address.area])
+      ? NEIGHBORHOOD_CENTROIDS[business.address.area]
+      : { latitude: 12.7409, longitude: 77.8253 };
 
   // User origin: live GPS coords or default Hosur center coords
   const DEFAULT_HOSUR_COORDS = { latitude: 12.7409, longitude: 77.8253 };
@@ -8900,20 +8931,11 @@ function BusinessDetailDialog({
     ? [business.address.doorNumber, business.address.street, business.address.area, "Hosur", business.address.pincode].filter(Boolean).join(", ")
     : "Hosur, Tamil Nadu";
 
-  // Fallback destination text query if coordinates are absent
-  const destinationQuery = encodeURIComponent(
-    `${business.name}, ${[business.address?.doorNumber, business.address?.street, business.address?.area, "Hosur", "Tamil Nadu " + (business.address?.pincode || "635109")].filter(Boolean).join(", ")}`
-  );
-
-  // Exact coordinates destination target (latitude,longitude) prioritized for accurate map search and turn-by-turn navigation
-  const destinationTarget = coordinates
-    ? `${coordinates.latitude},${coordinates.longitude}`
-    : destinationQuery;
+  // Exact GPS coordinates destination target (latitude,longitude) strictly used for accurate map search and turn-by-turn navigation
+  const destinationTarget = `${coordinates.latitude},${coordinates.longitude}`;
 
   // Google Maps directions embed showing route between Origin and Destination coordinates
-  const googleRouteEmbedUrl = coordinates
-    ? `https://maps.google.com/maps?saddr=${origin.latitude},${origin.longitude}&daddr=${destinationTarget}&output=embed`
-    : `https://maps.google.com/maps?q=${destinationQuery}&output=embed`;
+  const googleRouteEmbedUrl = `https://maps.google.com/maps?saddr=${origin.latitude},${origin.longitude}&daddr=${destinationTarget}&output=embed`;
 
   // OpenStreetMap embed fallback
   const osmEmbedUrl = coordinates ? (() => {

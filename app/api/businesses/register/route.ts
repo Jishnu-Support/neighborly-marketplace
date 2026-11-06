@@ -82,6 +82,30 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "GST Number / Business Tax ID is mandatory." }, { status: 400 });
     }
 
+    // Mandatory Business GPS Coordinates
+    if (
+      !coordinates ||
+      typeof coordinates !== "object" ||
+      typeof (coordinates as any).latitude !== "number" ||
+      typeof (coordinates as any).longitude !== "number" ||
+      !Number.isFinite((coordinates as any).latitude) ||
+      !Number.isFinite((coordinates as any).longitude) ||
+      (coordinates as any).latitude < -90 ||
+      (coordinates as any).latitude > 90 ||
+      (coordinates as any).longitude < -180 ||
+      (coordinates as any).longitude > 180
+    ) {
+      return NextResponse.json(
+        { error: "Business GPS location coordinates are mandatory. Please pin your storefront location on the map." },
+        { status: 400 }
+      );
+    }
+
+    const validatedCoordinates = {
+      latitude: Number((coordinates as any).latitude),
+      longitude: Number((coordinates as any).longitude),
+    };
+
     const rawAgentInput = body.agentCode || referralCode || referral;
     const resolvedReferralCode =
       typeof rawAgentInput === "string" && rawAgentInput.trim()
@@ -108,7 +132,7 @@ export async function POST(request: Request) {
       description: description ? String(description).trim() : undefined,
       website: website ? String(website).trim() : undefined,
       businessModes: Array.isArray(businessModes) ? businessModes : undefined,
-      coordinates: coordinates && typeof coordinates === "object" ? coordinates : undefined,
+      coordinates: validatedCoordinates,
       images: Array.isArray(images) ? images : undefined,
     });
 
