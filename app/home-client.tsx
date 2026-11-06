@@ -12195,7 +12195,7 @@ function AgentPortal({
 }) {
   const [copied, setCopied] = useState(false);
   const [tab, setTab] = useState(initialTab || "Overview");
-  const [agentReferralCode, setAgentReferralCode] = useState("AGENT-PARTNER");
+  const [agentReferralCode, setAgentReferralCode] = useState("JIT");
   const [verifications, setVerifications] = useState<AgentVerificationItem[]>([]);
   const [verificationsLoading, setVerificationsLoading] = useState(false);
   const [verifyingBusiness, setVerifyingBusiness] = useState<AgentVerificationItem | null>(null);
@@ -12223,16 +12223,19 @@ function AgentPortal({
     setVerificationsLoading(true);
     fetch("/api/agent/verifications", { cache: "no-store", credentials: "include" })
       .then(async (response) => {
-        const result = (await response.json()) as { businesses?: AgentVerificationItem[] };
+        const result = (await response.json()) as { businesses?: AgentVerificationItem[]; agent?: { referralCode?: string } };
         if (response.ok && Array.isArray(result.businesses)) {
           setVerifications(result.businesses);
-          let currentCode = agentReferralCode;
+          let currentCode = result.agent?.referralCode || agentReferralCode || "JIT";
+          if (result.agent?.referralCode) {
+            setAgentReferralCode(result.agent.referralCode);
+          }
           try {
             const raw = localStorage.getItem("neighborly_profile_Agent");
             if (raw) {
               const p = JSON.parse(raw);
               const m = p.bio?.match(/Code:\s*([A-Za-z0-9_-]+)/);
-              if (m && m[1]) currentCode = m[1];
+              if (m && m[1] && !result.agent?.referralCode) currentCode = m[1];
             }
           } catch {}
           const refList = result.businesses

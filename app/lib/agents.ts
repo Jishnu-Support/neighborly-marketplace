@@ -59,20 +59,51 @@ export async function readAgentRecords(): Promise<StoredAgentPartner[]> {
     const parsed = JSON.parse(raw) as unknown;
     const records = Array.isArray(parsed) ? (parsed as StoredAgentPartner[]) : [];
 
-    const hasJit = records.some(
-      (a) =>
-        (a.referralCode && a.referralCode.trim().toUpperCase() === "JIT") ||
-        (a.name && a.name.trim().toUpperCase() === "JIT") ||
-        (a.email && a.email.trim().toLowerCase() === "jit@bizearch.in")
-    );
+    let modified = false;
+    let foundJit = false;
 
-    if (!hasJit) {
+    for (const a of records) {
+      const isJit =
+        a.id === DEFAULT_JIT_AGENT_ID ||
+        (a.name && a.name.trim().toUpperCase() === "JIT") ||
+        (a.email && a.email.trim().toLowerCase() === "jit@bizearch.in") ||
+        (a.phone && a.phone.replace(/\D/g, "") === "9043022219");
+
+      if (isJit) {
+        foundJit = true;
+        if (a.referralCode !== DEFAULT_JIT_REFERRAL_CODE) {
+          a.referralCode = DEFAULT_JIT_REFERRAL_CODE;
+          modified = true;
+        }
+        if (a.name !== "JIT") {
+          a.name = "JIT";
+          modified = true;
+        }
+        if (!a.phone || a.phone.replace(/\D/g, "") !== "9043022219") {
+          a.phone = "9043022219";
+          modified = true;
+        }
+        if (!a.email) {
+          a.email = "jit@bizearch.in";
+          modified = true;
+        }
+        if (!a.active) {
+          a.active = true;
+          modified = true;
+        }
+      }
+    }
+
+    if (!foundJit) {
       const jitAgent = createDefaultJitAgent();
-      const updated = [jitAgent, ...records];
+      records.unshift(jitAgent);
+      modified = true;
+    }
+
+    if (modified) {
       try {
-        await writeAgentRecords(updated);
+        await writeAgentRecords(records);
       } catch {}
-      return updated;
     }
 
     return records;
@@ -123,7 +154,10 @@ export async function createAgentPartner(input: {
 
   const cleanName = input.name.trim().toUpperCase().replace(/[^A-Z]/g, "").slice(0, 4) || "AGNT";
   const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-  const referralCode = input.referralCode?.trim().toUpperCase() || `BIZ-${cleanName}-${randomSuffix}`;
+  const referralCode =
+    input.name.trim().toUpperCase() === "JIT" || cleanPhone === "9043022219"
+      ? DEFAULT_JIT_REFERRAL_CODE
+      : input.referralCode?.trim().toUpperCase() || `BIZ-${cleanName}-${randomSuffix}`;
 
   const newRecord: StoredAgentPartner = {
     id: randomUUID(),
@@ -150,12 +184,18 @@ export async function verifyAgentCredentials(identity: string, password: string)
 
   // Fast direct check for default agent JIT with password JIT@123
   if (
-    (normalizedIdentity === "jit" || normalizedIdentity === "jit@bizearch.in" || normalizedIdentity === "9043022219") &&
+    (normalizedIdentity === "jit" || normalizedIdentity === "jit@bizearch.in" || cleanDigits === "9043022219") &&
     password === DEFAULT_JIT_PASSWORD
   ) {
     const agents = await readAgentRecords();
-    const jit = agents.find((a) => (a.referralCode || "").trim().toUpperCase() === "JIT" || (a.name || "").trim().toUpperCase() === "JIT");
+    const jit = agents.find(
+      (a) =>
+        (a.referralCode || "").trim().toUpperCase() === "JIT" ||
+        (a.name || "").trim().toUpperCase() === "JIT" ||
+        (a.phone && a.phone.replace(/\D/g, "") === "9043022219")
+    );
     if (jit) {
+      jit.referralCode = DEFAULT_JIT_REFERRAL_CODE;
       const { salt: _s, passwordHash: _p, ...publicAgent } = jit;
       return publicAgent;
     }
@@ -198,10 +238,20 @@ export async function getAgentByIdentity(identity: string): Promise<AgentPartner
   const cleanDigits = identity.replace(/\D/g, "");
   const normalizedIdentity = identity.trim().toLowerCase();
 
-  if (normalizedIdentity === "jit" || normalizedIdentity === "jit@bizearch.in") {
+  if (
+    normalizedIdentity === "jit" ||
+    normalizedIdentity === "jit@bizearch.in" ||
+    cleanDigits === "9043022219"
+  ) {
     const agents = await readAgentRecords();
-    const jit = agents.find((a) => (a.referralCode || "").trim().toUpperCase() === "JIT" || (a.name || "").trim().toUpperCase() === "JIT");
+    const jit = agents.find(
+      (a) =>
+        (a.referralCode || "").trim().toUpperCase() === "JIT" ||
+        (a.name || "").trim().toUpperCase() === "JIT" ||
+        (a.phone && a.phone.replace(/\D/g, "") === "9043022219")
+    );
     if (jit) {
+      jit.referralCode = DEFAULT_JIT_REFERRAL_CODE;
       const { salt: _s, passwordHash: _p, ...publicAgent } = jit;
       return publicAgent;
     }

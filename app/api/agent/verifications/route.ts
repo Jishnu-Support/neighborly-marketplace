@@ -9,8 +9,22 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Agent authentication required." }, { status: 401 });
   }
 
+  const agent = await getAgentByIdentity(session.identity);
   const businesses = await listBusinessesForAgentVerification(session.identity);
-  return NextResponse.json({ businesses }, { headers: { "Cache-Control": "no-store" } });
+  return NextResponse.json(
+    {
+      businesses,
+      agent: agent
+        ? {
+            id: agent.id,
+            name: agent.name,
+            phone: agent.phone,
+            referralCode: agent.referralCode || "JIT",
+          }
+        : null,
+    },
+    { headers: { "Cache-Control": "no-store" } }
+  );
 }
 
 export async function POST(request: Request) {
