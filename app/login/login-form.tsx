@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { MapPinModal, type Coordinates } from "../map-pin-modal";
+import { TermsModal } from "../terms-modal";
 
 export type PortalRole = "Account" | "Business" | "Agent";
 
@@ -39,6 +40,9 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
   const [showBusinessPinModal, setShowBusinessPinModal] = useState(false);
   const [pinnedBusinessCoords, setPinnedBusinessCoords] = useState<Coordinates | null>(null);
   const [businessNameInput, setBusinessNameInput] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [termsModalOpen, setTermsModalOpen] = useState(false);
+  const [termsModalTab, setTermsModalTab] = useState<"terms" | "privacy">("terms");
   const info = portalInfo[portal];
 
   // Forgot password flow states
@@ -207,6 +211,12 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
       if (!otpVerified) {
         setIsSuccess(false);
         setMessage("Verify your mobile number before submitting registration.");
+        setBusy(false);
+        return;
+      }
+      if (!termsAccepted) {
+        setIsSuccess(false);
+        setMessage("Please read and accept the Terms and Conditions and Privacy Policy to complete registration.");
         setBusy(false);
         return;
       }
@@ -1034,6 +1044,78 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
                 OTP verification is required before your Agent partner account is activated.
               </p>
             )}
+
+            <label
+              className="consent-check terms-consent"
+              style={{
+                marginTop: "12px",
+                marginBottom: "8px",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "9px",
+                cursor: "pointer",
+                background: "#f7faf7",
+                padding: "10px 12px",
+                borderRadius: "8px",
+                border: "1px solid #dbe6dc",
+              }}
+            >
+              <input
+                type="checkbox"
+                name="acceptTerms"
+                required
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
+                style={{ marginTop: "2px", width: "16px", height: "16px", flexShrink: 0, cursor: "pointer" }}
+              />
+              <span style={{ fontSize: "11.5px", lineHeight: "1.5", color: "#314535" }}>
+                Please read and accept the{" "}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setTermsModalTab("terms");
+                    setTermsModalOpen(true);
+                  }}
+                  style={{
+                    background: "none",
+                    border: 0,
+                    padding: 0,
+                    color: "#285536",
+                    fontWeight: 800,
+                    textDecoration: "underline",
+                    cursor: "pointer",
+                    fontSize: "inherit",
+                  }}
+                >
+                  Terms and Conditions
+                </button>{" "}
+                and{" "}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setTermsModalTab("privacy");
+                    setTermsModalOpen(true);
+                  }}
+                  style={{
+                    background: "none",
+                    border: 0,
+                    padding: 0,
+                    color: "#285536",
+                    fontWeight: 800,
+                    textDecoration: "underline",
+                    cursor: "pointer",
+                    fontSize: "inherit",
+                  }}
+                >
+                  Privacy Policy
+                </button>{" "}
+                *
+              </span>
+            </label>
           </>
         ) : (
           <>
@@ -1128,6 +1210,7 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
                 setOtpVerified(false);
                 setRegPassword("");
                 setRegConfirmPassword("");
+                setTermsAccepted(false);
               }}
             >
               {registering
@@ -1162,6 +1245,14 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
         initialCoordinates={pinnedBusinessCoords}
         title="Pin Business Location on Map"
         businessName={businessNameInput || "Business Registration"}
+      />
+
+      <TermsModal
+        isOpen={termsModalOpen}
+        onClose={() => setTermsModalOpen(false)}
+        onAccept={() => setTermsAccepted(true)}
+        role={portal}
+        initialTab={termsModalTab}
       />
     </section>
   </main>;

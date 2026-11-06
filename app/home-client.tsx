@@ -22,6 +22,7 @@ import AtoZDirectory from "./atoz-directory";
 import { atozCatalog, type AtoZItem } from "./lib/atoz-catalog";
 import { defaultSupportConfig, type SupportConfig } from "./lib/support-config.shared";
 import { MapPinModal } from "./map-pin-modal";
+import { TermsModal } from "./terms-modal";
 
 const subcategoriesSummary: Record<string, string> = {
   Automobiles: "Sales · Service → Two wheelers · Three wheelers · Four wheelers · Heavy vehicles",
@@ -19828,6 +19829,11 @@ function Dialog({
   const [businessConfirmPassword, setBusinessConfirmPassword] = useState("");
   const [showBusinessPassword, setShowBusinessPassword] = useState(false);
   const [businessPasswordError, setBusinessPasswordError] = useState("");
+  const [dialogTermsModalOpen, setDialogTermsModalOpen] = useState(false);
+  const [dialogTermsModalRole, setDialogTermsModalRole] = useState<"Customer" | "Business">("Customer");
+  const [dialogTermsModalTab, setDialogTermsModalTab] = useState<"terms" | "privacy">("terms");
+  const [dialogCustomerTermsAccepted, setDialogCustomerTermsAccepted] = useState(false);
+  const [dialogBusinessTermsAccepted, setDialogBusinessTermsAccepted] = useState(false);
 
   // Customer forgot password states
   const [isCustomerForgotPw, setIsCustomerForgotPw] = useState(false);
@@ -20339,6 +20345,10 @@ function Dialog({
       setRegistrationOtpMessage("Verify your mobile number before submitting registration.");
       return;
     }
+    if (!dialogCustomerTermsAccepted) {
+      setRegistrationOtpMessage("Please read and accept the Terms and Conditions and Privacy Policy to continue.");
+      return;
+    }
     if (emergencyDigits.some((value) => value.length < 8 || value.length > 15) || emergencyDigits[0] === emergencyDigits[1]) {
       showNotice("Enter two different valid emergency contact numbers.");
       return;
@@ -20624,7 +20634,81 @@ function Dialog({
               )}
             </>
           )}
-          {isSignup && regEnabled(customerForm, "acceptPolicies") && <label className="consent-check terms-consent"><input name="acceptPolicies" type="checkbox" required={regField(customerForm, "acceptPolicies")?.required ?? true} /><span>{regLabel(customerForm, "acceptPolicies", "I accept the Bizearch Terms and Conditions and Privacy Policy")}</span></label>}
+          {isSignup && regEnabled(customerForm, "acceptPolicies") && (
+            <label
+              className="consent-check terms-consent"
+              style={{
+                marginTop: "12px",
+                marginBottom: "8px",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "9px",
+                cursor: "pointer",
+                background: "#f7faf7",
+                padding: "10px 12px",
+                borderRadius: "8px",
+                border: "1px solid #dbe6dc",
+              }}
+            >
+              <input
+                name="acceptPolicies"
+                type="checkbox"
+                required={regField(customerForm, "acceptPolicies")?.required ?? true}
+                checked={dialogCustomerTermsAccepted}
+                onChange={(e) => setDialogCustomerTermsAccepted(e.target.checked)}
+                style={{ marginTop: "2px", width: "16px", height: "16px", flexShrink: 0, cursor: "pointer" }}
+              />
+              <span style={{ fontSize: "11.5px", lineHeight: "1.5", color: "#314535" }}>
+                Please read and accept the{" "}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setDialogTermsModalRole("Customer");
+                    setDialogTermsModalTab("terms");
+                    setDialogTermsModalOpen(true);
+                  }}
+                  style={{
+                    background: "none",
+                    border: 0,
+                    padding: 0,
+                    color: "#285536",
+                    fontWeight: 800,
+                    textDecoration: "underline",
+                    cursor: "pointer",
+                    fontSize: "inherit",
+                  }}
+                >
+                  Terms and Conditions
+                </button>{" "}
+                and{" "}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setDialogTermsModalRole("Customer");
+                    setDialogTermsModalTab("privacy");
+                    setDialogTermsModalOpen(true);
+                  }}
+                  style={{
+                    background: "none",
+                    border: 0,
+                    padding: 0,
+                    color: "#285536",
+                    fontWeight: 800,
+                    textDecoration: "underline",
+                    cursor: "pointer",
+                    fontSize: "inherit",
+                  }}
+                >
+                  Privacy Policy
+                </button>{" "}
+                *
+              </span>
+            </label>
+          )}
           {!isSignup && <label className="consent-check"><input type="checkbox" checked={locationConsent} onChange={(event) => setLocationConsent(event.target.checked)} /><span>In production, share my approximate location and sign-in time with Bizearch’s authorized company administrator to improve local discovery. The demo does not collect or transmit location data.</span></label>}
           <button className="primary-button full-button" type="submit">{isSignup ? (registrationBusy ? "Recording request..." : "Submit registration request") : "Sign in"} <span>→</span></button>
         </form>}{!isCustomerForgotPw && <div className="modal-switch">{isSignup ? "Already a Bizearch member?" : "New around here?"} <button onClick={() => setIsSignup(!isSignup)}>{isSignup ? "Sign in" : "Create an account"}</button></div>}<div className="fine-print">By continuing, you agree to our Terms and Privacy Policy.</div></>}
@@ -20971,7 +21055,80 @@ function Dialog({
     </div>
   )}
 </div>
-<input type="hidden" name="businessImages" value={JSON.stringify(businessImages)} /><label className="consent-check"><input type="checkbox" required /><span>I confirm these business details are accurate and consent to their use to create and verify my Bizearch business profile.</span></label><div className="form-button-row"><button type="button" className="outline-button" onClick={() => setStep(1)}>← Back</button><button type="submit" className="primary-button">Submit registration <span>→</span></button></div></form>}
+<input type="hidden" name="businessImages" value={JSON.stringify(businessImages)} />
+<label
+  className="consent-check terms-consent"
+  style={{
+    marginTop: "12px",
+    marginBottom: "8px",
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "9px",
+    cursor: "pointer",
+    background: "#f7faf7",
+    padding: "10px 12px",
+    borderRadius: "8px",
+    border: "1px solid #dbe6dc",
+  }}
+>
+  <input
+    type="checkbox"
+    required
+    checked={dialogBusinessTermsAccepted}
+    onChange={(e) => setDialogBusinessTermsAccepted(e.target.checked)}
+    style={{ marginTop: "2px", width: "16px", height: "16px", flexShrink: 0, cursor: "pointer" }}
+  />
+  <span style={{ fontSize: "11.5px", lineHeight: "1.5", color: "#314535" }}>
+    Please read and accept the{" "}
+    <button
+      type="button"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDialogTermsModalRole("Business");
+        setDialogTermsModalTab("terms");
+        setDialogTermsModalOpen(true);
+      }}
+      style={{
+        background: "none",
+        border: 0,
+        padding: 0,
+        color: "#285536",
+        fontWeight: 800,
+        textDecoration: "underline",
+        cursor: "pointer",
+        fontSize: "inherit",
+      }}
+    >
+      Terms and Conditions
+    </button>{" "}
+    and{" "}
+    <button
+      type="button"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDialogTermsModalRole("Business");
+        setDialogTermsModalTab("privacy");
+        setDialogTermsModalOpen(true);
+      }}
+      style={{
+        background: "none",
+        border: 0,
+        padding: 0,
+        color: "#285536",
+        fontWeight: 800,
+        textDecoration: "underline",
+        cursor: "pointer",
+        fontSize: "inherit",
+      }}
+    >
+      Privacy Policy
+    </button>{" "}
+    *
+  </span>
+</label>
+<div className="form-button-row"><button type="button" className="outline-button" onClick={() => setStep(1)}>← Back</button><button type="submit" className="primary-button">Submit registration <span>→</span></button></div></form>}
         <div className="fine-print">Registration is saved in this demo only. Document verification and listing activation require a secure backend.</div></>}</>}
       {kind === "plans" && <><div className="modal-mark">💳</div><div className="eyebrow">MEMBERSHIP &amp; PAYMENTS</div><h2>Choose a subscription plan to get discovered.</h2><p>Select any tier to proceed to secure payment authorization via UPI, Card, or Net Banking.</p>
         <div className="compact-plans">
@@ -21577,6 +21734,20 @@ function Dialog({
           </div>
         </>
       )}
+
+      <TermsModal
+        isOpen={dialogTermsModalOpen}
+        onClose={() => setDialogTermsModalOpen(false)}
+        onAccept={() => {
+          if (dialogTermsModalRole === "Business") {
+            setDialogBusinessTermsAccepted(true);
+          } else {
+            setDialogCustomerTermsAccepted(true);
+          }
+        }}
+        role={dialogTermsModalRole}
+        initialTab={dialogTermsModalTab}
+      />
     </section>
   </div>;
 }
