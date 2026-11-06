@@ -15914,6 +15914,563 @@ function ProfilePanel(props: { role: "Account" | "Business" | "Agent" | "Company
   return <ProfileAndSettingsPanel {...props} initialSubTab="profile" />;
 }
 
+interface CataloguePresetItem {
+  label: string;
+  name: string;
+  price: number;
+  unit: string;
+  description: string;
+  badge: string;
+  image: string;
+}
+
+interface SectorCatalogueConfig {
+  sectorName: string;
+  defaultUnit: string;
+  unitSuggestions: string[];
+  namePlaceholder: string;
+  pricePlaceholder: string;
+  descriptionPlaceholder: string;
+  badgeSuggestions: string[];
+  presets: CataloguePresetItem[];
+}
+
+function getSectorCatalogueConfig(rawCategory: string = ""): SectorCatalogueConfig {
+  const cat = rawCategory.trim().toLowerCase();
+
+  // 1. Automobiles
+  if (cat.includes("auto") || cat.includes("car") || cat.includes("bike") || cat.includes("vehicle") || cat.includes("motor") || cat.includes("garage") || cat.includes("two wheeler") || cat.includes("four wheeler")) {
+    return {
+      sectorName: "Automobiles",
+      defaultUnit: "per service",
+      unitSuggestions: ["per service", "per piece", "per set", "per visit", "per hour", "unit"],
+      namePlaceholder: "e.g. Synthetic Oil Change & Filter / Front Brake Pad Fitting / Foam Car Wash",
+      pricePlaceholder: "1200",
+      descriptionPlaceholder: "Includes fully synthetic engine oil, oil filter replacement, and full vehicle safety inspection.",
+      badgeSuggestions: ["Popular Service", "30m Express", "Genuine Spares", "Recommended", "Warranty"],
+      presets: [
+        {
+          label: "Oil Change",
+          name: "Synthetic Engine Oil Change & Filter",
+          price: 1499,
+          unit: "per service",
+          description: "4L synthetic oil replacement, new OEM filter, and 24-point vehicle inspection.",
+          badge: "Popular Service",
+          image: "https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Brake Pad",
+          name: "Front Ceramic Brake Pad Replacement",
+          price: 850,
+          unit: "per set",
+          description: "High-friction ceramic pads with dust reduction and rotor inspection.",
+          badge: "Genuine Spares",
+          image: "https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Car Wash",
+          name: "Full Interior & Exterior Foam Wash",
+          price: 499,
+          unit: "per wash",
+          description: "High pressure foam wash, underbody clean, vacuuming, and dashboard polish.",
+          badge: "Bestseller",
+          image: "https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Wheel Alignment",
+          name: "3D Computerized Wheel Alignment",
+          price: 450,
+          unit: "per service",
+          description: "4-wheel laser alignment, camber and toe angle precision adjustment.",
+          badge: "Recommended",
+          image: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Battery Health",
+          name: "Exide / Amaron Battery Replacement",
+          price: 3800,
+          unit: "per piece",
+          description: "Maintenance-free heavy duty automotive battery with 48-month warranty.",
+          badge: "48M Warranty",
+          image: "https://images.unsplash.com/photo-1596769446481-9f935391ecdf?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "AC Service",
+          name: "Car AC Gas Top-up & Vent Sanitization",
+          price: 999,
+          unit: "per service",
+          description: "R134a refrigerant refill, AC cooling coil disinfectant, and cabin filter clean.",
+          badge: "Summer Special",
+          image: "https://images.unsplash.com/photo-1625047509168-a7026f36de04?auto=format&fit=crop&w=800&q=80",
+        },
+      ],
+    };
+  }
+
+  // 2. Health & Wellness / Clinic / Hospital / Pharmacy / Dental
+  if (cat.includes("health") || cat.includes("well") || cat.includes("clinic") || cat.includes("hospital") || cat.includes("doc") || cat.includes("pharm") || cat.includes("dent") || cat.includes("med")) {
+    return {
+      sectorName: "Health & wellness",
+      defaultUnit: "per consultation",
+      unitSuggestions: ["per consultation", "per test", "per session", "per visit", "per strip", "unit"],
+      namePlaceholder: "e.g. General Physician Consultation / Complete Health Checkup / Teeth Scaling",
+      pricePlaceholder: "350",
+      descriptionPlaceholder: "Detailed health assessment, vitals checking, and digital prescription by certified practitioners.",
+      badgeSuggestions: ["Verified Doctor", "No Waiting", "Lab Certified", "Home Visit", "Package Offer"],
+      presets: [
+        {
+          label: "Doctor Consult",
+          name: "General Physician Health Consultation",
+          price: 300,
+          unit: "per consultation",
+          description: "In-person diagnosis, blood pressure, sugar check, and treatment plan.",
+          badge: "Verified Doctor",
+          image: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Blood Test",
+          name: "Complete Blood Count & Lipid Profile",
+          price: 699,
+          unit: "per test",
+          description: "64-parameter diagnostic screening with same-day digital report.",
+          badge: "Lab Certified",
+          image: "https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Dental Care",
+          name: "Ultrasonic Teeth Scaling & Polishing",
+          price: 750,
+          unit: "per session",
+          description: "Gentle plaque and tartar removal with tooth enamel polishing.",
+          badge: "Popular",
+          image: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Physiotherapy",
+          name: "Physiotherapy Joint & Pain Relief",
+          price: 500,
+          unit: "per session",
+          description: "Targeted musculoskeletal therapy, infrared heat, and rehabilitation exercises.",
+          badge: "Pain Relief",
+          image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Eye Checkup",
+          name: "Comprehensive Vision & Eye Exam",
+          price: 250,
+          unit: "per test",
+          description: "Computerized eye testing for spectacles, cataract screening, and eye pressure check.",
+          badge: "Quick 15m",
+          image: "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "First Aid Kit",
+          name: "Emergency First Aid & Dressing Kit",
+          price: 350,
+          unit: "per kit",
+          description: "Antiseptic wipes, sterile bandages, gauze, adhesive tapes, and pain relief balm.",
+          badge: "Essential",
+          image: "https://images.unsplash.com/photo-1603398938378-e54eab446dde?auto=format&fit=crop&w=800&q=80",
+        },
+      ],
+    };
+  }
+
+  // 3. Electronics & Electricals / Mobile / IT
+  if (cat.includes("elec") || cat.includes("mobile") || cat.includes("phone") || cat.includes("computer") || cat.includes("laptop") || cat.includes("gadget")) {
+    return {
+      sectorName: "Electronics",
+      defaultUnit: "per piece",
+      unitSuggestions: ["per piece", "per repair", "per item", "per service", "per visit", "unit"],
+      namePlaceholder: "e.g. AMOLED Screen Replacement / 65W GaN Fast Charger / Laptop Thermal Service",
+      pricePlaceholder: "1499",
+      descriptionPlaceholder: "OEM grade components with warranty, quality testing, and guaranteed compatibility.",
+      badgeSuggestions: ["Same-Day Repair", "Original Grade", "90-Day Warranty", "Bestseller", "Fast Dispatch"],
+      presets: [
+        {
+          label: "Display Screen",
+          name: "Smartphone AMOLED Screen Replacement",
+          price: 2200,
+          unit: "per repair",
+          description: "High touch-sensitivity glass and display panel with 90-day warranty.",
+          badge: "90D Warranty",
+          image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Fast Charger",
+          name: "65W Type-C GaN Fast Charger & Cable",
+          price: 899,
+          unit: "per set",
+          description: "Dual port PD fast charging adapter suitable for laptops and smartphones.",
+          badge: "Bestseller",
+          image: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Laptop Service",
+          name: "Laptop Deep Cleaning & Thermal Paste",
+          price: 650,
+          unit: "per service",
+          description: "Fan dust removal, Arctic MX-4 thermal paste re-application, and performance tune-up.",
+          badge: "Overheating Fix",
+          image: "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Wireless Earbuds",
+          name: "True Wireless Earbuds with ANC",
+          price: 1499,
+          unit: "per piece",
+          description: "Active noise cancellation, deep bass drivers, and 30-hour total battery life.",
+          badge: "Top Rated",
+          image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Battery Swap",
+          name: "Original Phone Battery Replacement",
+          price: 1100,
+          unit: "per piece",
+          description: "Brand new high-capacity lithium battery with safe installation included.",
+          badge: "Genuine Cell",
+          image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Tempered Glass",
+          name: "9H Edge-to-Edge Tempered Glass",
+          price: 199,
+          unit: "per piece",
+          description: "Scratch-resistant oleophobic coating with bubble-free installation.",
+          badge: "Must Have",
+          image: "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?auto=format&fit=crop&w=800&q=80",
+        },
+      ],
+    };
+  }
+
+  // 4. Fashion / Clothing / Textiles / Tailoring
+  if (cat.includes("fashion") || cat.includes("cloth") || cat.includes("textil") || cat.includes("tailor") || cat.includes("wear") || cat.includes("boutique") || cat.includes("saree") || cat.includes("footwear")) {
+    return {
+      sectorName: "Fashion",
+      defaultUnit: "per piece",
+      unitSuggestions: ["per piece", "per set", "per dress", "per pair", "per meter", "unit"],
+      namePlaceholder: "e.g. Pure Cotton Formal Shirt / Kanchipuram Silk Saree / Designer Blouse Stitching",
+      pricePlaceholder: "899",
+      descriptionPlaceholder: "Premium fabric quality, durable stitching, color-fast guarantee, and comfortable fit.",
+      badgeSuggestions: ["Trending", "Pure Silk", "Custom Tailoring", "Festive Special", "Bestseller"],
+      presets: [
+        {
+          label: "Cotton Shirt",
+          name: "100% Cotton Slim-Fit Formal Shirt",
+          price: 799,
+          unit: "per piece",
+          description: "Breathable pure combed cotton with wrinkle-resistant finish and spread collar.",
+          badge: "Bestseller",
+          image: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Silk Saree",
+          name: "Traditional Soft Silk Zari Border Saree",
+          price: 2499,
+          unit: "per saree",
+          description: "Artisan woven festive saree with rich pallu and unstitched matching blouse piece.",
+          badge: "Festive Collection",
+          image: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Kurti Set",
+          name: "Embroidered Rayon Kurti & Palazzo Set",
+          price: 1199,
+          unit: "per set",
+          description: "Graceful floral thread embroidery with matching dupatta and palazzo.",
+          badge: "Trending",
+          image: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Tailoring",
+          name: "Custom Blouse / Suit Stitching & Lining",
+          price: 550,
+          unit: "per piece",
+          description: "Perfect-fit tailoring with canvas lining, piping, and customized neck patterns.",
+          badge: "Custom Fit",
+          image: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Footwear",
+          name: "Men's / Women's Cushion Comfort Footwear",
+          price: 999,
+          unit: "per pair",
+          description: "Memory foam insole, anti-skid rubber sole, and lightweight everyday styling.",
+          badge: "Comfort Fit",
+          image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Kids Wear",
+          name: "Kids Festive Ethnic Kurta Pajama",
+          price: 650,
+          unit: "per set",
+          description: "Skin-friendly soft cotton blend fabric with vibrant traditional motifs.",
+          badge: "Kids Special",
+          image: "https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?auto=format&fit=crop&w=800&q=80",
+        },
+      ],
+    };
+  }
+
+  // 5. Food & dining / Restaurant / Cafe / Bakery / Sweets
+  if (cat.includes("food") || cat.includes("din") || cat.includes("rest") || cat.includes("caf") || cat.includes("bak") || cat.includes("sweet") || cat.includes("tiffin") || cat.includes("hotel") || cat.includes("biryani")) {
+    return {
+      sectorName: "Food & dining",
+      defaultUnit: "per plate",
+      unitSuggestions: ["per plate", "per box", "per portion", "per kg", "per combo", "per cup"],
+      namePlaceholder: "e.g. Special Ghee Podi Dosa / Hyderabadi Chicken Biryani / Filter Coffee Combo",
+      pricePlaceholder: "160",
+      descriptionPlaceholder: "Cooked fresh to order with authentic spices, premium ingredients, and safe packaging.",
+      badgeSuggestions: ["Chef Special", "Bestseller", "Hot & Fresh", "Jain Friendly", "Must Try"],
+      presets: [
+        {
+          label: "South Thali",
+          name: "Special South Indian Meals Feast",
+          price: 150,
+          unit: "per plate",
+          description: "Steamed rice, sambar, rasam, kootu, poriyal, appalam, curd, and sweet payasam.",
+          badge: "Unlimited",
+          image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Masala Dosa",
+          name: "Crispy Golden Ghee Masala Dosa",
+          price: 95,
+          unit: "per plate",
+          description: "Crispy roast stuffed with seasoned potato masala, served with 3 chutneys & sambar.",
+          badge: "Bestseller",
+          image: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Dum Biryani",
+          name: "Special Hyderabadi Dum Biryani Box",
+          price: 240,
+          unit: "per portion",
+          description: "Slow-cooked fragrant long-grain basmati with tender spiced meat, raita & mirchi ka salan.",
+          badge: "Chef Special",
+          image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Filter Coffee",
+          name: "Traditional Kumbakonam Degree Filter Coffee",
+          price: 35,
+          unit: "per cup",
+          description: "Freshly brewed chicory blend with frothy full-cream milk in brass dabarah.",
+          badge: "Hot & Fresh",
+          image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Bakery Pastry",
+          name: "Fresh Cream Chocolate Truffle Cake (500g)",
+          price: 450,
+          unit: "per piece",
+          description: "Moist dark sponge layered with rich Belgian chocolate ganache.",
+          badge: "Eggless",
+          image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Tiffin Box",
+          name: "Idli (2) & Medu Vada (1) Combo",
+          price: 65,
+          unit: "per plate",
+          description: "Pillowy soft steamed idlis and crispy golden vada served with hot sambar.",
+          badge: "Morning Special",
+          image: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=800&q=80",
+        },
+      ],
+    };
+  }
+
+  // 6. Home & Furniture / Hardware / Home Appliances
+  if (cat.includes("furnitur") || cat.includes("hardwar") || cat.includes("applianc") || cat.includes("interior") || cat.includes("paint") || cat.includes("decor")) {
+    return {
+      sectorName: "Home & furniture",
+      defaultUnit: "per piece",
+      unitSuggestions: ["per piece", "per set", "per sq.ft", "per service", "per bucket", "unit"],
+      namePlaceholder: "e.g. BLDC Energy Saving Ceiling Fan / Teakwood Dining Chair / Asian Paints Emulsion 20L",
+      pricePlaceholder: "2899",
+      descriptionPlaceholder: "Durable construction, certified hardware quality, and warranty support.",
+      badgeSuggestions: ["5-Star Energy", "Solid Wood", "Free Delivery", "Installation Included", "Bestseller"],
+      presets: [
+        {
+          label: "BLDC Fan",
+          name: "Smart BLDC Energy Saving Ceiling Fan 1200mm",
+          price: 2899,
+          unit: "per piece",
+          description: "Consumes only 28W, silent operation, and RF remote control with timer.",
+          badge: "5-Star Energy",
+          image: "https://images.unsplash.com/photo-1585338107529-13afc5f02586?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Office Chair",
+          name: "Ergonomic High-Back Mesh Chair",
+          price: 4200,
+          unit: "per piece",
+          description: "Adjustable lumbar support, pneumatic height lift, and tilt-lock mechanism.",
+          badge: "Work from Home",
+          image: "https://images.unsplash.com/photo-1580481077195-c4a04d3e8e72?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Wall Paint",
+          name: "Interior Royale Luxury Emulsion (20 Litres)",
+          price: 3600,
+          unit: "per bucket",
+          description: "Smooth sheen finish with Teflon surface protector, washable and anti-fungal.",
+          badge: "Teflon Finish",
+          image: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Door Lock",
+          name: "Heavy-Duty Brass Mortise Door Lock",
+          price: 1350,
+          unit: "per set",
+          description: "Anti-pick brass cylinder with 3 computerized dimple keys and handles.",
+          badge: "High Security",
+          image: "https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Appliance Repair",
+          name: "Washing Machine / Refrigerator Service",
+          price: 450,
+          unit: "per visit",
+          description: "Motor diagnostic, drum check, gas pressure inspection, and electrical testing.",
+          badge: "Doorstep Pro",
+          image: "https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Coffee Table",
+          name: "Solid Sheesham Wood Center Table",
+          price: 3100,
+          unit: "per piece",
+          description: "Handcrafted natural wood grain finish with bottom storage shelf.",
+          badge: "Solid Wood",
+          image: "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&w=800&q=80",
+        },
+      ],
+    };
+  }
+
+  // 7. Everyday Services / Cleaning / Maintenance / Plumbing
+  if (cat.includes("service") || cat.includes("clean") || cat.includes("plumb") || cat.includes("electri") || cat.includes("carpenter") || cat.includes("repair")) {
+    return {
+      sectorName: "Everyday services",
+      defaultUnit: "per service",
+      unitSuggestions: ["per service", "per visit", "per hour", "per appliance", "per sq.ft"],
+      namePlaceholder: "e.g. Split AC Deep Jet Wash Service / Pipe Leakage Repair / Bathroom Deep Cleaning",
+      pricePlaceholder: "499",
+      descriptionPlaceholder: "Performed by verified background-checked technicians with equipment and safety protocols.",
+      badgeSuggestions: ["Verified Pro", "45-Min Arrival", "Warranty Included", "Transparent Rates"],
+      presets: [
+        {
+          label: "AC Jet Wash",
+          name: "Split AC Deep Jet Pump Foam Wash",
+          price: 599,
+          unit: "per unit",
+          description: "High pressure water jet spray on coils, blower wheel clean, and gas level check.",
+          badge: "30D Warranty",
+          image: "https://images.unsplash.com/photo-1621905251918-48416bd8575a?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Plumbing",
+          name: "Pipe Leakage & Tap Mixer Fitting",
+          price: 250,
+          unit: "per visit",
+          description: "Quick inspection, pipe thread sealing, washer replacement, and pressure test.",
+          badge: "Fast Arrival",
+          image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Deep Cleaning",
+          name: "Full Home 2BHK Deep Sanitization",
+          price: 2499,
+          unit: "per service",
+          description: "Kitchen degreasing, bathroom descaling, floor machine buffing, and window glass wipe.",
+          badge: "Top Rated",
+          image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Electrical Work",
+          name: "Switchboard & Wiring Repair",
+          price: 300,
+          unit: "per visit",
+          description: "MCB trip diagnostic, earthing test, modular switch fitting, and load testing.",
+          badge: "Safe Pro",
+          image: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Sofa Shampoo",
+          name: "5-Seater Sofa Foam Shampooing",
+          price: 899,
+          unit: "per set",
+          description: "Wet vacuum extraction of dust mites, fabric conditioning, and stain removal.",
+          badge: "Fresh & Clean",
+          image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          label: "Steam Ironing",
+          name: "Express Steam Ironing (20 Garments)",
+          price: 200,
+          unit: "per bundle",
+          description: "Crisp wrinkle-free hanger finish delivered within 24 hours.",
+          badge: "Free Pickup",
+          image: "https://images.unsplash.com/photo-1545173168-9f1947eebb7f?auto=format&fit=crop&w=800&q=80",
+        },
+      ],
+    };
+  }
+
+  // Fallback for general categories
+  return {
+    sectorName: rawCategory || "General",
+    defaultUnit: "per item",
+    unitSuggestions: ["per item", "per service", "per piece", "per visit", "per hour", "unit"],
+    namePlaceholder: "e.g. Premium Item or Service Offering",
+    pricePlaceholder: "450",
+    descriptionPlaceholder: "Detailed information about this product or service.",
+    badgeSuggestions: ["Bestseller", "Special Offer", "Popular", "High Quality", "Recommended"],
+    presets: [
+      {
+        label: "Standard Item",
+        name: "Standard Product / Service Offering",
+        price: 499,
+        unit: "per item",
+        description: "High quality offering with doorstep delivery or in-store pickup.",
+        badge: "Bestseller",
+        image: "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80",
+      },
+      {
+        label: "Express Service",
+        name: "Same-Day Express Assistance",
+        price: 750,
+        unit: "per service",
+        description: "Priority expedited processing with dedicated assistance.",
+        badge: "Express",
+        image: "https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80",
+      },
+      {
+        label: "Value Pack",
+        name: "Complete Value Combo Package",
+        price: 1299,
+        unit: "per package",
+        description: "Comprehensive bundled package offering maximum savings.",
+        badge: "Save 20%",
+        image: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=80",
+      },
+      {
+        label: "Consultation",
+        name: "Professional Consultation & Estimation",
+        price: 250,
+        unit: "per visit",
+        description: "Expert assessment, custom quotation, and tailored recommendations.",
+        badge: "Verified Pro",
+        image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80",
+      },
+    ],
+  };
+}
+
 const CATALOGUE_IMAGE_PRESETS = [
   { label: "Homestyle Thali", url: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=800&q=80" },
   { label: "Dosa & Tiffin", url: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?auto=format&fit=crop&w=800&q=80" },
@@ -15948,15 +16505,22 @@ function ProductManager({
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [changingImageProduct, setChangingImageProduct] = useState<Product | null>(null);
 
+  const selectedBusinessProfile = businesses.find((b) => b.name === selectedBusiness) || businesses[0];
+  const allProducts = selectedBusinessProfile?.products || [];
+
+  const sectorConfig = useMemo(() => {
+    return getSectorCatalogueConfig(selectedBusinessProfile?.category || "");
+  }, [selectedBusinessProfile?.category]);
+
   // Add Item State
   const [addName, setAddName] = useState("");
   const [addDescription, setAddDescription] = useState("");
   const [addPrice, setAddPrice] = useState("");
-  const [addUnit, setAddUnit] = useState("per plate");
+  const [addUnit, setAddUnit] = useState(sectorConfig.defaultUnit || "per item");
   const [addImage, setAddImage] = useState("");
   const [addBadge, setAddBadge] = useState("");
   const [addInStock, setAddInStock] = useState(true);
-  const [selectedActivities, setSelectedActivities] = useState<CatalogueActivity[]>([]);
+  const [selectedActivities, setSelectedActivities] = useState<CatalogueActivity[]>(["Sales", "Service"]);
   const [catalogueSelections, setCatalogueSelections] = useState<CatalogueSelection[]>([]);
   const [addError, setAddError] = useState("");
 
@@ -15964,7 +16528,7 @@ function ProductManager({
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editPrice, setEditPrice] = useState("");
-  const [editUnit, setEditUnit] = useState("per plate");
+  const [editUnit, setEditUnit] = useState(sectorConfig.defaultUnit || "per item");
   const [editImage, setEditImage] = useState("");
   const [editBadge, setEditBadge] = useState("");
   const [editInStock, setEditInStock] = useState(true);
@@ -15973,17 +16537,39 @@ function ProductManager({
   // Quick Change Image State
   const [quickImageUrl, setQuickImageUrl] = useState("");
 
-  const selectedBusinessProfile = businesses.find((b) => b.name === selectedBusiness) || businesses[0];
-  const allProducts = selectedBusinessProfile?.products || [];
+  // Sync default unit & activities whenever sectorConfig changes
+  useEffect(() => {
+    if (sectorConfig) {
+      if (!addUnit || addUnit === "per plate" || addUnit === "unit") {
+        setAddUnit(sectorConfig.defaultUnit);
+      }
+      if (selectedActivities.length === 0) {
+        setSelectedActivities(["Sales", "Service"]);
+      }
+    }
+  }, [sectorConfig]);
 
-  const businessCategories = new Set(
-    [...(selectedBusinessProfile?.categories || []), selectedBusinessProfile?.category]
-      .filter((v): v is string => Boolean(v))
-      .map((v) => v.toLowerCase())
-  );
-  const availableSectors = categoryConfig.sectors.filter((sector) =>
-    businessCategories.has(sector.name.toLowerCase())
-  );
+  const businessCategories = useMemo(() => {
+    return new Set(
+      [...(selectedBusinessProfile?.categories || []), selectedBusinessProfile?.category]
+        .filter((v): v is string => Boolean(v))
+        .map((v) => v.toLowerCase().trim())
+    );
+  }, [selectedBusinessProfile]);
+
+  const availableSectors = useMemo(() => {
+    const matched = categoryConfig.sectors.filter((sector) => {
+      if (sector.name === "All") return false;
+      const sName = sector.name.toLowerCase();
+      for (const bc of businessCategories) {
+        if (bc === sName || bc.includes(sName) || sName.includes(bc)) return true;
+      }
+      return false;
+    });
+    if (matched.length > 0) return matched;
+    // Fallback: return all non-All sectors so the merchant is never blocked
+    return categoryConfig.sectors.filter((s) => s.name !== "All");
+  }, [categoryConfig.sectors, businessCategories]);
 
   function toggleActivity(activity: CatalogueActivity) {
     setSelectedActivities((current) =>
@@ -16040,12 +16626,12 @@ function ProductManager({
     setAddName("");
     setAddDescription("");
     setAddPrice("");
-    setAddUnit("per plate");
+    setAddUnit(sectorConfig.defaultUnit || "per item");
     setAddImage("");
     setAddBadge("");
     setAddInStock(true);
     setAddError("");
-    setSelectedActivities([]);
+    setSelectedActivities(["Sales", "Service"]);
     setCatalogueSelections([]);
     setShowAddModal(false);
   }
@@ -16529,11 +17115,67 @@ function ProductManager({
                 </div>
               )}
 
+              {/* Category / Sector Banner */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#f0fdf4", border: "1px solid #bbf7d0", padding: "8px 12px", borderRadius: "8px", marginBottom: "12px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span style={{ fontSize: "14px" }}>🏷️</span>
+                  <span style={{ fontSize: "12px", color: "#166534", fontWeight: 700 }}>
+                    Section: <strong>{sectorConfig.sectorName}</strong>
+                  </span>
+                </div>
+                <span style={{ fontSize: "10.5px", background: "#dcfce7", color: "#15803d", padding: "2px 8px", borderRadius: "6px", fontWeight: 700 }}>
+                  Tailored Fields &amp; Presets
+                </span>
+              </div>
+
+              {/* Quick 1-Click Suggestions for This Category */}
+              <div style={{ marginBottom: "14px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "10px 12px" }}>
+                <div style={{ fontSize: "11px", fontWeight: 800, color: "#1e522d", marginBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span>⚡</span>
+                  <span>1-Click Presets for {sectorConfig.sectorName}:</span>
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                  {sectorConfig.presets.map((preset) => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => {
+                        setAddName(preset.name);
+                        setAddPrice(String(preset.price));
+                        setAddUnit(preset.unit);
+                        setAddDescription(preset.description);
+                        setAddBadge(preset.badge);
+                        setAddImage(preset.image);
+                      }}
+                      style={{
+                        background: "#ffffff",
+                        border: "1px solid #cbd5e1",
+                        borderRadius: "6px",
+                        padding: "5px 9px",
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        color: "#334155",
+                        cursor: "pointer",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "5px",
+                        boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                      }}
+                      title={`Click to fill: ${preset.name} (₹${preset.price})`}
+                    >
+                      <span style={{ color: "#16a34a", fontWeight: 800 }}>＋</span>
+                      <span>{preset.label}</span>
+                      <span style={{ color: "#16a34a", fontWeight: 700, fontSize: "10px" }}>₹{preset.price}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="catalogue-form-field">
                 <label>Product or service name *</label>
                 <input
                   type="text"
-                  placeholder="e.g. Masala Dosa Feast / Same-day Phone Screen Repair"
+                  placeholder={sectorConfig.namePlaceholder}
                   value={addName}
                   onChange={(e) => setAddName(e.target.value)}
                   required
@@ -16547,7 +17189,7 @@ function ProductManager({
                     type="number"
                     min="0"
                     step="1"
-                    placeholder="180"
+                    placeholder={sectorConfig.pricePlaceholder}
                     value={addPrice}
                     onChange={(e) => setAddPrice(e.target.value)}
                     required
@@ -16557,11 +17199,33 @@ function ProductManager({
                   <label>Price unit *</label>
                   <input
                     type="text"
-                    placeholder="per plate / per box / per visit / unit"
+                    placeholder={sectorConfig.defaultUnit}
                     value={addUnit}
                     onChange={(e) => setAddUnit(e.target.value)}
                     required
                   />
+                  {/* Quick Unit Pills */}
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginTop: "5px" }}>
+                    {sectorConfig.unitSuggestions.map((u) => (
+                      <button
+                        key={u}
+                        type="button"
+                        onClick={() => setAddUnit(u)}
+                        style={{
+                          fontSize: "10px",
+                          fontWeight: addUnit === u ? 800 : 600,
+                          background: addUnit === u ? "#285536" : "#f1f5f9",
+                          color: addUnit === u ? "#ffffff" : "#475569",
+                          border: addUnit === u ? "1px solid #285536" : "1px solid #cbd5e1",
+                          borderRadius: "4px",
+                          padding: "2px 7px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {u}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -16569,7 +17233,7 @@ function ProductManager({
                 <label>Description *</label>
                 <textarea
                   rows={2}
-                  placeholder="What is included in this item or service?"
+                  placeholder={sectorConfig.descriptionPlaceholder}
                   value={addDescription}
                   onChange={(e) => setAddDescription(e.target.value)}
                   required
@@ -16581,10 +17245,32 @@ function ProductManager({
                   <label>Promotional badge (optional)</label>
                   <input
                     type="text"
-                    placeholder="e.g. Bestseller / Popular / Chef Special"
+                    placeholder={`e.g. ${sectorConfig.badgeSuggestions.join(" / ")}`}
                     value={addBadge}
                     onChange={(e) => setAddBadge(e.target.value)}
                   />
+                  {/* Quick Badge Pills */}
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginTop: "5px" }}>
+                    {sectorConfig.badgeSuggestions.map((b) => (
+                      <button
+                        key={b}
+                        type="button"
+                        onClick={() => setAddBadge(b)}
+                        style={{
+                          fontSize: "10px",
+                          fontWeight: addBadge === b ? 800 : 600,
+                          background: addBadge === b ? "#ea580c" : "#fff7ed",
+                          color: addBadge === b ? "#ffffff" : "#c2410c",
+                          border: addBadge === b ? "1px solid #ea580c" : "1px solid #fed7aa",
+                          borderRadius: "4px",
+                          padding: "2px 7px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {b}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div className="catalogue-form-field" style={{ justifyContent: "center" }}>
                   <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", marginTop: "14px" }}>
@@ -16594,7 +17280,7 @@ function ProductManager({
                       onChange={(e) => setAddInStock(e.target.checked)}
                       style={{ width: "16px", height: "16px" }}
                     />
-                    <span style={{ fontSize: "12px", fontWeight: 700, color: "#1e522d" }}>In stock & ready to order</span>
+                    <span style={{ fontSize: "12px", fontWeight: 700, color: "#1e522d" }}>In stock &amp; ready to order</span>
                   </label>
                 </div>
               </div>
@@ -16634,13 +17320,13 @@ function ProductManager({
                 </div>
 
                 <div className="catalogue-preset-chips-wrap">
-                  <span style={{ fontSize: "9.5px", color: "#647768", fontWeight: 700, alignSelf: "center" }}>Presets:</span>
-                  {CATALOGUE_IMAGE_PRESETS.slice(0, 6).map((preset) => (
+                  <span style={{ fontSize: "9.5px", color: "#647768", fontWeight: 700, alignSelf: "center" }}>Photo Presets:</span>
+                  {sectorConfig.presets.map((preset) => (
                     <button
                       type="button"
                       key={preset.label}
                       className="catalogue-preset-chip"
-                      onClick={() => setAddImage(preset.url)}
+                      onClick={() => setAddImage(preset.image)}
                     >
                       {preset.label}
                     </button>
@@ -16674,7 +17360,7 @@ function ProductManager({
 
               {/* Category / Sector Selections */}
               <fieldset className="catalogue-selection" style={{ margin: "4px 0" }}>
-                <legend>Category & Activity</legend>
+                <legend>Category &amp; Activity ({sectorConfig.sectorName})</legend>
                 <div className="catalogue-activity-options">
                   {(["Sales", "Service"] as const).map((activity) => (
                     <label key={activity}>
@@ -16689,7 +17375,7 @@ function ProductManager({
                 </div>
                 {selectedActivities.map((activity) => (
                   <div className="catalogue-activity-group" key={activity}>
-                    <strong>{activity} categories</strong>
+                    <strong>{activity} categories for {sectorConfig.sectorName}</strong>
                     {availableSectors.length ? (
                       <div className="catalogue-sector-list">
                         {availableSectors.map((sector) => (
@@ -16779,6 +17465,28 @@ function ProductManager({
                     onChange={(e) => setEditUnit(e.target.value)}
                     required
                   />
+                  {/* Quick Unit Pills */}
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginTop: "5px" }}>
+                    {sectorConfig.unitSuggestions.map((u) => (
+                      <button
+                        key={u}
+                        type="button"
+                        onClick={() => setEditUnit(u)}
+                        style={{
+                          fontSize: "10px",
+                          fontWeight: editUnit === u ? 800 : 600,
+                          background: editUnit === u ? "#285536" : "#f1f5f9",
+                          color: editUnit === u ? "#ffffff" : "#475569",
+                          border: editUnit === u ? "1px solid #285536" : "1px solid #cbd5e1",
+                          borderRadius: "4px",
+                          padding: "2px 7px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {u}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -16797,10 +17505,32 @@ function ProductManager({
                   <label>Promotional badge</label>
                   <input
                     type="text"
-                    placeholder="e.g. Bestseller / Popular / Chef Special"
+                    placeholder={`e.g. ${sectorConfig.badgeSuggestions.join(" / ")}`}
                     value={editBadge}
                     onChange={(e) => setEditBadge(e.target.value)}
                   />
+                  {/* Quick Badge Pills */}
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginTop: "5px" }}>
+                    {sectorConfig.badgeSuggestions.map((b) => (
+                      <button
+                        key={b}
+                        type="button"
+                        onClick={() => setEditBadge(b)}
+                        style={{
+                          fontSize: "10px",
+                          fontWeight: editBadge === b ? 800 : 600,
+                          background: editBadge === b ? "#ea580c" : "#fff7ed",
+                          color: editBadge === b ? "#ffffff" : "#c2410c",
+                          border: editBadge === b ? "1px solid #ea580c" : "1px solid #fed7aa",
+                          borderRadius: "4px",
+                          padding: "2px 7px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {b}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div className="catalogue-form-field" style={{ justifyContent: "center" }}>
                   <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", marginTop: "14px" }}>
@@ -16850,13 +17580,13 @@ function ProductManager({
                 </div>
 
                 <div className="catalogue-preset-chips-wrap">
-                  <span style={{ fontSize: "9.5px", color: "#647768", fontWeight: 700, alignSelf: "center" }}>Presets:</span>
-                  {CATALOGUE_IMAGE_PRESETS.slice(0, 6).map((preset) => (
+                  <span style={{ fontSize: "9.5px", color: "#647768", fontWeight: 700, alignSelf: "center" }}>Photo Presets:</span>
+                  {sectorConfig.presets.map((preset) => (
                     <button
                       type="button"
                       key={preset.label}
                       className="catalogue-preset-chip"
-                      onClick={() => setEditImage(preset.url)}
+                      onClick={() => setEditImage(preset.image)}
                     >
                       {preset.label}
                     </button>
@@ -16935,12 +17665,12 @@ function ProductManager({
               <div className="catalogue-form-field">
                 <label>Or select from recommended presets</label>
                 <div className="catalogue-preset-chips-wrap">
-                  {CATALOGUE_IMAGE_PRESETS.map((preset) => (
+                  {sectorConfig.presets.map((preset) => (
                     <button
                       type="button"
                       key={preset.label}
                       className="catalogue-preset-chip"
-                      onClick={() => setQuickImageUrl(preset.url)}
+                      onClick={() => setQuickImageUrl(preset.image)}
                     >
                       {preset.label}
                     </button>
