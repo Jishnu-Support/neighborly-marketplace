@@ -10,7 +10,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://bizearch.co"),
+  metadataBase: new URL("https://bizearch.in"),
   alternates: {
     canonical: "/",
   },
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     title: "Bizearch | Your neighborhood, in reach",
     description:
       "Find trusted local products and services from verified nearby businesses on Bizearch.",
-    url: "https://bizearch.co",
+    url: "https://bizearch.in",
     siteName: "Bizearch",
     locale: "en_IN",
     type: "website",

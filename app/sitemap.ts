@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { defaultCategoryConfig } from "./lib/category-config.shared";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://bizearch.co";
+  const baseUrl = "https://bizearch.in";
   const now = new Date();
 
   // Primary platform routes

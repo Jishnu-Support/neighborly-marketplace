@@ -1592,7 +1592,7 @@ async function shareBusiness(business: Business, product?: Product, onNotice?: (
   const text = product
     ? `Check out ${product.name} (${product.price > 0 ? `₹${product.price.toLocaleString("en-IN")}` : ""} ${product.unit || ""}) at ${business.name} on Bizearch:`
     : `Check out ${business.name} (${business.category}) on Bizearch Hosur:`;
-  const url = typeof window !== "undefined" ? window.location.href : "https://bizearch.co";
+  const url = typeof window !== "undefined" ? window.location.href : "https://bizearch.in";
 
   if (typeof navigator !== "undefined" && navigator.share) {
     try {
