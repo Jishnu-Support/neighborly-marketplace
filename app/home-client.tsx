@@ -6159,260 +6159,6 @@ export default function Home() {
           <div className="ad-ticker-track">{adConfig.tickerMessages.map((message, index) => <Fragment key={`${index}-${message}`}><span>{message}</span><i>&#10038;</i></Fragment>)}</div>
         </div>}
 
-        {role === "Discover" && (
-          <div className="mobile-poster-ad-container" aria-label="Poster advertisement">
-            <section className="image-ad-panel" aria-label="Rotating image advertisement">
-              {adConfig.imageAds.length === 0 ? (
-                <div
-                  className="image-ad-creative gold"
-                  style={{
-                    padding: "24px 18px",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    textAlign: "center",
-                    minHeight: "200px",
-                    background: "linear-gradient(135deg, #1b3824 0%, #0e2014 100%)",
-                    borderRadius: "12px",
-                    color: "#ffffff",
-                  }}
-                >
-                  <div style={{ fontSize: "28px", marginBottom: "6px" }}>🎯</div>
-                  <strong style={{ fontSize: "13.5px", color: "#ecfdf5", lineHeight: "1.3" }}>
-                    {adConfig.targetingSummary?.isSearchTargeted
-                      ? `No sponsored ads for "${adConfig.targetingSummary.appliedQuery}"`
-                      : "No ads in this specific radius"}
-                  </strong>
-                  <p style={{ fontSize: "11px", color: "#a7f3d0", margin: "6px 0 12px", lineHeight: "1.4" }}>
-                    {adConfig.targetingSummary?.isSearchTargeted
-                      ? `Browse verified local businesses matching "${adConfig.targetingSummary.appliedQuery}" below.`
-                      : `Try expanding your search distance or browse All Hosur.`}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setQuery("");
-                      setSelectedNeighborhood("All Hosur");
-                    }}
-                    style={{
-                      background: "#22c55e",
-                      color: "#064e3b",
-                      border: 0,
-                      padding: "6px 14px",
-                      borderRadius: "6px",
-                      fontSize: "11px",
-                      fontWeight: 800,
-                      cursor: "pointer",
-                    }}
-                  >
-                    View All Hosur Ads
-                  </button>
-                </div>
-              ) : (
-                (() => {
-                  const currentImageAd = adConfig.imageAds[activeAd] || adConfig.imageAds[0];
-                  const labelRaw = currentImageAd?.label || "";
-                  const labelParts = labelRaw.split("•").map((s) => s.trim()).filter(Boolean);
-                  const storeName = labelParts[0] || (currentImageAd as any)?.businessName || labelRaw || "Featured Store";
-                  const localityPart = currentImageAd?.locality || labelParts[1] || "";
-                  const distanceStr = currentImageAd?.distanceKm !== undefined ? `${currentImageAd.distanceKm} km` : "";
-                  return (
-                    <>
-                      <div
-                        className={`image-ad-creative ${currentImageAd?.tone || "gold"}`}
-                        style={{
-                          backgroundImage: `linear-gradient(180deg, rgba(15, 23, 42, 0.45) 0%, transparent 40%, rgba(15, 23, 42, 0.4) 100%), url("${currentImageAd?.image || ""}")`,
-                          height: "190px",
-                          position: "relative",
-                          display: "flex",
-                          flexDirection: "column",
-                          justifyContent: "space-between",
-                          padding: "12px",
-                          borderRadius: "12px 12px 0 0",
-                        }}
-                      >
-                        {/* ONLY REQUIRED OVERLAPS ON TOP OF POSTER */}
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            zIndex: 2,
-                            width: "100%",
-                            gap: "6px",
-                          }}
-                        >
-                          <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
-                            <span className="ad-label" style={{ position: "static", margin: 0 }}>
-                              {t.advertisement}
-                            </span>
-                            {currentImageAd.matchedReason && (
-                              <span
-                                style={{
-                                  background: "#0284c7",
-                                  color: "#ffffff",
-                                  fontSize: "9px",
-                                  fontWeight: 800,
-                                  padding: "2px 7px",
-                                  borderRadius: "10px",
-                                  boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
-                                }}
-                                title="Sponsored match for your search"
-                              >
-                                🎯 {currentImageAd.matchedReason}
-                              </span>
-                            )}
-                          </div>
-                          <span
-                            style={{
-                              background: "rgba(15, 23, 42, 0.72)",
-                              backdropFilter: "blur(6px)",
-                              color: "#ecfdf5",
-                              fontSize: "10.5px",
-                              fontWeight: 700,
-                              padding: "2px 8px",
-                              borderRadius: "12px",
-                              border: "1px solid rgba(255, 255, 255, 0.28)",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "4px",
-                              boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
-                            }}
-                            title="Verified customer views in Hosur"
-                          >
-                            👁️ {(currentImageAd?.viewsCount || 1240).toLocaleString("en-IN")} views
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* ALL REMAINING DETAILS BELOW THE IMAGE */}
-                      <div className="image-ad-body" style={{ padding: "14px 14px 10px", background: "#ffffff" }}>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", marginBottom: "4px" }}>
-                          <span style={{ fontSize: "11px", fontWeight: 700, color: "#166534", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                            {storeName}
-                          </span>
-                          {distanceStr && (
-                            <span style={{ fontSize: "10.5px", color: "#64748b", fontWeight: 600, background: "#f1f5f9", padding: "1px 6px", borderRadius: "4px" }}>
-                              {distanceStr}
-                            </span>
-                          )}
-                        </div>
-
-                        {localityPart && (
-                          <div style={{ fontSize: "11px", color: "#475569", margin: "0 0 6px", display: "flex", alignItems: "center", gap: "4px", fontWeight: 500 }}>
-                            📍 {localityPart}
-                          </div>
-                        )}
-
-                        <h4 style={{ fontSize: "14.5px", fontWeight: 800, color: "#0f172a", lineHeight: 1.35, margin: "0 0 10px", letterSpacing: "-0.3px" }}>
-                          {currentImageAd?.title}
-                        </h4>
-
-                        <div
-                          style={{
-                            display: "grid",
-                            gridTemplateColumns: "1.2fr 1fr 0.8fr",
-                            gap: "6px",
-                            zIndex: 3,
-                            position: "relative",
-                          }}
-                        >
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAdAction(currentImageAd, "view_store");
-                            }}
-                            style={{
-                              background: "#15803d",
-                              color: "#ffffff",
-                              border: "none",
-                              padding: "7px 10px",
-                              borderRadius: "8px",
-                              fontSize: "11px",
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              gap: "4px",
-                              boxShadow: "0 2px 5px rgba(22, 101, 52, 0.25)",
-                            }}
-                          >
-                            <span>🛍️</span> View Store
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAdAction(currentImageAd, "whatsapp");
-                            }}
-                            style={{
-                              background: "#25D366",
-                              color: "#ffffff",
-                              border: "none",
-                              padding: "7px 8px",
-                              borderRadius: "8px",
-                              fontSize: "11px",
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              gap: "4px",
-                              boxShadow: "0 2px 5px rgba(37, 211, 102, 0.25)",
-                            }}
-                            title="Chat with business on WhatsApp"
-                          >
-                            <span>💬</span> WhatsApp
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAdAction(currentImageAd, "call");
-                            }}
-                            style={{
-                              background: "#f8fafc",
-                              color: "#0f172a",
-                              border: "1px solid #cbd5e1",
-                              padding: "7px 8px",
-                              borderRadius: "8px",
-                              fontSize: "11px",
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              gap: "4px",
-                            }}
-                            title="Call store directly"
-                          >
-                            <span>📞</span> Call
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="ad-dots" aria-label={`Advertisement ${activeAd + 1} of ${adConfig.imageAds.length}`} style={{ padding: "6px 0 10px", background: "#ffffff" }}>
-                        {adConfig.imageAds.map((ad, index) => (
-                          <button
-                            key={`mobile-poster-${ad.tone}-${index}`}
-                            type="button"
-                            className={index === activeAd ? "active" : ""}
-                            onClick={() => setActiveAd(index)}
-                            aria-label={`Show image advertisement ${index + 1}`}
-                          />
-                        ))}
-                      </div>
-                    </>
-                  );
-                })()
-              )}
-            </section>
-          </div>
-        )}
-
         <aside className="ad-rail" aria-label="Advertisements">
           <button className="sos-ad-button" aria-label="Emergency help (SOS)" onClick={() => setDialog("sos")}><span>✚</span> SOS <small>{t.emergencyHelp}</small></button>
           <section className="image-ad-panel" aria-label="Rotating image advertisement">
@@ -7164,6 +6910,153 @@ export default function Home() {
               </div>
             )}
 
+            {/* Mobile Category Quick Filter Carousel */}
+            <div className="mobile-category-carousel" role="region" aria-label="Category Quick Filter">
+              <button
+                type="button"
+                className={`mobile-cat-pill ${browseMode === "sectors" && category === "All" ? "active" : ""}`}
+                onClick={() => {
+                  setBrowseMode("sectors");
+                  setCategory("All");
+                  setCategoryPath([]);
+                  showNotice(t.allCategories);
+                }}
+              >
+                <span>✨</span>
+                <span>All ({businesses.length})</span>
+              </button>
+              {categories.slice(1).map((cat) => (
+                <button
+                  key={cat.name}
+                  type="button"
+                  className={`mobile-cat-pill ${browseMode === "sectors" && category === cat.name ? "active" : ""}`}
+                  onClick={() => {
+                    setBrowseMode("sectors");
+                    setCategory(cat.name);
+                    setCategoryPath([]);
+                    showNotice(`${translateCategory(cat.name, lang)} selected`);
+                  }}
+                >
+                  <span><CategoryIcon name={cat.name} sector={cat.name} /></span>
+                  <span>{translateCategory(cat.name, lang)}</span>
+                </button>
+              ))}
+              <button
+                type="button"
+                className={`mobile-cat-pill ${browseMode === "atoz" ? "active" : ""}`}
+                onClick={() => {
+                  setBrowseMode("atoz");
+                  document.getElementById("atoz-directory")?.scrollIntoView({ behavior: "smooth" });
+                }}
+              >
+                <span>🔤</span>
+                <span>A–Z Directory</span>
+              </button>
+            </div>
+
+            {/* Mobile Compact Sponsored Showcase Banner */}
+            {adConfig.imageAds.length > 0 && (
+              <div className="mobile-poster-ad-container" aria-label="Featured local sponsor">
+                {(() => {
+                  const currentImageAd = adConfig.imageAds[activeAd] || adConfig.imageAds[0];
+                  const labelRaw = currentImageAd?.label || "";
+                  const labelParts = labelRaw.split("•").map((s) => s.trim()).filter(Boolean);
+                  const storeName = labelParts[0] || (currentImageAd as any)?.businessName || labelRaw || "Featured Store";
+                  const localityPart = currentImageAd?.locality || labelParts[1] || "";
+                  const distanceStr = currentImageAd?.distanceKm !== undefined ? `${currentImageAd.distanceKm} km` : "";
+                  return (
+                    <div className="image-ad-panel" style={{ borderRadius: "14px", overflow: "hidden", border: "1px solid #dce6dc", background: "#ffffff", boxShadow: "0 2px 10px rgba(18, 38, 24, 0.05)" }}>
+                      <div
+                        className={`image-ad-creative ${currentImageAd?.tone || "gold"}`}
+                        style={{
+                          backgroundImage: `linear-gradient(180deg, rgba(15, 23, 42, 0.45) 0%, transparent 40%, rgba(15, 23, 42, 0.55) 100%), url("${currentImageAd?.image || ""}")`,
+                          height: "125px",
+                          position: "relative",
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "space-between",
+                          padding: "10px 12px",
+                        }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", gap: "6px" }}>
+                          <span className="ad-label" style={{ background: "rgba(0,0,0,0.6)", color: "#ffffff", padding: "2px 7px", borderRadius: "5px", fontSize: "8.5px", fontWeight: 800, textTransform: "uppercase" }}>
+                            {t.advertisement}
+                          </span>
+                          <span style={{ background: "rgba(15, 23, 42, 0.72)", backdropFilter: "blur(6px)", color: "#ecfdf5", fontSize: "10px", fontWeight: 700, padding: "2px 8px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.25)" }}>
+                            👁️ {(currentImageAd?.viewsCount || 1240).toLocaleString("en-IN")} views
+                          </span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "6px" }}>
+                          <span style={{ color: "#ffffff", fontSize: "12px", fontWeight: 800, textShadow: "0 1px 4px rgba(0,0,0,0.7)" }}>
+                            {storeName} {localityPart ? `· 📍 ${localityPart}` : ""}
+                          </span>
+                          {distanceStr && (
+                            <span style={{ background: "rgba(255,255,255,0.85)", color: "#166534", fontSize: "9.5px", fontWeight: 700, padding: "1px 5px", borderRadius: "4px" }}>
+                              {distanceStr}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="image-ad-body" style={{ padding: "10px 12px 8px", background: "#ffffff" }}>
+                        <h4 style={{ fontSize: "13px", fontWeight: 700, color: "#0f172a", lineHeight: 1.3, margin: "0 0 8px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {currentImageAd?.title}
+                        </h4>
+                        <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 0.8fr", gap: "6px" }}>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAdAction(currentImageAd, "view_store");
+                            }}
+                            style={{ background: "#15803d", color: "#ffffff", border: "none", padding: "6px 8px", borderRadius: "7px", fontSize: "11px", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "4px" }}
+                          >
+                            🛍️ Store
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAdAction(currentImageAd, "whatsapp");
+                            }}
+                            style={{ background: "#25D366", color: "#ffffff", border: "none", padding: "6px 8px", borderRadius: "7px", fontSize: "11px", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "4px" }}
+                            title="WhatsApp"
+                          >
+                            💬 WhatsApp
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAdAction(currentImageAd, "call");
+                            }}
+                            style={{ background: "#f8fafc", color: "#0f172a", border: "1px solid #cbd5e1", padding: "6px 8px", borderRadius: "7px", fontSize: "11px", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "4px" }}
+                            title="Call"
+                          >
+                            📞 Call
+                          </button>
+                        </div>
+                      </div>
+
+                      {adConfig.imageAds.length > 1 && (
+                        <div className="ad-dots" style={{ padding: "4px 0 6px", background: "#ffffff" }}>
+                          {adConfig.imageAds.map((ad, index) => (
+                            <button
+                              key={`mob-poster-${ad.tone}-${index}`}
+                              type="button"
+                              className={index === activeAd ? "active" : ""}
+                              onClick={() => setActiveAd(index)}
+                              aria-label={`Ad ${index + 1}`}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
             {(() => {
               const categoriesSection = (
                 <div className="categories-browse-section">
@@ -7461,50 +7354,6 @@ export default function Home() {
                       ✕ {t.clearFilters}
                     </button>
                   )}
-                </div>
-
-                {/* Mobile Horizontal Category Pills Carousel */}
-                <div className="mobile-category-carousel" role="region" aria-label="Category Quick Filter">
-                  <button
-                    type="button"
-                    className={`mobile-cat-pill ${browseMode === "sectors" && category === "All" ? "active" : ""}`}
-                    onClick={() => {
-                      setBrowseMode("sectors");
-                      setCategory("All");
-                      setCategoryPath([]);
-                      showNotice(t.allCategories);
-                    }}
-                  >
-                    <span>✨</span>
-                    <span>All ({businesses.length})</span>
-                  </button>
-                  {categories.slice(1).map((cat) => (
-                    <button
-                      key={cat.name}
-                      type="button"
-                      className={`mobile-cat-pill ${browseMode === "sectors" && category === cat.name ? "active" : ""}`}
-                      onClick={() => {
-                        setBrowseMode("sectors");
-                        setCategory(cat.name);
-                        setCategoryPath([]);
-                        showNotice(`${translateCategory(cat.name, lang)} selected`);
-                      }}
-                    >
-                      <span><CategoryIcon name={cat.name} sector={cat.name} /></span>
-                      <span>{translateCategory(cat.name, lang)}</span>
-                    </button>
-                  ))}
-                  <button
-                    type="button"
-                    className={`mobile-cat-pill ${browseMode === "atoz" ? "active" : ""}`}
-                    onClick={() => {
-                      setBrowseMode("atoz");
-                      document.getElementById("atoz-directory")?.scrollIntoView({ behavior: "smooth" });
-                    }}
-                  >
-                    <span>🔤</span>
-                    <span>A–Z Directory</span>
-                  </button>
                 </div>
 
                 {displayedBusinesses.length ? (
@@ -7891,10 +7740,10 @@ export default function Home() {
               if (category !== "All") {
                 return (
                   <>
-                    {/* When using sector category: sector & subcategories at top, results below */}
-                    {categoriesSection}
-                    <div style={{ marginTop: "16px" }}>
-                      {resultsSection}
+                    {/* When using sector category: results at top, taxonomy below */}
+                    {resultsSection}
+                    <div style={{ marginTop: "24px", paddingTop: "16px", borderTop: "1px solid #e2ebe1" }}>
+                      {categoriesSection}
                     </div>
                   </>
                 );
@@ -7902,34 +7751,12 @@ export default function Home() {
 
               return (
                 <>
-                  {/* Clean home view: 22 sectors displayed cleanly */}
-                  {categoriesSection}
-                  {!showAllBusinesses ? (
-                    <div style={{ textAlign: "center", margin: "24px 0 20px" }}>
-                      <button
-                        type="button"
-                        className="outline-button"
-                        style={{ padding: "10px 22px", fontSize: "12px", fontWeight: 700, borderRadius: "8px", background: "#f8faf7", border: "1px solid #c8dbcc", color: "#225633", cursor: "pointer" }}
-                        onClick={() => setShowAllBusinesses(true)}
-                      >
-                        Or browse all {businesses.length} businesses across Hosur ↓
-                      </button>
-                    </div>
-                  ) : (
-                    <div style={{ marginTop: "20px" }}>
-                      <div style={{ textAlign: "center", marginBottom: "14px" }}>
-                        <button
-                          type="button"
-                          className="text-link"
-                          style={{ fontSize: "11px", color: "#6a7d6e", background: "none", border: 0, cursor: "pointer", textDecoration: "underline" }}
-                          onClick={() => setShowAllBusinesses(false)}
-                        >
-                          ▲ Collapse all businesses
-                        </button>
-                      </div>
-                      {resultsSection}
-                    </div>
-                  )}
+                  {/* Clean home view */}
+                  {resultsSection}
+                  <div style={{ marginTop: "32px", paddingTop: "24px", borderTop: "1px solid #e2ebe1" }}>
+                    <div className="eyebrow" style={{ marginBottom: "8px" }}>BROWSE BY SECTOR &amp; DIRECTORY</div>
+                    {categoriesSection}
+                  </div>
                 </>
               );
             })()}
