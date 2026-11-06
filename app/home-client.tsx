@@ -5279,7 +5279,7 @@ export default function Home() {
                   ? "Super Admin Console"
                   : currentCustomerProfile?.fullName
                   ? currentCustomerProfile.fullName
-                  : sessionIdentity && !sessionIdentity.includes("@neighborly.demo")
+                  : sessionIdentity
                   ? sessionIdentity
                   : role === "Discover"
                   ? t.yourBizearchActivity

@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { NextResponse } from "next/server";
 import { saveCustomerRegistrationLocation } from "@/app/lib/customer-locations";
 import { consumeVerifiedRegistrationOtp } from "@/app/lib/registration-otp";
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Enter a valid name, mobile number and registration location status." }, { status: 400 });
     }
     const otpConsumed = consumeVerifiedRegistrationOtp("Account", phone);
-    if (!otpConsumed && phone !== "9876543210" && !phone.endsWith("9876543210")) {
+    if (!otpConsumed) {
       return NextResponse.json({ error: "Verify your mobile number with the OTP before submitting registration." }, { status: 400 });
     }
 
@@ -73,7 +74,7 @@ export async function POST(request: Request) {
     const customerAccount = await registerCustomerAccount({
       name,
       phone,
-      password: password.length >= 6 ? password : "Neighbor123!",
+      password: password && password.length >= 6 ? password : randomBytes(8).toString("hex"),
       email,
       doorNo,
       street,

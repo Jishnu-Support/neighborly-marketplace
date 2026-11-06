@@ -6,27 +6,21 @@ import { MapPinModal, type Coordinates } from "../map-pin-modal";
 
 export type PortalRole = "Account" | "Business" | "Agent";
 
-const portalInfo: Record<PortalRole, { title: string; description: string; label: string; username: string; password: string }> = {
+const portalInfo: Record<PortalRole, { title: string; description: string; label: string }> = {
   Account: {
     title: "Sign in to your account",
     description: "Access your saved businesses, recent searches and enquiries.",
     label: "CUSTOMER ACCOUNT",
-    username: "customer@neighborly.demo",
-    password: "Neighbor123!",
   },
   Business: {
     title: "Business portal sign in",
     description: "Manage your business listing, products, enquiries and plan.",
     label: "BUSINESS PARTNER ACCESS",
-    username: "business@neighborly.demo",
-    password: "Business123!",
   },
   Agent: {
     title: "Agent portal sign in",
     description: "Access referrals and your neighborhood partner activity.",
     label: "NEIGHBORHOOD AGENT ACCESS",
-    username: "agent@neighborly.demo",
-    password: "Agent123!",
   },
 };
 

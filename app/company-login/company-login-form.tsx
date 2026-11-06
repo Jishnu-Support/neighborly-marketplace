@@ -83,7 +83,7 @@ export default function CompanyLoginForm() {
               name="identity"
               type="email"
               autoComplete="username"
-              placeholder={accessLevel === "Super Admin" ? "superadmin@neighborly.demo or admin@bizearch.in" : "name@company.com"}
+              placeholder={accessLevel === "Super Admin" ? "admin@bizearch.in" : "name@company.com"}
               required
             />
           </label>

@@ -38,11 +38,6 @@ export const AUTH_COOKIE = "neighborly_session";
 const SESSION_DURATION_SECONDS = 60 * 60 * 12;
 const validRoles: PortalRole[] = ["Account", "Business", "Agent", "Company"];
 const validCompanyAccessLevels: CompanyAccessLevel[] = ["Admin", "Super Admin"];
-const demoAccounts: Record<Exclude<PortalRole, "Company">, { identity: string; password: string }> = {
-  Account: { identity: "customer@neighborly.demo", password: "Neighbor123!" },
-  Business: { identity: "business@neighborly.demo", password: "Business123!" },
-  Agent: { identity: "agent@neighborly.demo", password: "Agent123!" },
-};
 const adminStorePath = resolveStorePath("NEIGHBORLY_ADMIN_STORE", ".neighborly-admins.json");
 const customerStorePath = resolveStorePath("NEIGHBORLY_CUSTOMER_STORE", ".neighborly-customers.json");
 
@@ -259,7 +254,6 @@ export function isSuperAdminIdentity(identity: string | undefined): boolean {
   const configuredEmail = process.env.NEIGHBORLY_SUPER_ADMIN_EMAIL?.trim().toLowerCase();
   return (
     normalized === "admin@bizearch.in" ||
-    normalized === "superadmin@neighborly.demo" ||
     (Boolean(configuredEmail) && normalized === configuredEmail)
   );
 }
@@ -279,11 +273,10 @@ export async function verifyCredentials(role: PortalRole, identity: string, pass
     if (accessLevel === "Super Admin") {
       const configuredEmail = process.env.NEIGHBORLY_SUPER_ADMIN_EMAIL?.trim().toLowerCase();
       const configuredPassword = process.env.NEIGHBORLY_SUPER_ADMIN_PASSWORD;
-      const adminEmail = configuredEmail || "superadmin@neighborly.demo";
+      const adminEmail = configuredEmail || "admin@bizearch.in";
       const isKnownSuper =
         normalizedIdentity === adminEmail ||
-        normalizedIdentity === "admin@bizearch.in" ||
-        normalizedIdentity === "superadmin@neighborly.demo";
+        normalizedIdentity === "admin@bizearch.in";
       if (
         isKnownSuper &&
         (password === "SuperAdmin123!" ||
@@ -317,20 +310,10 @@ export async function verifyCredentials(role: PortalRole, identity: string, pass
       return false;
     }
 
-    // Check demo credentials
-    const account = demoAccounts[role];
-    if (
-      (normalizedIdentity === account.identity.toLowerCase() ||
-        normalizedIdentity === "customer" ||
-        normalizedIdentity === "demo") &&
-      password === account.password
-    ) {
-      return true;
-    }
     // Check registered customers
     const cleanDigits = normalizedIdentity.replace(/\D/g, "");
     const customers = await readCustomerRecords();
-    let customer = customers.find((c) => {
+    const customer = customers.find((c) => {
       if (!c.active) return false;
       if (c.email && c.email.toLowerCase() === normalizedIdentity) return true;
       if (c.name && c.name.toLowerCase() === normalizedIdentity) return true;
@@ -342,22 +325,7 @@ export async function verifyCredentials(role: PortalRole, identity: string, pass
     });
 
     if (customer) {
-      if (passwordsMatch(password, customer.salt, customer.passwordHash)) {
-        return true;
-      }
-      // If customer matches by mobile (e.g. Murali or customer updating password), accept password and update hash
-      if (password && password.length >= 4) {
-        const newSalt = randomBytes(16).toString("hex");
-        customer.salt = newSalt;
-        customer.passwordHash = hashPassword(password, newSalt);
-        const idx = customers.findIndex((item) => item.id === customer!.id);
-        if (idx !== -1) {
-          customers[idx] = customer;
-          await writeCustomerRecords(customers);
-        }
-        return true;
-      }
-      return false;
+      return passwordsMatch(password, customer.salt, customer.passwordHash);
     }
 
     // Check customer-locations store for existing registration
@@ -393,49 +361,15 @@ export async function verifyCredentials(role: PortalRole, identity: string, pass
       // Non-blocking
     }
 
-    // Auto-activate any valid customer mobile/email login
-    if ((cleanDigits.length >= 8 || normalizedIdentity.includes("@")) && password && password.length >= 4) {
-      const name = cleanDigits.endsWith("9962775630")
-        ? "Murali"
-        : normalizedIdentity.includes("@")
-        ? normalizedIdentity.split("@")[0]
-        : `Customer ${cleanDigits.slice(-4)}`;
-      await registerCustomerAccount({
-        name,
-        phone: cleanDigits.length >= 10 ? cleanDigits : `91${cleanDigits}`,
-        email: normalizedIdentity.includes("@") ? normalizedIdentity : undefined,
-        password,
-        locality: "Bagalur Road",
-        city: "Hosur",
-        state: "Tamil Nadu",
-        pincode: "635109",
-      });
-      return true;
-    }
-
     return false;
   }
   if (role === "Agent") {
     const verifiedAgent = await verifyAgentCredentials(identity, password);
-    if (verifiedAgent) return true;
-    const account = demoAccounts[role];
-    return (
-      (normalizedIdentity === account.identity.toLowerCase() ||
-        normalizedIdentity === "agent" ||
-        normalizedIdentity === "demo") &&
-      password === account.password
-    );
+    return Boolean(verifiedAgent);
   }
   if (role === "Business") {
     const verifiedBusiness = await verifyBusinessCredentials(identity, password);
-    if (verifiedBusiness) return true;
-    const account = demoAccounts[role];
-    return (
-      (normalizedIdentity === account.identity.toLowerCase() ||
-        normalizedIdentity === "business" ||
-        normalizedIdentity === "demo") &&
-      password === account.password
-    );
+    return Boolean(verifiedBusiness);
   }
   return false;
 }
@@ -475,9 +409,9 @@ export async function updateCustomerProfile(
 
   if (index === -1) {
     return registerCustomerAccount({
-      name: updates.name || (cleanDigits.endsWith("9962775630") ? "Murali" : "Customer"),
+      name: updates.name || "Customer",
       phone: updates.phone || identity,
-      password: "Neighbor123!",
+      password: randomBytes(8).toString("hex"),
       email: updates.email,
       doorNo: updates.doorNo,
       street: updates.street,
@@ -543,7 +477,7 @@ export async function listCompanyAdmins(): Promise<CompanyAdmin[]> {
 export async function registerCompanyAdmin(name: string, email: string, password: string) {
   const normalizedEmail = email.trim().toLowerCase();
   const admins = await readAdminRecords();
-  if (normalizedEmail === (process.env.NEIGHBORLY_SUPER_ADMIN_EMAIL || "superadmin@neighborly.demo").trim().toLowerCase() || admins.some((admin) => admin.email === normalizedEmail)) {
+  if (normalizedEmail === (process.env.NEIGHBORLY_SUPER_ADMIN_EMAIL || "admin@bizearch.in").trim().toLowerCase() || admins.some((admin) => admin.email === normalizedEmail)) {
     throw new Error("An account already exists with that email.");
   }
   const admin = await createStoredAdmin(name.trim(), normalizedEmail, password);
@@ -581,7 +515,7 @@ export async function updateCompanyAdmin(input: {
       throw new Error("Enter a valid work email address.");
     }
     const duplicate = admins.find((a) => a.id !== input.id && a.email.toLowerCase() === normalizedEmail);
-    const superAdminEmail = (process.env.NEIGHBORLY_SUPER_ADMIN_EMAIL || "superadmin@neighborly.demo").trim().toLowerCase();
+    const superAdminEmail = (process.env.NEIGHBORLY_SUPER_ADMIN_EMAIL || "admin@bizearch.in").trim().toLowerCase();
     if (duplicate || normalizedEmail === superAdminEmail || normalizedEmail === "admin@bizearch.in") {
       throw new Error("Another admin account already exists with that email address.");
     }
