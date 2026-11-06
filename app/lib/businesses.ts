@@ -685,6 +685,8 @@ export async function updateBusinessProfile(idOrIdentity: string, updates: Parti
   hours?: string;
   products: BusinessProduct[];
   coordinates: { latitude: number; longitude: number } | null;
+  rating?: number;
+  reviews?: number;
 }>): Promise<PublicBusiness | null> {
   const records = await readBusinessRecords();
   const cleanDigits = idOrIdentity.replace(/\D/g, "");
@@ -720,6 +722,8 @@ export async function updateBusinessProfile(idOrIdentity: string, updates: Parti
   if (updates.gstin !== undefined) current.gstin = updates.gstin.trim();
   if (updates.hours !== undefined) current.hours = updates.hours.trim();
   if (updates.products !== undefined) current.products = updates.products;
+  if (updates.rating !== undefined) current.rating = updates.rating;
+  if (updates.reviews !== undefined) current.reviews = updates.reviews;
   if (updates.address) {
     const rawAddr = updates.address as Record<string, unknown>;
     current.address = {

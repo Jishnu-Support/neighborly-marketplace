@@ -4075,6 +4075,18 @@ export default function Home() {
         linkText: "View shortlist",
         action: { type: "role", payload: "Account" },
       });
+      fetch("/api/activity-logs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: `Customer saved "${businessName}" to shortlist`,
+          category: "Lead",
+          actorName: currentCustomerProfile?.fullName || (role === "Account" ? sessionIdentity : "Customer"),
+          actorPhone: currentCustomerProfile?.phone,
+          actorRole: "Customer",
+          details: `Added ${businessName} to favorites`,
+        }),
+      }).catch(() => {});
     }
   }
 
@@ -4133,6 +4145,24 @@ export default function Home() {
       linkText: "View store",
       action: { type: "business", payload: business.name },
     });
+    fetch("/api/activity-logs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: `Customer enquiry for "${business.name}"`,
+        category: "Lead",
+        actorName: currentCustomerProfile?.fullName || (role === "Account" ? sessionIdentity : "Customer"),
+        actorPhone: currentCustomerProfile?.phone,
+        actorRole: "Customer",
+        locality: business.address?.area || "Hosur",
+        details: `${product.name}: "${message.slice(0, 100)}"`,
+        metadata: {
+          businessName: business.name,
+          productName: product.name,
+          enquiryId: enquiry.id,
+        },
+      }),
+    }).catch(() => {});
   }
 
   function placeOrder(orderData: Omit<OrderRecord, "id" | "createdAt">) {
@@ -4582,6 +4612,11 @@ export default function Home() {
         b.name === businessName ? { ...b, images, image: images[0] || undefined } : b
       ),
     }));
+    fetch("/api/businesses", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: businessName, photos: images, images }),
+    }).catch(() => {});
     showNotice(`✓ Photos updated for "${businessName}"!`);
   }
 
@@ -4609,6 +4644,11 @@ export default function Home() {
         }
       }
     } catch {}
+    fetch("/api/businesses", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: businessName, coordinates }),
+    }).catch(() => {});
     showNotice(`✓ Location pin updated for "${businessName}" (${coordinates.latitude.toFixed(6)}, ${coordinates.longitude.toFixed(6)})!`);
   }
 
@@ -4653,6 +4693,18 @@ export default function Home() {
         }
       }
     } catch {}
+
+    fetch("/api/businesses", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: updatedBiz.id || currentBusinessRecord?.id,
+        name: bizName,
+        phone: bizPhone,
+        ...updatedBiz,
+      }),
+    }).catch((e) => console.warn("Failed to persist business profile to server:", e));
+
     showNotice(`✓ Business profile updated for "${bizName}"!`);
   }
 
@@ -8607,6 +8659,19 @@ export default function Home() {
                   : b
               ),
             }));
+
+            fetch("/api/businesses/review", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                businessId: reviewBusiness.id,
+                businessName: reviewBusiness.name,
+                rating: stars,
+                comment,
+                userName: currentCustomerProfile?.fullName || (role === "Account" ? sessionIdentity : "Customer"),
+                userPhone: currentCustomerProfile?.phone,
+              }),
+            }).catch(() => {});
 
             showNotice(`Thank you! Your ${stars}-star rating for "${reviewBusiness.name}" was recorded.`);
             recordEvent(`Customer rated ${reviewBusiness.name} ${stars} stars`);
