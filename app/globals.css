@@ -4270,5 +4270,197 @@ html, body {
   }
 }
 
+/* Professional Mobile SOS Button & Emergency System */
+.sos-fab {
+  position: fixed !important;
+  right: 14px !important;
+  bottom: 74px !important;
+  z-index: 920 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important;
+  color: #ffffff !important;
+  border: 1.5px solid #fca5a5 !important;
+  border-radius: 999px !important;
+  padding: 8px 14px !important;
+  box-shadow: 0 4px 18px rgba(220, 38, 38, 0.45), 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+  cursor: pointer !important;
+  font-family: inherit !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.sos-fab:active {
+  transform: scale(0.93) !important;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.5) !important;
+}
+
+.sos-fab-beacon {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #ffffff;
+  display: inline-block;
+  box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.8);
+  animation: sosPulse 1.8s infinite cubic-bezier(0.66, 0, 0, 1);
+}
+
+@keyframes sosPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.85);
+  }
+  70% {
+    box-shadow: 0 0 0 9px rgba(255, 255, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+}
+
+.sos-fab-icon {
+  font-size: 15px !important;
+  line-height: 1 !important;
+}
+
+.sos-fab-text {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  line-height: 1.1 !important;
+}
+
+.sos-fab-text strong {
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  color: #ffffff !important;
+}
+
+.sos-fab-text small {
+  font-size: 8px !important;
+  color: #fecaca !important;
+  font-weight: 700 !important;
+}
+
+.mobile-header-sos-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  color: #ffffff;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  border: 1px solid #f87171;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+  transition: transform 0.1s ease;
+}
+
+.mobile-header-sos-pill:active {
+  transform: scale(0.93);
+}
+
+.mobile-drawer-sos-card {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin: 14px 16px;
+}
+
+.drawer-sos-call-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 7px 6px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #1e293b;
+  transition: background 0.15s ease;
+}
+
+.drawer-sos-call-btn:active {
+  background: #f1f5f9;
+}
+
+.drawer-sos-call-btn.medical {
+  border-color: #fed7aa;
+  color: #9a3412;
+  background: #fff7ed;
+}
+
+.drawer-sos-call-btn.police {
+  border-color: #bfdbfe;
+  color: #1e40af;
+  background: #eff6ff;
+}
+
+.drawer-sos-call-btn.fire {
+  border-color: #fecaca;
+  color: #991b1b;
+  background: #fef2f2;
+}
+
+.drawer-sos-call-btn.all {
+  border-color: #d1fae5;
+  color: #065f46;
+  background: #ecfdf5;
+}
+
+.quick-emergency-bar {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin: 12px 0 18px;
+}
+
+.quick-emergency-call-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.1s ease;
+}
+
+.quick-emergency-call-btn:active {
+  transform: scale(0.96);
+}
+
+.quick-emergency-call-btn.medical {
+  background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+}
+
+.quick-emergency-call-btn.police {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+.quick-emergency-call-btn.fire {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+.quick-emergency-call-btn.helpline {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
 
 

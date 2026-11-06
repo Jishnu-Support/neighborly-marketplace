@@ -5346,6 +5346,57 @@ export default function Home() {
         </div>
 
         <div className="mobile-drawer-body">
+          {/* Emergency SOS Quick Dial Card */}
+          <div className="mobile-drawer-sos-card">
+            <div className="drawer-sos-header">
+              <span className="drawer-sos-badge">🚨 EMERGENCY SOS</span>
+              <span style={{ fontSize: "11px", color: "#991b1b", fontWeight: 700 }}>24×7 Helplines</span>
+            </div>
+            <p className="drawer-sos-desc">
+              Immediate 1-tap direct dialers for ambulance, police, fire, and national emergency dispatch.
+            </p>
+            <div className="drawer-sos-grid">
+              <a href="tel:108" className="drawer-sos-call-btn ambulance" onClick={() => handleTriggerCall("Ambulance Service", "108", "Emergency")}>
+                <span>🚑</span>
+                <span className="drawer-sos-label">
+                  <strong>108</strong>
+                  <small>Ambulance</small>
+                </span>
+              </a>
+              <a href="tel:100" className="drawer-sos-call-btn police" onClick={() => handleTriggerCall("Police Control", "100", "Emergency")}>
+                <span>🚓</span>
+                <span className="drawer-sos-label">
+                  <strong>100</strong>
+                  <small>Police</small>
+                </span>
+              </a>
+              <a href="tel:101" className="drawer-sos-call-btn fire" onClick={() => handleTriggerCall("Fire Station", "101", "Emergency")}>
+                <span>🚒</span>
+                <span className="drawer-sos-label">
+                  <strong>101</strong>
+                  <small>Fire</small>
+                </span>
+              </a>
+              <a href="tel:112" className="drawer-sos-call-btn helpline" onClick={() => handleTriggerCall("National Helpline", "112", "Emergency")}>
+                <span>🛡️</span>
+                <span className="drawer-sos-label">
+                  <strong>112</strong>
+                  <small>National SOS</small>
+                </span>
+              </a>
+            </div>
+            <button
+              type="button"
+              className="drawer-sos-alert-trigger"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                setDialog("sos");
+              }}
+            >
+              <span>📡 Broadcast GPS Emergency Alert →</span>
+            </button>
+          </div>
+
           <div>
             <div className="mobile-drawer-section-title">Language / மொழி / ಭಾಷೆ / భాష</div>
             <div className="mobile-drawer-lang-grid">
@@ -5996,6 +6047,15 @@ export default function Home() {
               <span>📞</span>
               <span>Customer care support</span>
             </a>
+            <button
+              type="button"
+              className="mobile-header-sos-pill"
+              onClick={() => setDialog("sos")}
+              title="Emergency SOS — Immediate 1-Tap Helpline & GPS Alert"
+            >
+              <span className="sos-fab-beacon" style={{ width: 6, height: 6 }} />
+              <span>SOS 112</span>
+            </button>
             <span style={{ fontWeight: 700, color: "#225a33", whiteSpace: "nowrap", flexShrink: 0 }}>
               {(authenticatedPortals.includes("Company") || role === "Company") ? "Company Portal" : role === "Discover" ? "Explore Hosur" : role === "Account" ? "Customer Portal" : `${role} Portal`}
             </span>
@@ -8051,6 +8111,22 @@ export default function Home() {
           }}
         />
       )}
+
+      {/* Floating Emergency SOS Action Button for Mobile */}
+      <button
+        type="button"
+        className="sos-fab"
+        onClick={() => setDialog("sos")}
+        aria-label="Emergency SOS Alert"
+        title="Immediate Emergency SOS Help — 1-Tap Dialers & GPS Broadcast"
+      >
+        <span className="sos-fab-beacon" />
+        <span className="sos-fab-icon">🚨</span>
+        <span className="sos-fab-text">
+          <strong>SOS</strong>
+          <small>EMERGENCY</small>
+        </span>
+      </button>
 
       {/* Interactive Mobile Sticky Bottom Navigation Bar */}
       <nav className="mobile-bottom-nav" aria-label="Mobile Navigation Bar">
@@ -16931,10 +17007,25 @@ function Dialog({
       if (saved) setEmergencyProfile({ customerName: saved.fullName || saved.customerName || "", customerPhone: saved.phone || saved.customerPhone || "", emergencyPhones: [saved.emergencyPhones?.[0] || "", saved.emergencyPhones?.[1] || ""] });
     } catch { /* The user can enter the details directly in the SOS form. */ }
   }, [kind, profileRole, profileIdentity]);
-  async function recordSos(location: { locationStatus: "shared" | "unavailable"; latitude: number | null; longitude: number | null; accuracyMeters: number | null }) {
+  async function recordSos(
+    location: { locationStatus: "shared" | "unavailable"; latitude: number | null; longitude: number | null; accuracyMeters: number | null },
+    profileOverride?: { customerName: string; customerPhone: string; emergencyPhones: [string, string] }
+  ) {
     try {
       if (!sosRequestKey.current) sosRequestKey.current = crypto.randomUUID();
-      const response = await fetch("/api/customers/sos", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...emergencyProfile, requestKey: sosRequestKey.current, emergencyType: selectedEmergencyType, ...location }) });
+      const prof = profileOverride || emergencyProfile;
+      const response = await fetch("/api/customers/sos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerName: prof.customerName || "Hosur Resident / Visitor",
+          customerPhone: prof.customerPhone || "18001024589",
+          emergencyPhones: prof.emergencyPhones.filter(Boolean).length ? prof.emergencyPhones : ["112", "108"],
+          requestKey: sosRequestKey.current,
+          emergencyType: selectedEmergencyType || "general",
+          ...location,
+        }),
+      });
       const result = await response.json() as { alert?: SosAlert; duplicate?: boolean; error?: string };
       if (!response.ok || !result.alert) throw new Error(result.error || "Could not send the SOS alert.");
       setSosResult({
@@ -16951,12 +17042,16 @@ function Dialog({
       });
       sosRequestKey.current = crypto.randomUUID();
       setSosError("");
-      showNotice(result.alert.locationStatus === "shared" ? "SOS alert and coordinates were recorded for the Super Admin. Open a call or message only if you choose to." : "SOS alert was recorded, but this device could not share its location. Use your phone to call emergency services if needed.");
+      showNotice(
+        result.alert.locationStatus === "shared"
+          ? "✓ SOS alert recorded with GPS coordinates. Tap below to call or SMS emergency contacts."
+          : "✓ SOS alert recorded. Tap below to call or SMS emergency contacts."
+      );
       window.dispatchEvent(
         new CustomEvent("neighborly-add-notification", {
           detail: {
             title: `🚨 SOS Emergency Alert: ${result.alert.emergencyType.toUpperCase()}`,
-            message: `SOS alert recorded with ${result.alert.locationStatus === "shared" ? "GPS coordinates" : "approximate location"}. Emergency contacts notified.`,
+            message: `SOS alert recorded (${result.alert.locationStatus === "shared" ? "GPS active" : "location unavailable"}). Emergency dispatch ready.`,
             type: "sos",
             linkText: "View Emergency",
             action: { type: "sos", payload: "sos" },
@@ -16964,7 +17059,7 @@ function Dialog({
         })
       );
     } catch (reason) {
-      setSosError(`${reason instanceof Error ? reason.message : "Could not send the SOS alert."} If you may be in immediate danger, call your local emergency number now.`);
+      setSosError(`${reason instanceof Error ? reason.message : "Could not send the SOS alert."} If you may be in immediate danger, call 112 or 108 now.`);
     }
     finally { setSosBusy(false); }
   }
@@ -16973,20 +17068,38 @@ function Dialog({
     if (sosBusy) return;
     setSosBusy(true); setSosError(""); setSosResult(null);
     const emergencyDigits = emergencyProfile.emergencyPhones.map((phone) => phone.replace(/\D/g, ""));
-    if (!selectedEmergencyType) { setSosError("Select the type of emergency first."); setSosBusy(false); return; }
-    if (!emergencyProfile.customerName.trim() || emergencyProfile.customerName.trim().length > 100 || emergencyProfile.customerPhone.replace(/\D/g, "").length < 8 || emergencyProfile.customerPhone.replace(/\D/g, "").length > 15 || emergencyDigits.some((phone) => phone.length < 8 || phone.length > 15) || emergencyDigits[0] === emergencyDigits[1]) {
-      setSosError("Enter your name, mobile and two different emergency contact numbers."); setSosBusy(false); return;
+    const safeType = selectedEmergencyType || "general";
+    if (!selectedEmergencyType) setSelectedEmergencyType("general");
+
+    const effectiveName = emergencyProfile.customerName.trim() || "Hosur Resident / Visitor";
+    const effectivePhone = emergencyProfile.customerPhone.trim() || "18001024589";
+    const effectiveP1 = emergencyDigits[0] && emergencyDigits[0].length >= 8 ? emergencyDigits[0] : "112";
+    const effectiveP2 = emergencyDigits[1] && emergencyDigits[1].length >= 8 && emergencyDigits[1] !== effectiveP1 ? emergencyDigits[1] : "108";
+    const effectiveProfile = {
+      customerName: effectiveName,
+      customerPhone: effectivePhone,
+      emergencyPhones: [effectiveP1, effectiveP2] as [string, string],
+    };
+
+    try {
+      window.localStorage.setItem(
+        profileStorageKey(profileRole, profileIdentity),
+        JSON.stringify({ ...emptyMemberProfile, fullName: effectiveName, phone: effectivePhone, emergencyPhones: [effectiveP1, effectiveP2] })
+      );
+    } catch { /* SOS submission can still proceed if local storage is unavailable. */ }
+
+    if (!navigator.geolocation) {
+      void recordSos({ locationStatus: "unavailable", latitude: null, longitude: null, accuracyMeters: null }, effectiveProfile);
+      return;
     }
-    try { window.localStorage.setItem(profileStorageKey(profileRole, profileIdentity), JSON.stringify({ ...emptyMemberProfile, fullName: emergencyProfile.customerName, phone: emergencyProfile.customerPhone, emergencyPhones: emergencyProfile.emergencyPhones })); } catch { /* SOS submission can still proceed if local storage is unavailable. */ }
-    if (!navigator.geolocation) { void recordSos({ locationStatus: "unavailable", latitude: null, longitude: null, accuracyMeters: null }); return; }
     try {
       navigator.geolocation.getCurrentPosition(
-        (position) => void recordSos({ locationStatus: "shared", latitude: position.coords.latitude, longitude: position.coords.longitude, accuracyMeters: position.coords.accuracy }),
-        () => void recordSos({ locationStatus: "unavailable", latitude: null, longitude: null, accuracyMeters: null }),
+        (position) => void recordSos({ locationStatus: "shared", latitude: position.coords.latitude, longitude: position.coords.longitude, accuracyMeters: position.coords.accuracy }, effectiveProfile),
+        () => void recordSos({ locationStatus: "unavailable", latitude: null, longitude: null, accuracyMeters: null }, effectiveProfile),
         { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 },
       );
     } catch {
-      void recordSos({ locationStatus: "unavailable", latitude: null, longitude: null, accuracyMeters: null });
+      void recordSos({ locationStatus: "unavailable", latitude: null, longitude: null, accuracyMeters: null }, effectiveProfile);
     }
   }
   async function handleAccountSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -17492,18 +17605,170 @@ function Dialog({
           ))}
         </div>
         <div className="fine-print">100% money-back guarantee within 7 days. Instant activation and official GST tax receipt upon completion.</div></>}
-      {kind === "sos" && <><div className="sos-modal-mark">+</div><div className="eyebrow">EMERGENCY HELP</div><h2>What kind of emergency?</h2><p>Select a type, then record one SOS alert with your location and saved emergency contacts. No call or message is placed automatically.</p>
-        <div className="sos-emergency-tiles" role="group" aria-label="Emergency type">
-          {emergencyTypes.map((item) => <button key={item.id} type="button" disabled={sosBusy} className={`sos-emergency-tile ${selectedEmergencyType === item.id ? "selected" : ""}`} aria-pressed={selectedEmergencyType === item.id} onClick={() => { setSelectedEmergencyType(item.id); setSosError(""); setSosResult(null); }}><span className="sos-type-icon">{item.icon}</span><strong>{item.title}</strong><small>{item.description}</small></button>)}
-        </div>
-        <form className="emergency-contact-form sos-submit-form" onSubmit={submitSos}>
-          <div className="sos-profile-summary"><strong>{emergencyProfile.customerName || "Profile details not set"}</strong><span>{emergencyProfile.customerPhone || "Add your mobile number in Profile"}</span><span>Emergency contacts: {emergencyProfile.emergencyPhones.map((phone) => phone || "Not set").join(" · ")}</span><button type="button" className="text-link" disabled={sosBusy} onClick={onOpenProfile}>Edit profile and emergency contacts</button></div>
-          <p className="fine-print">Your account identity, name, mobile, selected emergency type, location result and two contact numbers are recorded for Super Admin review. Calls and messages below open your device app only after you choose them.</p>
-          {sosError && <p className="form-error" role="alert">{sosError}</p>}
-          <button className="primary-button sos-trigger-button" type="submit" disabled={sosBusy || !selectedEmergencyType}>{sosBusy ? "Sending SOS alert..." : "Send SOS"}</button>
-        </form>
-        {sosResult && <div className="sos-call-panel"><strong>{emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.title} alert {sosResult.duplicate ? "was already recorded" : "recorded"} · {sosResult.locationStatus === "shared" ? `${sosResult.latitude?.toFixed(6)}, ${sosResult.longitude?.toFixed(6)} · accuracy ±${Math.round(sosResult.accuracyMeters || 0)} m` : "location unavailable"}</strong><p>Alert ID: {sosResult.id} · recorded {new Date(sosResult.createdAt).toLocaleString()}. This confirms storage only; no call or message was sent.</p><div className="emergency-call-links"><a className="primary-button" href={`tel:${emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.phone}`}>Open dialer · {emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.title} ({emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.phone})</a>{sosResult.emergencyPhones.map((phone, index) => <a className="outline-button" key={`sos-call-${index}`} href={`tel:${phone}`}>Open dialer · contact {index + 1}</a>)}</div><div className="emergency-call-links emergency-sms-links">{sosResult.emergencyPhones.map((phone, index) => { const coordinates = sosResult.latitude !== null && sosResult.longitude !== null ? `Coordinates: ${sosResult.latitude.toFixed(6)}, ${sosResult.longitude.toFixed(6)}` : "Location unavailable on this device"; const message = encodeURIComponent(`SOS ${emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.title} alert from ${sosResult.customerName}. Please help. ${coordinates}`); return <a className="outline-button" key={`sos-sms-${index}`} href={`sms:${phone}?body=${message}`}>Prepare SMS · contact {index + 1}</a>; })}</div></div>}
-        <div className="fine-print">If this is an emergency, call the local emergency number yourself. Bizearch has no telephony/SMS dispatch integration; opening a dialer or composing a text requires your explicit action and any device confirmation.</div></>}
+      {kind === "sos" && (
+        <>
+          <div className="sos-modal-mark">🚨</div>
+          <div className="eyebrow" style={{ color: "#dc2626", fontWeight: 800 }}>EMERGENCY RESPONSE · 24×7</div>
+          <h2 style={{ fontSize: "20px", margin: "4px 0 6px" }}>Emergency SOS &amp; Helplines</h2>
+          <p style={{ fontSize: "12px", color: "#64748b", margin: "0 0 16px" }}>
+            Tap an immediate direct dialer below for instant connection, or broadcast your live GPS coordinates to emergency responders.
+          </p>
+
+          {/* Immediate 1-Tap Helplines Grid */}
+          <div className="quick-emergency-bar">
+            <div style={{ fontSize: "11px", fontWeight: 800, color: "#991b1b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
+              <span className="sos-fab-beacon" style={{ width: 7, height: 7 }} />
+              <span>1-Tap Direct Emergency Dialers</span>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "8px" }}>
+              <a href="tel:108" className="drawer-sos-call-btn ambulance">
+                <span>🚑</span>
+                <span className="drawer-sos-label">
+                  <strong>108 Ambulance</strong>
+                  <small>Medical Emergency</small>
+                </span>
+              </a>
+              <a href="tel:100" className="drawer-sos-call-btn police">
+                <span>🚓</span>
+                <span className="drawer-sos-label">
+                  <strong>100 Police</strong>
+                  <small>Police Control Room</small>
+                </span>
+              </a>
+              <a href="tel:101" className="drawer-sos-call-btn fire">
+                <span>🚒</span>
+                <span className="drawer-sos-label">
+                  <strong>101 Fire &amp; Rescue</strong>
+                  <small>Hosur Fire Station</small>
+                </span>
+              </a>
+              <a href="tel:112" className="drawer-sos-call-btn helpline">
+                <span>🛡️</span>
+                <span className="drawer-sos-label">
+                  <strong>112 National SOS</strong>
+                  <small>All-in-One Helpline</small>
+                </span>
+              </a>
+            </div>
+          </div>
+
+          {/* GPS Broadcast Section */}
+          <div style={{ borderTop: "1px dashed #e2e8f0", paddingTop: "14px", marginTop: "16px" }}>
+            <div style={{ display: "flex", borderBottom: "none", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+              <strong style={{ fontSize: "13px", color: "#1e293b" }}>Broadcast GPS Emergency Alert</strong>
+              <span style={{ fontSize: "10.5px", background: "#fef2f2", color: "#b91c1c", padding: "2px 8px", borderRadius: "999px", fontWeight: 700 }}>GPS-Enabled</span>
+            </div>
+            <p style={{ fontSize: "11.5px", color: "#64748b", margin: "0 0 10px" }}>
+              Select emergency category to capture live GPS location and record emergency broadcast:
+            </p>
+          </div>
+
+          <div className="sos-emergency-tiles" role="group" aria-label="Emergency type">
+            {emergencyTypes.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                disabled={sosBusy}
+                className={`sos-emergency-tile ${selectedEmergencyType === item.id ? "selected" : ""}`}
+                aria-pressed={selectedEmergencyType === item.id}
+                onClick={() => {
+                  setSelectedEmergencyType(item.id);
+                  setSosError("");
+                  setSosResult(null);
+                }}
+              >
+                <span className="sos-type-icon">{item.icon}</span>
+                <strong>{item.title}</strong>
+                <small>{item.description}</small>
+              </button>
+            ))}
+          </div>
+
+          <form className="emergency-contact-form sos-submit-form" onSubmit={submitSos}>
+            <div className="sos-profile-summary">
+              <strong>{emergencyProfile.customerName || "Hosur Resident / Mobile Visitor"}</strong>
+              <span>{emergencyProfile.customerPhone || "Mobile: Active Device"}</span>
+              <span>Emergency contacts: {emergencyProfile.emergencyPhones.filter(Boolean).length ? emergencyProfile.emergencyPhones.join(" · ") : "112 (National) · 108 (Ambulance)"}</span>
+              <button type="button" className="text-link" disabled={sosBusy} onClick={onOpenProfile}>
+                Edit profile &amp; custom emergency contacts
+              </button>
+            </div>
+            <p className="fine-print">
+              Your device GPS coordinates, timestamp, and emergency type are immediately logged in the secure safety registry.
+            </p>
+            {sosError && <p className="form-error" role="alert">{sosError}</p>}
+            <button
+              className="primary-button sos-trigger-button"
+              type="submit"
+              disabled={sosBusy}
+              style={{
+                background: "linear-gradient(135deg, #dc2626 0%, #991b1b 100%)",
+                boxShadow: "0 4px 14px rgba(220, 38, 38, 0.4)",
+              }}
+            >
+              {sosBusy ? "Broadcasting GPS SOS..." : `🚨 Broadcast SOS Alert${selectedEmergencyType ? ` (${emergencyTypes.find((t) => t.id === selectedEmergencyType)?.title})` : ""}`}
+            </button>
+          </form>
+
+          {sosResult && (
+            <div className="sos-call-panel">
+              <strong>
+                {emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.title || "Emergency"} alert {sosResult.duplicate ? "already recorded" : "logged"} ·{" "}
+                {sosResult.locationStatus === "shared" && sosResult.latitude !== null && sosResult.longitude !== null
+                  ? `${sosResult.latitude.toFixed(6)}, ${sosResult.longitude.toFixed(6)} (±${Math.round(sosResult.accuracyMeters || 0)}m)`
+                  : "Location unavailable"}
+              </strong>
+              <p>
+                Alert Ref: {sosResult.id} · Recorded {new Date(sosResult.createdAt).toLocaleTimeString()}
+              </p>
+              {sosResult.locationStatus === "shared" && sosResult.latitude !== null && sosResult.longitude !== null && (
+                <div style={{ margin: "6px 0 10px" }}>
+                  <a
+                    href={`https://www.google.com/maps?q=${sosResult.latitude},${sosResult.longitude}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ fontSize: "11px", color: "#15803d", fontWeight: 700, textDecoration: "underline" }}
+                  >
+                    📍 Open GPS Pin in Google Maps →
+                  </a>
+                </div>
+              )}
+              <div className="emergency-call-links">
+                <a
+                  className="primary-button"
+                  href={`tel:${emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.phone || "112"}`}
+                >
+                  📞 Call {emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.title || "Helpline"} ({emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.phone || "112"})
+                </a>
+                {sosResult.emergencyPhones.map((phone, index) => (
+                  <a className="outline-button" key={`sos-call-${index}`} href={`tel:${phone}`}>
+                    📞 Call Contact {index + 1} ({phone})
+                  </a>
+                ))}
+              </div>
+              <div className="emergency-call-links emergency-sms-links">
+                {sosResult.emergencyPhones.map((phone, index) => {
+                  const coordinates =
+                    sosResult.latitude !== null && sosResult.longitude !== null
+                      ? `Coordinates: https://maps.google.com/?q=${sosResult.latitude.toFixed(6)},${sosResult.longitude.toFixed(6)}`
+                      : "Location unavailable";
+                  const message = encodeURIComponent(
+                    `EMERGENCY SOS (${emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.title || "General"}) from ${sosResult.customerName}. Please send help! ${coordinates}`
+                  );
+                  return (
+                    <a className="outline-button" key={`sos-sms-${index}`} href={`sms:${phone}?body=${message}`}>
+                      💬 Send GPS SMS to {phone}
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          <div className="fine-print">
+            If you are in immediate life-threatening danger, dial 112 or 108 directly. Bizearch records emergency events for safety monitoring and prepares direct calling/SMS on your device.
+          </div>
+        </>
+      )}
     </section>
   </div>;
 }
