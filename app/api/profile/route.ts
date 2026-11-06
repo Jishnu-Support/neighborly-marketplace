@@ -6,6 +6,9 @@ import {
   getCompanyAdminByIdentity,
   updateCompanyAdmin,
   isSuperAdminIdentity,
+  createSessionToken,
+  AUTH_COOKIE,
+  authCookieOptions,
 } from "@/app/lib/auth";
 import { getBusinessByIdentity, updateBusinessProfile } from "@/app/lib/businesses";
 import { getAgentByIdentity, updateAgentProfile } from "@/app/lib/agents";
@@ -91,21 +94,57 @@ export async function PATCH(request: Request) {
     }
 
     if (session.role === "Business") {
+      const photosArray = Array.isArray(body.photos)
+        ? (body.photos as string[])
+        : Array.isArray(body.images)
+        ? (body.images as string[])
+        : undefined;
+
+      const rawAddr = typeof body.address === "object" && body.address !== null ? (body.address as Record<string, unknown>) : undefined;
+      const normalizedAddress = rawAddr
+        ? {
+            doorNumber: typeof rawAddr.doorNumber === "string" ? rawAddr.doorNumber : typeof rawAddr.doorNo === "string" ? rawAddr.doorNo : undefined,
+            street: typeof rawAddr.street === "string" ? rawAddr.street : undefined,
+            area: typeof rawAddr.area === "string" ? rawAddr.area : typeof rawAddr.locality === "string" ? rawAddr.locality : undefined,
+            cityTown: typeof rawAddr.cityTown === "string" ? rawAddr.cityTown : typeof rawAddr.city === "string" ? rawAddr.city : undefined,
+            taluka: typeof rawAddr.taluka === "string" ? rawAddr.taluka : undefined,
+            district: typeof rawAddr.district === "string" ? rawAddr.district : undefined,
+            state: typeof rawAddr.state === "string" ? rawAddr.state : undefined,
+            pincode: typeof rawAddr.pincode === "string" ? rawAddr.pincode : undefined,
+          }
+        : undefined;
+
+      const rawCoords = typeof body.coordinates === "object" && body.coordinates !== null ? (body.coordinates as Record<string, unknown>) : undefined;
+      const normalizedCoords = rawCoords && typeof rawCoords.latitude === "number" && typeof rawCoords.longitude === "number"
+        ? { latitude: rawCoords.latitude, longitude: rawCoords.longitude }
+        : undefined;
+
       const updated = await updateBusinessProfile(session.identity, {
         name: typeof body.name === "string" ? body.name : undefined,
+        ownerName: typeof body.ownerName === "string" ? body.ownerName : undefined,
         category: typeof body.category === "string" ? body.category : undefined,
         phone: typeof body.phone === "string" ? body.phone : undefined,
         email: typeof body.email === "string" ? body.email : undefined,
         description: typeof body.description === "string" ? body.description : undefined,
         website: typeof body.website === "string" ? body.website : undefined,
         gstin: typeof body.gstin === "string" ? body.gstin : undefined,
-        address: typeof body.address === "object" && body.address !== null ? (body.address as any) : undefined,
+        address: normalizedAddress,
+        coordinates: normalizedCoords,
         products: Array.isArray(body.products) ? (body.products as any) : undefined,
-        photos: Array.isArray(body.photos) ? (body.photos as string[]) : undefined,
+        photos: photosArray,
+        images: photosArray,
         hours: typeof body.hours === "string" ? body.hours : undefined,
       });
 
-      return NextResponse.json({ success: true, business: updated });
+      const response = NextResponse.json({ success: true, business: updated });
+      if (updated && (updated.phone || updated.email)) {
+        const newIdentity = updated.phone || updated.email;
+        if (newIdentity && newIdentity !== session.identity) {
+          const newToken = createSessionToken("Business", newIdentity);
+          response.cookies.set(AUTH_COOKIE, newToken, authCookieOptions);
+        }
+      }
+      return response;
     }
 
     if (session.role === "Agent") {

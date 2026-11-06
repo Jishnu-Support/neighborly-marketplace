@@ -700,9 +700,16 @@ export async function updateBusinessProfile(idOrIdentity: string, updates: Parti
   if (updates.hours !== undefined) current.hours = updates.hours.trim();
   if (updates.products !== undefined) current.products = updates.products;
   if (updates.address) {
+    const rawAddr = updates.address as Record<string, unknown>;
     current.address = {
-      ...current.address,
-      ...updates.address,
+      doorNumber: String(rawAddr.doorNumber ?? rawAddr.doorNo ?? current.address?.doorNumber ?? "").trim(),
+      street: String(rawAddr.street ?? current.address?.street ?? "").trim(),
+      area: String(rawAddr.area ?? rawAddr.locality ?? current.address?.area ?? "").trim(),
+      cityTown: String(rawAddr.cityTown ?? rawAddr.city ?? current.address?.cityTown ?? "Hosur").trim(),
+      taluka: String(rawAddr.taluka ?? current.address?.taluka ?? "Hosur").trim(),
+      district: String(rawAddr.district ?? current.address?.district ?? "Krishnagiri").trim(),
+      state: String(rawAddr.state ?? current.address?.state ?? "Tamil Nadu").trim(),
+      pincode: String(rawAddr.pincode ?? current.address?.pincode ?? "635109").trim(),
     };
   }
 

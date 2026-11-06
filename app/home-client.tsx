@@ -210,9 +210,14 @@ type Business = {
   taxonomyTags?: string[];
   tag?: string;
   images?: string[];
+  photos?: string[];
   image?: string;
   id?: string;
   email?: string;
+  ownerName?: string;
+  gstin?: string;
+  website?: string;
+  hours?: string;
   verificationStatus?: "Pending Agent Visit" | "Pending Admin Approval" | "Approved" | "Rejected";
   assignedAgentId?: string;
   assignedAgentName?: string;
@@ -2145,6 +2150,10 @@ export default function Home() {
         description: currentBusinessRecord.description || `${currentBusinessRecord.category} in ${currentBusinessRecord.address?.cityTown || "Hosur"}`,
         phone: currentBusinessRecord.phone,
         email: currentBusinessRecord.email || "",
+        ownerName: currentBusinessRecord.ownerName || "",
+        gstin: currentBusinessRecord.gstin || "",
+        website: currentBusinessRecord.website || "",
+        hours: currentBusinessRecord.hours || "",
         distance: 0.5,
         rating: currentBusinessRecord.rating || 5,
         reviews: currentBusinessRecord.reviews || 0,
@@ -4352,6 +4361,50 @@ export default function Home() {
     showNotice(`✓ Location pin updated for "${businessName}" (${coordinates.latitude.toFixed(6)}, ${coordinates.longitude.toFixed(6)})!`);
   }
 
+  function handleUpdateFullBusinessProfile(updatedBiz: any) {
+    if (!updatedBiz) return;
+    const bizName = updatedBiz.name || currentBusinessRecord?.name;
+    const bizPhone = updatedBiz.phone || currentBusinessRecord?.phone;
+    setCurrentBusinessRecord((prev: any) => prev ? {
+      ...prev,
+      ...updatedBiz,
+      images: updatedBiz.photos || updatedBiz.images || prev.images,
+      photos: updatedBiz.photos || updatedBiz.images || prev.photos,
+    } : updatedBiz);
+
+    setDemoData((prev) => ({
+      ...prev,
+      businesses: prev.businesses.map((b) =>
+        (bizName && b.name.toLowerCase() === bizName.toLowerCase()) ||
+        (bizPhone && b.phone && b.phone.replace(/\D/g, "") === bizPhone.replace(/\D/g, ""))
+          ? {
+              ...b,
+              ...updatedBiz,
+              images: updatedBiz.photos || updatedBiz.images || b.images,
+              photos: updatedBiz.photos || updatedBiz.images || b.photos,
+            }
+          : b
+      ),
+    }));
+
+    try {
+      const raw = localStorage.getItem("neighborly-custom-businesses-v1");
+      if (raw) {
+        const list = JSON.parse(raw);
+        if (Array.isArray(list)) {
+          const updated = list.map((b: any) =>
+            (bizName && b.name?.toLowerCase() === bizName.toLowerCase()) ||
+            (bizPhone && b.phone && b.phone.replace(/\D/g, "") === bizPhone.replace(/\D/g, ""))
+              ? { ...b, ...updatedBiz }
+              : b
+          );
+          localStorage.setItem("neighborly-custom-businesses-v1", JSON.stringify(updated));
+        }
+      }
+    } catch {}
+    showNotice(`✓ Business profile updated for "${bizName}"!`);
+  }
+
   function verifyBusinessLocation() {
     if (!navigator.geolocation) {
       showNotice("Location verification is not available in this browser.");
@@ -4462,7 +4515,7 @@ export default function Home() {
   }
   const [portalActiveTab, setPortalActiveTab] = useState<string>("Overview");
 
-  function openProfileView(tabName: "Profile details" | "Settings" = "Profile details", targetRole?: Role) {
+  function openProfileView(tabName: "Profile details" | "Settings" | "Profile" = "Profile", targetRole?: Role) {
     const isCompany = authenticatedPortals.includes("Company") || role === "Company";
     const activePortal: Role =
       isCompany
@@ -4474,7 +4527,7 @@ export default function Home() {
         : "Account";
     const dest = isCompany ? "Company" : (targetRole || (role === "Discover" ? activePortal : role));
     setDialog(null);
-    const targetTab = dest === "Company" ? "Admins" : tabName;
+    const targetTab = dest === "Company" ? "Admins" : dest === "Business" ? (tabName === "Settings" ? "Settings" : "Profile") : tabName;
     setPortalActiveTab(targetTab);
     if (role !== dest) setRole(dest);
     window.setTimeout(() => {
@@ -7967,6 +8020,7 @@ export default function Home() {
             onOpenPortal={openPortal}
             onLanguageChange={(l) => setLang(l)}
             showNotice={showNotice}
+            onUpdateBusinessProfile={handleUpdateFullBusinessProfile}
           />
         )}
         {role === "Agent" && (
@@ -8212,15 +8266,30 @@ export default function Home() {
 
             <button
               type="button"
-              className={`mobile-bottom-tab ${portalActiveTab === "My business" ? "active" : ""}`}
+              className={`mobile-bottom-tab ${portalActiveTab === "Profile" || portalActiveTab === "My business" || portalActiveTab === "Profile details" ? "active" : ""}`}
               onClick={() => {
-                setPortalActiveTab("My business");
-                window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "My business" } }));
+                setPortalActiveTab("Profile");
+                window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Profile" } }));
+                window.scrollTo({ top: 0, behavior: "smooth" });
               }}
             >
               <span className="tab-icon">🏢</span>
-              <span>Store</span>
-              {portalActiveTab === "My business" && <span className="mobile-bottom-tab-dot" />}
+              <span>Profile</span>
+              {(portalActiveTab === "Profile" || portalActiveTab === "My business" || portalActiveTab === "Profile details") && <span className="mobile-bottom-tab-dot" />}
+            </button>
+
+            <button
+              type="button"
+              className={`mobile-bottom-tab ${portalActiveTab === "Settings" ? "active" : ""}`}
+              onClick={() => {
+                setPortalActiveTab("Settings");
+                window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Settings" } }));
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            >
+              <span className="tab-icon">⚙️</span>
+              <span>Settings</span>
+              {portalActiveTab === "Settings" && <span className="mobile-bottom-tab-dot" />}
             </button>
 
             <button
@@ -8247,16 +8316,6 @@ export default function Home() {
               <span className="tab-icon">🛍️</span>
               <span>Orders</span>
               {portalActiveTab?.startsWith("Orders") && <span className="mobile-bottom-tab-dot" />}
-            </button>
-
-            <button
-              type="button"
-              className={`mobile-bottom-tab ${portalActiveTab === "Profile details" || portalActiveTab === "Settings" ? "active" : ""}`}
-              onClick={() => openProfileView("Profile details")}
-            >
-              <span className="tab-icon">👤</span>
-              <span>Profile</span>
-              {(portalActiveTab === "Profile details" || portalActiveTab === "Settings") && <span className="mobile-bottom-tab-dot" />}
             </button>
           </>
         ) : role === "Agent" ? (
@@ -11597,6 +11656,1293 @@ function SubscriptionReceiptModal({
   );
 }
 
+function BusinessProfileEditorView({
+  business,
+  categoryConfig,
+  onSave,
+  showNotice,
+}: {
+  business?: Business | null;
+  categoryConfig?: CategoryConfig;
+  onSave?: (updatedBiz: any) => void;
+  showNotice?: (msg: string) => void;
+}) {
+  const [editingPin, setEditingPin] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
+  const [name, setName] = useState(business?.name || "");
+  const [ownerName, setOwnerName] = useState(business?.ownerName || "");
+  const [category, setCategory] = useState(business?.category || "Automobiles");
+  const [phone, setPhone] = useState(business?.phone || "");
+  const [email, setEmail] = useState(business?.email || "");
+  const [gstin, setGstin] = useState(business?.gstin || "");
+  const [description, setDescription] = useState(business?.description || "");
+  const [website, setWebsite] = useState(business?.website || "");
+  const [hours, setHours] = useState(business?.hours || "Mon–Sat: 9:00 AM – 8:30 PM");
+
+  const [doorNumber, setDoorNumber] = useState(business?.address?.doorNumber || "");
+  const [street, setStreet] = useState(business?.address?.street || "");
+  const [area, setArea] = useState(business?.address?.area || "");
+  const [cityTown, setCityTown] = useState(business?.address?.cityTown || "Hosur");
+  const [district, setDistrict] = useState(business?.address?.district || "Krishnagiri");
+  const [state, setState] = useState(business?.address?.state || "Tamil Nadu");
+  const [pincode, setPincode] = useState(business?.address?.pincode || "635109");
+
+  const initialImages = business?.images?.length ? business.images : (business?.image ? [business.image] : []);
+  const [images, setImages] = useState<string[]>(initialImages);
+  const [coordinates, setCoordinates] = useState<Coordinates>(
+    business?.coordinates || business?.demoCoordinates || { latitude: 12.7409, longitude: 77.8253 }
+  );
+  const [gpsLoading, setGpsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!business) return;
+    setName(business.name || "");
+    setOwnerName(business.ownerName || "");
+    setCategory(business.category || "Automobiles");
+    setPhone(business.phone || "");
+    setEmail(business.email || "");
+    setGstin(business.gstin || "");
+    setDescription(business.description || "");
+    setWebsite(business.website || "");
+    setHours(business.hours || "Mon–Sat: 9:00 AM – 8:30 PM");
+    setDoorNumber(business.address?.doorNumber || "");
+    setStreet(business.address?.street || "");
+    setArea(business.address?.area || "");
+    setCityTown(business.address?.cityTown || "Hosur");
+    setDistrict(business.address?.district || "Krishnagiri");
+    setState(business.address?.state || "Tamil Nadu");
+    setPincode(business.address?.pincode || "635109");
+    const imgs = business.images?.length ? business.images : (business.image ? [business.image] : []);
+    setImages(imgs);
+    if (business.coordinates || business.demoCoordinates) {
+      setCoordinates(business.coordinates || business.demoCoordinates!);
+    }
+  }, [business]);
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || !files.length) return;
+    const fileList = Array.from(files);
+    let loadedCount = 0;
+    const newImgs: string[] = [];
+    fileList.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target?.result as string;
+        if (dataUrl) newImgs.push(dataUrl);
+        loadedCount++;
+        if (loadedCount === fileList.length) {
+          setImages((prev) => [...prev, ...newImgs]);
+          showNotice?.(`✓ Added ${newImgs.length} new photos. Click 'Save Business Profile' to persist.`);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = "";
+  };
+
+  const handleMakeCover = (index: number) => {
+    setImages((prev) => {
+      const selected = prev[index];
+      const rest = prev.filter((_, i) => i !== index);
+      return [selected, ...rest];
+    });
+    showNotice?.("✓ Set as storefront cover photo!");
+  };
+
+  const handleDeletePhoto = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+    showNotice?.("✓ Photo removed from storefront gallery.");
+  };
+
+  const handleCaptureGps = () => {
+    if (!navigator.geolocation) {
+      showNotice?.("Geolocation is not supported by your browser.");
+      return;
+    }
+    setGpsLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const newCoords = {
+          latitude: Number(pos.coords.latitude.toFixed(6)),
+          longitude: Number(pos.coords.longitude.toFixed(6)),
+        };
+        setCoordinates(newCoords);
+        setGpsLoading(false);
+        showNotice?.(`✓ Captured live GPS: ${newCoords.latitude}, ${newCoords.longitude} (±${Math.round(pos.coords.accuracy)}m)`);
+      },
+      (err) => {
+        setGpsLoading(false);
+        showNotice?.(`GPS error: ${err.message}. You can use 'Pick on Interactive Map'.`);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      setSaveError("Business name is required.");
+      return;
+    }
+    if (!phone.trim()) {
+      setSaveError("Business mobile number is required.");
+      return;
+    }
+
+    setSaving(true);
+    setSaveError("");
+    setSaveSuccess(false);
+
+    const payload = {
+      name: name.trim(),
+      ownerName: ownerName.trim(),
+      category: category.trim(),
+      phone: phone.trim(),
+      email: email.trim().toLowerCase(),
+      gstin: gstin.trim().toUpperCase(),
+      description: description.trim(),
+      website: website.trim(),
+      hours: hours.trim(),
+      photos: images,
+      images,
+      address: {
+        doorNumber: doorNumber.trim(),
+        street: street.trim(),
+        area: area.trim(),
+        cityTown: cityTown.trim(),
+        district: district.trim(),
+        state: state.trim(),
+        pincode: pincode.trim(),
+      },
+      coordinates,
+    };
+
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to update business profile.");
+      }
+
+      setSaving(false);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 4000);
+      showNotice?.("✓ Business profile, GST, contact, and images updated successfully!");
+
+      const updatedRecord = data.business || {
+        ...business,
+        ...payload,
+      };
+
+      onSave?.(updatedRecord);
+      window.dispatchEvent(new CustomEvent("neighborly-business-updated", { detail: updatedRecord }));
+    } catch (err: any) {
+      setSaving(false);
+      setSaveError(err.message || "Failed to save business profile.");
+      showNotice?.(`Error: ${err.message}`);
+    }
+  };
+
+  const sectors = categoryConfig?.sectors?.filter((s) => s.name !== "All") || defaultCategoryConfig.sectors.filter((s) => s.name !== "All");
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+      {/* Top Banner / Storefront Quick Info */}
+      <div style={{
+        background: "linear-gradient(135deg, #1b3d26 0%, #2b7744 100%)",
+        color: "#ffffff",
+        borderRadius: "14px",
+        padding: "20px 24px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        flexWrap: "wrap",
+        gap: "16px",
+        boxShadow: "0 4px 14px rgba(43, 119, 68, 0.2)",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          <div style={{
+            width: "56px",
+            height: "56px",
+            borderRadius: "12px",
+            background: images[0] ? `url(${images[0]}) center/cover` : "rgba(255,255,255,0.2)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "26px",
+            border: "2px solid rgba(255,255,255,0.4)",
+            flexShrink: 0,
+          }}>
+            {!images[0] && "🏢"}
+          </div>
+          <div>
+            <div style={{ fontSize: "11px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", opacity: 0.85 }}>
+              STOREFRONT PROFILE · {category || "Local Business"}
+            </div>
+            <h2 style={{ fontSize: "20px", fontWeight: 800, margin: "2px 0 4px", color: "#ffffff" }}>
+              {name || "Your Business Name"}
+            </h2>
+            <div style={{ fontSize: "12px", opacity: 0.9, display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+              <span>📞 {phone || "No phone added"}</span>
+              <span>·</span>
+              <span>✉️ {email || "No email added"}</span>
+              {gstin && (
+                <>
+                  <span>·</span>
+                  <span style={{ background: "rgba(255,255,255,0.2)", padding: "1px 6px", borderRadius: "4px", fontSize: "10.5px", fontWeight: 700 }}>
+                    GST: {gstin}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <span style={{
+            background: business?.verificationStatus === "Approved" ? "#22c55e" : "#f59e0b",
+            color: "#ffffff",
+            padding: "5px 12px",
+            borderRadius: "20px",
+            fontSize: "11.5px",
+            fontWeight: 800,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "5px",
+          }}>
+            ● {business?.verificationStatus || "Verified Store"}
+          </span>
+        </div>
+      </div>
+
+      {saveSuccess && (
+        <div style={{
+          background: "#ecfdf5",
+          border: "1.5px solid #a7f3d0",
+          color: "#065f46",
+          padding: "12px 16px",
+          borderRadius: "10px",
+          fontSize: "13px",
+          fontWeight: 700,
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+        }}>
+          <span>✓</span>
+          <span>Business profile details, GST, contact info, and gallery saved to server database!</span>
+        </div>
+      )}
+
+      {saveError && (
+        <div style={{
+          background: "#fef2f2",
+          border: "1.5px solid #fecaca",
+          color: "#991b1b",
+          padding: "12px 16px",
+          borderRadius: "10px",
+          fontSize: "13px",
+          fontWeight: 700,
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+        }}>
+          <span>⚠️</span>
+          <span>{saveError}</span>
+        </div>
+      )}
+
+      <form onSubmit={handleSaveProfile} style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+        {/* CARD 1: Core Business Information */}
+        <section className="panel" style={{ padding: "20px" }}>
+          <div style={{ marginBottom: "16px" }}>
+            <div style={{ fontSize: "11px", fontWeight: 800, color: "#2b7744", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+              STEP 1 · OFFICIAL DETAILS
+            </div>
+            <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#193822", margin: "2px 0 4px" }}>
+              Core Business &amp; Registration
+            </h3>
+            <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
+              Official registered trade name, owner name, category, and GST tax identification.
+            </p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "14px" }}>
+            <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
+              <span>Business Trade Name *</span>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Royal Auto Spares &amp; Works"
+                required
+                style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+              />
+            </label>
+
+            <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
+              <span>Owner / Authorized Contact Name</span>
+              <input
+                type="text"
+                value={ownerName}
+                onChange={(e) => setOwnerName(e.target.value)}
+                placeholder="e.g. Ramesh Kumar"
+                style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+              />
+            </label>
+
+            <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
+              <span>Primary Sector / Category *</span>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px", background: "#fff" }}
+              >
+                {sectors.map((s) => (
+                  <option key={s.name} value={s.name}>
+                    {s.icon} {s.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span>GST Identification Number (GSTIN)</span>
+                {gstin && <span style={{ color: "#16a34a", fontSize: "10px", fontWeight: 800 }}>✓ GST Verified</span>}
+              </div>
+              <input
+                type="text"
+                value={gstin}
+                onChange={(e) => setGstin(e.target.value.toUpperCase())}
+                placeholder="e.g. 33AAAAA0000A1Z5"
+                maxLength={15}
+                style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px", textTransform: "uppercase" }}
+              />
+            </label>
+          </div>
+
+          <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "11.5px", fontWeight: 700, color: "#334155", marginTop: "14px" }}>
+            <span>Business Description &amp; Offerings</span>
+            <textarea
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Tell customers about your products, services, brand specializations, or guarantees..."
+              style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px", resize: "vertical" }}
+            />
+          </label>
+        </section>
+
+        {/* CARD 2: Contact & Hours */}
+        <section className="panel" style={{ padding: "20px" }}>
+          <div style={{ marginBottom: "16px" }}>
+            <div style={{ fontSize: "11px", fontWeight: 800, color: "#2b7744", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+              STEP 2 · CONTACT &amp; CHANNELS
+            </div>
+            <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#193822", margin: "2px 0 4px" }}>
+              Direct Customer Contact
+            </h3>
+            <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
+              Phone numbers, email addresses for invoices, operating hours, and website links.
+            </p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "14px" }}>
+            <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
+              <span>Business Mobile Number (WhatsApp &amp; Calls) *</span>
+              <div style={{ display: "flex", gap: "6px" }}>
+                <span style={{ padding: "10px 12px", background: "#f1f5f9", border: "1px solid #cbd5e1", borderRadius: "8px", fontSize: "13px", fontWeight: 700, color: "#334155" }}>
+                  🇮🇳 +91
+                </span>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="e.g. 9876543210"
+                  required
+                  style={{ flex: 1, padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+                />
+              </div>
+            </label>
+
+            <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
+              <span>Work Email Address (For Invoices &amp; Orders)</span>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="contact@yourbusiness.com"
+                style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+              />
+            </label>
+
+            <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
+              <span>Business Operating Hours</span>
+              <input
+                type="text"
+                value={hours}
+                onChange={(e) => setHours(e.target.value)}
+                placeholder="e.g. Mon–Sat: 9:00 AM – 8:30 PM"
+                style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+              />
+            </label>
+
+            <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
+              <span>Website or Social Profile</span>
+              <input
+                type="url"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                placeholder="https://yourbusiness.com"
+                style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+              />
+            </label>
+          </div>
+        </section>
+
+        {/* CARD 3: Storefront Photos & Showcase Gallery (Images) */}
+        <section className="panel" style={{ padding: "20px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px", marginBottom: "14px" }}>
+            <div>
+              <div style={{ fontSize: "11px", fontWeight: 800, color: "#2b7744", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                STEP 3 · STOREFRONT PHOTOS &amp; GALLERY
+              </div>
+              <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#193822", margin: "2px 0 4px" }}>
+                Storefront &amp; Showcase Images ({images.length})
+              </h3>
+              <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
+                Upload photos of your storefront board, interior showroom, and products. The first photo serves as the Cover Photo.
+              </p>
+            </div>
+
+            <label style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              background: "#285536",
+              color: "#ffffff",
+              padding: "9px 16px",
+              borderRadius: "8px",
+              fontSize: "12px",
+              fontWeight: 700,
+              cursor: "pointer",
+              boxShadow: "0 2px 6px rgba(40, 85, 54, 0.25)",
+            }}>
+              <span>📸 + Upload Photos</span>
+              <input
+                type="file"
+                accept="image/png, image/jpeg, image/webp, image/gif"
+                multiple
+                style={{ display: "none" }}
+                onChange={handlePhotoUpload}
+              />
+            </label>
+          </div>
+
+          {images.length > 0 ? (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: "12px", marginTop: "12px" }}>
+              {images.map((img, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    position: "relative",
+                    aspectRatio: "1 / 1",
+                    borderRadius: "10px",
+                    overflow: "hidden",
+                    border: idx === 0 ? "2.5px solid #2b7744" : "1px solid #cbd5e1",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                  }}
+                >
+                  <img
+                    src={img}
+                    alt={`Storefront photo ${idx + 1}`}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                  {idx === 0 ? (
+                    <span style={{
+                      position: "absolute",
+                      top: "4px",
+                      left: "4px",
+                      background: "#2b7744",
+                      color: "#ffffff",
+                      fontSize: "9px",
+                      fontWeight: 800,
+                      padding: "2px 6px",
+                      borderRadius: "4px",
+                    }}>
+                      Cover Photo
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleMakeCover(idx)}
+                      style={{
+                        position: "absolute",
+                        bottom: "4px",
+                        left: "4px",
+                        background: "rgba(0,0,0,0.75)",
+                        color: "#fff",
+                        border: "none",
+                        fontSize: "9px",
+                        fontWeight: 700,
+                        padding: "3px 6px",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                      }}
+                      title="Set as main cover photo"
+                    >
+                      Make Cover
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleDeletePhoto(idx)}
+                    style={{
+                      position: "absolute",
+                      top: "4px",
+                      right: "4px",
+                      background: "rgba(0,0,0,0.75)",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "50%",
+                      width: "22px",
+                      height: "22px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      fontSize: "13px",
+                      lineHeight: 1,
+                    }}
+                    title="Remove photo"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{
+              textAlign: "center",
+              padding: "28px 16px",
+              border: "2px dashed #cbd5e1",
+              borderRadius: "10px",
+              color: "#64748b",
+              fontSize: "12.5px",
+              background: "#f8fafc",
+            }}>
+              <div style={{ fontSize: "28px", marginBottom: "6px" }}>📷</div>
+              <strong>No storefront photos uploaded yet.</strong>
+              <p style={{ margin: "4px 0 0", fontSize: "11.5px" }}>
+                Add your business signage, entrance, and showroom photos to stand out to nearby customers!
+              </p>
+            </div>
+          )}
+        </section>
+
+        {/* CARD 4: Physical Address in Hosur */}
+        <section className="panel" style={{ padding: "20px" }}>
+          <div style={{ marginBottom: "16px" }}>
+            <div style={{ fontSize: "11px", fontWeight: 800, color: "#2b7744", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+              STEP 4 · STOREFRONT LOCATION &amp; ADDRESS
+            </div>
+            <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#193822", margin: "2px 0 4px" }}>
+              Storefront Physical Address
+            </h3>
+            <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
+              Physical address where customers visit or receive deliveries from your store.
+            </p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
+            <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
+              <span>Door / Flat / Plot No.</span>
+              <input
+                type="text"
+                value={doorNumber}
+                onChange={(e) => setDoorNumber(e.target.value)}
+                placeholder="e.g. 14/B, Ground Floor"
+                style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+              />
+            </label>
+
+            <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
+              <span>Street / Main Road / Landmark</span>
+              <input
+                type="text"
+                value={street}
+                onChange={(e) => setStreet(e.target.value)}
+                placeholder="e.g. Bagalur Main Road, Near Bustand"
+                style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+              />
+            </label>
+
+            <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
+              <span>Locality / Industrial Area</span>
+              <input
+                type="text"
+                value={area}
+                onChange={(e) => setArea(e.target.value)}
+                placeholder="e.g. Bagalur Road / SIPCOT Phase 1"
+                style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+              />
+            </label>
+
+            <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
+              <span>City / Town</span>
+              <input
+                type="text"
+                value={cityTown}
+                onChange={(e) => setCityTown(e.target.value)}
+                placeholder="Hosur"
+                style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+              />
+            </label>
+
+            <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
+              <span>District</span>
+              <input
+                type="text"
+                value={district}
+                onChange={(e) => setDistrict(e.target.value)}
+                placeholder="Krishnagiri"
+                style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+              />
+            </label>
+
+            <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
+              <span>State</span>
+              <input
+                type="text"
+                value={state}
+                onChange={(e) => setState(e.target.value)}
+                placeholder="Tamil Nadu"
+                style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+              />
+            </label>
+
+            <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
+              <span>PIN Code</span>
+              <input
+                type="text"
+                value={pincode}
+                onChange={(e) => setPincode(e.target.value)}
+                placeholder="635109"
+                maxLength={6}
+                style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+              />
+            </label>
+          </div>
+        </section>
+
+        {/* CARD 5: Storefront Map Pin & GPS Location */}
+        <section className="panel" style={{ padding: "20px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px", marginBottom: "14px" }}>
+            <div>
+              <div style={{ fontSize: "11px", fontWeight: 800, color: "#2b7744", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                STEP 5 · MAP PIN &amp; GPS NAVIGATION
+              </div>
+              <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#193822", margin: "2px 0 4px" }}>
+                Precise GPS Coordinates
+              </h3>
+              <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
+                Used for accurate kilometer distance, local radius filtering, and in-platform navigation.
+              </p>
+            </div>
+
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+              <button
+                type="button"
+                onClick={handleCaptureGps}
+                disabled={gpsLoading}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  background: "#edf5ee",
+                  color: "#1c4e2a",
+                  border: "1px solid #c8dbc9",
+                  padding: "8px 14px",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                <span>📡 {gpsLoading ? "Capturing GPS..." : "Use Current GPS"}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setEditingPin(true)}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  background: "#285536",
+                  color: "#ffffff",
+                  border: "none",
+                  padding: "8px 14px",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                <span>📍 Pick Location on Map</span>
+              </button>
+            </div>
+          </div>
+
+          <div style={{
+            background: "#f8fafc",
+            border: "1px solid #e2e8f0",
+            borderRadius: "10px",
+            padding: "12px 16px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "10px",
+            fontSize: "12.5px",
+          }}>
+            <div>
+              <strong style={{ color: "#1e293b" }}>
+                Pinned at: {coordinates.latitude.toFixed(6)}, {coordinates.longitude.toFixed(6)}
+              </strong>
+              <div style={{ fontSize: "11px", color: "#64748b", marginTop: "2px" }}>
+                {[doorNumber, street, area, cityTown, pincode].filter(Boolean).join(", ") || "Hosur, Tamil Nadu"}
+              </div>
+            </div>
+
+            <a
+              href={`https://www.google.com/maps?q=${coordinates.latitude},${coordinates.longitude}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "#16a34a", fontWeight: 700, fontSize: "12px", textDecoration: "underline" }}
+            >
+              View on Google Maps ↗
+            </a>
+          </div>
+        </section>
+
+        {/* SAVE ACTION BAR */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "12px",
+          background: "#ffffff",
+          border: "1.5px solid #dce5dc",
+          borderRadius: "12px",
+          padding: "16px 20px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.04)",
+        }}>
+          <div>
+            <strong style={{ fontSize: "13px", color: "#193822", display: "block" }}>
+              Ready to publish changes?
+            </strong>
+            <span style={{ fontSize: "11.5px", color: "#64748b" }}>
+              All edits to GST, mobile, email, photos, and address are saved to your permanent business record.
+            </span>
+          </div>
+
+          <button
+            type="submit"
+            disabled={saving}
+            className="primary-button"
+            style={{
+              padding: "12px 28px",
+              fontSize: "13px",
+              fontWeight: 800,
+              background: "#285536",
+              boxShadow: "0 3px 10px rgba(40, 85, 54, 0.3)",
+              cursor: saving ? "wait" : "pointer",
+            }}
+          >
+            {saving ? "Saving Changes..." : "💾 Save Business Profile"}
+          </button>
+        </div>
+      </form>
+
+      {editingPin && (
+        <MapPinModal
+          isOpen={editingPin}
+          onClose={() => setEditingPin(false)}
+          onConfirm={(coords) => {
+            setCoordinates(coords);
+            setEditingPin(false);
+            showNotice?.(`✓ Map pin updated: ${coords.latitude.toFixed(6)}, ${coords.longitude.toFixed(6)}`);
+          }}
+          initialCoordinates={coordinates}
+          title="Update Storefront Location Pin"
+          businessName={name || "Your Business"}
+        />
+      )}
+    </div>
+  );
+}
+
+function BusinessSettingsView({
+  business,
+  showNotice,
+  onLanguageChange,
+}: {
+  business?: Business | null;
+  showNotice?: (msg: string) => void;
+  onLanguageChange?: (lang: "en" | "ta" | "kn" | "te") => void;
+}) {
+  const [passNew, setPassNew] = useState("");
+  const [passConfirm, setPassConfirm] = useState("");
+  const [showPass, setShowPass] = useState(false);
+  const [passMsg, setPassMsg] = useState("");
+  const [passSaving, setPassSaving] = useState(false);
+
+  const [orderSound, setOrderSound] = useState(true);
+  const [whatsappAlerts, setWhatsappAlerts] = useState(true);
+  const [emailInvoices, setEmailInvoices] = useState(true);
+  const [isOpenForBusiness, setIsOpenForBusiness] = useState(true);
+  const [defaultRadius, setDefaultRadius] = useState(5);
+  const [selectedLang, setSelectedLang] = useState<"en" | "ta" | "kn" | "te">("en");
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!passNew || passNew.length < 6) {
+      setPassMsg("New password must be at least 6 characters.");
+      return;
+    }
+    if (passNew !== passConfirm) {
+      setPassMsg("Passwords do not match.");
+      return;
+    }
+    setPassSaving(true);
+    setPassMsg("");
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ password: passNew }),
+      });
+      setPassSaving(false);
+      if (res.ok) {
+        setPassMsg("✓ Account password updated successfully!");
+        setPassNew("");
+        setPassConfirm("");
+        showNotice?.("✓ Business password updated.");
+      } else {
+        const d = await res.json();
+        setPassMsg(`Error: ${d.error || "Could not update password."}`);
+      }
+    } catch (err: any) {
+      setPassSaving(false);
+      setPassMsg(`Error: ${err.message}`);
+    }
+  };
+
+  const handleExportCatalogueCsv = () => {
+    const products = business?.products || [];
+    if (!products.length) {
+      showNotice?.("No products or services in your catalogue to export.");
+      return;
+    }
+    const headers = ["Product ID", "Product Name", "Price (INR)", "Unit", "Description"];
+    const rows = products.map((p) => [
+      p.id,
+      `"${p.name.replace(/"/g, '""')}"`,
+      p.price,
+      p.unit || "unit",
+      `"${(p.description || "").replace(/"/g, '""')}"`,
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const encoded = encodeURI(csvContent);
+    const a = document.createElement("a");
+    a.href = encoded;
+    a.download = `${(business?.name || "bizearch").toLowerCase().replace(/\s+/g, "-")}-catalogue.csv`;
+    a.click();
+    showNotice?.("✓ Catalogue exported as CSV!");
+  };
+
+  const handleExportBackupJson = () => {
+    const backup = {
+      exportedAt: new Date().toISOString(),
+      business,
+      settings: {
+        orderSound,
+        whatsappAlerts,
+        emailInvoices,
+        isOpenForBusiness,
+        defaultRadius,
+        selectedLang,
+      },
+    };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${(business?.name || "bizearch").toLowerCase().replace(/\s+/g, "-")}-backup.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showNotice?.("✓ Business backup downloaded!");
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+      {/* Settings Header */}
+      <div style={{
+        background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)",
+        color: "#ffffff",
+        borderRadius: "14px",
+        padding: "20px 24px",
+        boxShadow: "0 4px 14px rgba(30, 41, 59, 0.2)",
+      }}>
+        <div style={{ fontSize: "11px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", opacity: 0.8 }}>
+          MERCHANT SETTINGS &amp; CONTROLS
+        </div>
+        <h2 style={{ fontSize: "20px", fontWeight: 800, margin: "2px 0 4px", color: "#ffffff" }}>
+          Business &amp; Account Settings
+        </h2>
+        <p style={{ fontSize: "12px", opacity: 0.85, margin: 0 }}>
+          Manage login credentials, incoming order chime alerts, neighborhood discovery radius, and data exports.
+        </p>
+      </div>
+
+      {/* CARD 1: Password & Security */}
+      <section className="panel" style={{ padding: "20px" }}>
+        <div style={{ marginBottom: "16px" }}>
+          <div style={{ fontSize: "11px", fontWeight: 800, color: "#2b7744", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            SECURITY &amp; CREDENTIALS
+          </div>
+          <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#193822", margin: "2px 0 4px" }}>
+            Change Account Password
+          </h3>
+          <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
+            Protect your merchant workspace and business account access.
+          </p>
+        </div>
+
+        {passMsg && (
+          <div style={{
+            background: passMsg.startsWith("✓") ? "#ecfdf5" : "#fef2f2",
+            border: `1.5px solid ${passMsg.startsWith("✓") ? "#a7f3d0" : "#fecaca"}`,
+            color: passMsg.startsWith("✓") ? "#065f46" : "#991b1b",
+            padding: "10px 14px",
+            borderRadius: "8px",
+            fontSize: "12.5px",
+            fontWeight: 700,
+            marginBottom: "14px",
+          }}>
+            {passMsg}
+          </div>
+        )}
+
+        <form onSubmit={handleUpdatePassword} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "14px", alignItems: "flex-end" }}>
+          <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
+            <span>New Password (Min 6 Characters)</span>
+            <input
+              type={showPass ? "text" : "password"}
+              value={passNew}
+              onChange={(e) => setPassNew(e.target.value)}
+              placeholder="Enter new password"
+              style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+            />
+          </label>
+
+          <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
+            <span>Confirm New Password</span>
+            <input
+              type={showPass ? "text" : "password"}
+              value={passConfirm}
+              onChange={(e) => setPassConfirm(e.target.value)}
+              placeholder="Confirm new password"
+              style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+            />
+          </label>
+
+          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+            <button
+              type="button"
+              onClick={() => setShowPass(!showPass)}
+              style={{
+                background: "#f1f5f9",
+                border: "1px solid #cbd5e1",
+                padding: "10px 12px",
+                borderRadius: "8px",
+                fontSize: "12px",
+                cursor: "pointer",
+                fontWeight: 600,
+              }}
+            >
+              {showPass ? "Hide 👁️" : "Show 👁️"}
+            </button>
+
+            <button
+              type="submit"
+              disabled={passSaving || !passNew}
+              className="primary-button"
+              style={{
+                padding: "10px 18px",
+                fontSize: "12.5px",
+                fontWeight: 700,
+                background: "#285536",
+                cursor: passSaving ? "wait" : "pointer",
+              }}
+            >
+              {passSaving ? "Updating..." : "Update Password"}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      {/* CARD 2: Alerts & Notifications */}
+      <section className="panel" style={{ padding: "20px" }}>
+        <div style={{ marginBottom: "16px" }}>
+          <div style={{ fontSize: "11px", fontWeight: 800, color: "#2b7744", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            ALERTS &amp; SOUNDS
+          </div>
+          <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#193822", margin: "2px 0 4px" }}>
+            Order &amp; Customer Enquiry Notifications
+          </h3>
+          <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
+            Configure real-time audio rings and messaging channels for new orders.
+          </p>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", background: "#f8fafc", borderRadius: "8px", border: "1px solid #e2e8f0", cursor: "pointer" }}>
+            <div>
+              <strong style={{ fontSize: "13px", color: "#1e293b", display: "block" }}>
+                🔔 Incoming Order Audio Chime
+              </strong>
+              <span style={{ fontSize: "11.5px", color: "#64748b" }}>
+                Play a notification sound when a nearby customer places a product order.
+              </span>
+            </div>
+            <input
+              type="checkbox"
+              checked={orderSound}
+              onChange={(e) => {
+                setOrderSound(e.target.checked);
+                showNotice?.(e.target.checked ? "✓ Audio alerts enabled" : "Audio alerts muted");
+              }}
+              style={{ width: "18px", height: "18px", accentColor: "#285536" }}
+            />
+          </label>
+
+          <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", background: "#f8fafc", borderRadius: "8px", border: "1px solid #e2e8f0", cursor: "pointer" }}>
+            <div>
+              <strong style={{ fontSize: "13px", color: "#1e293b", display: "block" }}>
+                💬 Instant WhatsApp Notifications
+              </strong>
+              <span style={{ fontSize: "11.5px", color: "#64748b" }}>
+                Receive immediate customer enquiry alerts on your registered business WhatsApp number.
+              </span>
+            </div>
+            <input
+              type="checkbox"
+              checked={whatsappAlerts}
+              onChange={(e) => {
+                setWhatsappAlerts(e.target.checked);
+                showNotice?.(e.target.checked ? "✓ WhatsApp alerts enabled" : "WhatsApp alerts disabled");
+              }}
+              style={{ width: "18px", height: "18px", accentColor: "#285536" }}
+            />
+          </label>
+
+          <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", background: "#f8fafc", borderRadius: "8px", border: "1px solid #e2e8f0", cursor: "pointer" }}>
+            <div>
+              <strong style={{ fontSize: "13px", color: "#1e293b", display: "block" }}>
+                🧾 Email Invoices &amp; Order Copies
+              </strong>
+              <span style={{ fontSize: "11.5px", color: "#64748b" }}>
+                Send GST tax invoice receipts to your business email address for accounting.
+              </span>
+            </div>
+            <input
+              type="checkbox"
+              checked={emailInvoices}
+              onChange={(e) => {
+                setEmailInvoices(e.target.checked);
+                showNotice?.(e.target.checked ? "✓ Email receipts enabled" : "Email receipts disabled");
+              }}
+              style={{ width: "18px", height: "18px", accentColor: "#285536" }}
+            />
+          </label>
+        </div>
+      </section>
+
+      {/* CARD 3: Store Operations & Radius */}
+      <section className="panel" style={{ padding: "20px" }}>
+        <div style={{ marginBottom: "16px" }}>
+          <div style={{ fontSize: "11px", fontWeight: 800, color: "#2b7744", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            OPERATIONS &amp; DISCOVERY
+          </div>
+          <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#193822", margin: "2px 0 4px" }}>
+            Store Availability &amp; Customer Radius
+          </h3>
+          <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
+            Control whether your storefront is currently accepting orders and your primary customer delivery reach.
+          </p>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", background: "#f8fafc", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
+            <div>
+              <strong style={{ fontSize: "13px", color: "#1e293b", display: "block" }}>
+                Store Operational Status
+              </strong>
+              <span style={{ fontSize: "11.5px", color: "#64748b" }}>
+                {isOpenForBusiness ? "🟢 Open now & welcoming customers" : "🔴 Temporarily closed / Not accepting orders"}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const next = !isOpenForBusiness;
+                setIsOpenForBusiness(next);
+                showNotice?.(next ? "✓ Store marked Open for Orders 🟢" : "Store marked Temporarily Closed 🔴");
+              }}
+              style={{
+                padding: "8px 16px",
+                borderRadius: "8px",
+                border: "none",
+                fontWeight: 700,
+                fontSize: "12px",
+                background: isOpenForBusiness ? "#16a34a" : "#dc2626",
+                color: "#ffffff",
+                cursor: "pointer",
+              }}
+            >
+              {isOpenForBusiness ? "Open 🟢" : "Closed 🔴"}
+            </button>
+          </div>
+
+          <div>
+            <label style={{ fontSize: "11.5px", fontWeight: 700, color: "#334155", display: "block", marginBottom: "8px" }}>
+              Preferred Neighborhood Customer Radius
+            </label>
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+              {[1, 3, 5, 10, 25].map((km) => (
+                <button
+                  key={km}
+                  type="button"
+                  onClick={() => {
+                    setDefaultRadius(km);
+                    showNotice?.(`✓ Preferred radius set to ${km} km`);
+                  }}
+                  style={{
+                    padding: "7px 14px",
+                    borderRadius: "6px",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    border: defaultRadius === km ? "1.5px solid #285536" : "1px solid #cbd5e1",
+                    background: defaultRadius === km ? "#285536" : "#ffffff",
+                    color: defaultRadius === km ? "#ffffff" : "#334155",
+                  }}
+                >
+                  {km} km
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CARD 4: Language & Localization */}
+      <section className="panel" style={{ padding: "20px" }}>
+        <div style={{ marginBottom: "16px" }}>
+          <div style={{ fontSize: "11px", fontWeight: 800, color: "#2b7744", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            LOCALIZATION
+          </div>
+          <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#193822", margin: "2px 0 4px" }}>
+            Regional Language Preference
+          </h3>
+          <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
+            Choose the language for the business portal and customer interactions.
+          </p>
+        </div>
+
+        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+          {[
+            { code: "en" as const, label: "English" },
+            { code: "ta" as const, label: "தமிழ் (Tamil)" },
+            { code: "kn" as const, label: "ಕನ್ನಡ (Kannada)" },
+            { code: "te" as const, label: "తెలుగు (Telugu)" },
+          ].map((item) => (
+            <button
+              key={item.code}
+              type="button"
+              onClick={() => {
+                setSelectedLang(item.code);
+                onLanguageChange?.(item.code);
+                showNotice?.(`Language changed to ${item.label}`);
+              }}
+              style={{
+                padding: "8px 16px",
+                borderRadius: "8px",
+                fontSize: "12px",
+                fontWeight: 700,
+                cursor: "pointer",
+                border: selectedLang === item.code ? "2px solid #285536" : "1px solid #cbd5e1",
+                background: selectedLang === item.code ? "#edf5ee" : "#ffffff",
+                color: selectedLang === item.code ? "#194d27" : "#334155",
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* CARD 5: Data & Exports */}
+      <section className="panel" style={{ padding: "20px" }}>
+        <div style={{ marginBottom: "16px" }}>
+          <div style={{ fontSize: "11px", fontWeight: 800, color: "#2b7744", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            DATA &amp; RECORDS
+          </div>
+          <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#193822", margin: "2px 0 4px" }}>
+            Export Business Records
+          </h3>
+          <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
+            Download spreadsheets of your products, orders, and offline data backups.
+          </p>
+        </div>
+
+        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+          <button
+            type="button"
+            onClick={handleExportCatalogueCsv}
+            className="outline-button"
+            style={{ padding: "9px 16px", fontSize: "12px", fontWeight: 700 }}
+          >
+            📊 Export Products (CSV)
+          </button>
+
+          <button
+            type="button"
+            onClick={handleExportBackupJson}
+            className="outline-button"
+            style={{ padding: "9px 16px", fontSize: "12px", fontWeight: 700 }}
+          >
+            📦 Download Backup (JSON)
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function BusinessPortal({
   businesses,
   categoryConfig,
@@ -11623,6 +12969,7 @@ function BusinessPortal({
   onOpenPortal,
   onLanguageChange,
   showNotice,
+  onUpdateBusinessProfile,
 }: {
   businesses: Business[];
   categoryConfig: CategoryConfig;
@@ -11649,9 +12996,9 @@ function BusinessPortal({
   onOpenPortal?: (role: Role) => void;
   onLanguageChange?: (lang: "en" | "ta" | "kn" | "te") => void;
   showNotice: (message: string) => void;
+  onUpdateBusinessProfile?: (updatedBiz: any) => void;
 }) {
-  const [tab, setTab] = useState(initialTab || "Overview");
-  const [editingPinBusiness, setEditingPinBusiness] = useState<Business | null>(null);
+  const [tab, setTab] = useState(initialTab === "My business" || initialTab === "Profile details" ? "Profile" : initialTab || "Overview");
   const accountBusinessName = businesses[0]?.name;
   const accountEnquiries = enquiries.filter((item) => accountBusinessName && item.businessName && item.businessName.toLowerCase() === accountBusinessName.toLowerCase());
   const accountCheckouts = checkouts.filter((item) => accountBusinessName && item.businessName && item.businessName.toLowerCase() === accountBusinessName.toLowerCase());
@@ -11662,20 +13009,28 @@ function BusinessPortal({
   const pendingPrepCount = accountOrders.filter((o) => o.status === "placed" || o.status === "accepted" || o.status === "preparing").length;
 
   useEffect(() => {
-    if (initialTab && initialTab !== "Overview") setTab(initialTab);
+    if (initialTab && initialTab !== "Overview") {
+      setTab(initialTab === "My business" || initialTab === "Profile details" ? "Profile" : initialTab);
+    }
   }, [initialTab]);
   useEffect(() => {
     const openProfile = (e: Event) => {
       const customEvent = e as CustomEvent<{ tab?: string }>;
-      setTab(customEvent.detail?.tab || "Profile details");
+      const t = customEvent.detail?.tab;
+      if (t === "Settings") setTab("Settings");
+      else setTab("Profile");
     };
     window.addEventListener("neighborly-open-profile", openProfile);
     return () => window.removeEventListener("neighborly-open-profile", openProfile);
   }, []);
-  useEffect(() => { const openBusiness = () => setTab("My business"); window.addEventListener("neighborly-open-business-profile", openBusiness); return () => window.removeEventListener("neighborly-open-business-profile", openBusiness); }, []);
+  useEffect(() => {
+    const openBusiness = () => setTab("Profile");
+    window.addEventListener("neighborly-open-business-profile", openBusiness);
+    return () => window.removeEventListener("neighborly-open-business-profile", openBusiness);
+  }, []);
   return <div className="page-content portal-content">
-    <div className="portal-header"><div><div className="eyebrow"><span /> FOR LOCAL BUSINESSES</div><h1>Grow with your <em>neighbors.</em></h1><p>Manage your business and connect with nearby customers.</p></div><button className="primary-button" onClick={openBusinessProfile}>Manage your business</button></div>
-    <div className="portal-tabs">{["Overview", "My business", "Products & services", "Orders", "Enquiries", "Plans & billing", "Ad promotions", "Verification", "Profile details", "Settings"].map((item) => <button key={item} className={tab === item || (item === "Profile details" && tab === "Profile") ? "current" : ""} onClick={() => setTab(item)}>{item === "Orders" && pendingPrepCount > 0 ? `Orders (${pendingPrepCount})` : item === "Ad promotions" ? "Ad promotions 📢" : item}</button>)}</div>
+    <div className="portal-header"><div><div className="eyebrow"><span /> FOR LOCAL BUSINESSES</div><h1>Grow with your <em>neighbors.</em></h1><p>Manage your business and connect with nearby customers.</p></div><button className="primary-button" onClick={() => setTab("Profile")}>Manage your business profile</button></div>
+    <div className="portal-tabs">{["Overview", "Profile", "Settings", "Products & services", "Orders", "Enquiries", "Plans & billing", "Ad promotions", "Verification"].map((item) => <button key={item} className={tab === item || (item === "Profile" && (tab === "My business" || tab === "Profile details")) ? "current" : ""} onClick={() => setTab(item)}>{item === "Orders" && pendingPrepCount > 0 ? `Orders (${pendingPrepCount})` : item === "Ad promotions" ? "Ad promotions 📢" : item === "Profile" ? "🏢 Profile" : item === "Settings" ? "⚙️ Settings" : item}</button>)}</div>
     {businesses[0]?.verificationStatus && businesses[0]?.verificationStatus !== "Approved" && (
       <div className="onboarding-verification-card" style={{
         background: "#fffbeb",
@@ -11775,262 +13130,23 @@ function BusinessPortal({
       <div className="verification-banner"><span className="verify-icon">⌖</span><div><strong>Help neighbors find the right place.</strong><p>Granting device location is only a demo permission check; it does not verify your registered business address.</p></div><button onClick={verifyLocation}>Check location access <span>↗</span></button></div>
       <div className="form-note"><strong>Business portal</strong><span>Manage your storefront, products, customer orders, and local ad campaigns. Approved listings are discoverable worldwide.</span></div>
     </>}
-    {tab === "My business" && (
+    {(tab === "Profile" || tab === "My business" || tab === "Profile details") && (
       <section className="panel tab-panel">
-        <div className="panel-heading">
-          <div>
-            <div className="eyebrow">BUSINESS PROFILE</div>
-            <h2>Your business</h2>
-          </div>
-        </div>
-        {businesses.length ? (
-          businesses.map((business, index) => {
-            const currentImages = business.images || (business.image ? [business.image] : []);
-            return (
-              <div key={`${business.name}-${index}`} style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "22px" }}>
-                <div className="listing-row">
-                  <span
-                    className={`listing-icon ${business.color}`}
-                    style={business.image || currentImages[0] ? {
-                      backgroundImage: `url(${business.image || currentImages[0]})`,
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                    } : undefined}
-                  >
-                    {!business.image && !currentImages[0] && business.icon}
-                  </span>
-                  <span className="listing-name">
-                    <strong>{business.name}</strong>
-                    <small>{business.category} · {business.distance} km sample distance</small>
-                  </span>
-                  <span className={`status-pill ${business.subscribed ? "verified" : "pending"}`}>
-                    ● {business.subscribed ? "Subscribed" : "Needs plan"}
-                  </span>
-                </div>
-
-                {/* Business Storefront & Photos Management Card */}
-                <div style={{ background: "#f8faf8", border: "1px solid #dce5dc", borderRadius: "10px", padding: "16px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px", marginBottom: "12px" }}>
-                    <div>
-                      <strong style={{ fontSize: "13px", color: "#254e32", display: "block" }}>
-                        📸 Storefront &amp; Business Photos ({currentImages.length})
-                      </strong>
-                      <span style={{ fontSize: "11px", color: "#6a7e70" }}>
-                        These photos appear to customers on your business card, map view, and profile.
-                      </span>
-                    </div>
-                    <label
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "6px",
-                        background: "#285536",
-                        color: "#ffffff",
-                        padding: "7px 14px",
-                        borderRadius: "7px",
-                        fontSize: "11.5px",
-                        fontWeight: 700,
-                        cursor: "pointer",
-                      }}
-                    >
-                      <span>+ Upload Photos</span>
-                      <input
-                        type="file"
-                        accept="image/png, image/jpeg, image/webp, image/gif"
-                        multiple
-                        style={{ display: "none" }}
-                        onChange={(e) => {
-                          const files = e.target.files;
-                          if (!files || !files.length || !onUpdateBusinessPhotos) return;
-                          const fileList = Array.from(files);
-                          const newImgs: string[] = [];
-                          let count = 0;
-                          fileList.forEach((file) => {
-                            const reader = new FileReader();
-                            reader.onload = (ev) => {
-                              const dataUrl = ev.target?.result as string;
-                              if (dataUrl) newImgs.push(dataUrl);
-                              count++;
-                              if (count === fileList.length) {
-                                onUpdateBusinessPhotos(business.name, [...currentImages, ...newImgs]);
-                              }
-                            };
-                            reader.readAsDataURL(file);
-                          });
-                          e.target.value = "";
-                        }}
-                      />
-                    </label>
-                  </div>
-
-                  {currentImages.length > 0 ? (
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))", gap: "10px" }}>
-                      {currentImages.map((img, imgIdx) => (
-                        <div
-                          key={imgIdx}
-                          style={{
-                            position: "relative",
-                            aspectRatio: "1 / 1",
-                            borderRadius: "8px",
-                            overflow: "hidden",
-                            border: imgIdx === 0 ? "2px solid #285536" : "1px solid #d4ded6",
-                            boxShadow: "0 2px 5px rgba(0,0,0,0.06)",
-                          }}
-                        >
-                          <img
-                            src={img}
-                            alt={`${business.name} photo ${imgIdx + 1}`}
-                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                          />
-                          {imgIdx === 0 ? (
-                            <span style={{
-                              position: "absolute",
-                              top: "3px",
-                              left: "3px",
-                              background: "#285536",
-                              color: "#fff",
-                              fontSize: "8.5px",
-                              fontWeight: 800,
-                              padding: "1px 5px",
-                              borderRadius: "3px",
-                            }}>
-                              Cover
-                            </span>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (!onUpdateBusinessPhotos) return;
-                                const reordered = [img, ...currentImages.filter((_, i) => i !== imgIdx)];
-                                onUpdateBusinessPhotos(business.name, reordered);
-                              }}
-                              style={{
-                                position: "absolute",
-                                bottom: "3px",
-                                left: "3px",
-                                background: "rgba(0,0,0,0.7)",
-                                color: "#fff",
-                                border: 0,
-                                fontSize: "8px",
-                                fontWeight: 700,
-                                padding: "2px 4px",
-                                borderRadius: "3px",
-                                cursor: "pointer",
-                              }}
-                              title="Make this the cover photo"
-                            >
-                              Make cover
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (!onUpdateBusinessPhotos) return;
-                              const updated = currentImages.filter((_, i) => i !== imgIdx);
-                              onUpdateBusinessPhotos(business.name, updated);
-                            }}
-                            style={{
-                              position: "absolute",
-                              top: "3px",
-                              right: "3px",
-                              background: "rgba(0,0,0,0.7)",
-                              color: "#fff",
-                              border: 0,
-                              borderRadius: "50%",
-                              width: "18px",
-                              height: "18px",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              cursor: "pointer",
-                              fontSize: "12px",
-                              lineHeight: 1,
-                            }}
-                            title="Delete photo"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div style={{ textAlign: "center", padding: "18px 12px", border: "1px dashed #c8d8cb", borderRadius: "8px", color: "#6e8273", fontSize: "12px" }}>
-                      No photos uploaded yet. Upload your storefront, showroom, or workspace photos to attract more neighbors!
-                    </div>
-                  )}
-                </div>
-
-                {/* Business Map Pin & Location Card */}
-                <div style={{ background: "#f8faf8", border: "1px solid #dce5dc", borderRadius: "10px", padding: "16px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px", marginBottom: "12px" }}>
-                    <div>
-                      <strong style={{ fontSize: "13px", color: "#254e32", display: "block" }}>
-                        📍 Storefront Location &amp; Map Pin
-                      </strong>
-                      <span style={{ fontSize: "11px", color: "#6a7e70" }}>
-                        {business.coordinates || business.demoCoordinates
-                          ? `Pinned at: ${(business.coordinates || business.demoCoordinates)!.latitude.toFixed(6)}, ${(business.coordinates || business.demoCoordinates)!.longitude.toFixed(6)}`
-                          : "No precise GPS map pin set yet."}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setEditingPinBusiness(business)}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "6px",
-                        background: "#285536",
-                        color: "#ffffff",
-                        padding: "7px 14px",
-                        borderRadius: "7px",
-                        fontSize: "11.5px",
-                        fontWeight: 700,
-                        cursor: "pointer",
-                        border: "none",
-                      }}
-                    >
-                      <span>📍 Pin location on map</span>
-                    </button>
-                  </div>
-
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px", background: "#ffffff", border: "1px solid #e2e8f0", padding: "10px 12px", borderRadius: "8px", fontSize: "12px" }}>
-                    <div style={{ color: "#334155" }}>
-                      <span><strong>Address:</strong> {[business.address?.doorNumber, business.address?.street, business.address?.area, business.address?.cityTown, business.address?.state, business.address?.pincode].filter(Boolean).join(", ") || "Hosur, Tamil Nadu"}</span>
-                    </div>
-                    {(business.coordinates || business.demoCoordinates) && (
-                      <a
-                        href={`https://www.google.com/maps?q=${(business.coordinates || business.demoCoordinates)!.latitude},${(business.coordinates || business.demoCoordinates)!.longitude}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: "#16a34a", fontWeight: 700, fontSize: "11.5px", textDecoration: "underline" }}
-                      >
-                        View on Google Maps ↗
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })
-        ) : (
-          <EmptyState title="No business profile yet" text="Complete your business registration to set up your profile." />
-        )}
-        {editingPinBusiness && (
-          <MapPinModal
-            isOpen={Boolean(editingPinBusiness)}
-            onClose={() => setEditingPinBusiness(null)}
-            onConfirm={(coords) => {
-              if (onUpdateBusinessLocation) {
-                onUpdateBusinessLocation(editingPinBusiness.name, coords);
-              }
-              setEditingPinBusiness(null);
-            }}
-            initialCoordinates={editingPinBusiness.coordinates || editingPinBusiness.demoCoordinates}
-            title="Update Storefront Location Pin"
-            businessName={editingPinBusiness.name}
-          />
-        )}
+        <BusinessProfileEditorView
+          business={businesses[0]}
+          categoryConfig={categoryConfig}
+          onSave={onUpdateBusinessProfile}
+          showNotice={showNotice}
+        />
+      </section>
+    )}
+    {tab === "Settings" && (
+      <section className="panel tab-panel">
+        <BusinessSettingsView
+          business={businesses[0]}
+          showNotice={showNotice}
+          onLanguageChange={onLanguageChange}
+        />
       </section>
     )}
     {tab === "Products & services" && (
@@ -12176,28 +13292,7 @@ function BusinessPortal({
       </section>
     )}
     {tab === "Verification" && <section className="panel tab-panel"><div className="eyebrow">BUILD TRUST LOCALLY</div><h2>Verify your business location</h2><p>Share your location only when you are ready. Bizearch uses the location to check your business address; production verification requires a secure server-side workflow.</p><button className="primary-button" onClick={verifyLocation}>⌖ Verify with this device</button></section>}
-    {(tab === "Profile details" || tab === "Profile") && (
-      <ProfileAndSettingsPanel
-        role="Business"
-        label="Business Account"
-        initialSubTab="profile"
-        onNavigateTab={(t) => setTab(t)}
-        onOpenPortal={onOpenPortal}
-        onLanguageChange={onLanguageChange}
-        showNotice={showNotice}
-      />
-    )}
-    {tab === "Settings" && (
-      <ProfileAndSettingsPanel
-        role="Business"
-        label="Business Account"
-        initialSubTab="settings"
-        onNavigateTab={(t) => setTab(t)}
-        onOpenPortal={onOpenPortal}
-        onLanguageChange={onLanguageChange}
-        showNotice={showNotice}
-      />
-    )}
+
   </div>;
 }
 
@@ -13940,6 +15035,12 @@ function ProfileAndSettingsPanel({
             </button>
           </div>
         </div>
+      ) : activeSubTab === "profile" && role === "Business" ? (
+        <BusinessProfileEditorView
+          business={data?.businesses?.[0]}
+          categoryConfig={defaultCategoryConfig}
+          showNotice={showNotice}
+        />
       ) : activeSubTab === "profile" && (
         <form className="settings-section-card" onSubmit={saveProfile}>
           <div className="settings-card-header">
@@ -14234,7 +15335,13 @@ function ProfileAndSettingsPanel({
       )}
 
       {/* TAB 2: GENERAL SETTINGS */}
-      {activeSubTab === "settings" && (
+      {activeSubTab === "settings" && role === "Business" ? (
+        <BusinessSettingsView
+          business={data?.businesses?.[0]}
+          showNotice={showNotice}
+          onLanguageChange={onLanguageChange}
+        />
+      ) : activeSubTab === "settings" && (
         <div className="settings-section-card">
           <div className="settings-card-header">
             <h3><span>⚙️</span> Search, Neighborhood &amp; Display Preferences</h3>
