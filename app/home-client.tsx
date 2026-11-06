@@ -367,30 +367,9 @@ export type MarketplaceNotification = {
   };
 };
 
-const initialNotifications: MarketplaceNotification[] = [
-  {
-    id: "notif-welcome",
-    title: "Welcome to Bizearch Hosur!",
-    message: "Discover local businesses, products and services across Hosur.",
-    timestamp: "Just now",
-    type: "system",
-    read: false,
-    linkText: "Discover",
-    action: { type: "role", payload: "Discover" }
-  },
-  {
-    id: "notif-safety",
-    title: "🛡️ 24/7 SOS Emergency Ready",
-    message: "Hosur emergency hotlines and GPS broadcast are active on this device.",
-    timestamp: "Active",
-    type: "sos",
-    read: true,
-    linkText: "Emergency help",
-    action: { type: "sos", payload: "sos" }
-  }
-];
+const initialNotifications: MarketplaceNotification[] = [];
 
-const NOTIF_STORAGE_KEY = "neighborly-notifications-v2";
+const NOTIF_STORAGE_KEY = "neighborly-notifications-v4";
 
 const STORAGE_KEY = "neighborly-demo-v5";
 const vehicleTypeOptions = ["Two wheeler", "Three wheeler", "Four wheeler", "Multi wheel / commercial"];
@@ -6456,7 +6435,8 @@ export default function Home() {
               })()
             )}
           </section>
-          <section className="video-ad-panel" aria-label="Video advertisement">
+          {Boolean(adConfig.videoAd?.sourceUrl) && (
+            <section className="video-ad-panel" aria-label="Video advertisement">
             <div className="video-ad-heading" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                 <span>{t.videoAd}</span>
@@ -6568,7 +6548,8 @@ export default function Home() {
             </div>
             {adConfig.audioAd.sourceUrl && <div className="audio-ad-content"><strong>{adConfig.audioAd.title}</strong><p>{adConfig.audioAd.description}</p><audio controls preload="none" src={adConfig.audioAd.sourceUrl}>Your browser does not support embedded audio.</audio></div>}
           </section>
-        </aside>
+        )}
+      </aside>
 
         {role === "Discover" && (
           <div className="page-content discover-content">
@@ -7817,54 +7798,56 @@ export default function Home() {
               );
             })()}
 
-            <section className="video-ad-panel mobile-video-ad" aria-label="Video advertisement">
-              <div className="video-ad-heading"><span>{t.videoAd}</span><small>{t.localSpotlight}</small></div>
-              <video key={adConfig.videoAd.sourceUrl} className="video-ad-player" controls muted loop playsInline poster={adConfig.videoAd.posterUrl || undefined} src={adConfig.videoAd.sourceUrl}>Your browser does not support embedded video.</video>
-              <div className="video-ad-caption">
-              <strong>{adConfig.videoAd.title}</strong>
-              <p>{adConfig.videoAd.description}</p>
-              <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "8px" }}>
-                {adConfig.videoAd.businessName && (
-                  <button
-                    type="button"
-                    onClick={() => handleAdAction(adConfig.videoAd, "view_store")}
-                    style={{
-                      background: "#15803d",
-                      color: "#ffffff",
-                      border: "none",
-                      padding: "5px 10px",
-                      borderRadius: "6px",
-                      fontSize: "11px",
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "4px",
-                    }}
-                  >
-                    🛍️ View Sponsor
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => openPortal("Business")}
-                  style={{
-                    background: "transparent",
-                    color: "#166534",
-                    border: "1px solid #86efac",
-                    padding: "5px 10px",
-                    borderRadius: "6px",
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                  }}
-                >
-                  {t.promoteYourBusiness} <span>&#8594;</span>
-                </button>
-              </div>
-            </div>
-              {adConfig.audioAd.sourceUrl && <div className="audio-ad-content"><strong>{adConfig.audioAd.title}</strong><p>{adConfig.audioAd.description}</p><audio controls preload="none" src={adConfig.audioAd.sourceUrl}>Your browser does not support embedded audio.</audio></div>}
-            </section>
+            {Boolean(adConfig.videoAd?.sourceUrl) && (
+              <section className="video-ad-panel mobile-video-ad" aria-label="Video advertisement">
+                <div className="video-ad-heading"><span>{t.videoAd}</span><small>{t.localSpotlight}</small></div>
+                <video key={adConfig.videoAd.sourceUrl} className="video-ad-player" controls muted loop playsInline poster={adConfig.videoAd.posterUrl || undefined} src={adConfig.videoAd.sourceUrl}>Your browser does not support embedded video.</video>
+                <div className="video-ad-caption">
+                  <strong>{adConfig.videoAd.title}</strong>
+                  <p>{adConfig.videoAd.description}</p>
+                  <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "8px" }}>
+                    {adConfig.videoAd.businessName && (
+                      <button
+                        type="button"
+                        onClick={() => handleAdAction(adConfig.videoAd, "view_store")}
+                        style={{
+                          background: "#15803d",
+                          color: "#ffffff",
+                          border: "none",
+                          padding: "5px 10px",
+                          borderRadius: "6px",
+                          fontSize: "11px",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px",
+                        }}
+                      >
+                        🛍️ View Sponsor
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => openPortal("Business")}
+                      style={{
+                        background: "transparent",
+                        color: "#166534",
+                        border: "1px solid #86efac",
+                        padding: "5px 10px",
+                        borderRadius: "6px",
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {t.promoteYourBusiness} <span>&#8594;</span>
+                    </button>
+                  </div>
+                </div>
+                {adConfig.audioAd.sourceUrl && <div className="audio-ad-content"><strong>{adConfig.audioAd.title}</strong><p>{adConfig.audioAd.description}</p><audio controls preload="none" src={adConfig.audioAd.sourceUrl}>Your browser does not support embedded audio.</audio></div>}
+              </section>
+            )}
             <div className="trust-strip"><span className="trust-icon">✳</span><div><strong>{t.localFirst}</strong><p>{t.localFirstDesc}</p></div><span className="trust-arrow">↗</span></div>
           </div>
         )}

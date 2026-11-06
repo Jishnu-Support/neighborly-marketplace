@@ -23,3 +23,6 @@ AGENTS.md
 .neighborly-agents.json
 .neighborly-activity-logs.json
 .neighborly-customer-accounts.json
+.neighborly-businesses.json
+.neighborly-transactions.json
+.neighborly-*.txt
