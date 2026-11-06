@@ -2545,27 +2545,51 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent | TouchEvent) {
+    function handleSearchClickOutside(event: MouseEvent | TouchEvent) {
       const target = event.target as Node;
       if (searchContainerRef.current && !searchContainerRef.current.contains(target)) {
         setSearchDropdownOpen(false);
       }
-      if (notificationsOpen) {
+    }
+    document.addEventListener("mousedown", handleSearchClickOutside);
+    document.addEventListener("touchstart", handleSearchClickOutside, { passive: true });
+    return () => {
+      document.removeEventListener("mousedown", handleSearchClickOutside);
+      document.removeEventListener("touchstart", handleSearchClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!notificationsOpen) return;
+    let cleanupListeners: (() => void) | undefined;
+    // Debounce listener attachment to ensure the opening tap on touch devices does not immediately close the popover
+    const timer = window.setTimeout(() => {
+      function handleClickOutside(event: MouseEvent | TouchEvent) {
+        const target = event.target as HTMLElement | null;
+        if (!target) return;
         if (
           notificationsRef.current?.contains(target) ||
           mobileNotificationsBtnRef.current?.contains(target) ||
-          mobileNotificationsRef.current?.contains(target)
+          mobileNotificationsRef.current?.contains(target) ||
+          target.closest?.(".mobile-notif-btn") ||
+          target.closest?.(".mobile-notification-container") ||
+          target.closest?.(".notification-wrapper")
         ) {
           return;
         }
         setNotificationsOpen(false);
       }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside, { passive: true });
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside, { passive: true });
+      cleanupListeners = () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+        document.removeEventListener("touchstart", handleClickOutside);
+      };
+    }, 100);
+
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
+      window.clearTimeout(timer);
+      if (cleanupListeners) cleanupListeners();
     };
   }, [notificationsOpen]);
 
@@ -2726,30 +2750,43 @@ export default function Home() {
 
   function getViewerInfo() {
     let customerId = "";
-    let viewerName = "Neighbor in Hosur";
+    let viewerName = "Hosur Visitor";
     let viewerPhone = "";
     let viewerRole = "Customer";
     let locality = "Hosur, Tamil Nadu";
 
     try {
+      const demoPhones = ["9043022219", "9962773219", "9962775630", "9876543210"];
+      const demoNames = ["Murali", "Keerthana B", "G Venkatesan Sir", "Dharshan Ramesh", "Radha Krishnan"];
+
       const stored = window.localStorage.getItem(profileStorageKey("Account"));
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed.fullName) viewerName = parsed.fullName;
-        if (parsed.phone) {
-          viewerPhone = `•••• ${parsed.phone.slice(-4)}`;
-          customerId = `CUST-HSR-${parsed.phone.replace(/\D/g, "").slice(-5)}`;
+        const phone = (parsed.phone || "").replace(/\D/g, "");
+        if (demoPhones.some((p) => phone.includes(p)) || (parsed.fullName && demoNames.includes(parsed.fullName))) {
+          window.localStorage.removeItem(profileStorageKey("Account"));
+        } else {
+          if (parsed.fullName) viewerName = parsed.fullName;
+          if (parsed.phone) {
+            viewerPhone = `•••• ${parsed.phone.slice(-4)}`;
+            customerId = `CUST-HSR-${parsed.phone.replace(/\D/g, "").slice(-5)}`;
+          }
+          if (parsed.locality) locality = parsed.locality;
         }
-        if (parsed.locality) locality = parsed.locality;
       }
 
       const regUser = window.localStorage.getItem("bizearch_registered_user");
       if (regUser) {
         const parsedReg = JSON.parse(regUser);
-        if (parsedReg.name) viewerName = parsedReg.name;
-        if (parsedReg.phone) {
-          viewerPhone = `•••• ${parsedReg.phone.slice(-4)}`;
-          if (!customerId) customerId = `CUST-HSR-${parsedReg.phone.replace(/\D/g, "").slice(-5)}`;
+        const regPhone = (parsedReg.phone || "").replace(/\D/g, "");
+        if (demoPhones.some((p) => regPhone.includes(p)) || (parsedReg.name && demoNames.includes(parsedReg.name))) {
+          window.localStorage.removeItem("bizearch_registered_user");
+        } else {
+          if (parsedReg.name) viewerName = parsedReg.name;
+          if (parsedReg.phone) {
+            viewerPhone = `•••• ${parsedReg.phone.slice(-4)}`;
+            if (!customerId) customerId = `CUST-HSR-${parsedReg.phone.replace(/\D/g, "").slice(-5)}`;
+          }
         }
       }
 
@@ -2776,17 +2813,24 @@ export default function Home() {
 
   const recordedImpressionsRef = useRef<Map<string, number>>(new Map());
 
-  // Automatically record view impression when a customer views an ad on Discover (throttled & loop-protected)
+  // Automatically record view impression when a customer views an ad on Discover (session-safe & throttle-protected)
   useEffect(() => {
     if (role !== "Discover") return;
     const currentAd = adConfig.imageAds?.[activeAd];
     const adBookingId = currentAd?.adBookingId;
     if (!adBookingId) return;
 
+    try {
+      const sessionKey = `bizearch_ad_viewed_${adBookingId}`;
+      if (typeof window !== "undefined" && window.sessionStorage?.getItem(sessionKey)) {
+        return; // Already counted for this user browser session
+      }
+      window.sessionStorage?.setItem(sessionKey, "1");
+    } catch {}
+
     const now = Date.now();
     const lastTime = recordedImpressionsRef.current.get(`poster:${adBookingId}`) || 0;
-    // Debounce / throttle: record at most once per 10 minutes per ad per session
-    if (now - lastTime < 10 * 60 * 1000) return;
+    if (now - lastTime < 60 * 60 * 1000) return;
     recordedImpressionsRef.current.set(`poster:${adBookingId}`, now);
 
     const viewer = getViewerInfo();
@@ -2804,9 +2848,18 @@ export default function Home() {
   const handleVideoAdImpression = () => {
     const videoAdId = adConfig.videoAd?.adBookingId;
     if (!videoAdId) return;
+
+    try {
+      const sessionKey = `bizearch_video_ad_viewed_${videoAdId}`;
+      if (typeof window !== "undefined" && window.sessionStorage?.getItem(sessionKey)) {
+        return;
+      }
+      window.sessionStorage?.setItem(sessionKey, "1");
+    } catch {}
+
     const now = Date.now();
     const lastTime = recordedImpressionsRef.current.get(`video:${videoAdId}`) || 0;
-    if (now - lastTime < 10 * 60 * 1000) return;
+    if (now - lastTime < 60 * 60 * 1000) return;
     recordedImpressionsRef.current.set(`video:${videoAdId}`, now);
 
     const viewer = getViewerInfo();
@@ -5772,7 +5825,10 @@ export default function Home() {
                 type="button"
                 className="mobile-notif-btn"
                 aria-label={`Notifications (${unreadCount} unread)`}
-                onClick={() => setNotificationsOpen((prev) => !prev)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setNotificationsOpen((prev) => !prev);
+                }}
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2c4835" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />

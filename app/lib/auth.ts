@@ -310,58 +310,30 @@ export async function verifyCredentials(role: PortalRole, identity: string, pass
       return false;
     }
 
-    // Check registered customers
+    // Check registered customers strictly
     const cleanDigits = normalizedIdentity.replace(/\D/g, "");
+    if (cleanDigits.length < 8 && !normalizedIdentity.includes("@")) {
+      return false;
+    }
+
     const customers = await readCustomerRecords();
     const customer = customers.find((c) => {
       if (!c.active) return false;
       if (c.email && c.email.toLowerCase() === normalizedIdentity) return true;
-      if (c.name && c.name.toLowerCase() === normalizedIdentity) return true;
-      const cDigits = c.phone.replace(/\D/g, "");
-      if (cleanDigits.length >= 8 && (cDigits === cleanDigits || cDigits.endsWith(cleanDigits) || cleanDigits.endsWith(cDigits))) {
-        return true;
-      }
-      return c.phone.trim().toLowerCase() === normalizedIdentity;
-    });
-
-    if (customer) {
-      return passwordsMatch(password, customer.salt, customer.passwordHash);
-    }
-
-    // Check customer-locations store for existing registration
-    try {
-      const locations = await listCustomerRegistrationLocations();
-      const loc = locations.find((l) => {
-        const lDigits = (l.phone || "").replace(/\D/g, "");
-        if (cleanDigits.length >= 8 && (lDigits === cleanDigits || lDigits.endsWith(cleanDigits) || cleanDigits.endsWith(lDigits))) {
+      if (cleanDigits.length >= 8 && c.phone) {
+        const cDigits = c.phone.replace(/\D/g, "");
+        if (cDigits && (cDigits === cleanDigits || (cDigits.length >= 10 && cleanDigits.length >= 10 && cDigits.slice(-10) === cleanDigits.slice(-10)))) {
           return true;
         }
-        if (l.email && l.email.toLowerCase() === normalizedIdentity) return true;
-        if (l.name && l.name.toLowerCase() === normalizedIdentity) return true;
-        return false;
-      });
-      if (loc && password && password.length >= 4) {
-        await registerCustomerAccount({
-          name: loc.name,
-          phone: loc.phone ? loc.phone.replace(/\D/g, "") : cleanDigits,
-          email: loc.email,
-          password,
-          doorNo: loc.doorNo,
-          street: loc.street,
-          locality: loc.locality,
-          city: loc.city,
-          district: loc.district,
-          state: loc.state,
-          pincode: loc.pincode,
-          address: loc.address,
-        });
-        return true;
       }
-    } catch {
-      // Non-blocking
+      return false;
+    });
+
+    if (!customer) {
+      return false;
     }
 
-    return false;
+    return passwordsMatch(password, customer.salt, customer.passwordHash);
   }
   if (role === "Agent") {
     const verifiedAgent = await verifyAgentCredentials(identity, password);

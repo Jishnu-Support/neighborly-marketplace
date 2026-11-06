@@ -788,9 +788,43 @@ export function CompanyActivityLogsPanel({
               color: "#92400e",
               fontWeight: 600,
             }}
-            title="Remove runaway duplicate impressions and restore diverse activity records"
+            title="Remove duplicate ad impressions and restore authentic activity records"
           >
-            🧹 Clean & Deduplicate
+            🧹 Clean Duplicates
+          </button>
+          <button
+            type="button"
+            className="outline-button"
+            onClick={async () => {
+              if (!window.confirm("Are you sure you want to clear all activity logs? This cannot be undone.")) return;
+              setLoading(true);
+              try {
+                const res = await fetch("/api/company/activity-logs", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ action: "clear" }),
+                });
+                const data = await res.json();
+                setLogs(data.logs || []);
+                if (data.stats) setStats(data.stats);
+              } catch {}
+              setLoading(false);
+            }}
+            disabled={loading}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              fontSize: "12px",
+              padding: "8px 12px",
+              background: "#fef2f2",
+              borderColor: "#fecaca",
+              color: "#b91c1c",
+              fontWeight: 600,
+            }}
+            title="Permanently clear all activity logs"
+          >
+            🗑️ Clear All Logs
           </button>
         </div>
       </div>

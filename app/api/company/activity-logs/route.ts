@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentSession } from "@/app/lib/auth";
-import { listActivityLogs, resetAndSeedActivityLogs, readActivityLogs } from "@/app/lib/activity-logs";
+import { listActivityLogs, resetAndSeedActivityLogs, readActivityLogs, clearAllActivityLogs } from "@/app/lib/activity-logs";
 
 export async function GET(request: Request) {
   const session = await getCurrentSession();
@@ -40,8 +40,14 @@ export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
   const action = typeof body.action === "string" ? body.action : "deduplicate";
 
+  if (action === "clear") {
+    await clearAllActivityLogs();
+    const result = await listActivityLogs({ category: "All", role: "All", limit: 250 });
+    return NextResponse.json({ success: true, ...result });
+  }
+
   if (action === "reset" || action === "deduplicate") {
-    await resetAndSeedActivityLogs();
+    await readActivityLogs();
     const result = await listActivityLogs({ category: "All", role: "All", limit: 250 });
     return NextResponse.json({ success: true, ...result });
   }
