@@ -6050,7 +6050,7 @@ export default function Home() {
             </span>
             <a
               href={`tel:${customerCareConfig.phone.replace(/[^0-9+]/g, "")}`}
-              onClick={() => handleTriggerCall("Customer Care Support", customerCareConfig.phone, "Customer Care")}
+              onClick={() => handleTriggerCall("Customer Care", customerCareConfig.phone, "Customer Care")}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -6067,20 +6067,11 @@ export default function Home() {
                 letterSpacing: "0.01em",
                 flexShrink: 0,
               }}
-              title={`Call Customer Care Support Helpline: ${customerCareConfig.phone}`}
+              title={`Call Customer Care Helpline: ${customerCareConfig.phone}`}
             >
               <span>📞</span>
-              <span>Customer care support</span>
+              <span>Customer care</span>
             </a>
-            <button
-              type="button"
-              className="mobile-header-sos-pill"
-              onClick={() => setDialog("sos")}
-              title="Emergency SOS — Immediate 1-Tap Helpline & GPS Alert"
-            >
-              <span className="sos-fab-beacon" style={{ width: 6, height: 6 }} />
-              <span>SOS 112</span>
-            </button>
             <span style={{ fontWeight: 700, color: "#225a33", whiteSpace: "nowrap", flexShrink: 0 }}>
               {(authenticatedPortals.includes("Company") || role === "Company") ? "Company Portal" : role === "Discover" ? "Explore Hosur" : role === "Account" ? "Customer Portal" : `${role} Portal`}
             </span>
@@ -6101,7 +6092,7 @@ export default function Home() {
           </div>
           <a
             href={`tel:${customerCareConfig.phone.replace(/[^0-9+]/g, "")}`}
-            onClick={() => handleTriggerCall("Customer Care Support", customerCareConfig.phone, "Customer Care")}
+            onClick={() => handleTriggerCall("Customer Care", customerCareConfig.phone, "Customer Care")}
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -6118,10 +6109,10 @@ export default function Home() {
               cursor: "pointer",
               transition: "all 0.15s ease",
             }}
-            title={`Customer Care Support Helpline: ${customerCareConfig.phone} (${customerCareConfig.hours})`}
+            title={`Customer Care Helpline: ${customerCareConfig.phone} (${customerCareConfig.hours})`}
           >
             <span style={{ fontSize: "12px" }}>📞</span>
-            <span>Customer care support: <strong>{customerCareConfig.phone}</strong></span>
+            <span>Customer care: <strong>{customerCareConfig.phone}</strong></span>
           </a>
           <div className="topbar-actions" style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "nowrap", flexShrink: 0, marginLeft: "auto" }}>
             <button
@@ -17311,7 +17302,7 @@ function CompanyCustomerCareManager({
       <div className="settings-card-header">
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
           <div>
-            <h3 style={{ color: "#166534" }}><span>🎧</span> Customer Care Support Helpline Management</h3>
+            <h3 style={{ color: "#166534" }}><span>🎧</span> Customer Care Helpline Management</h3>
             <p style={{ margin: 0 }}>Configure the direct call helpline displayed between Jishnu Infotech and Explore Hosur.</p>
           </div>
           <span style={{ fontSize: "11px", fontWeight: 700, padding: "3px 8px", borderRadius: "6px", background: "#ecfdf5", color: "#047857", border: "1px solid #a7f3d0" }}>
