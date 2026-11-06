@@ -96,8 +96,26 @@ export default function AtoZDirectory({
           </p>
         </div>
         {onClose && (
-          <button className="atoz-close-button" onClick={onClose} aria-label="Close A-Z view">
-            ✕ Close A–Z
+          <button
+            className="atoz-close-button"
+            onClick={onClose}
+            aria-label="Back to Categories"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "7px 14px",
+              borderRadius: "8px",
+              background: "#edf5ee",
+              border: "1.5px solid #285536",
+              color: "#184e27",
+              fontSize: "12px",
+              fontWeight: 700,
+              cursor: "pointer",
+              transition: "all 0.15s",
+            }}
+          >
+            ← Back to Categories
           </button>
         )}
       </div>

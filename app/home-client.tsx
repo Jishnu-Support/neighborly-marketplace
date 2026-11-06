@@ -2171,6 +2171,213 @@ export default function Home() {
     adBookingWizardOpen,
     activeAdReceipt,
   ]);
+
+  // -------------------------------------------------------------
+  // Comprehensive Back Button Support (Browser, Device & Hardware Back)
+  // -------------------------------------------------------------
+  const activeViewsRef = useRef({
+    enquiryProduct,
+    orderingItem,
+    reviewBusiness,
+    selectedBusiness,
+    dialog,
+    mobileLocalitySheetOpen,
+    mobileCategorySheetOpen,
+    mobileLangSheetOpen,
+    mobileMenuOpen,
+    adBookingWizardOpen,
+    activeReceipt,
+    subscriptionCheckout,
+    subscriptionReceipt,
+    activeAdReceipt,
+    browseMode,
+    categoryPath,
+    category,
+    query,
+    role,
+  });
+
+  useEffect(() => {
+    activeViewsRef.current = {
+      enquiryProduct,
+      orderingItem,
+      reviewBusiness,
+      selectedBusiness,
+      dialog,
+      mobileLocalitySheetOpen,
+      mobileCategorySheetOpen,
+      mobileLangSheetOpen,
+      mobileMenuOpen,
+      adBookingWizardOpen,
+      activeReceipt,
+      subscriptionCheckout,
+      subscriptionReceipt,
+      activeAdReceipt,
+      browseMode,
+      categoryPath,
+      category,
+      query,
+      role,
+    };
+  });
+
+  // Push history state whenever any overlay or modal becomes active
+  useEffect(() => {
+    const isAnyOverlayActive = Boolean(
+      enquiryProduct ||
+      orderingItem ||
+      reviewBusiness ||
+      selectedBusiness ||
+      dialog ||
+      mobileLocalitySheetOpen ||
+      mobileCategorySheetOpen ||
+      mobileLangSheetOpen ||
+      mobileMenuOpen ||
+      adBookingWizardOpen ||
+      activeReceipt ||
+      subscriptionCheckout ||
+      subscriptionReceipt ||
+      activeAdReceipt ||
+      browseMode === "atoz" ||
+      categoryPath.length > 0 ||
+      (category !== "All" && role === "Discover") ||
+      (query.trim() && role === "Discover")
+    );
+
+    if (isAnyOverlayActive) {
+      if (!window.history.state?.bizearchBack) {
+        window.history.pushState({ bizearchBack: true }, "");
+      }
+    }
+  }, [
+    enquiryProduct,
+    orderingItem,
+    reviewBusiness,
+    selectedBusiness,
+    dialog,
+    mobileLocalitySheetOpen,
+    mobileCategorySheetOpen,
+    mobileLangSheetOpen,
+    mobileMenuOpen,
+    adBookingWizardOpen,
+    activeReceipt,
+    subscriptionCheckout,
+    subscriptionReceipt,
+    activeAdReceipt,
+    browseMode,
+    categoryPath.length,
+    category,
+    query,
+    role,
+  ]);
+
+  // Handle hardware Back button, swipe-to-back, and browser back button
+  useEffect(() => {
+    const handlePopState = () => {
+      const v = activeViewsRef.current;
+
+      // 1. Nested child dialogs (return to parent business modal)
+      if (v.enquiryProduct) {
+        const b = v.enquiryProduct.business;
+        setEnquiryProduct(null);
+        setSelectedBusiness(b);
+        return;
+      }
+      if (v.orderingItem) {
+        const b = v.orderingItem.business;
+        setOrderingItem(null);
+        setSelectedBusiness(b);
+        return;
+      }
+      if (v.reviewBusiness) {
+        const b = v.reviewBusiness;
+        setReviewBusiness(null);
+        setSelectedBusiness(b);
+        return;
+      }
+
+      // 2. Receipts and wizards
+      if (v.activeReceipt) {
+        setActiveReceipt(null);
+        return;
+      }
+      if (v.activeAdReceipt) {
+        setActiveAdReceipt(null);
+        return;
+      }
+      if (v.subscriptionCheckout) {
+        setSubscriptionCheckout(null);
+        return;
+      }
+      if (v.subscriptionReceipt) {
+        setSubscriptionReceipt(null);
+        return;
+      }
+      if (v.adBookingWizardOpen) {
+        setAdBookingWizardOpen(false);
+        return;
+      }
+
+      // 3. Main Business detail dialog
+      if (v.selectedBusiness) {
+        setSelectedBusiness(null);
+        return;
+      }
+
+      // 4. Mobile bottom sheets and drawer
+      if (v.mobileLocalitySheetOpen) {
+        setMobileLocalitySheetOpen(false);
+        return;
+      }
+      if (v.mobileCategorySheetOpen) {
+        setMobileCategorySheetOpen(false);
+        return;
+      }
+      if (v.mobileLangSheetOpen) {
+        setMobileLangSheetOpen(false);
+        return;
+      }
+      if (v.mobileMenuOpen) {
+        setMobileMenuOpen(false);
+        return;
+      }
+
+      // 5. General Dialogs (login, business, sos, plans)
+      if (v.dialog) {
+        setDialog(null);
+        return;
+      }
+
+      // 6. Sub-views & taxonomies
+      if (v.browseMode === "atoz") {
+        setBrowseMode("sectors");
+        return;
+      }
+      if (v.categoryPath.length > 0) {
+        setCategoryPath((prev) => prev.slice(0, -1));
+        return;
+      }
+      if (v.category !== "All") {
+        setCategory("All");
+        return;
+      }
+      if (v.query.trim()) {
+        setQuery("");
+        return;
+      }
+
+      // 7. If user is in a portal other than Discover, go back to Discover
+      if (v.role !== "Discover") {
+        openPortal("Discover");
+        return;
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
   const categories = useMemo(() => [{ name: "All", icon: "✳" }, ...categoryConfig.sectors], [categoryConfig]);
   const businesses = demoData.businesses;
   // The Business portal represents one business account, so it matches
@@ -5938,6 +6145,28 @@ export default function Home() {
               >
                 ☰
               </button>
+              {role !== "Discover" && (
+                <button
+                  type="button"
+                  onClick={() => openPortal("Discover")}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "3px",
+                    background: "#edf5ee",
+                    border: "1px solid #c2dec6",
+                    color: "#184e27",
+                    borderRadius: "6px",
+                    padding: "3px 7px",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                  title="Back to Discover"
+                >
+                  ← Discover
+                </button>
+              )}
               <a
                 href="#"
                 className="mobile-brand"
@@ -6176,7 +6405,31 @@ export default function Home() {
         </header>
 
         <header className="topbar">
-          <div className="breadcrumb" style={{ fontSize: "11px", color: "#879188", whiteSpace: "nowrap", flexShrink: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>{t.yourNeighborhood} <span>/</span> <strong>{role === "Discover" ? t.discover : role === "Account" ? t.myActivity : `${role} portal`}</strong></div>
+          <div className="breadcrumb" style={{ fontSize: "11px", color: "#879188", whiteSpace: "nowrap", flexShrink: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+            {role !== "Discover" && (
+              <button
+                type="button"
+                onClick={() => openPortal("Discover")}
+                style={{
+                  background: "none",
+                  border: 0,
+                  color: "#285536",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  padding: "0 6px 0 0",
+                  marginRight: "4px",
+                  fontSize: "11.5px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "3px",
+                }}
+                title="Back to Discover"
+              >
+                ← Discover
+              </button>
+            )}
+            <span>{t.yourNeighborhood}</span> <span>/</span> <strong>{role === "Discover" ? t.discover : role === "Account" ? t.myActivity : `${role} portal`}</strong>
+          </div>
           <div
             className="topbar-partner-badge"
             aria-label="Powered by Jishnu Infotech"
@@ -7509,7 +7762,68 @@ export default function Home() {
                 <div className="section-heading results-heading" id="results">
                   <div>
                     <div className="eyebrow">{t.localVerifiedProviders}</div>
-                    <h2>{query ? `${t.providersFor} “${query}”` : category !== "All" ? `${categoryPath.length ? `${categoryPath.join(" › ")}` : `${translateCategory(category, lang)}`}` : t.aroundYourCorner} <span className="result-count">{displayedBusinesses.length}</span></h2>
+                    <h2>
+                      {query ? (
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setQuery("");
+                            }}
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "4px",
+                              padding: "4px 10px",
+                              borderRadius: "7px",
+                              background: "#edf5ee",
+                              border: "1px solid #c2dec6",
+                              color: "#184e27",
+                              fontSize: "12px",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                            }}
+                            title="Clear search query and return to all listings"
+                          >
+                            ← Back
+                          </button>
+                          <span>{t.providersFor} “{query}”</span>
+                        </span>
+                      ) : category !== "All" ? (
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (categoryPath.length > 0) {
+                                setCategoryPath((prev) => prev.slice(0, -1));
+                              } else {
+                                setCategory("All");
+                              }
+                            }}
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "4px",
+                              padding: "4px 10px",
+                              borderRadius: "7px",
+                              background: "#edf5ee",
+                              border: "1px solid #c2dec6",
+                              color: "#184e27",
+                              fontSize: "12px",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                            }}
+                            title="Go back to previous category"
+                          >
+                            ← Back
+                          </button>
+                          <span>{categoryPath.length ? categoryPath.join(" › ") : translateCategory(category, lang)}</span>
+                        </span>
+                      ) : (
+                        t.aroundYourCorner
+                      )}{" "}
+                      <span className="result-count">{displayedBusinesses.length}</span>
+                    </h2>
                   </div>
                   <div className="sort-label"><span className="green-dot" /> {locationEnabled ? t.subscribedListingsGps : t.subscribedListings}</div>
                 </div>
@@ -8103,6 +8417,11 @@ export default function Home() {
           business={orderingItem.business}
           product={orderingItem.product}
           close={() => setOrderingItem(null)}
+          onBack={() => {
+            const b = orderingItem.business;
+            setOrderingItem(null);
+            setSelectedBusiness(b);
+          }}
           onPlaceOrder={placeOrder}
         />
       )}
@@ -8171,11 +8490,28 @@ export default function Home() {
           onTriggerCall={handleTriggerCall}
         />
       )}
-      {enquiryProduct && <EnquiryDialog business={enquiryProduct.business} product={enquiryProduct.product} close={() => setEnquiryProduct(null)} submit={submitEnquiry} />}
+      {enquiryProduct && (
+        <EnquiryDialog
+          business={enquiryProduct.business}
+          product={enquiryProduct.product}
+          close={() => setEnquiryProduct(null)}
+          onBack={() => {
+            const b = enquiryProduct.business;
+            setEnquiryProduct(null);
+            setSelectedBusiness(b);
+          }}
+          submit={submitEnquiry}
+        />
+      )}
       {reviewBusiness && (
         <ReviewDialog
           business={reviewBusiness}
           close={() => setReviewBusiness(null)}
+          onBack={() => {
+            const b = reviewBusiness;
+            setReviewBusiness(null);
+            setSelectedBusiness(b);
+          }}
           onSubmit={(stars, comment) => {
             const currentRating = reviewBusiness.rating || 4.5;
             const currentReviews = reviewBusiness.reviews || 1;
@@ -9109,7 +9445,28 @@ function BusinessDetailDialog({
   return (
     <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
       <section className="modal catalog-modal" role="dialog" aria-modal="true">
-        <button className="modal-close" onClick={close} aria-label="Close">×</button>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+          <button
+            type="button"
+            onClick={close}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "5px",
+              background: "#edf5ee",
+              border: "1px solid #c2dec6",
+              borderRadius: "7px",
+              padding: "5px 12px",
+              fontSize: "12px",
+              fontWeight: 700,
+              color: "#184e27",
+              cursor: "pointer",
+            }}
+          >
+            ← Back to listings
+          </button>
+          <button className="modal-close" onClick={close} aria-label="Close" style={{ position: "static", margin: 0 }}>×</button>
+        </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px", marginBottom: "6px" }}>
           <div className="eyebrow" style={{ margin: 0 }}>{business.category.toUpperCase()} · {distanceKm.toFixed(1)} KM {isDeviceDistance ? "FROM DEVICE" : "SAMPLE DISTANCE"}</div>
           {(() => {
@@ -9769,6 +10126,29 @@ function BusinessDetailDialog({
             </div>
           </section>
         )}
+
+        <div style={{ marginTop: "20px", paddingTop: "14px", borderTop: "1px solid #eef2ee", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+          <button
+            type="button"
+            onClick={close}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              background: "#edf5ee",
+              border: "1px solid #c2dec6",
+              borderRadius: "8px",
+              padding: "8px 16px",
+              fontSize: "12px",
+              fontWeight: 700,
+              color: "#184e27",
+              cursor: "pointer",
+            }}
+          >
+            ← Back to listings
+          </button>
+          <span style={{ fontSize: "11px", color: "#6e8072" }}>Bizearch Hosur Verified Business</span>
+        </div>
       </section>
     </div>
   );
@@ -9778,30 +10158,72 @@ function EnquiryDialog({
   business,
   product,
   close,
+  onBack,
   submit,
 }: {
   business: Business;
   product: Product;
   close: () => void;
+  onBack?: () => void;
   submit: (business: Business, product: Product, message: string) => void;
 }) {
   const [message, setMessage] = useState("");
-  return <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
-    <section className="modal" role="dialog" aria-modal="true"><button className="modal-close" onClick={close} aria-label="Close">×</button>
-      <div className="modal-mark">↗</div><div className="eyebrow">LOCAL ENQUIRY · DEMO</div><h2>Ask about {product.name}.</h2><p>{business.name} · {product.price ? `₹${product.price.toLocaleString("en-IN")} ${product.unit}` : product.unit}</p>
-      <form className="stacked-form" onSubmit={(event) => { event.preventDefault(); submit(business, product, message.trim()); }}><label>Your message<textarea value={message} onChange={(event) => setMessage(event.target.value)} rows={4} maxLength={500} placeholder="Ask about availability, options or an appointment. Do not include sensitive information." required /></label><div className="form-button-row"><button type="button" className="outline-button" onClick={close}>Cancel</button><button type="submit" className="primary-button">Save enquiry locally →</button></div></form>
-      <div className="fine-print">Your message stays in this browser. It is not delivered to the business in this demo.</div>
-    </section>
-  </div>;
+  return (
+    <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) (onBack || close)(); }}>
+      <section className="modal" role="dialog" aria-modal="true">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+          <button
+            type="button"
+            onClick={onBack || close}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "5px",
+              background: "#edf5ee",
+              border: "1px solid #c2dec6",
+              borderRadius: "7px",
+              padding: "5px 10px",
+              fontSize: "11.5px",
+              fontWeight: 700,
+              color: "#184e27",
+              cursor: "pointer",
+            }}
+          >
+            ← Back to {business.name}
+          </button>
+          <button className="modal-close" onClick={close} aria-label="Close" style={{ position: "static", margin: 0 }}>×</button>
+        </div>
+        <div className="modal-mark">↗</div>
+        <div className="eyebrow">LOCAL ENQUIRY · DEMO</div>
+        <h2>Ask about {product.name}.</h2>
+        <p>{business.name} · {product.price ? `₹${product.price.toLocaleString("en-IN")} ${product.unit}` : product.unit}</p>
+        <form className="stacked-form" onSubmit={(event) => { event.preventDefault(); submit(business, product, message.trim()); }}>
+          <label>
+            Your message
+            <textarea value={message} onChange={(event) => setMessage(event.target.value)} rows={4} maxLength={500} placeholder="Ask about availability, options or an appointment. Do not include sensitive information." required />
+          </label>
+          <div className="form-button-row">
+            <button type="button" className="outline-button" onClick={onBack || close}>
+              ← Back
+            </button>
+            <button type="submit" className="primary-button">Save enquiry locally →</button>
+          </div>
+        </form>
+        <div className="fine-print">Your message stays in this browser. It is not delivered to the business in this demo.</div>
+      </section>
+    </div>
+  );
 }
 
 function ReviewDialog({
   business,
   close,
+  onBack,
   onSubmit,
 }: {
   business: Business;
   close: () => void;
+  onBack?: () => void;
   onSubmit: (rating: number, review: string) => void;
 }) {
   const [stars, setStars] = useState(5);
@@ -9827,13 +10249,36 @@ function ReviewDialog({
     <div
       className="modal-backdrop"
       onMouseDown={(e) => {
-        if (e.target === e.currentTarget) close();
+        if (e.target === e.currentTarget) (onBack || close)();
       }}
     >
       <section className="modal review-modal" role="dialog" aria-modal="true" style={{ maxWidth: "460px" }}>
-        <button className="modal-close" onClick={close} aria-label="Close">
-          ×
-        </button>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+                background: "#edf5ee",
+                border: "1px solid #c2dec6",
+                borderRadius: "7px",
+                padding: "5px 10px",
+                fontSize: "11.5px",
+                fontWeight: 700,
+                color: "#184e27",
+                cursor: "pointer",
+              }}
+            >
+              ← Back to {business.name}
+            </button>
+          )}
+          <button className="modal-close" onClick={close} aria-label="Close" style={{ position: "static", margin: 0 }}>
+            ×
+          </button>
+        </div>
         <div className="eyebrow">CUSTOMER FEEDBACK · RATINGS & REVIEWS</div>
         <h2 style={{ marginTop: "4px", marginBottom: "4px" }}>Rate {business.name}</h2>
         <p style={{ margin: "0 0 16px", color: "#68766b", fontSize: "13px" }}>
@@ -9906,8 +10351,8 @@ function ReviewDialog({
           </label>
 
           <div className="form-button-row" style={{ marginTop: "14px" }}>
-            <button type="button" className="outline-button" onClick={close}>
-              Cancel
+            <button type="button" className="outline-button" onClick={onBack || close}>
+              {onBack ? "← Back" : "Cancel"}
             </button>
             <button type="submit" className="primary-button">
               Submit Review ★
@@ -10113,11 +10558,13 @@ function OrderCheckoutDialog({
   business,
   product,
   close,
+  onBack,
   onPlaceOrder,
 }: {
   business: Business;
   product: Product;
   close: () => void;
+  onBack?: () => void;
   onPlaceOrder: (order: Omit<OrderRecord, "id" | "createdAt">) => void;
 }) {
   const [quantity, setQuantity] = useState(1);
@@ -10211,11 +10658,31 @@ function OrderCheckoutDialog({
     <div className="order-modal-backdrop" onClick={close}>
       <div className="order-checkout-container" onClick={(e) => e.stopPropagation()}>
         <div className="order-checkout-header">
-          <div>
-            <h3>
-              <span>🛍️</span> Complete Your Order
-            </h3>
-            <span className="biz-badge">From {business.name}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            {onBack && (
+              <button
+                type="button"
+                onClick={onBack}
+                style={{
+                  background: "rgba(255, 255, 255, 0.2)",
+                  border: "1px solid rgba(255, 255, 255, 0.35)",
+                  color: "#ffffff",
+                  borderRadius: "6px",
+                  padding: "4px 9px",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                ← Back
+              </button>
+            )}
+            <div>
+              <h3>
+                <span>🛍️</span> Complete Your Order
+              </h3>
+              <span className="biz-badge">From {business.name}</span>
+            </div>
           </div>
           <button
             type="button"
@@ -10598,10 +11065,10 @@ function OrderCheckoutDialog({
               <button
                 type="button"
                 className="outline-button"
-                onClick={close}
+                onClick={onBack || close}
                 style={{ padding: "12px 18px", borderRadius: "10px" }}
               >
-                Cancel
+                {onBack ? "← Back to Store" : "Cancel"}
               </button>
               <button
                 type="submit"
@@ -11592,7 +12059,7 @@ function PlanCheckoutDialog({
                 onClick={close}
                 style={{ padding: "12px 18px", borderRadius: "10px" }}
               >
-                Cancel
+                ← Back / Cancel
               </button>
               <button
                 type="submit"
