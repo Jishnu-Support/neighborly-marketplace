@@ -657,12 +657,13 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
           </button>
         </form>
       ) : (
-      <form className="stacked-form" onSubmit={handleSubmit}>
+      <form key={registering ? `register-form-${portal}` : `signin-form-${portal}`} className="stacked-form" onSubmit={handleSubmit}>
         {registering ? (
           <>
             <label>
               {portal === "Business" ? "Business Name *" : "Your full name *"}
               <input
+                key="reg-fullName"
                 name="fullName"
                 autoComplete="name"
                 placeholder={portal === "Business" ? "e.g. Sri Lakshmi Automotives" : "e.g. Asha Rao"}
@@ -1038,11 +1039,11 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
           <>
             <label>
               Email or mobile number
-              <input name="identity" autoComplete="username" placeholder="you@example.com or 9876543210" required />
+              <input key="login-identity" name="identity" autoComplete="username" placeholder="you@example.com or 9876543210" required />
             </label>
             <label>
               Password
-              <input name="password" type="password" autoComplete="current-password" placeholder="Enter your password" required />
+              <input key="login-password" name="password" type="password" autoComplete="current-password" placeholder="Enter your password" required />
             </label>
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "-6px" }}>
               <button
@@ -1116,7 +1117,9 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
             <button
               className="outline-button full-button"
               type="button"
-              onClick={() => {
+              onClick={(e) => {
+                const form = e.currentTarget.closest(".portal-login-card")?.querySelector("form");
+                if (form) (form as HTMLFormElement).reset();
                 setRegistering((value) => !value);
                 setMessage("");
                 setIsSuccess(false);

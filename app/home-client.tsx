@@ -20429,7 +20429,7 @@ function Dialog({
             </button>
           </form>
         ) : isSignup && !customerForm.enabled ? <p className="form-note">Customer registration is temporarily unavailable.</p> :
-        <form onSubmit={handleAccountSubmit} className="stacked-form">
+        <form key={isSignup ? "customer-signup-form" : "customer-login-form"} onSubmit={handleAccountSubmit} className="stacked-form">
           {isSignup && regEnabled(customerForm, "fullName") && <label>{regLabel(customerForm, "fullName", "Your name")}<input name="fullName" placeholder="e.g. Asha Rao" required={regField(customerForm, "fullName")?.required ?? true} /></label>}
           {isSignup && <p className="fine-print">When you submit, your browser will ask to share your location with authorized Company Admins for local discovery. You can deny access and continue; no coordinates are saved if you deny.</p>}
           {(!isSignup || regEnabled(customerForm, "phone")) && <label>{regLabel(customerForm, "phone", "Mobile number")}<div className="phone-input"><span>🇮🇳 +91</span><input name="phone" type="tel" placeholder="98765 43210" minLength={8} required /></div></label>}
