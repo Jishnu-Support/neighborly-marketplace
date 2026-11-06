@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentSession } from "@/app/lib/auth";
-import { listRegisteredBusinesses, updateBusinessProfile } from "@/app/lib/businesses";
+import { listRegisteredBusinesses, updateBusinessProfile, deleteBusinessRecord } from "@/app/lib/businesses";
 
 export async function GET() {
   const businesses = await listRegisteredBusinesses();
@@ -31,5 +31,26 @@ export async function PUT(request: Request) {
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to update business.";
     return NextResponse.json({ error: message }, { status: 400 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  const session = await getCurrentSession(request);
+  if (!session || session.role !== "Company") {
+    return NextResponse.json({ error: "Only Company administrators can delete businesses." }, { status: 403 });
+  }
+
+  const { searchParams } = new URL(request.url);
+  const idOrName = searchParams.get("id") || searchParams.get("name");
+  if (!idOrName) {
+    return NextResponse.json({ error: "Business ID or Name is required to delete." }, { status: 400 });
+  }
+
+  try {
+    const deleted = await deleteBusinessRecord(idOrName);
+    return NextResponse.json({ success: true, deleted, idOrName });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to delete business.";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

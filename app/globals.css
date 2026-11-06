@@ -4453,23 +4453,45 @@ html, body {
 .drawer-sos-call-btn {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 7px 6px;
-  border-radius: 7px;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
   font-size: 11px;
   font-weight: 700;
   text-decoration: none;
   border: 1px solid #e2e8f0;
   background: #ffffff;
   color: #1e293b;
-  transition: background 0.15s ease;
+  transition: all 0.15s ease;
+}
+
+.drawer-sos-label {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.drawer-sos-label strong {
+  font-size: 13px;
+  font-weight: 800;
+  display: block;
+}
+
+.drawer-sos-label small {
+  font-size: 9.5px;
+  color: #64748b;
+  display: block;
+  font-weight: 600;
 }
 
 .drawer-sos-call-btn:active {
   background: #f1f5f9;
+  transform: scale(0.97);
 }
 
+.drawer-sos-call-btn.ambulance,
 .drawer-sos-call-btn.medical {
   border-color: #fed7aa;
   color: #9a3412;
@@ -4488,10 +4510,11 @@ html, body {
   background: #fef2f2;
 }
 
+.drawer-sos-call-btn.helpline,
 .drawer-sos-call-btn.all {
-  border-color: #d1fae5;
-  color: #065f46;
-  background: #ecfdf5;
+  border-color: #bfdbfe;
+  color: #1e3a8a;
+  background: #eff6ff;
 }
 
 .quick-emergency-bar {

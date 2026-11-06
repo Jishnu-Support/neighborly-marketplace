@@ -19731,146 +19731,324 @@ function Dialog({
         <div className="fine-print">100% money-back guarantee within 7 days. Instant activation and official GST tax receipt upon completion.</div></>}
       {kind === "sos" && (
         <>
-          <div className="sos-modal-mark">🚨</div>
-          <div className="eyebrow" style={{ color: "#dc2626", fontWeight: 800 }}>EMERGENCY RESPONSE · 24×7</div>
-          <h2 style={{ fontSize: "20px", margin: "4px 0 6px" }}>Emergency SOS &amp; Helplines</h2>
-          <p style={{ fontSize: "12px", color: "#64748b", margin: "0 0 16px" }}>
-            Tap an immediate direct dialer below for instant connection, or broadcast your live GPS coordinates to emergency responders.
-          </p>
-
-          {/* Immediate 1-Tap Helplines Grid */}
-          <div className="quick-emergency-bar">
-            <div style={{ fontSize: "11px", fontWeight: 800, color: "#991b1b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
-              <span className="sos-fab-beacon" style={{ width: 7, height: 7 }} />
-              <span>1-Tap Direct Emergency Dialers</span>
+          <div style={{ textAlign: "center", marginBottom: "16px" }}>
+            <div style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              background: "#fef2f2",
+              border: "1px solid #fecaca",
+              padding: "4px 12px",
+              borderRadius: "999px",
+              fontSize: "11px",
+              fontWeight: 800,
+              color: "#dc2626",
+              letterSpacing: "0.04em",
+              textTransform: "uppercase",
+              marginBottom: "8px",
+            }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#dc2626", display: "inline-block", boxShadow: "0 0 0 3px rgba(220,38,38,0.25)" }} />
+              <span>24×7 Emergency Response</span>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "8px" }}>
-              <a href="tel:108" className="drawer-sos-call-btn ambulance">
-                <span>🚑</span>
-                <span className="drawer-sos-label">
-                  <strong>108 Ambulance</strong>
-                  <small>Medical Emergency</small>
+            <h2 style={{ fontSize: "22px", fontWeight: 800, color: "#0f172a", margin: "2px 0 6px" }}>
+              Emergency SOS &amp; Helplines
+            </h2>
+            <p style={{ fontSize: "12px", color: "#64748b", margin: 0, maxWidth: "420px", marginLeft: "auto", marginRight: "auto" }}>
+              Tap any helpline for instant direct connection, or broadcast your live GPS location to emergency responders.
+            </p>
+          </div>
+
+          {/* 1-Tap Emergency Helplines Section */}
+          <div style={{ marginBottom: "18px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+              <div style={{ fontSize: "11px", fontWeight: 800, color: "#991b1b", textTransform: "uppercase", letterSpacing: "0.04em", display: "flex", alignItems: "center", gap: "6px" }}>
+                <span>🚨</span>
+                <span>Immediate Direct Call Dialers</span>
+              </div>
+              <span style={{ fontSize: "10.5px", color: "#64748b", fontWeight: 600 }}>Toll-Free Helpline</span>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px" }}>
+              {/* 112 National Helpline */}
+              <a
+                href="tel:112"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "12px 14px",
+                  borderRadius: "10px",
+                  background: "#eff6ff",
+                  border: "1.5px solid #bfdbfe",
+                  textDecoration: "none",
+                  color: "#1e3a8a",
+                  boxShadow: "0 2px 6px rgba(30, 58, 138, 0.05)",
+                  transition: "transform 0.1s ease",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
+                  <span style={{ fontSize: "24px", lineHeight: 1, flexShrink: 0 }}>🛡️</span>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: "17px", fontWeight: 800, lineHeight: 1.15, color: "#1e3a8a" }}>112</div>
+                    <div style={{ fontSize: "11.5px", fontWeight: 700, color: "#2563eb", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>National SOS</div>
+                    <div style={{ fontSize: "9.5px", color: "#64748b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>All-in-One Helpline</div>
+                  </div>
+                </div>
+                <span style={{ background: "#2563eb", color: "#ffffff", fontSize: "10.5px", fontWeight: 700, padding: "5px 9px", borderRadius: "6px", flexShrink: 0, marginLeft: "6px" }}>
+                  Call
                 </span>
               </a>
-              <a href="tel:100" className="drawer-sos-call-btn police">
-                <span>🚓</span>
-                <span className="drawer-sos-label">
-                  <strong>100 Police</strong>
-                  <small>Police Control Room</small>
+
+              {/* 108 Ambulance */}
+              <a
+                href="tel:108"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "12px 14px",
+                  borderRadius: "10px",
+                  background: "#fff7ed",
+                  border: "1.5px solid #fed7aa",
+                  textDecoration: "none",
+                  color: "#9a3412",
+                  boxShadow: "0 2px 6px rgba(154, 52, 18, 0.05)",
+                  transition: "transform 0.1s ease",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
+                  <span style={{ fontSize: "24px", lineHeight: 1, flexShrink: 0 }}>🚑</span>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: "17px", fontWeight: 800, lineHeight: 1.15, color: "#9a3412" }}>108</div>
+                    <div style={{ fontSize: "11.5px", fontWeight: 700, color: "#ea580c", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Ambulance</div>
+                    <div style={{ fontSize: "9.5px", color: "#64748b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Medical Emergency</div>
+                  </div>
+                </div>
+                <span style={{ background: "#ea580c", color: "#ffffff", fontSize: "10.5px", fontWeight: 700, padding: "5px 9px", borderRadius: "6px", flexShrink: 0, marginLeft: "6px" }}>
+                  Call
                 </span>
               </a>
-              <a href="tel:101" className="drawer-sos-call-btn fire">
-                <span>🚒</span>
-                <span className="drawer-sos-label">
-                  <strong>101 Fire &amp; Rescue</strong>
-                  <small>Hosur Fire Station</small>
+
+              {/* 100 Police */}
+              <a
+                href="tel:100"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "12px 14px",
+                  borderRadius: "10px",
+                  background: "#f0fdf4",
+                  border: "1.5px solid #bbf7d0",
+                  textDecoration: "none",
+                  color: "#166534",
+                  boxShadow: "0 2px 6px rgba(22, 101, 52, 0.05)",
+                  transition: "transform 0.1s ease",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
+                  <span style={{ fontSize: "24px", lineHeight: 1, flexShrink: 0 }}>🚓</span>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: "17px", fontWeight: 800, lineHeight: 1.15, color: "#166534" }}>100</div>
+                    <div style={{ fontSize: "11.5px", fontWeight: 700, color: "#16a34a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Police</div>
+                    <div style={{ fontSize: "9.5px", color: "#64748b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Police Control Room</div>
+                  </div>
+                </div>
+                <span style={{ background: "#16a34a", color: "#ffffff", fontSize: "10.5px", fontWeight: 700, padding: "5px 9px", borderRadius: "6px", flexShrink: 0, marginLeft: "6px" }}>
+                  Call
                 </span>
               </a>
-              <a href="tel:112" className="drawer-sos-call-btn helpline">
-                <span>🛡️</span>
-                <span className="drawer-sos-label">
-                  <strong>112 National SOS</strong>
-                  <small>All-in-One Helpline</small>
+
+              {/* 101 Fire */}
+              <a
+                href="tel:101"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "12px 14px",
+                  borderRadius: "10px",
+                  background: "#fef2f2",
+                  border: "1.5px solid #fecaca",
+                  textDecoration: "none",
+                  color: "#991b1b",
+                  boxShadow: "0 2px 6px rgba(153, 27, 27, 0.05)",
+                  transition: "transform 0.1s ease",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
+                  <span style={{ fontSize: "24px", lineHeight: 1, flexShrink: 0 }}>🚒</span>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: "17px", fontWeight: 800, lineHeight: 1.15, color: "#991b1b" }}>101</div>
+                    <div style={{ fontSize: "11.5px", fontWeight: 700, color: "#dc2626", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Fire &amp; Rescue</div>
+                    <div style={{ fontSize: "9.5px", color: "#64748b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Hosur Fire Station</div>
+                  </div>
+                </div>
+                <span style={{ background: "#dc2626", color: "#ffffff", fontSize: "10.5px", fontWeight: 700, padding: "5px 9px", borderRadius: "6px", flexShrink: 0, marginLeft: "6px" }}>
+                  Call
                 </span>
               </a>
             </div>
           </div>
 
           {/* GPS Broadcast Section */}
-          <div style={{ borderTop: "1px dashed #e2e8f0", paddingTop: "14px", marginTop: "16px" }}>
-            <div style={{ display: "flex", borderBottom: "none", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-              <strong style={{ fontSize: "13px", color: "#1e293b" }}>Broadcast GPS Emergency Alert</strong>
-              <span style={{ fontSize: "10.5px", background: "#fef2f2", color: "#b91c1c", padding: "2px 8px", borderRadius: "999px", fontWeight: 700 }}>GPS-Enabled</span>
+          <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "12px", padding: "16px", marginBottom: "16px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <span style={{ fontSize: "14px" }}>📍</span>
+                <strong style={{ fontSize: "12.5px", color: "#0f172a" }}>Broadcast Live GPS Distress Alert</strong>
+              </div>
+              <span style={{ fontSize: "10px", background: "#fef2f2", color: "#b91c1c", border: "1px solid #fecaca", padding: "2px 8px", borderRadius: "999px", fontWeight: 700 }}>
+                GPS-Enabled
+              </span>
             </div>
-            <p style={{ fontSize: "11.5px", color: "#64748b", margin: "0 0 10px" }}>
-              Select emergency category to capture live GPS location and record emergency broadcast:
+            <p style={{ fontSize: "11.5px", color: "#64748b", margin: "0 0 12px" }}>
+              Select emergency category to capture live GPS location and notify emergency responders:
             </p>
-          </div>
 
-          <div className="sos-emergency-tiles" role="group" aria-label="Emergency type">
-            {emergencyTypes.map((item) => (
+            {/* Clean Category Chips */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "8px", marginBottom: "14px" }}>
+              {emergencyTypes.map((item) => {
+                const isSelected = selectedEmergencyType === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    disabled={sosBusy}
+                    onClick={() => {
+                      setSelectedEmergencyType(item.id);
+                      setSosError("");
+                      setSosResult(null);
+                    }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      padding: "9px 12px",
+                      borderRadius: "8px",
+                      border: isSelected ? "2px solid #dc2626" : "1px solid #cbd5e1",
+                      background: isSelected ? "#fef2f2" : "#ffffff",
+                      color: isSelected ? "#991b1b" : "#334155",
+                      fontWeight: isSelected ? 800 : 600,
+                      fontSize: "11.5px",
+                      cursor: "pointer",
+                      textAlign: "left",
+                      boxShadow: isSelected ? "0 2px 8px rgba(220, 38, 38, 0.12)" : "none",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    <span style={{ fontSize: "16px", lineHeight: 1 }}>{item.icon}</span>
+                    <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.title}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Profile info & Emergency contacts */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px", padding: "8px 12px", background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", fontSize: "11px", color: "#475569", marginBottom: "12px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <span>👤</span>
+                <span><strong>{emergencyProfile.customerName || "Hosur Resident"}</strong> ({emergencyProfile.customerPhone || "Active Device"})</span>
+              </div>
               <button
-                key={item.id}
                 type="button"
+                onClick={onOpenProfile}
                 disabled={sosBusy}
-                className={`sos-emergency-tile ${selectedEmergencyType === item.id ? "selected" : ""}`}
-                aria-pressed={selectedEmergencyType === item.id}
-                onClick={() => {
-                  setSelectedEmergencyType(item.id);
-                  setSosError("");
-                  setSosResult(null);
+                style={{ background: "none", border: "none", color: "#2563eb", fontWeight: 700, fontSize: "11px", cursor: "pointer", padding: 0, textDecoration: "underline" }}
+              >
+                Edit Emergency Contacts →
+              </button>
+            </div>
+
+            <form onSubmit={submitSos} style={{ margin: 0 }}>
+              {sosError && (
+                <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#b91c1c", padding: "9px 12px", borderRadius: "8px", fontSize: "11.5px", fontWeight: 600, marginBottom: "10px" }}>
+                  ⚠️ {sosError}
+                </div>
+              )}
+              <button
+                type="submit"
+                disabled={sosBusy}
+                style={{
+                  width: "100%",
+                  padding: "13px 20px",
+                  borderRadius: "10px",
+                  border: "none",
+                  background: "linear-gradient(135deg, #dc2626 0%, #991b1b 100%)",
+                  color: "#ffffff",
+                  fontSize: "13.5px",
+                  fontWeight: 800,
+                  letterSpacing: "0.02em",
+                  cursor: sosBusy ? "wait" : "pointer",
+                  boxShadow: "0 4px 14px rgba(220, 38, 38, 0.35)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
                 }}
               >
-                <span className="sos-type-icon">{item.icon}</span>
-                <strong>{item.title}</strong>
-                <small>{item.description}</small>
+                <span>🚨</span>
+                <span>
+                  {sosBusy
+                    ? "Capturing GPS & Broadcasting Alert..."
+                    : `Broadcast SOS Alert${selectedEmergencyType ? ` (${emergencyTypes.find((t) => t.id === selectedEmergencyType)?.title})` : ""}`}
+                </span>
               </button>
-            ))}
+            </form>
           </div>
 
-          <form className="emergency-contact-form sos-submit-form" onSubmit={submitSos}>
-            <div className="sos-profile-summary">
-              <strong>{emergencyProfile.customerName || "Hosur Resident / Mobile Visitor"}</strong>
-              <span>{emergencyProfile.customerPhone || "Mobile: Active Device"}</span>
-              <span>Emergency contacts: {emergencyProfile.emergencyPhones.filter(Boolean).length ? emergencyProfile.emergencyPhones.join(" · ") : "112 (National) · 108 (Ambulance)"}</span>
-              <button type="button" className="text-link" disabled={sosBusy} onClick={onOpenProfile}>
-                Edit profile &amp; custom emergency contacts
-              </button>
-            </div>
-            <p className="fine-print">
-              Your device GPS coordinates, timestamp, and emergency type are immediately logged in the secure safety registry.
-            </p>
-            {sosError && <p className="form-error" role="alert">{sosError}</p>}
-            <button
-              className="primary-button sos-trigger-button"
-              type="submit"
-              disabled={sosBusy}
-              style={{
-                background: "linear-gradient(135deg, #dc2626 0%, #991b1b 100%)",
-                boxShadow: "0 4px 14px rgba(220, 38, 38, 0.4)",
-              }}
-            >
-              {sosBusy ? "Broadcasting GPS SOS..." : `🚨 Broadcast SOS Alert${selectedEmergencyType ? ` (${emergencyTypes.find((t) => t.id === selectedEmergencyType)?.title})` : ""}`}
-            </button>
-          </form>
-
           {sosResult && (
-            <div className="sos-call-panel">
-              <strong>
-                {emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.title || "Emergency"} alert {sosResult.duplicate ? "already recorded" : "logged"} ·{" "}
-                {sosResult.locationStatus === "shared" && sosResult.latitude !== null && sosResult.longitude !== null
-                  ? `${sosResult.latitude.toFixed(6)}, ${sosResult.longitude.toFixed(6)} (±${Math.round(sosResult.accuracyMeters || 0)}m)`
-                  : "Location unavailable"}
-              </strong>
-              <p>
-                Alert Ref: {sosResult.id} · Recorded {new Date(sosResult.createdAt).toLocaleTimeString()}
-              </p>
+            <div style={{ background: "#f0fdf4", border: "1.5px solid #86efac", borderRadius: "12px", padding: "16px", marginBottom: "16px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#166534", marginBottom: "6px" }}>
+                <span style={{ fontSize: "18px" }}>✅</span>
+                <strong style={{ fontSize: "13px" }}>
+                  {emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.title || "Emergency"} Alert Recorded &amp; Broadcast
+                </strong>
+              </div>
+              <div style={{ fontSize: "11.5px", color: "#374151", marginBottom: "10px" }}>
+                <div><strong>Alert ID:</strong> #{sosResult.id} · Recorded {new Date(sosResult.createdAt).toLocaleTimeString()}</div>
+                <div>
+                  <strong>Location:</strong>{" "}
+                  {sosResult.locationStatus === "shared" && sosResult.latitude !== null && sosResult.longitude !== null
+                    ? `${sosResult.latitude.toFixed(6)}, ${sosResult.longitude.toFixed(6)} (±${Math.round(sosResult.accuracyMeters || 0)}m)`
+                    : "Location permission denied or unavailable"}
+                </div>
+              </div>
+
               {sosResult.locationStatus === "shared" && sosResult.latitude !== null && sosResult.longitude !== null && (
-                <div style={{ margin: "6px 0 10px" }}>
+                <div style={{ marginBottom: "12px" }}>
                   <a
                     href={`https://www.google.com/maps?q=${sosResult.latitude},${sosResult.longitude}`}
                     target="_blank"
                     rel="noreferrer"
-                    style={{ fontSize: "11px", color: "#15803d", fontWeight: 700, textDecoration: "underline" }}
+                    style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "12px", color: "#15803d", fontWeight: 700, textDecoration: "underline" }}
                   >
-                    📍 Open GPS Pin in Google Maps →
+                    📍 Open GPS Pin in Google Maps ↗
                   </a>
                 </div>
               )}
-              <div className="emergency-call-links">
+
+              {/* Action buttons */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "8px" }}>
                 <a
-                  className="primary-button"
                   href={`tel:${emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.phone || "112"}`}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "6px",
+                    background: "#166534",
+                    color: "#ffffff",
+                    padding: "9px 12px",
+                    borderRadius: "8px",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    textDecoration: "none",
+                  }}
                 >
-                  📞 Call {emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.title || "Helpline"} ({emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.phone || "112"})
+                  <span>📞</span>
+                  <span>Call Responder ({emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.phone || "112"})</span>
                 </a>
-                {sosResult.emergencyPhones.map((phone, index) => (
-                  <a className="outline-button" key={`sos-call-${index}`} href={`tel:${phone}`}>
-                    📞 Call Contact {index + 1} ({phone})
-                  </a>
-                ))}
-              </div>
-              <div className="emergency-call-links emergency-sms-links">
                 {sosResult.emergencyPhones.map((phone, index) => {
                   const coordinates =
                     sosResult.latitude !== null && sosResult.longitude !== null
@@ -19880,16 +20058,35 @@ function Dialog({
                     `EMERGENCY SOS (${emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.title || "General"}) from ${sosResult.customerName}. Please send help! ${coordinates}`
                   );
                   return (
-                    <a className="outline-button" key={`sos-sms-${index}`} href={`sms:${phone}?body=${message}`}>
-                      💬 Send GPS SMS to {phone}
+                    <a
+                      key={`sos-action-${index}`}
+                      href={`sms:${phone}?body=${message}`}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "6px",
+                        background: "#ffffff",
+                        border: "1px solid #cbd5e1",
+                        color: "#1e293b",
+                        padding: "9px 12px",
+                        borderRadius: "8px",
+                        fontSize: "12px",
+                        fontWeight: 700,
+                        textDecoration: "none",
+                      }}
+                    >
+                      <span>💬</span>
+                      <span>SMS Contact ({phone})</span>
                     </a>
                   );
                 })}
               </div>
             </div>
           )}
-          <div className="fine-print">
-            If you are in immediate life-threatening danger, dial 112 or 108 directly. Bizearch records emergency events for safety monitoring and prepares direct calling/SMS on your device.
+
+          <div style={{ fontSize: "11px", color: "#94a3b8", textAlign: "center", marginTop: "10px" }}>
+            If you are in immediate life-threatening danger, dial <strong>112</strong> or <strong>108</strong> directly.
           </div>
         </>
       )}

@@ -111,6 +111,22 @@ export async function readBusinessRecords(): Promise<StoredBusiness[]> {
     if (Array.isArray(parsed)) {
       const records = parsed as StoredBusiness[];
       let modified = false;
+
+      // Purge deleted/requested removal businesses (e.g. Glitterr&Glow)
+      const DELETED_IDS = ["61d65069-f00c-47fe-90c4-d8b241dfd865"];
+      const DELETED_NAMES = ["glitterr&glow", "glitter&glow"];
+      const initialCount = records.length;
+      const retained = records.filter(
+        (b) =>
+          !DELETED_IDS.includes(b.id) &&
+          !DELETED_NAMES.includes((b.name || "").trim().toLowerCase())
+      );
+      if (retained.length !== initialCount) {
+        records.length = 0;
+        records.push(...retained);
+        modified = true;
+      }
+
       for (const b of records) {
         if (!b.coordinates || typeof b.coordinates.latitude !== "number" || typeof b.coordinates.longitude !== "number") {
           if (b.agentVerification?.verifiedGps?.latitude && b.agentVerification?.verifiedGps?.longitude) {
@@ -718,4 +734,18 @@ export async function updateBusinessProfile(idOrIdentity: string, updates: Parti
 
   const { salt: _s, passwordHash: _p, ...pub } = current;
   return pub;
+}
+
+export async function deleteBusinessRecord(idOrName: string): Promise<boolean> {
+  const records = await readBusinessRecords();
+  const normalized = idOrName.trim().toLowerCase();
+  const initialCount = records.length;
+  const filtered = records.filter(
+    (b) => b.id.toLowerCase() !== normalized && b.name.toLowerCase() !== normalized
+  );
+  if (filtered.length !== initialCount) {
+    await writeBusinessRecords(filtered);
+    return true;
+  }
+  return false;
 }
