@@ -2101,7 +2101,7 @@ export default function Home() {
   const [activeReceipt, setActiveReceipt] = useState<OrderRecord | null>(null);
   const [subscriptionCheckout, setSubscriptionCheckout] = useState<{ businessName?: string; plan?: string } | null>(null);
   const [subscriptionReceipt, setSubscriptionReceipt] = useState<CheckoutRequest | null>(null);
-  const [claimBusiness, setClaimBusiness] = useState<Business | null>(null);
+  const [navigatingBusiness, setNavigatingBusiness] = useState<Business | null>(null);
   const [selectedNeighborhood, setSelectedNeighborhood] = useState("All Hosur");
   const [mobileLocalitySheetOpen, setMobileLocalitySheetOpen] = useState(false);
   const [mobileLangSheetOpen, setMobileLangSheetOpen] = useState(false);
@@ -3752,7 +3752,7 @@ export default function Home() {
       window.open(`https://wa.me/${normalizedPhone}?text=${msg}`, "_blank");
     } else if (action === "navigate") {
       if (targetBiz) {
-        viewBusiness(targetBiz, "navigation");
+        setNavigatingBusiness(targetBiz);
         recordEvent(`Ad lead - Navigation: ${targetBiz.name}`);
       }
     }
@@ -6983,8 +6983,7 @@ export default function Home() {
                                     style={{ border: "1px solid #c9dcc8", background: "#f3f8f2", color: "#2d693f", borderRadius: "4px", padding: "4px 7px", fontSize: "9px", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      setBusinessModalTab("navigation");
-                                      setSelectedBusiness(business);
+                                      setNavigatingBusiness(business);
                                       setSearchDropdownOpen(false);
                                       recordEvent(`Autocomplete navigate: ${product.name}`);
                                     }}
@@ -7556,7 +7555,7 @@ export default function Home() {
                                 type="button"
                                 className="business-card-nav-btn"
                                 onClick={() => {
-                                  viewBusiness(business, "navigation");
+                                  setNavigatingBusiness(business);
                                   recordEvent("Business navigate clicked");
                                 }}
                                 title={`Navigate to ${business.name}`}
@@ -7595,14 +7594,6 @@ export default function Home() {
                                 title={`Share ${business.name}`}
                               >
                                 ↗ {t.share}
-                              </button>
-                              <button
-                                type="button"
-                                className="business-card-claim-btn"
-                                onClick={() => setClaimBusiness(business)}
-                                title={`Claim ownership of ${business.name}`}
-                              >
-                                🏷️ {t.claim}
                               </button>
                             </div>
                           </div>
@@ -7738,8 +7729,7 @@ export default function Home() {
                             className="related-product-navigate-btn"
                             style={{ border: "1px solid #c9dcc8", background: "#f3f8f2", color: "#2d693f", borderRadius: "5px", padding: "6px 9px", font: "700 9.5px Manrope, sans-serif", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px", whiteSpace: "nowrap" }}
                             onClick={() => {
-                              setBusinessModalTab("navigation");
-                              setSelectedBusiness(business);
+                              setNavigatingBusiness(business);
                               recordEvent(`Product navigate clicked: ${product.name}`);
                             }}
                             title={`Navigate to ${business.name} from your location`}
@@ -8079,7 +8069,6 @@ export default function Home() {
           userCoordinates={locationCoordinates}
           onRequestDeviceLocation={requestDeviceLocation}
           initialTab={businessModalTab}
-          onClaim={(biz) => setClaimBusiness(biz)}
           onRate={(biz) => setReviewBusiness(biz)}
           onTriggerCall={handleTriggerCall}
         />
@@ -8110,21 +8099,12 @@ export default function Home() {
           }}
         />
       )}
-      {claimBusiness && (
-        <ClaimBusinessDialog
-          business={claimBusiness}
-          close={() => setClaimBusiness(null)}
-          onSubmit={(data) => {
-            showNotice(`✓ Claim request received for "${claimBusiness.name}"! Our Hosur onboarding team will call ${data.phone}.`);
-            recordEvent(`Business claim submitted: ${claimBusiness.name} by ${data.ownerName}`);
-            addNotification({
-              title: `Claim Request: ${claimBusiness.name}`,
-              message: `Your verification request as ${data.role} has been received. Our Hosur verification manager will contact ${data.phone} within 24 hours.`,
-              type: "system",
-              read: false,
-            });
-            setClaimBusiness(null);
-          }}
+      {navigatingBusiness && (
+        <CleanNavigationModal
+          business={navigatingBusiness}
+          userCoordinates={locationCoordinates}
+          onRequestDeviceLocation={requestDeviceLocation}
+          close={() => setNavigatingBusiness(null)}
         />
       )}
 
@@ -8872,7 +8852,6 @@ function BusinessDetailDialog({
   userCoordinates,
   onRequestDeviceLocation,
   initialTab = "products",
-  onClaim,
   onRate,
   onTriggerCall,
 }: {
@@ -8885,7 +8864,6 @@ function BusinessDetailDialog({
   userCoordinates?: Coordinates | null;
   onRequestDeviceLocation?: () => void;
   initialTab?: "products" | "reviews" | "navigation";
-  onClaim?: (business: Business) => void;
   onRate?: (business: Business) => void;
   onTriggerCall?: (targetName: string, targetPhone: string, targetType?: "Business" | "Customer Care" | "Emergency", metadata?: { businessId?: string; businessName?: string }) => void;
 }) {
@@ -9108,7 +9086,7 @@ function BusinessDetailDialog({
           <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "#254e32" }}>
             <span>★</span> <strong>{business.rating.toFixed(1)}</strong> <span style={{ color: "#6a7c6f" }}>({business.reviews} reviews)</span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div>
             <button
               type="button"
               onClick={() => {
@@ -9118,17 +9096,6 @@ function BusinessDetailDialog({
               style={{ background: "transparent", border: 0, color: "#2d633b", fontSize: "11px", fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}
             >
               ⭐ Rate Business
-            </button>
-            <span style={{ color: "#d0dcd1" }}>|</span>
-            <button
-              type="button"
-              onClick={() => {
-                close();
-                onClaim?.(business);
-              }}
-              style={{ background: "transparent", border: 0, color: "#2d633b", fontSize: "11px", fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}
-            >
-              🏷️ Claim this business ↗
             </button>
           </div>
         </div>
@@ -9793,27 +9760,63 @@ function ReviewDialog({
   );
 }
 
-function ClaimBusinessDialog({
+function CleanNavigationModal({
   business,
+  userCoordinates,
+  onRequestDeviceLocation,
   close,
-  onSubmit,
 }: {
   business: Business;
+  userCoordinates?: Coordinates | null;
+  onRequestDeviceLocation?: () => void;
   close: () => void;
-  onSubmit: (data: { ownerName: string; phone: string; email: string; role: string; gstin: string; note: string }) => void;
 }) {
-  const [ownerName, setOwnerName] = useState("");
-  const [phone, setPhone] = useState(businessPhoneFor(business).replace(/[^0-9]/g, "").slice(-10));
-  const [email, setEmail] = useState("");
-  const [role, setRole] = useState("Owner / Proprietor");
-  const [gstin, setGstin] = useState("");
-  const [note, setNote] = useState("");
+  const [mapProvider, setMapProvider] = useState<"google" | "osm">("google");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!ownerName.trim() || !phone.trim()) return;
-    onSubmit({ ownerName: ownerName.trim(), phone: phone.trim(), email: email.trim(), role, gstin: gstin.trim(), note: note.trim() });
-  };
+  const coordinates =
+    (business.coordinates && typeof business.coordinates.latitude === "number" && typeof business.coordinates.longitude === "number")
+      ? business.coordinates
+      : (business.demoCoordinates && typeof business.demoCoordinates.latitude === "number" && typeof business.demoCoordinates.longitude === "number")
+      ? business.demoCoordinates
+      : (business as any).agentVerification?.verifiedGps?.latitude
+      ? (business as any).agentVerification.verifiedGps
+      : (business.address?.area && NEIGHBORHOOD_CENTROIDS[business.address.area])
+      ? NEIGHBORHOOD_CENTROIDS[business.address.area]
+      : { latitude: 12.7409, longitude: 77.8253 };
+
+  const DEFAULT_HOSUR_COORDS = { latitude: 12.7409, longitude: 77.8253 };
+  const origin = userCoordinates || DEFAULT_HOSUR_COORDS;
+  const isLiveUserLocation = Boolean(userCoordinates);
+
+  const destinationTarget = `${coordinates.latitude},${coordinates.longitude}`;
+  const googleRouteEmbedUrl = `https://maps.google.com/maps?saddr=${origin.latitude},${origin.longitude}&daddr=${destinationTarget}&output=embed`;
+
+  const osmEmbedUrl = (() => {
+    const minLat = Math.min(origin.latitude, coordinates.latitude) - 0.008;
+    const maxLat = Math.max(origin.latitude, coordinates.latitude) + 0.008;
+    const minLng = Math.min(origin.longitude, coordinates.longitude) - 0.008;
+    const maxLng = Math.max(origin.longitude, coordinates.longitude) + 0.008;
+    const params = new URLSearchParams({
+      bbox: `${minLng},${minLat},${maxLng},${maxLat}`,
+      layer: "mapnik",
+      marker: `${coordinates.latitude},${coordinates.longitude}`,
+    });
+    return `https://www.openstreetmap.org/export/embed.html?${params.toString()}`;
+  })();
+
+  const activeMapUrl = mapProvider === "google" ? googleRouteEmbedUrl : osmEmbedUrl;
+
+  const googleDirectionsUrl = isLiveUserLocation
+    ? `https://www.google.com/maps/dir/?api=1&origin=${origin.latitude},${origin.longitude}&destination=${destinationTarget}`
+    : `https://www.google.com/maps/dir/?api=1&destination=${destinationTarget}`;
+
+  const distanceMeters = calculateDistanceMeters(origin, coordinates);
+  const distanceKm = distanceMeters / 1000;
+  const estimatedMinutes = Math.max(2, Math.round((distanceKm / 22) * 60));
+
+  const addressText = business.address
+    ? [business.address.doorNumber, business.address.street, business.address.area, "Hosur, Tamil Nadu", business.address.pincode ? `PIN: ${business.address.pincode}` : ""].filter(Boolean).join(", ")
+    : "Hosur, Tamil Nadu";
 
   return (
     <div
@@ -9822,93 +9825,126 @@ function ClaimBusinessDialog({
         if (e.target === e.currentTarget) close();
       }}
     >
-      <section className="modal claim-modal" role="dialog" aria-modal="true" style={{ maxWidth: "490px" }}>
+      <section
+        className="modal"
+        role="dialog"
+        aria-modal="true"
+        style={{
+          maxWidth: "560px",
+          width: "92%",
+          padding: "20px",
+          borderRadius: "16px",
+          boxShadow: "0 20px 40px rgba(0,0,0,0.18)",
+          background: "#ffffff",
+        }}
+      >
         <button className="modal-close" onClick={close} aria-label="Close">
           ×
         </button>
-        <div className="eyebrow">MERCHANT ONBOARDING & VERIFICATION</div>
-        <h2 style={{ marginTop: "4px", marginBottom: "4px" }}>Claim & Verify {business.name}</h2>
-        <p style={{ margin: "0 0 16px", color: "#68766b", fontSize: "13px", lineHeight: "1.5" }}>
-          Are you the authorized proprietor or manager of this business in Hosur? Claim this listing to manage your products, receive verified customer enquiries, and get your Official Verified Merchant Badge.
-        </p>
 
-        <form onSubmit={handleSubmit} className="stacked-form">
-          <label>
-            Your Full Name (Authorized Person) *
-            <input
-              type="text"
-              placeholder="e.g. Ramesh Kumar"
-              value={ownerName}
-              onChange={(e) => setOwnerName(e.target.value)}
-              required
-            />
-          </label>
+        {/* Clean Header */}
+        <div style={{ marginBottom: "14px", paddingRight: "28px" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "11px", fontWeight: 700, color: "#166534", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "4px" }}>
+            <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />
+            Navigation Route
+          </div>
+          <h2 style={{ fontSize: "19px", color: "#0f172a", margin: "0 0 4px", fontWeight: 800 }}>
+            {business.name}
+          </h2>
+          <p style={{ margin: "0 0 8px", fontSize: "12.5px", color: "#475569", lineHeight: "1.4" }}>
+            📍 {addressText}
+          </p>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", fontSize: "12px", color: "#334155" }}>
+            <span style={{ background: "#f0fdf4", color: "#166534", border: "1px solid #bbf7d0", padding: "3px 10px", borderRadius: "12px", fontWeight: 700 }}>
+              ~{estimatedMinutes} min · {distanceKm.toFixed(1)} km
+            </span>
+            {isLiveUserLocation ? (
+              <span style={{ color: "#166534", fontWeight: 600, fontSize: "11.5px" }}>
+                ✓ From your GPS location
+              </span>
+            ) : (
+              onRequestDeviceLocation && (
+                <button
+                  type="button"
+                  onClick={onRequestDeviceLocation}
+                  style={{ background: "#ecfdf5", border: "1px solid #a7f3d0", color: "#047857", padding: "2px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: 600, cursor: "pointer" }}
+                >
+                  📡 Use Device GPS
+                </button>
+              )
+            )}
+          </div>
+        </div>
 
-          <label>
-            Official Contact Mobile Number *
-            <input
-              type="tel"
-              placeholder="10-digit mobile number"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              maxLength={15}
-              required
-            />
-          </label>
+        {/* Clean and Simple Map in Our Own Platform */}
+        <div style={{ position: "relative", width: "100%", height: "300px", borderRadius: "12px", overflow: "hidden", border: "1px solid #cbd5e1", background: "#f8fafc" }}>
+          <iframe
+            src={activeMapUrl}
+            title={`Navigation map to ${business.name}`}
+            style={{ width: "100%", height: "100%", border: 0 }}
+            loading="lazy"
+            referrerPolicy="no-referrer"
+          />
+        </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-            <label>
-              Your Designation
-              <select value={role} onChange={(e) => setRole(e.target.value)}>
-                <option value="Owner / Proprietor">Owner / Proprietor</option>
-                <option value="Managing Partner">Managing Partner</option>
-                <option value="Branch Manager">Branch Manager</option>
-                <option value="Authorized Executive">Authorized Executive</option>
-              </select>
-            </label>
-
-            <label>
-              GSTIN / Udyam No. (Optional)
-              <input
-                type="text"
-                placeholder="e.g. 33AAAAA0000A1Z5"
-                value={gstin}
-                onChange={(e) => setGstin(e.target.value.toUpperCase())}
-                maxLength={20}
-              />
-            </label>
+        {/* Bottom Actions: Option to view in Google Maps */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px", marginTop: "14px", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: "6px" }}>
+            <button
+              type="button"
+              onClick={() => setMapProvider("google")}
+              style={{
+                fontSize: "11px",
+                fontWeight: 600,
+                padding: "4px 9px",
+                borderRadius: "6px",
+                border: "1px solid",
+                borderColor: mapProvider === "google" ? "#166534" : "#cbd5e1",
+                background: mapProvider === "google" ? "#f0fdf4" : "#fff",
+                color: mapProvider === "google" ? "#166534" : "#64748b",
+                cursor: "pointer",
+              }}
+            >
+              Google Map
+            </button>
+            <button
+              type="button"
+              onClick={() => setMapProvider("osm")}
+              style={{
+                fontSize: "11px",
+                fontWeight: 600,
+                padding: "4px 9px",
+                borderRadius: "6px",
+                border: "1px solid",
+                borderColor: mapProvider === "osm" ? "#166534" : "#cbd5e1",
+                background: mapProvider === "osm" ? "#f0fdf4" : "#fff",
+                color: mapProvider === "osm" ? "#166534" : "#64748b",
+                cursor: "pointer",
+              }}
+            >
+              OpenStreetMap
+            </button>
           </div>
 
-          <label>
-            Official Business Email (Optional)
-            <input
-              type="email"
-              placeholder="contact@yourbusiness.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </label>
-
-          <label>
-            Additional Operating Notes / Verification Notes (Optional)
-            <textarea
-              rows={2}
-              placeholder="e.g. Current address updates, operating hours, direct WhatsApp number..."
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              maxLength={300}
-            />
-          </label>
-
-          <div className="form-button-row" style={{ marginTop: "16px" }}>
-            <button type="button" className="outline-button" onClick={close}>
-              Cancel
-            </button>
-            <button type="submit" className="primary-button">
-              Submit Claim Request ↗
-            </button>
-          </div>
-        </form>
+          <a
+            href={googleDirectionsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="primary-button"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "8px 16px",
+              fontSize: "12px",
+              textDecoration: "none",
+              background: "#166534",
+              borderColor: "#166534",
+            }}
+          >
+            🗺️ View in Google Maps ↗
+          </a>
+        </div>
       </section>
     </div>
   );
