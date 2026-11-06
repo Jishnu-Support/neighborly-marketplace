@@ -1558,21 +1558,12 @@ function businessRawPhone(phone: string): string {
   return phone.replace(/[^\d+]/g, "");
 }
 
-export function getJishnuDefaultWhatsAppMessage(businessName: string): string {
-  return `Hello,
-
-Greetings from Jishnu Infotech!
-
-We are reaching out as part of our initiative to build a business directory that helps businesses grow and expand their reach.
-
-Could you please confirm whether ${businessName} and the associated contact number are correct?
-
-Once confirmed, kindly reply with "Okay" or "Noted" to acknowledge this message.
-
-Thank you for your time and cooperation!
-
-Regards,
-Team Jishnu Infotech`;
+export function getJishnuDefaultWhatsAppMessage(businessName: string, productName?: string): string {
+  const cleanName = (businessName || "").trim();
+  if (productName && productName.trim()) {
+    return `Hello ${cleanName},\n\nI found *${productName.trim()}* on your Bizearch profile and would like to enquire about its availability and pricing.\n\nCould you please share the details?\n\nThank you!`;
+  }
+  return `Hello ${cleanName},\n\nI found your business listing on Bizearch and would like to enquire about your products and services.\n\nCould you please share more details?\n\nThank you!`;
 }
 
 function businessWhatsAppUrl(business: Business, product?: Product): string {
@@ -1589,7 +1580,7 @@ function businessWhatsAppUrl(business: Business, product?: Product): string {
       : digits.length > 10
       ? digits
       : `91${digits}`;
-  const text = getJishnuDefaultWhatsAppMessage(business.name);
+  const text = getJishnuDefaultWhatsAppMessage(business.name, product?.name);
   return `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(text)}`;
 }
 
