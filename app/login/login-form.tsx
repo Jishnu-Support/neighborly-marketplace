@@ -41,6 +41,118 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
   const [businessNameInput, setBusinessNameInput] = useState("");
   const info = portalInfo[portal];
 
+  // Forgot password flow states
+  const [forgotPassword, setForgotPassword] = useState(false);
+  const [forgotIdentity, setForgotIdentity] = useState("");
+  const [forgotOtp, setForgotOtp] = useState("");
+  const [forgotDemoOtp, setForgotDemoOtp] = useState("");
+  const [forgotOtpVerified, setForgotOtpVerified] = useState(false);
+  const [forgotOtpBusy, setForgotOtpBusy] = useState(false);
+  const [forgotNewPassword, setForgotNewPassword] = useState("");
+  const [forgotConfirmPassword, setForgotConfirmPassword] = useState("");
+  const [showForgotPw, setShowForgotPw] = useState(false);
+  const [forgotBusy, setForgotBusy] = useState(false);
+  const [forgotMessage, setForgotMessage] = useState("");
+  const [forgotIsSuccess, setForgotIsSuccess] = useState(false);
+
+  async function handleForgotOtp(action: "send-otp" | "verify-otp") {
+    const id = forgotIdentity.trim();
+    if (!id) {
+      setForgotIsSuccess(false);
+      setForgotMessage("Please enter your registered mobile number or email first.");
+      return;
+    }
+    setForgotOtpBusy(true);
+    setForgotMessage("");
+    setForgotIsSuccess(false);
+    try {
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, role: portal, identity: id, otp: forgotOtp.trim() }),
+      });
+      const result = (await response.json()) as { error?: string; message?: string; demoCode?: string };
+      if (!response.ok) throw new Error(result.error || "Failed to process OTP verification.");
+      if (action === "send-otp") {
+        setForgotDemoOtp(result.demoCode || "");
+        if (result.demoCode) {
+          setForgotOtp(result.demoCode);
+        }
+        setForgotOtpVerified(false);
+        setForgotIsSuccess(true);
+        setForgotMessage(result.message || `Demo OTP ${result.demoCode} generated. Click 'Verify OTP' to proceed.`);
+      } else {
+        setForgotOtpVerified(true);
+        setForgotIsSuccess(true);
+        setForgotMessage(result.message || "Mobile number verified ✓. Enter your new password below.");
+      }
+    } catch (error) {
+      setForgotOtpVerified(false);
+      setForgotIsSuccess(false);
+      setForgotMessage(error instanceof Error ? error.message : "OTP request failed.");
+    } finally {
+      setForgotOtpBusy(false);
+    }
+  }
+
+  async function handleForgotSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const id = forgotIdentity.trim();
+    if (!id) {
+      setForgotIsSuccess(false);
+      setForgotMessage("Please enter your registered mobile number or email.");
+      return;
+    }
+    if (!forgotOtpVerified && forgotOtp.trim().length !== 6) {
+      setForgotIsSuccess(false);
+      setForgotMessage("Please click 'Verify OTP' first before changing your password.");
+      return;
+    }
+    if (forgotNewPassword.length < 6) {
+      setForgotIsSuccess(false);
+      setForgotMessage("New password must be at least 6 characters long.");
+      return;
+    }
+    if (forgotNewPassword !== forgotConfirmPassword) {
+      setForgotIsSuccess(false);
+      setForgotMessage("New password and Confirm password do not match.");
+      return;
+    }
+
+    setForgotBusy(true);
+    setForgotMessage("");
+    setForgotIsSuccess(false);
+    try {
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "change-password",
+          role: portal,
+          identity: id,
+          otp: forgotOtp.trim(),
+          newPassword: forgotNewPassword,
+          confirmPassword: forgotConfirmPassword,
+        }),
+      });
+      const result = (await response.json()) as { error?: string; message?: string; success?: boolean };
+      if (!response.ok) throw new Error(result.error || "Failed to change password.");
+
+      setForgotIsSuccess(true);
+      setForgotMessage(result.message || "✓ Password changed successfully! You can now sign in with your new password.");
+      setTimeout(() => {
+        setForgotPassword(false);
+        setMessage("✓ Password updated successfully! Please sign in with your new password.");
+        setIsSuccess(true);
+      }, 1600);
+    } catch (error) {
+      setForgotIsSuccess(false);
+      setForgotMessage(error instanceof Error ? error.message : "Failed to change password.");
+    } finally {
+      setForgotBusy(false);
+    }
+  }
+
   async function handleOtp(action: "send" | "verify", phone: string) {
     setOtpBusy(true);
     setMessage("");
@@ -389,10 +501,22 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
     </header>
     <section className="portal-login-card">
       <img className="login-brand-mark login-brand-mark-image" src="/bizearch-mark.svg" alt="" />
-      <div className="eyebrow"><span /> {info.label}</div>
-      <h1>{registering ? (portal === "Business" ? "Register your business" : portal === "Agent" ? "Join as an Agent partner" : "Join your neighborhood") : info.title}</h1>
+      <div className="eyebrow"><span /> {forgotPassword ? "FORGOT PASSWORD" : info.label}</div>
+      <h1>
+        {forgotPassword
+          ? "Reset your password"
+          : registering
+          ? portal === "Business"
+            ? "Register your business"
+            : portal === "Agent"
+            ? "Join as an Agent partner"
+            : "Join your neighborhood"
+          : info.title}
+      </h1>
       <p className="portal-login-description">
-        {registering
+        {forgotPassword
+          ? "Enter your registered mobile number or email address, verify via Demo OTP, and set a new password."
+          : registering
           ? portal === "Agent"
             ? "Apply to help local businesses reach their customers in your region."
             : portal === "Business"
@@ -400,6 +524,139 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
             : "Create and activate your account to discover and connect with nearby businesses."
           : info.description}
       </p>
+
+      {forgotPassword ? (
+        <form className="stacked-form" onSubmit={handleForgotSubmit}>
+          <label>
+            Registered mobile number or email *
+            <input
+              type="text"
+              autoComplete="username"
+              placeholder={portal === "Business" ? "e.g. 9876543210 or business@example.com" : portal === "Agent" ? "e.g. 9876543210 or agent@example.com" : "e.g. 9876543210 or you@example.com"}
+              value={forgotIdentity}
+              onChange={(e) => {
+                setForgotIdentity(e.target.value);
+                setForgotOtpVerified(false);
+              }}
+              required
+            />
+          </label>
+
+          <div className="otp-row">
+            <label>
+              Demo OTP verification *
+              <input
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                placeholder="6-digit OTP"
+                maxLength={6}
+                value={forgotOtp}
+                onChange={(e) => {
+                  setForgotOtp(e.target.value.replace(/\D/g, "").slice(0, 6));
+                  setForgotOtpVerified(false);
+                }}
+                required
+              />
+            </label>
+            <div className="otp-actions">
+              <button
+                type="button"
+                disabled={forgotOtpBusy || !forgotIdentity.trim()}
+                onClick={() => handleForgotOtp("send-otp")}
+              >
+                {forgotOtpBusy ? "Please wait…" : "Send OTP"}
+              </button>
+              <button
+                type="button"
+                disabled={forgotOtpBusy || forgotOtp.trim().length !== 6}
+                onClick={() => handleForgotOtp("verify-otp")}
+              >
+                Verify OTP
+              </button>
+            </div>
+          </div>
+
+          {forgotDemoOtp && (
+            <p className="otp-demo-code" role="status">
+              Demo OTP: <strong>{forgotDemoOtp}</strong> <span>For testing only. Code generated for quick verification.</span>
+            </p>
+          )}
+
+          {forgotOtpVerified && (
+            <p className="otp-verified" role="status">
+              ✓ Identity verified. Enter your new password below.
+            </p>
+          )}
+
+          <label>
+            New password *
+            <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+              <input
+                type={showForgotPw ? "text" : "password"}
+                autoComplete="new-password"
+                placeholder="Enter new password (min. 6 characters)"
+                minLength={6}
+                value={forgotNewPassword}
+                onChange={(e) => setForgotNewPassword(e.target.value)}
+                required
+                style={{ width: "100%", paddingRight: "44px" }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowForgotPw((prev) => !prev)}
+                style={{
+                  position: "absolute",
+                  right: "8px",
+                  background: "none",
+                  border: 0,
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  color: "#6b7d70",
+                  padding: "4px",
+                }}
+                title={showForgotPw ? "Hide password" : "Show password"}
+                aria-label={showForgotPw ? "Hide password" : "Show password"}
+              >
+                {showForgotPw ? "👁️" : "🙈"}
+              </button>
+            </div>
+          </label>
+
+          <label>
+            Confirm new password *
+            <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+              <input
+                type={showForgotPw ? "text" : "password"}
+                autoComplete="new-password"
+                placeholder="Confirm your new password"
+                minLength={6}
+                value={forgotConfirmPassword}
+                onChange={(e) => setForgotConfirmPassword(e.target.value)}
+                required
+                style={{ width: "100%", paddingRight: "44px" }}
+              />
+            </div>
+          </label>
+
+          {forgotConfirmPassword && (
+            <div style={{ marginTop: "-6px", marginBottom: "4px", fontSize: "11px", fontWeight: 600 }}>
+              {forgotNewPassword === forgotConfirmPassword ? (
+                <span style={{ color: "#166534" }}>✓ Passwords match</span>
+              ) : (
+                <span style={{ color: "#dc2626" }}>✕ Passwords do not match</span>
+              )}
+            </div>
+          )}
+
+          <button
+            className="primary-button full-button"
+            type="submit"
+            disabled={forgotBusy || !forgotOtpVerified || forgotNewPassword.length < 6 || forgotNewPassword !== forgotConfirmPassword}
+          >
+            {forgotBusy ? "Changing password…" : "Change password"} <span>→</span>
+          </button>
+        </form>
+      ) : (
       <form className="stacked-form" onSubmit={handleSubmit}>
         {registering ? (
           <>
@@ -787,6 +1044,34 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
               Password
               <input name="password" type="password" autoComplete="current-password" placeholder="Enter your password" required />
             </label>
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "-6px" }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setForgotPassword(true);
+                  setRegistering(false);
+                  setForgotMessage("");
+                  setForgotIsSuccess(false);
+                  setForgotOtp("");
+                  setForgotDemoOtp("");
+                  setForgotOtpVerified(false);
+                  setForgotNewPassword("");
+                  setForgotConfirmPassword("");
+                }}
+                style={{
+                  background: "none",
+                  border: 0,
+                  padding: "2px 0",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  color: "#275937",
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                }}
+              >
+                Forgot password?
+              </button>
+            </div>
           </>
         )}
         <button className="primary-button full-button" type="submit" disabled={busy}>
@@ -804,31 +1089,56 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
           <span>→</span>
         </button>
       </form>
-      {(portal === "Account" || portal === "Agent" || portal === "Business") && (
-        <button
-          className="outline-button full-button"
-          type="button"
-          onClick={() => {
-            setRegistering((value) => !value);
-            setMessage("");
-            setIsSuccess(false);
-            setOtp("");
-            setDemoOtp("");
-            setOtpVerified(false);
-            setRegPassword("");
-            setRegConfirmPassword("");
-          }}
-        >
-          {registering
-            ? "Back to sign in"
-            : portal === "Agent"
-            ? "Apply as an agent"
-            : portal === "Business"
-            ? "Register your business"
-            : "Create an account"}
-        </button>
       )}
-      {message && <p className={isSuccess ? "company-login-success" : "company-login-message"} role={isSuccess ? "status" : "alert"}>{message}</p>}
+
+      {forgotPassword ? (
+        <>
+          {forgotMessage && (
+            <p className={forgotIsSuccess ? "company-login-success" : "company-login-message"} role={forgotIsSuccess ? "status" : "alert"}>
+              {forgotMessage}
+            </p>
+          )}
+          <button
+            className="outline-button full-button"
+            type="button"
+            onClick={() => {
+              setForgotPassword(false);
+              setForgotMessage("");
+              setIsSuccess(false);
+            }}
+          >
+            ← Back to sign in
+          </button>
+        </>
+      ) : (
+        <>
+          {(portal === "Account" || portal === "Agent" || portal === "Business") && (
+            <button
+              className="outline-button full-button"
+              type="button"
+              onClick={() => {
+                setRegistering((value) => !value);
+                setMessage("");
+                setIsSuccess(false);
+                setOtp("");
+                setDemoOtp("");
+                setOtpVerified(false);
+                setRegPassword("");
+                setRegConfirmPassword("");
+              }}
+            >
+              {registering
+                ? "Back to sign in"
+                : portal === "Agent"
+                ? "Apply as an agent"
+                : portal === "Business"
+                ? "Register your business"
+                : "Create an account"}
+            </button>
+          )}
+          {message && <p className={isSuccess ? "company-login-success" : "company-login-message"} role={isSuccess ? "status" : "alert"}>{message}</p>}
+        </>
+      )}
       {portal === "Account" && !registering && <p className="portal-login-demo-note">After sign in, your browser will ask to use your location for nearby results. Location is optional; declining will not block sign in.</p>}
       <Link className="portal-login-back" href="/">← Back to Discover</Link>
       <nav className="login-portal-options" aria-label="Choose a portal">

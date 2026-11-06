@@ -19732,6 +19732,115 @@ function Dialog({
   const [businessConfirmPassword, setBusinessConfirmPassword] = useState("");
   const [showBusinessPassword, setShowBusinessPassword] = useState(false);
   const [businessPasswordError, setBusinessPasswordError] = useState("");
+
+  // Customer forgot password states
+  const [isCustomerForgotPw, setIsCustomerForgotPw] = useState(false);
+  const [customerForgotIdentity, setCustomerForgotIdentity] = useState("");
+  const [customerForgotOtp, setCustomerForgotOtp] = useState("");
+  const [customerForgotDemoOtp, setCustomerForgotDemoOtp] = useState("");
+  const [customerForgotOtpVerified, setCustomerForgotOtpVerified] = useState(false);
+  const [customerForgotOtpBusy, setCustomerForgotOtpBusy] = useState(false);
+  const [customerForgotNewPw, setCustomerForgotNewPw] = useState("");
+  const [customerForgotConfirmPw, setCustomerForgotConfirmPw] = useState("");
+  const [showCustomerForgotPw, setShowCustomerForgotPw] = useState(false);
+  const [customerForgotBusy, setCustomerForgotBusy] = useState(false);
+  const [customerForgotMsg, setCustomerForgotMsg] = useState("");
+  const [customerForgotSuccess, setCustomerForgotSuccess] = useState(false);
+
+  async function handleCustomerForgotOtp(action: "send-otp" | "verify-otp") {
+    const id = customerForgotIdentity.trim();
+    if (!id) {
+      setCustomerForgotSuccess(false);
+      setCustomerForgotMsg("Please enter your registered mobile number or email.");
+      return;
+    }
+    setCustomerForgotOtpBusy(true);
+    setCustomerForgotMsg("");
+    setCustomerForgotSuccess(false);
+    try {
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, role: "Account", identity: id, otp: customerForgotOtp.trim() }),
+      });
+      const result = (await response.json()) as { error?: string; message?: string; demoCode?: string };
+      if (!response.ok) throw new Error(result.error || "Failed to process OTP verification.");
+      if (action === "send-otp") {
+        setCustomerForgotDemoOtp(result.demoCode || "");
+        if (result.demoCode) setCustomerForgotOtp(result.demoCode);
+        setCustomerForgotOtpVerified(false);
+        setCustomerForgotSuccess(true);
+        setCustomerForgotMsg(result.message || `Demo OTP ${result.demoCode} generated. Click 'Verify OTP' to proceed.`);
+      } else {
+        setCustomerForgotOtpVerified(true);
+        setCustomerForgotSuccess(true);
+        setCustomerForgotMsg(result.message || "Mobile number verified ✓. Enter your new password below.");
+      }
+    } catch (error) {
+      setCustomerForgotOtpVerified(false);
+      setCustomerForgotSuccess(false);
+      setCustomerForgotMsg(error instanceof Error ? error.message : "OTP request failed.");
+    } finally {
+      setCustomerForgotOtpBusy(false);
+    }
+  }
+
+  async function handleCustomerForgotSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const id = customerForgotIdentity.trim();
+    if (!id) {
+      setCustomerForgotSuccess(false);
+      setCustomerForgotMsg("Please enter your registered mobile number or email.");
+      return;
+    }
+    if (!customerForgotOtpVerified && customerForgotOtp.trim().length !== 6) {
+      setCustomerForgotSuccess(false);
+      setCustomerForgotMsg("Please verify the OTP first before changing your password.");
+      return;
+    }
+    if (customerForgotNewPw.length < 6) {
+      setCustomerForgotSuccess(false);
+      setCustomerForgotMsg("New password must be at least 6 characters long.");
+      return;
+    }
+    if (customerForgotNewPw !== customerForgotConfirmPw) {
+      setCustomerForgotSuccess(false);
+      setCustomerForgotMsg("New password and Confirm password do not match.");
+      return;
+    }
+
+    setCustomerForgotBusy(true);
+    setCustomerForgotMsg("");
+    setCustomerForgotSuccess(false);
+    try {
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "change-password",
+          role: "Account",
+          identity: id,
+          otp: customerForgotOtp.trim(),
+          newPassword: customerForgotNewPw,
+          confirmPassword: customerForgotConfirmPw,
+        }),
+      });
+      const result = (await response.json()) as { error?: string; message?: string; success?: boolean };
+      if (!response.ok) throw new Error(result.error || "Failed to change password.");
+
+      setCustomerForgotSuccess(true);
+      setCustomerForgotMsg(result.message || "✓ Password changed successfully! You can now sign in.");
+      setTimeout(() => {
+        setIsCustomerForgotPw(false);
+        setCustomerForgotMsg("");
+      }, 1600);
+    } catch (error) {
+      setCustomerForgotSuccess(false);
+      setCustomerForgotMsg(error instanceof Error ? error.message : "Failed to change password.");
+    } finally {
+      setCustomerForgotBusy(false);
+    }
+  }
   const [emergencyProfile, setEmergencyProfile] = useState({ customerName: "", customerPhone: "", emergencyPhones: ["", ""] as [string, string] });
   const [showEditEmergencyPhone, setShowEditEmergencyPhone] = useState(false);
   const [quickEmergencyPhone, setQuickEmergencyPhone] = useState("");
@@ -20174,14 +20283,189 @@ function Dialog({
   return <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
     <section className="modal" role="dialog" aria-modal="true">
       <button className="modal-close" onClick={close} aria-label="Close">×</button>
-      {kind === "login" && <><img className="modal-mark brand-modal-mark" src="/bizearch-mark.svg" alt="" /><div className="eyebrow">WELCOME TO BIZEARCH</div><h2>{isSignup ? customerForm.title : "Good to see you."}</h2><p>{isSignup ? "Create your account to discover and connect with local businesses." : "Sign in to find the good things around you."}</p>
-        {isSignup && !customerForm.enabled ? <p className="form-note">Customer registration is temporarily unavailable.</p> :
+      {kind === "login" && <><img className="modal-mark brand-modal-mark" src="/bizearch-mark.svg" alt="" /><div className="eyebrow">{isCustomerForgotPw ? "RESET PASSWORD" : "WELCOME TO BIZEARCH"}</div><h2>{isCustomerForgotPw ? "Reset your password" : isSignup ? customerForm.title : "Good to see you."}</h2><p>{isCustomerForgotPw ? "Verify your registered mobile number via Demo OTP and set a new password." : isSignup ? "Create your account to discover and connect with local businesses." : "Sign in to find the good things around you."}</p>
+        {isCustomerForgotPw ? (
+          <form onSubmit={handleCustomerForgotSubmit} className="stacked-form">
+            <label>
+              Registered mobile number or email *
+              <input
+                type="text"
+                placeholder="e.g. 9876543210 or you@example.com"
+                value={customerForgotIdentity}
+                onChange={(e) => {
+                  setCustomerForgotIdentity(e.target.value);
+                  setCustomerForgotOtpVerified(false);
+                }}
+                required
+              />
+            </label>
+
+            <div className="otp-row">
+              <label>
+                Demo OTP verification *
+                <input
+                  inputMode="numeric"
+                  placeholder="6-digit OTP"
+                  maxLength={6}
+                  value={customerForgotOtp}
+                  onChange={(e) => {
+                    setCustomerForgotOtp(e.target.value.replace(/\D/g, "").slice(0, 6));
+                    setCustomerForgotOtpVerified(false);
+                  }}
+                  required
+                />
+              </label>
+              <div className="otp-actions">
+                <button
+                  type="button"
+                  disabled={customerForgotOtpBusy || !customerForgotIdentity.trim()}
+                  onClick={() => handleCustomerForgotOtp("send-otp")}
+                >
+                  {customerForgotOtpBusy ? "Please wait…" : "Send OTP"}
+                </button>
+                <button
+                  type="button"
+                  disabled={customerForgotOtpBusy || customerForgotOtp.trim().length !== 6}
+                  onClick={() => handleCustomerForgotOtp("verify-otp")}
+                >
+                  Verify OTP
+                </button>
+              </div>
+            </div>
+
+            {customerForgotDemoOtp && (
+              <p className="otp-demo-code" role="status">
+                Demo OTP: <strong>{customerForgotDemoOtp}</strong> <span>For testing only. Code generated for quick verification.</span>
+              </p>
+            )}
+
+            {customerForgotOtpVerified && (
+              <p className="otp-verified" role="status">
+                ✓ Mobile number verified. Enter your new password below.
+              </p>
+            )}
+
+            <label>
+              New password *
+              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <input
+                  type={showCustomerForgotPw ? "text" : "password"}
+                  placeholder="Enter new password (min. 6 characters)"
+                  minLength={6}
+                  value={customerForgotNewPw}
+                  onChange={(e) => setCustomerForgotNewPw(e.target.value)}
+                  required
+                  style={{ width: "100%", paddingRight: "44px" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCustomerForgotPw((prev) => !prev)}
+                  style={{
+                    position: "absolute",
+                    right: "8px",
+                    background: "none",
+                    border: 0,
+                    cursor: "pointer",
+                    fontSize: "14px",
+                    color: "#6b7d70",
+                    padding: "4px",
+                  }}
+                  title={showCustomerForgotPw ? "Hide password" : "Show password"}
+                  aria-label={showCustomerForgotPw ? "Hide password" : "Show password"}
+                >
+                  {showCustomerForgotPw ? "👁️" : "🙈"}
+                </button>
+              </div>
+            </label>
+
+            <label>
+              Confirm new password *
+              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <input
+                  type={showCustomerForgotPw ? "text" : "password"}
+                  placeholder="Confirm your new password"
+                  minLength={6}
+                  value={customerForgotConfirmPw}
+                  onChange={(e) => setCustomerForgotConfirmPw(e.target.value)}
+                  required
+                  style={{ width: "100%", paddingRight: "44px" }}
+                />
+              </div>
+            </label>
+
+            {customerForgotConfirmPw && (
+              <div style={{ marginTop: "-6px", marginBottom: "4px", fontSize: "11px", fontWeight: 600 }}>
+                {customerForgotNewPw === customerForgotConfirmPw ? (
+                  <span style={{ color: "#166534" }}>✓ Passwords match</span>
+                ) : (
+                  <span style={{ color: "#dc2626" }}>✕ Passwords do not match</span>
+                )}
+              </div>
+            )}
+
+            <button
+              className="primary-button full-button"
+              type="submit"
+              disabled={customerForgotBusy || !customerForgotOtpVerified || customerForgotNewPw.length < 6 || customerForgotNewPw !== customerForgotConfirmPw}
+            >
+              {customerForgotBusy ? "Changing password…" : "Change password"} <span>→</span>
+            </button>
+
+            {customerForgotMsg && (
+              <p className={customerForgotSuccess ? "company-login-success" : "company-login-message"} role={customerForgotSuccess ? "status" : "alert"}>
+                {customerForgotMsg}
+              </p>
+            )}
+
+            <button
+              type="button"
+              className="outline-button full-button"
+              onClick={() => {
+                setIsCustomerForgotPw(false);
+                setCustomerForgotMsg("");
+              }}
+            >
+              ← Back to sign in
+            </button>
+          </form>
+        ) : isSignup && !customerForm.enabled ? <p className="form-note">Customer registration is temporarily unavailable.</p> :
         <form onSubmit={handleAccountSubmit} className="stacked-form">
           {isSignup && regEnabled(customerForm, "fullName") && <label>{regLabel(customerForm, "fullName", "Your name")}<input name="fullName" placeholder="e.g. Asha Rao" required={regField(customerForm, "fullName")?.required ?? true} /></label>}
           {isSignup && <p className="fine-print">When you submit, your browser will ask to share your location with authorized Company Admins for local discovery. You can deny access and continue; no coordinates are saved if you deny.</p>}
           {(!isSignup || regEnabled(customerForm, "phone")) && <label>{regLabel(customerForm, "phone", "Mobile number")}<div className="phone-input"><span>🇮🇳 +91</span><input name="phone" type="tel" placeholder="98765 43210" minLength={8} required /></div></label>}
           {isSignup && regEnabled(customerForm, "emergencyPhone1") && regEnabled(customerForm, "emergencyPhone2") && <><label>{regLabel(customerForm, "emergencyPhone1", "Emergency contact 1 mobile")}<input name="emergencyPhone1" type="tel" placeholder="+91 98765 43210" minLength={8} maxLength={20} required={regField(customerForm, "emergencyPhone1")?.required ?? true} /></label><label>{regLabel(customerForm, "emergencyPhone2", "Emergency contact 2 mobile")}<input name="emergencyPhone2" type="tel" placeholder="+91 98765 43210" minLength={8} maxLength={20} required={regField(customerForm, "emergencyPhone2")?.required ?? true} /></label><p className="fine-print">These numbers stay on this device in this demo. When an SOS is sent, they are included in the Super Admin alert.</p></>}
-          {!isSignup && <label>Password<input name="password" type="password" placeholder="Enter your password" required /></label>}
+          {!isSignup && (
+            <>
+              <label>Password<input name="password" type="password" placeholder="Enter your password" required /></label>
+              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "-6px" }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsCustomerForgotPw(true);
+                    setCustomerForgotMsg("");
+                    setCustomerForgotSuccess(false);
+                    setCustomerForgotOtp("");
+                    setCustomerForgotDemoOtp("");
+                    setCustomerForgotOtpVerified(false);
+                    setCustomerForgotNewPw("");
+                    setCustomerForgotConfirmPw("");
+                  }}
+                  style={{
+                    background: "none",
+                    border: 0,
+                    padding: "2px 0",
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    color: "#275937",
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                  }}
+                >
+                  Forgot password?
+                </button>
+              </div>
+            </>
+          )}
           {isSignup && regEnabled(customerForm, "otp") && <><div className="otp-row"><label>{regLabel(customerForm, "otp", "One-time password (OTP)")}<input name="otp" inputMode="numeric" autoComplete="one-time-code" placeholder="6-digit OTP" value={registrationOtp} onChange={(event) => { setRegistrationOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); setRegistrationOtpVerified(false); }} required /></label><div className="otp-actions"><button type="button" disabled={registrationOtpBusy} onClick={(event) => { const phone = String(new FormData(event.currentTarget.form || undefined).get("phone") || "").trim(); void requestRegistrationOtp("Account", "send", phone); }}>{registrationOtpBusy ? "Please wait…" : "Send OTP"}</button><button type="button" disabled={registrationOtpBusy || registrationOtp.length !== 6} onClick={(event) => { const phone = String(new FormData(event.currentTarget.form || undefined).get("phone") || "").trim(); void requestRegistrationOtp("Account", "verify", phone); }}>Verify OTP</button></div></div>{registrationDemoOtp && <p className="otp-demo-code" role="status">Demo OTP: <strong>{registrationDemoOtp}</strong> <span>For local testing only. No SMS was sent.</span></p>}{registrationOtpMessage && <p className={registrationOtpVerified ? "otp-verified" : "form-error"} role="status">{registrationOtpMessage}</p>}</>}          {isSignup && regEnabled(customerForm, "password") && (
             <>
               <label>
@@ -20247,7 +20531,7 @@ function Dialog({
           {isSignup && regEnabled(customerForm, "acceptPolicies") && <label className="consent-check terms-consent"><input name="acceptPolicies" type="checkbox" required={regField(customerForm, "acceptPolicies")?.required ?? true} /><span>{regLabel(customerForm, "acceptPolicies", "I accept the Bizearch Terms and Conditions and Privacy Policy")}</span></label>}
           {!isSignup && <label className="consent-check"><input type="checkbox" checked={locationConsent} onChange={(event) => setLocationConsent(event.target.checked)} /><span>In production, share my approximate location and sign-in time with Bizearch’s authorized company administrator to improve local discovery. The demo does not collect or transmit location data.</span></label>}
           <button className="primary-button full-button" type="submit">{isSignup ? (registrationBusy ? "Recording request..." : "Submit registration request") : "Sign in"} <span>→</span></button>
-        </form>}<div className="modal-switch">{isSignup ? "Already a Bizearch member?" : "New around here?"} <button onClick={() => setIsSignup(!isSignup)}>{isSignup ? "Sign in" : "Create an account"}</button></div><div className="fine-print">By continuing, you agree to our Terms and Privacy Policy.</div></>}
+        </form>}{!isCustomerForgotPw && <div className="modal-switch">{isSignup ? "Already a Bizearch member?" : "New around here?"} <button onClick={() => setIsSignup(!isSignup)}>{isSignup ? "Sign in" : "Create an account"}</button></div>}<div className="fine-print">By continuing, you agree to our Terms and Privacy Policy.</div></>}
       {kind === "business" && <>{!businessForm.enabled ? <><div className="eyebrow">BUSINESS REGISTRATION</div><h2>Registration is temporarily unavailable.</h2><button className="outline-button" onClick={close}>Close</button></> : <><div className="modal-mark">⌂</div><div className="eyebrow">{businessForm.title.toUpperCase()} · STEP {step} OF 2</div><h2>{step === 1 ? "Tell us about your business." : "Help us verify your business."}</h2><p>{step === 1 ? "A few details help nearby customers find the right product or service." : "Add your referral details. Your business address and map pin will appear to customers in search."}</p>
         {step === 1 ? <form className="stacked-form" onSubmit={(event) => {
           event.preventDefault();

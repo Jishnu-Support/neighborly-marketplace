@@ -74,7 +74,7 @@ async function createStoredAdmin(name: string, email: string, password: string, 
 
 const defaultAdmins: { name: string; email: string; defaultPassword: string }[] = [];
 
-async function readAdminRecords(): Promise<StoredAdmin[]> {
+export async function readAdminRecords(): Promise<StoredAdmin[]> {
   let records: StoredAdmin[] = [];
   try {
     const raw = await readFile(adminStorePath, "utf8");
@@ -577,3 +577,36 @@ export const authCookieOptions = {
   path: "/",
   maxAge: SESSION_DURATION_SECONDS,
 };
+
+export async function resetCustomerPassword(identity: string, newPassword: string): Promise<boolean> {
+  const cleanDigits = identity.replace(/\D/g, "");
+  const normalizedEmail = identity.trim().toLowerCase();
+  const customers = await readCustomerRecords();
+  const index = customers.findIndex((c) => {
+    const cPhone = c.phone.replace(/\D/g, "");
+    if (cleanDigits.length >= 8 && (cPhone === cleanDigits || cPhone.endsWith(cleanDigits) || cleanDigits.endsWith(cPhone))) return true;
+    if (c.email && c.email.toLowerCase() === normalizedEmail) return true;
+    return c.phone.trim() === identity.trim();
+  });
+  if (index === -1) return false;
+  const salt = randomBytes(16).toString("hex");
+  customers[index].salt = salt;
+  customers[index].passwordHash = hashPassword(newPassword, salt);
+  await writeCustomerRecords(customers);
+  return true;
+}
+
+export async function resetAdminPassword(identity: string, newPassword: string): Promise<boolean> {
+  if (isSuperAdminIdentity(identity) || identity.trim().toLowerCase() === "admin@bizearch.in") {
+    throw new Error("Super Admin password cannot be reset via forgot password.");
+  }
+  const normalized = identity.trim().toLowerCase();
+  const admins = await readAdminRecords();
+  const index = admins.findIndex((a) => a.email.toLowerCase() === normalized || a.name.toLowerCase() === normalized || a.id === identity);
+  if (index === -1) return false;
+  const salt = randomBytes(16).toString("hex");
+  admins[index].salt = salt;
+  admins[index].passwordHash = hashPassword(newPassword, salt);
+  await writeAdminRecords(admins);
+  return true;
+}

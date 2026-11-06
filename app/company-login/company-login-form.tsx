@@ -8,12 +8,126 @@ type CompanyAccessLevel = "Admin" | "Super Admin";
 export default function CompanyLoginForm() {
   const [accessLevel, setAccessLevel] = useState<CompanyAccessLevel>("Admin");
   const [message, setMessage] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
   const [busy, setBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  // Forgot password states (Admin only - Super Admin explicitly excluded)
+  const [forgotPassword, setForgotPassword] = useState(false);
+  const [forgotIdentity, setForgotIdentity] = useState("");
+  const [forgotOtp, setForgotOtp] = useState("");
+  const [forgotDemoOtp, setForgotDemoOtp] = useState("");
+  const [forgotOtpVerified, setForgotOtpVerified] = useState(false);
+  const [forgotOtpBusy, setForgotOtpBusy] = useState(false);
+  const [forgotNewPassword, setForgotNewPassword] = useState("");
+  const [forgotConfirmPassword, setForgotConfirmPassword] = useState("");
+  const [showForgotPw, setShowForgotPw] = useState(false);
+  const [forgotBusy, setForgotBusy] = useState(false);
+  const [forgotMessage, setForgotMessage] = useState("");
+  const [forgotIsSuccess, setForgotIsSuccess] = useState(false);
+
+  async function handleForgotOtp(action: "send-otp" | "verify-otp") {
+    const id = forgotIdentity.trim();
+    if (!id) {
+      setForgotIsSuccess(false);
+      setForgotMessage("Please enter your registered work email or Admin ID first.");
+      return;
+    }
+    setForgotOtpBusy(true);
+    setForgotMessage("");
+    setForgotIsSuccess(false);
+    try {
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, role: "Company", identity: id, otp: forgotOtp.trim() }),
+      });
+      const result = (await response.json()) as { error?: string; message?: string; demoCode?: string };
+      if (!response.ok) throw new Error(result.error || "Failed to process OTP verification.");
+      if (action === "send-otp") {
+        setForgotDemoOtp(result.demoCode || "");
+        if (result.demoCode) {
+          setForgotOtp(result.demoCode);
+        }
+        setForgotOtpVerified(false);
+        setForgotIsSuccess(true);
+        setForgotMessage(result.message || `Demo OTP ${result.demoCode} generated. Click 'Verify OTP' to proceed.`);
+      } else {
+        setForgotOtpVerified(true);
+        setForgotIsSuccess(true);
+        setForgotMessage(result.message || "Admin identity verified ✓. Enter your new password below.");
+      }
+    } catch (error) {
+      setForgotOtpVerified(false);
+      setForgotIsSuccess(false);
+      setForgotMessage(error instanceof Error ? error.message : "OTP request failed.");
+    } finally {
+      setForgotOtpBusy(false);
+    }
+  }
+
+  async function handleForgotSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const id = forgotIdentity.trim();
+    if (!id) {
+      setForgotIsSuccess(false);
+      setForgotMessage("Please enter your registered work email or Admin ID.");
+      return;
+    }
+    if (!forgotOtpVerified && forgotOtp.trim().length !== 6) {
+      setForgotIsSuccess(false);
+      setForgotMessage("Please verify the OTP first before changing your password.");
+      return;
+    }
+    if (forgotNewPassword.length < 6) {
+      setForgotIsSuccess(false);
+      setForgotMessage("New password must be at least 6 characters long.");
+      return;
+    }
+    if (forgotNewPassword !== forgotConfirmPassword) {
+      setForgotIsSuccess(false);
+      setForgotMessage("New password and Confirm password do not match.");
+      return;
+    }
+
+    setForgotBusy(true);
+    setForgotMessage("");
+    setForgotIsSuccess(false);
+    try {
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "change-password",
+          role: "Company",
+          identity: id,
+          otp: forgotOtp.trim(),
+          newPassword: forgotNewPassword,
+          confirmPassword: forgotConfirmPassword,
+        }),
+      });
+      const result = (await response.json()) as { error?: string; message?: string; success?: boolean };
+      if (!response.ok) throw new Error(result.error || "Failed to change password.");
+
+      setForgotIsSuccess(true);
+      setForgotMessage(result.message || "✓ Password changed successfully! You can now sign in.");
+      setTimeout(() => {
+        setForgotPassword(false);
+        setMessage("✓ Admin password updated successfully! Please sign in with your new password.");
+        setIsSuccess(true);
+      }, 1600);
+    } catch (error) {
+      setForgotIsSuccess(false);
+      setForgotMessage(error instanceof Error ? error.message : "Failed to change password.");
+    } finally {
+      setForgotBusy(false);
+    }
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage("");
+    setIsSuccess(false);
     setBusy(true);
     const form = new FormData(event.currentTarget);
     const identity = String(form.get("identity") || "");
@@ -28,6 +142,7 @@ export default function CompanyLoginForm() {
     if (!response.ok) {
       const data = (await response.json().catch(() => ({}))) as { error?: string };
       setMessage(data.error || "Could not sign in with these company credentials.");
+      setIsSuccess(false);
       setBusy(false);
       return;
     }
@@ -52,80 +167,273 @@ export default function CompanyLoginForm() {
 
       <section className="portal-login-card">
         <img className="login-brand-mark login-brand-mark-image" src="/bizearch-mark.svg" alt="" />
-        <span className="portal-login-pill">COMPANY PORTAL</span>
-        <h1>Company secure sign in</h1>
+        <span className="portal-login-pill">{forgotPassword ? "ADMIN PASSWORD RECOVERY" : "COMPANY PORTAL"}</span>
+        <h1>{forgotPassword ? "Reset Admin password" : "Company secure sign in"}</h1>
         <p className="portal-login-description">
-          Select your administrative role and sign in with your enterprise credentials.
+          {forgotPassword
+            ? "Enter your registered work email or Admin ID, verify via Demo OTP, and create your new password."
+            : "Select your administrative role and sign in with your enterprise credentials."}
         </p>
 
-        <div className="company-login-role-switch" role="tablist" aria-label="Company account type">
-          {(["Admin", "Super Admin"] as const).map((level) => (
+        {!forgotPassword && (
+          <div className="company-login-role-switch" role="tablist" aria-label="Company account type">
+            {(["Admin", "Super Admin"] as const).map((level) => (
+              <button
+                key={level}
+                type="button"
+                role="tab"
+                aria-selected={accessLevel === level}
+                className={accessLevel === level ? "active" : ""}
+                onClick={() => {
+                  setAccessLevel(level);
+                  setMessage("");
+                  setIsSuccess(false);
+                  setForgotPassword(false);
+                }}
+              >
+                {level === "Super Admin" ? "👑 Super Admin" : "🛡️ Admin"}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {forgotPassword ? (
+          <form onSubmit={handleForgotSubmit} className="stacked-form">
+            <label>
+              <span>Work email or Admin ID *</span>
+              <input
+                name="identity"
+                type="text"
+                autoComplete="username"
+                placeholder="e.g. admin@company.com or Admin-001"
+                value={forgotIdentity}
+                onChange={(e) => {
+                  setForgotIdentity(e.target.value);
+                  setForgotOtpVerified(false);
+                }}
+                required
+              />
+            </label>
+
+            <div className="otp-row">
+              <label>
+                <span>Demo OTP verification *</span>
+                <input
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  placeholder="6-digit OTP"
+                  maxLength={6}
+                  value={forgotOtp}
+                  onChange={(e) => {
+                    setForgotOtp(e.target.value.replace(/\D/g, "").slice(0, 6));
+                    setForgotOtpVerified(false);
+                  }}
+                  required
+                />
+              </label>
+              <div className="otp-actions">
+                <button
+                  type="button"
+                  disabled={forgotOtpBusy || !forgotIdentity.trim()}
+                  onClick={() => handleForgotOtp("send-otp")}
+                >
+                  {forgotOtpBusy ? "Please wait…" : "Send OTP"}
+                </button>
+                <button
+                  type="button"
+                  disabled={forgotOtpBusy || forgotOtp.trim().length !== 6}
+                  onClick={() => handleForgotOtp("verify-otp")}
+                >
+                  Verify OTP
+                </button>
+              </div>
+            </div>
+
+            {forgotDemoOtp && (
+              <p className="otp-demo-code" role="status">
+                Demo OTP: <strong>{forgotDemoOtp}</strong> <span>For testing only. Code generated for quick verification.</span>
+              </p>
+            )}
+
+            {forgotOtpVerified && (
+              <p className="otp-verified" role="status">
+                ✓ Admin identity verified. Enter your new password below.
+              </p>
+            )}
+
+            <label>
+              <span>New password *</span>
+              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <input
+                  type={showForgotPw ? "text" : "password"}
+                  autoComplete="new-password"
+                  placeholder="Enter new password (min. 6 characters)"
+                  minLength={6}
+                  value={forgotNewPassword}
+                  onChange={(e) => setForgotNewPassword(e.target.value)}
+                  required
+                  style={{ width: "100%", paddingRight: "44px" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPw((prev) => !prev)}
+                  style={{
+                    position: "absolute",
+                    right: "8px",
+                    background: "none",
+                    border: 0,
+                    cursor: "pointer",
+                    fontSize: "14px",
+                    color: "#6b7d70",
+                    padding: "4px",
+                  }}
+                  title={showForgotPw ? "Hide password" : "Show password"}
+                  aria-label={showForgotPw ? "Hide password" : "Show password"}
+                >
+                  {showForgotPw ? "👁️" : "🙈"}
+                </button>
+              </div>
+            </label>
+
+            <label>
+              <span>Confirm new password *</span>
+              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <input
+                  type={showForgotPw ? "text" : "password"}
+                  autoComplete="new-password"
+                  placeholder="Confirm your new password"
+                  minLength={6}
+                  value={forgotConfirmPassword}
+                  onChange={(e) => setForgotConfirmPassword(e.target.value)}
+                  required
+                  style={{ width: "100%", paddingRight: "44px" }}
+                />
+              </div>
+            </label>
+
+            {forgotConfirmPassword && (
+              <div style={{ marginTop: "-6px", marginBottom: "4px", fontSize: "11px", fontWeight: 600 }}>
+                {forgotNewPassword === forgotConfirmPassword ? (
+                  <span style={{ color: "#166534" }}>✓ Passwords match</span>
+                ) : (
+                  <span style={{ color: "#dc2626" }}>✕ Passwords do not match</span>
+                )}
+              </div>
+            )}
+
             <button
-              key={level}
+              className="primary-button full-button"
+              type="submit"
+              disabled={forgotBusy || !forgotOtpVerified || forgotNewPassword.length < 6 || forgotNewPassword !== forgotConfirmPassword}
+            >
+              {forgotBusy ? "Changing password…" : "Change password"} <span>&rarr;</span>
+            </button>
+
+            {forgotMessage && (
+              <p className={forgotIsSuccess ? "company-login-success" : "company-login-message"} role={forgotIsSuccess ? "status" : "alert"}>
+                {forgotMessage}
+              </p>
+            )}
+
+            <button
               type="button"
-              role="tab"
-              aria-selected={accessLevel === level}
-              className={accessLevel === level ? "active" : ""}
+              className="outline-button full-button"
               onClick={() => {
-                setAccessLevel(level);
-                setMessage("");
+                setForgotPassword(false);
+                setForgotMessage("");
               }}
             >
-              {level === "Super Admin" ? "👑 Super Admin" : "🛡️ Admin"}
+              &larr; Back to Admin sign in
             </button>
-          ))}
-        </div>
-
-        <form onSubmit={handleSubmit} className="stacked-form">
-          <label>
-            <span>Work email</span>
-            <input
-              name="identity"
-              type="email"
-              autoComplete="username"
-              placeholder={accessLevel === "Super Admin" ? "admin@bizearch.in" : "name@company.com"}
-              required
-            />
-          </label>
-
-          <label>
-            <span>Password</span>
-            <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+          </form>
+        ) : (
+          <form onSubmit={handleSubmit} className="stacked-form">
+            <label>
+              <span>Work email</span>
               <input
-                name="password"
-                type={showPassword ? "text" : "password"}
-                autoComplete="current-password"
-                placeholder="Enter your password"
+                name="identity"
+                type="email"
+                autoComplete="username"
+                placeholder={accessLevel === "Super Admin" ? "admin@bizearch.in" : "name@company.com"}
                 required
-                style={{ width: "100%", paddingRight: "44px" }}
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                style={{
-                  position: "absolute",
-                  right: "8px",
-                  background: "none",
-                  border: 0,
-                  cursor: "pointer",
-                  fontSize: "14px",
-                  color: "#6b7d70",
-                  padding: "4px",
-                }}
-                title={showPassword ? "Hide password" : "Show password"}
-                aria-label={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? "👁️" : "🙈"}
-              </button>
-            </div>
-          </label>
+            </label>
 
-          <button className="primary-button full-button" type="submit" disabled={busy}>
-            {busy ? "Signing in…" : `Sign in as ${accessLevel}`} <span>&rarr;</span>
-          </button>
-        </form>
+            <label>
+              <span>Password</span>
+              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <input
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  placeholder="Enter your password"
+                  required
+                  style={{ width: "100%", paddingRight: "44px" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  style={{
+                    position: "absolute",
+                    right: "8px",
+                    background: "none",
+                    border: 0,
+                    cursor: "pointer",
+                    fontSize: "14px",
+                    color: "#6b7d70",
+                    padding: "4px",
+                  }}
+                  title={showPassword ? "Hide password" : "Show password"}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? "👁️" : "🙈"}
+                </button>
+              </div>
+            </label>
 
-        {message && <p className="company-login-message" role="alert">{message}</p>}
+            {accessLevel === "Admin" ? (
+              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "-6px" }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setForgotPassword(true);
+                    setForgotMessage("");
+                    setForgotIsSuccess(false);
+                    setForgotOtp("");
+                    setForgotDemoOtp("");
+                    setForgotOtpVerified(false);
+                    setForgotNewPassword("");
+                    setForgotConfirmPassword("");
+                  }}
+                  style={{
+                    background: "none",
+                    border: 0,
+                    padding: "2px 0",
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    color: "#275937",
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                  }}
+                >
+                  Forgot password?
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "-6px" }}>
+                <span style={{ fontSize: "10px", color: "#8a968d", fontStyle: "italic" }}>
+                  🔒 Super Admin recovery managed via server configuration only
+                </span>
+              </div>
+            )}
+
+            <button className="primary-button full-button" type="submit" disabled={busy}>
+              {busy ? "Signing in…" : `Sign in as ${accessLevel}`} <span>&rarr;</span>
+            </button>
+          </form>
+        )}
+
+        {message && <p className={isSuccess ? "company-login-success" : "company-login-message"} role={isSuccess ? "status" : "alert"}>{message}</p>}
 
         <p className="portal-login-demo-note">
           Super Admin accounts manage categories, advertisement placements, and provision Admin accounts in the Company terminal.

@@ -754,3 +754,22 @@ export async function deleteBusinessRecord(idOrName: string): Promise<boolean> {
   }
   return false;
 }
+
+export async function resetBusinessPassword(identity: string, newPassword: string): Promise<boolean> {
+  const cleanDigits = identity.replace(/\D/g, "");
+  const normalized = identity.trim().toLowerCase();
+  const records = await readBusinessRecords();
+  const index = records.findIndex((b) => {
+    if (b.id === identity) return true;
+    if (b.email && b.email.toLowerCase() === normalized) return true;
+    const bDigits = b.phone.replace(/\D/g, "");
+    if (cleanDigits.length >= 8 && (bDigits === cleanDigits || bDigits.endsWith(cleanDigits) || cleanDigits.endsWith(bDigits))) return true;
+    return b.phone.trim().toLowerCase() === normalized;
+  });
+  if (index === -1) return false;
+  const salt = randomBytes(16).toString("hex");
+  records[index].salt = salt;
+  records[index].passwordHash = hashPassword(newPassword, salt);
+  await writeBusinessRecords(records);
+  return true;
+}

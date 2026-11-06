@@ -307,3 +307,23 @@ export async function updateAgentProfile(identity: string, updates: Partial<{ na
   const { salt: _s, passwordHash: _p, ...publicAgent } = agents[index];
   return publicAgent;
 }
+
+export async function resetAgentPassword(identity: string, newPassword: string): Promise<boolean> {
+  const cleanDigits = identity.replace(/\D/g, "");
+  const normalized = identity.trim().toLowerCase();
+  const agents = await readAgentRecords();
+  const index = agents.findIndex((a) => {
+    if (a.id === identity) return true;
+    if (a.email && a.email.toLowerCase() === normalized) return true;
+    if (a.referralCode && a.referralCode.toLowerCase() === normalized) return true;
+    const aDigits = a.phone.replace(/\D/g, "");
+    if (cleanDigits.length >= 8 && (aDigits === cleanDigits || aDigits.endsWith(cleanDigits) || cleanDigits.endsWith(aDigits))) return true;
+    return a.phone.trim().toLowerCase() === normalized;
+  });
+  if (index === -1) return false;
+  const salt = randomBytes(16).toString("hex");
+  agents[index].salt = salt;
+  agents[index].passwordHash = hashPassword(newPassword, salt);
+  await writeAgentRecords(agents);
+  return true;
+}
