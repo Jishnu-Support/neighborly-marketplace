@@ -60,6 +60,80 @@ button{cursor:pointer}
   text-align: center;
   animation: brand-fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+.brand-splash-clean-card {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  padding: clamp(26px, 4.5vh, 38px) clamp(24px, 5vw, 44px);
+  border-radius: 24px;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  box-shadow: 0 20px 45px -15px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.95) inset;
+  gap: 16px;
+  text-align: center;
+  max-width: 440px;
+  width: 90%;
+  animation: brand-fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.brand-splash-clean-subtitle {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+.brand-splash-clean-logo-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 4px 10px;
+}
+.brand-splash-clean-partner-logo {
+  display: block;
+  max-width: clamp(220px, 65vw, 320px);
+  max-height: 85px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.04));
+}
+.brand-splash-clean-loader {
+  width: 130px;
+  height: 3px;
+  background: #f1f5f9;
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+  margin-top: 6px;
+}
+.brand-splash-clean-loader-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 40%;
+  background: linear-gradient(90deg, #10b981 0%, #2563eb 100%);
+  border-radius: 999px;
+  animation: clean-loader-sweep 1.2s infinite ease-in-out;
+}
+@keyframes clean-loader-sweep {
+  0% {
+    left: -40%;
+    width: 30%;
+  }
+  50% {
+    left: 30%;
+    width: 50%;
+  }
+  100% {
+    left: 100%;
+    width: 30%;
+  }
+}
 .brand-splash-top-identity {
   display: flex;
   flex-direction: column;
