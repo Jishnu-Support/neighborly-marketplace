@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentSession } from "@/app/lib/auth";
-import { readAdConfig, saveAdConfig, validateAdConfig } from "@/app/lib/ad-config";
+import { readAdConfig, saveAdConfig, normalizeAdConfig } from "@/app/lib/ad-config";
 
 async function hasCompanyAccess() {
   const session = await getCurrentSession();
@@ -15,11 +15,15 @@ export async function GET() {
 export async function PUT(request: Request) {
   if (!await hasCompanyAccess()) return NextResponse.json({ error: "Company Admin access is required." }, { status: 403 });
   try {
-    const body = await request.json() as { config?: unknown };
-    if (!validateAdConfig(body.config)) return NextResponse.json({ error: "Review the ticker, image ads and video fields. URLs must use HTTPS and each list must stay within its limits." }, { status: 400 });
-    const config = await saveAdConfig(body.config);
+    const body = (await request.json()) as { config?: unknown };
+    if (!body || typeof body !== "object" || !body.config) {
+      return NextResponse.json({ error: "Invalid advertising configuration." }, { status: 400 });
+    }
+    const normalized = normalizeAdConfig(body.config);
+    const config = await saveAdConfig(normalized);
     return NextResponse.json({ config }, { headers: { "Cache-Control": "no-store" } });
-  } catch {
+  } catch (error) {
+    console.error("Error saving advertising settings:", error);
     return NextResponse.json({ error: "Could not save advertising settings." }, { status: 500 });
   }
 }

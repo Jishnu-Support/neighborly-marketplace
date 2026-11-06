@@ -1,52 +1,89 @@
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { defaultAdConfig, type AdConfig } from "./ad-config.shared";
-
 import { resolveStorePath } from "./storage-paths";
 
 const configPath = resolveStorePath("NEIGHBORLY_AD_CONFIG_STORE", ".neighborly-ad-config.json");
 
+export function normalizeAdConfig(input: unknown): AdConfig {
+  if (!input || typeof input !== "object") {
+    return defaultAdConfig;
+  }
+  const raw = input as Record<string, unknown>;
+
+  // 1. Ticker messages (trim strings, filter empty, max 20)
+  const tickerMessages = Array.isArray(raw.tickerMessages)
+    ? raw.tickerMessages
+        .filter((item): item is string => typeof item === "string")
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0)
+        .slice(0, 20)
+    : [];
+
+  // 2. Image ads (allow any valid image URL, root path, or data URI)
+  const imageAds: AdConfig["imageAds"] = Array.isArray(raw.imageAds)
+    ? raw.imageAds
+        .filter((item): item is Record<string, unknown> => Boolean(item && typeof item === "object"))
+        .map((item, idx) => ({
+          id: typeof item.id === "string" && item.id.trim() ? item.id.trim() : `ad-${idx + 1}`,
+          label: typeof item.label === "string" && item.label.trim() ? item.label.trim().slice(0, 100) : "Featured Store",
+          title: typeof item.title === "string" && item.title.trim() ? item.title.trim().slice(0, 120) : "Discover this business",
+          image: typeof item.image === "string" ? item.image.trim() : "",
+          tone: typeof item.tone === "string" && item.tone.trim() ? item.tone.trim().slice(0, 40) : "community",
+          viewsCount: typeof item.viewsCount === "number" ? item.viewsCount : 0,
+          locality: typeof item.locality === "string" ? item.locality : undefined,
+          category: typeof item.category === "string" ? item.category : undefined,
+        }))
+        .slice(0, 20)
+    : [];
+
+  // 3. Video ad (optional or populated)
+  const rawVideo = raw.videoAd && typeof raw.videoAd === "object" ? (raw.videoAd as Record<string, unknown>) : {};
+  const videoAd: AdConfig["videoAd"] = {
+    title: typeof rawVideo.title === "string" ? rawVideo.title.trim().slice(0, 120) : "",
+    description: typeof rawVideo.description === "string" ? rawVideo.description.trim().slice(0, 300) : "",
+    sourceUrl: typeof rawVideo.sourceUrl === "string" ? rawVideo.sourceUrl.trim() : "",
+    posterUrl: typeof rawVideo.posterUrl === "string" ? rawVideo.posterUrl.trim() : "",
+    callToAction: typeof rawVideo.callToAction === "string" && rawVideo.callToAction.trim() ? rawVideo.callToAction.trim().slice(0, 60) : "Learn More",
+    viewsCount: typeof rawVideo.viewsCount === "number" ? rawVideo.viewsCount : 0,
+    locality: typeof rawVideo.locality === "string" ? rawVideo.locality : undefined,
+  };
+
+  // 4. Audio ad (optional or populated)
+  const rawAudio = raw.audioAd && typeof raw.audioAd === "object" ? (raw.audioAd as Record<string, unknown>) : {};
+  const audioAd: AdConfig["audioAd"] = {
+    title: typeof rawAudio.title === "string" ? rawAudio.title.trim().slice(0, 120) : "",
+    description: typeof rawAudio.description === "string" ? rawAudio.description.trim().slice(0, 300) : "",
+    sourceUrl: typeof rawAudio.sourceUrl === "string" ? rawAudio.sourceUrl.trim() : "",
+  };
+
+  return {
+    tickerMessages,
+    imageAds,
+    videoAd,
+    audioAd,
+  };
+}
+
+export function validateAdConfig(input: unknown): input is AdConfig {
+  if (!input || typeof input !== "object") return false;
+  return true;
+}
+
 export async function readAdConfig(): Promise<AdConfig> {
   try {
-    const parsed = JSON.parse(await readFile(configPath, "utf8")) as Partial<AdConfig>;
-    return { ...defaultAdConfig, ...parsed, audioAd: parsed.audioAd || defaultAdConfig.audioAd };
+    const raw = await readFile(configPath, "utf8");
+    const parsed = JSON.parse(raw) as unknown;
+    return normalizeAdConfig(parsed);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
     return defaultAdConfig;
   }
 }
 
-export async function saveAdConfig(config: AdConfig) {
+export async function saveAdConfig(config: AdConfig): Promise<AdConfig> {
+  const normalized = normalizeAdConfig(config);
   await mkdir(path.dirname(configPath), { recursive: true });
-  const temporaryPath = `${configPath}.${process.pid}.tmp`;
-  await writeFile(temporaryPath, JSON.stringify(config, null, 2), { encoding: "utf8", mode: 0o600 });
-  await rename(temporaryPath, configPath);
-  return config;
-}
-
-export function validateAdConfig(input: unknown): input is AdConfig {
-  if (!input || typeof input !== "object") return false;
-  const value = input as Record<string, unknown>;
-  const validUrl = (candidate: unknown) => {
-    if (typeof candidate !== "string" || candidate.length > 2000) return false;
-    if (/^\/api\/ads\/media\/[0-9a-f-]{36}\.(?:jpe?g|png|webp|gif|mp4|webm|mp3|mpeg|mpga|mp2|m4a|wav|ogg)$/i.test(candidate)) return true;
-    try { return new URL(candidate).protocol === "https:"; } catch { return false; }
-  };
-  if (!Array.isArray(value.tickerMessages) || value.tickerMessages.length < 1 || value.tickerMessages.length > 6 ||
-    !value.tickerMessages.every((item) => typeof item === "string" && item.trim().length > 0 && item.length <= 140)) return false;
-  if (!Array.isArray(value.imageAds) || value.imageAds.length < 1 || value.imageAds.length > 8 ||
-    !value.imageAds.every((item) => item && typeof item === "object" &&
-      typeof item.label === "string" && item.label.trim().length > 0 && item.label.length <= 80 &&
-      typeof item.title === "string" && item.title.trim().length > 0 && item.title.length <= 100 &&
-      validUrl(item.image) && typeof item.tone === "string" && /^[a-z0-9_-]{1,30}$/i.test(item.tone))) return false;
-  const video = value.videoAd as Record<string, unknown> | null;
-  const videoValid = Boolean(video && typeof video.title === "string" && video.title.trim().length > 0 && video.title.length <= 100 &&
-    typeof video.description === "string" && video.description.trim().length > 0 && video.description.length <= 220 &&
-    typeof video.callToAction === "string" && video.callToAction.trim().length > 0 && video.callToAction.length <= 50 &&
-    validUrl(video.sourceUrl) && (video.posterUrl === "" || validUrl(video.posterUrl)));
-  const audio = value.audioAd as Record<string, unknown> | null;
-  const audioValid = Boolean(audio && typeof audio.title === "string" && audio.title.trim().length > 0 && audio.title.length <= 100 &&
-    typeof audio.description === "string" && audio.description.trim().length > 0 && audio.description.length <= 220 &&
-    (audio.sourceUrl === "" || validUrl(audio.sourceUrl)));
-  return videoValid && audioValid;
+  await writeFile(configPath, JSON.stringify(normalized, null, 2), { encoding: "utf8" });
+  return normalized;
 }
