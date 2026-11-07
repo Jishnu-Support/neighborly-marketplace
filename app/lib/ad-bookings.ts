@@ -216,6 +216,26 @@ export async function recordAdImpression(
 
   await saveAdBookings(bookings);
 
+  // Record verified advertisement impression activity log
+  try {
+    await saveActivityLog({
+      action: `Ad viewed: ${booking.poster?.title || booking.businessName}`,
+      category: "Advertisement",
+      actorName: viewerDetails?.viewerName || "Local Shopper",
+      actorPhone: viewerDetails?.viewerPhone || "",
+      actorRole: (viewerDetails?.viewerRole as any) || "Customer",
+      locality: viewerDetails?.locality || "Hosur",
+      details: `Viewed on ${surfaceLabels[surface] || surface} billboard banner (${viewerDetails?.device || "Browser"}).`,
+      metadata: {
+        adBookingId,
+        businessName: booking.businessName,
+        surface,
+      },
+    });
+  } catch (err) {
+    console.warn("Failed to save booked ad view activity log:", err);
+  }
+
   return { success: true, viewsCount: booking.viewsCount, booking, record: newRecord };
 }
 

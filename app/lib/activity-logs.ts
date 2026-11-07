@@ -138,18 +138,6 @@ async function writeActivityLogs(records: ActivityLogRecord[]): Promise<void> {
 }
 
 export async function saveActivityLog(input: NewActivityLog): Promise<ActivityLogRecord> {
-  // Reject passive carousel impression logging into server audit log
-  if (input.action.startsWith("Ad viewed:") || (input.category === "Advertisement" && input.details?.includes("Advertisement impression on"))) {
-    return {
-      id: `act-view-noop`,
-      action: input.action,
-      category: "Advertisement",
-      actorName: input.actorName || "Visitor",
-      actorRole: input.actorRole || "Customer",
-      timestamp: new Date().toISOString(),
-    };
-  }
-
   const records = await readActivityLogs();
   const nowMs = Date.now();
 

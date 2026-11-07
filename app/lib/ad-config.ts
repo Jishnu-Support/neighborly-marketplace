@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { defaultAdConfig, type AdConfig } from "./ad-config.shared";
 import { resolveStorePath } from "./storage-paths";
+import { saveActivityLog } from "./activity-logs";
 
 const configPath = resolveStorePath("NEIGHBORLY_AD_CONFIG_STORE", ".neighborly-ad-config.json");
 
@@ -86,4 +87,134 @@ export async function saveAdConfig(config: AdConfig): Promise<AdConfig> {
   await mkdir(path.dirname(configPath), { recursive: true });
   await writeFile(configPath, JSON.stringify(normalized, null, 2), { encoding: "utf8" });
   return normalized;
+}
+
+export async function recordPlatformAdImpression(params: {
+  adId?: string;
+  adTitle?: string;
+  businessName?: string;
+  surface?: "poster" | "content" | "video";
+  viewerDetails?: {
+    customerId?: string;
+    viewerName?: string;
+    viewerPhone?: string;
+    viewerRole?: string;
+    viewedDate?: string;
+    viewedTime?: string;
+    locality?: string;
+    device?: string;
+  };
+}): Promise<{ success: boolean; viewsCount: number }> {
+  const config = await readAdConfig();
+  const surface = params.surface || "poster";
+  let targetAdTitle = params.adTitle || params.businessName || "Featured Store";
+  let viewsCount = 1;
+
+  if (surface === "video") {
+    config.videoAd.viewsCount = (config.videoAd.viewsCount || 0) + 1;
+    viewsCount = config.videoAd.viewsCount;
+    targetAdTitle = config.videoAd.title || targetAdTitle;
+  } else {
+    // Find matching image ad by id, title or label
+    const adId = params.adId;
+    let matchedAd = config.imageAds.find(
+      (a) => (adId && a.id === adId) || (params.adTitle && a.title === params.adTitle) || (params.businessName && a.label.includes(params.businessName))
+    );
+
+    if (matchedAd) {
+      matchedAd.viewsCount = (matchedAd.viewsCount || 0) + 1;
+      viewsCount = matchedAd.viewsCount;
+      targetAdTitle = matchedAd.title || matchedAd.label || targetAdTitle;
+    } else if (config.imageAds.length > 0) {
+      const idx = adId && adId.startsWith("ad-") ? parseInt(adId.replace("ad-", ""), 10) - 1 : 0;
+      const target = config.imageAds[idx] || config.imageAds[0];
+      target.viewsCount = (target.viewsCount || 0) + 1;
+      viewsCount = target.viewsCount;
+      targetAdTitle = target.title || target.label || targetAdTitle;
+    }
+  }
+
+  await saveAdConfig(config);
+
+  // Save verified ad activity log
+  try {
+    await saveActivityLog({
+      action: `Ad viewed: ${targetAdTitle}`,
+      category: "Advertisement",
+      actorName: params.viewerDetails?.viewerName || "Local Shopper",
+      actorPhone: params.viewerDetails?.viewerPhone || "",
+      actorRole: (params.viewerDetails?.viewerRole as any) || "Customer",
+      locality: params.viewerDetails?.locality || "Hosur",
+      details: `Viewed on ${surface === "video" ? "Video Spotlight" : surface === "content" ? "Marquee Ticker" : "Poster Billboard"} (${params.viewerDetails?.device || "Mobile / Web"}).`,
+      metadata: {
+        adId: params.adId,
+        title: targetAdTitle,
+        surface,
+      },
+    });
+  } catch (err) {
+    console.warn("Failed to save ad view activity log:", err);
+  }
+
+  return { success: true, viewsCount };
+}
+
+export async function recordPlatformAdClick(params: {
+  adId?: string;
+  adTitle?: string;
+  businessName?: string;
+  action: "call" | "whatsapp" | "view_store" | "navigate";
+  viewerDetails?: {
+    customerId?: string;
+    viewerName?: string;
+    viewerPhone?: string;
+    locality?: string;
+    device?: string;
+  };
+}): Promise<{ success: boolean }> {
+  const actionLabels: Record<string, string> = {
+    call: "Phone Call Placed",
+    whatsapp: "WhatsApp Lead",
+    view_store: "Visited Store Profile",
+    navigate: "Directions / Map Route",
+  };
+
+  const targetName = params.businessName || params.adTitle || "Featured Business";
+
+  try {
+    if (params.action === "call") {
+      await saveActivityLog({
+        action: `Phone Call: ${targetName}`,
+        category: "Call",
+        actorName: params.viewerDetails?.viewerName || "Visitor",
+        actorPhone: params.viewerDetails?.viewerPhone || "",
+        actorRole: "Customer",
+        locality: params.viewerDetails?.locality || "Hosur",
+        details: `User clicked direct Call button on ${targetName}'s advertisement billboard.`,
+        metadata: {
+          adId: params.adId,
+          businessName: targetName,
+        },
+      });
+    }
+
+    await saveActivityLog({
+      action: `Ad Interaction: ${targetName} (${actionLabels[params.action] || params.action})`,
+      category: "Advertisement",
+      actorName: params.viewerDetails?.viewerName || "Visitor",
+      actorPhone: params.viewerDetails?.viewerPhone || "",
+      actorRole: "Customer",
+      locality: params.viewerDetails?.locality || "Hosur",
+      details: `Lead clicked "${actionLabels[params.action] || params.action}" on ${targetName}'s ad banner.`,
+      metadata: {
+        adId: params.adId,
+        businessName: targetName,
+        action: params.action,
+      },
+    });
+  } catch (err) {
+    console.warn("Failed to record platform ad lead:", err);
+  }
+
+  return { success: true };
 }

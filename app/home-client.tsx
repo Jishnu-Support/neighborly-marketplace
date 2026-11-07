@@ -3200,11 +3200,11 @@ export default function Home() {
   useEffect(() => {
     if (role !== "Discover") return;
     const currentAd = adConfig.imageAds?.[activeAd];
-    const adBookingId = currentAd?.adBookingId;
-    if (!adBookingId) return;
+    if (!currentAd) return;
+    const trackingId = currentAd.adBookingId || currentAd.id || `ad-${activeAd + 1}`;
 
     try {
-      const sessionKey = `bizearch_ad_viewed_${adBookingId}`;
+      const sessionKey = `bizearch_ad_viewed_${trackingId}`;
       if (typeof window !== "undefined" && window.sessionStorage?.getItem(sessionKey)) {
         return; // Already counted for this user browser session
       }
@@ -3212,25 +3212,59 @@ export default function Home() {
     } catch {}
 
     const now = Date.now();
-    const lastTime = recordedImpressionsRef.current.get(`poster:${adBookingId}`) || 0;
-    if (now - lastTime < 60 * 60 * 1000) return;
-    recordedImpressionsRef.current.set(`poster:${adBookingId}`, now);
+    const lastTime = recordedImpressionsRef.current.get(`poster:${trackingId}`) || 0;
+    if (now - lastTime < 15 * 60 * 1000) return;
+    recordedImpressionsRef.current.set(`poster:${trackingId}`, now);
+
+    // Optimistically increment viewsCount on screen immediately
+    setAdConfig((prev) => {
+      if (!prev.imageAds || !prev.imageAds[activeAd]) return prev;
+      const updated = [...prev.imageAds];
+      updated[activeAd] = {
+        ...updated[activeAd],
+        viewsCount: (updated[activeAd].viewsCount || 0) + 1,
+      };
+      return { ...prev, imageAds: updated };
+    });
 
     const viewer = getViewerInfo();
+    const labelRaw = currentAd.label || "";
+    const labelParts = labelRaw.split("•").map((s) => s.trim()).filter(Boolean);
+    const storeName = labelParts[0] || (currentAd as any)?.businessName || labelRaw || "Featured Store";
+
     fetch("/api/ads/impression", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        adBookingId,
+        adBookingId: currentAd.adBookingId,
+        adId: currentAd.id || `ad-${activeAd + 1}`,
+        adTitle: currentAd.title,
+        businessName: storeName,
         surface: "poster",
         ...viewer,
       }),
-    }).catch(() => {});
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (typeof data.viewsCount === "number") {
+          setAdConfig((prev) => {
+            if (!prev.imageAds || !prev.imageAds[activeAd]) return prev;
+            const updated = [...prev.imageAds];
+            updated[activeAd] = {
+              ...updated[activeAd],
+              viewsCount: data.viewsCount,
+            };
+            return { ...prev, imageAds: updated };
+          });
+        }
+      })
+      .catch(() => {});
   }, [activeAd, role]);
 
   const handleVideoAdImpression = () => {
-    const videoAdId = adConfig.videoAd?.adBookingId;
-    if (!videoAdId) return;
+    const videoAd = adConfig.videoAd;
+    if (!videoAd) return;
+    const videoAdId = videoAd.adBookingId || "video-spotlight-main";
 
     try {
       const sessionKey = `bizearch_video_ad_viewed_${videoAdId}`;
@@ -3242,19 +3276,49 @@ export default function Home() {
 
     const now = Date.now();
     const lastTime = recordedImpressionsRef.current.get(`video:${videoAdId}`) || 0;
-    if (now - lastTime < 60 * 60 * 1000) return;
+    if (now - lastTime < 15 * 60 * 1000) return;
     recordedImpressionsRef.current.set(`video:${videoAdId}`, now);
+
+    setAdConfig((prev) => {
+      if (!prev.videoAd) return prev;
+      return {
+        ...prev,
+        videoAd: {
+          ...prev.videoAd,
+          viewsCount: (prev.videoAd.viewsCount || 0) + 1,
+        },
+      };
+    });
 
     const viewer = getViewerInfo();
     fetch("/api/ads/impression", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        adBookingId: videoAdId,
+        adBookingId: videoAd.adBookingId,
+        adId: videoAdId,
+        adTitle: videoAd.title || "Local Video Spotlight",
+        businessName: videoAd.businessName || videoAd.title || "Featured Business",
         surface: "video",
         ...viewer,
       }),
-    }).catch(() => {});
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (typeof data.viewsCount === "number") {
+          setAdConfig((prev) => {
+            if (!prev.videoAd) return prev;
+            return {
+              ...prev,
+              videoAd: {
+                ...prev.videoAd,
+                viewsCount: data.viewsCount,
+              },
+            };
+          });
+        }
+      })
+      .catch(() => {});
   };
 
   useEffect(() => {
@@ -4257,49 +4321,50 @@ export default function Home() {
   }, [businesses, adBookings, currentBusinessRecord, selectedCity]);
 
   const handleAdAction = (
-    currentAd: { adBookingId?: string; businessName?: string; title?: string },
+    currentAd: { adBookingId?: string; id?: string; businessName?: string; title?: string; label?: string },
     action: "call" | "whatsapp" | "view_store" | "navigate"
   ) => {
     const targetBiz = resolveTargetBusiness(currentAd);
+    const viewer = getViewerInfo();
 
-    if (currentAd.adBookingId) {
-      const viewer = getViewerInfo();
-      fetch("/api/ads/click", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          adBookingId: currentAd.adBookingId,
-          action,
-          ...viewer,
-        }),
+    fetch("/api/ads/click", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        adBookingId: currentAd.adBookingId,
+        adId: currentAd.id,
+        adTitle: currentAd.title,
+        businessName: targetBiz.name || currentAd.businessName || currentAd.label,
+        action,
+        ...viewer,
+      }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.booking) {
+          setAdBookings((prev) =>
+            prev.map((b) => (b.id === data.booking.id ? data.booking : b))
+          );
+        }
       })
-        .then((r) => r.json())
-        .then((data) => {
-          if (data.booking) {
-            setAdBookings((prev) =>
-              prev.map((b) => (b.id === data.booking.id ? data.booking : b))
-            );
-          }
-        })
-        .catch(() => {});
-    }
+      .catch(() => {});
 
     if (action === "view_store") {
       viewBusiness(targetBiz, "products");
-      recordEvent(`Ad lead - Store profile: ${targetBiz.name}`);
+      recordEvent(`Ad lead - Store profile: ${targetBiz.name}`, "Advertisement");
     } else if (action === "call") {
       const phone = targetBiz.phone || "+91 94432 20120";
-      recordEvent(`Ad lead - Phone call: ${targetBiz.name}`);
+      recordEvent(`Ad lead - Phone call: ${targetBiz.name}`, "Advertisement");
       window.open(`tel:${phone.replace(/\s+/g, "")}`, "_self");
     } else if (action === "whatsapp") {
       const phone = targetBiz.phone ? businessRawPhone(businessPhoneFor(targetBiz)) : "919443220120";
       const normalizedPhone = phone.startsWith("91") && phone.length === 12 ? phone : `91${phone.replace(/\D/g, "").slice(-10)}`;
       const msg = encodeURIComponent(getJishnuDefaultWhatsAppMessage(targetBiz.name));
-      recordEvent(`Ad lead - WhatsApp: ${targetBiz.name}`);
+      recordEvent(`Ad lead - WhatsApp: ${targetBiz.name}`, "Advertisement");
       window.open(`https://wa.me/${normalizedPhone}?text=${msg}`, "_blank");
     } else if (action === "navigate") {
       setNavigatingBusiness(targetBiz);
-      recordEvent(`Ad lead - Navigation: ${targetBiz.name}`);
+      recordEvent(`Ad lead - Navigation: ${targetBiz.name}`, "Advertisement");
     }
   };
 
@@ -7166,7 +7231,7 @@ export default function Home() {
                           }}
                           title="Verified customer views"
                         >
-                          👁️ {(currentImageAd.viewsCount || 1240).toLocaleString("en-IN")} views
+                          👁️ {(currentImageAd.viewsCount || 0).toLocaleString("en-IN")} views
                         </span>
                       </div>
                     </div>
@@ -7336,7 +7401,7 @@ export default function Home() {
                   }}
                   title="Total spotlight video views"
                 >
-                  👁️ {(adConfig.videoAd?.viewsCount || 2340).toLocaleString("en-IN")} views
+                  👁️ {(adConfig.videoAd?.viewsCount || 0).toLocaleString("en-IN")} views
                 </span>
                 <small style={{ whiteSpace: "nowrap" }}>{t.localSpotlight}</small>
               </div>
@@ -7436,7 +7501,7 @@ export default function Home() {
                             {t.advertisement}
                           </span>
                           <span style={{ background: "rgba(15, 23, 42, 0.72)", backdropFilter: "blur(6px)", color: "#ecfdf5", fontSize: "10px", fontWeight: 700, padding: "2px 8px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.25)" }}>
-                            👁️ {(currentImageAd?.viewsCount || 1240).toLocaleString("en-IN")} views
+                            👁️ {(currentImageAd?.viewsCount || 0).toLocaleString("en-IN")} views
                           </span>
                         </div>
                         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "6px" }}>

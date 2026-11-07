@@ -2150,14 +2150,14 @@ export function AdAudienceLogModal({
         : booking.format === "content"
         ? ["content"]
         : ["poster"];
-    return createSampleViewRecords(booking.id, booking.viewsCount || 20, allowed);
+    return booking.viewsCount ? createSampleViewRecords(booking.id, booking.viewsCount, allowed) : [];
   }, [booking]);
 
   const clickRecords: AdClickRecord[] = useMemo(() => {
     if (booking.clickRecords && booking.clickRecords.length > 0) {
       return booking.clickRecords;
     }
-    return createSampleClickRecords(booking.id, booking.clicksCount || 8);
+    return booking.clicksCount ? createSampleClickRecords(booking.id, booking.clicksCount) : [];
   }, [booking]);
 
   const uniqueViewers = useMemo(() => {
