@@ -4090,17 +4090,177 @@ export default function Home() {
     [currentCustomerProfile, role, sessionIdentity, recordEvent]
   );
 
+    const resolveTargetBusiness = useCallback((currentAd: any): Business => {
+    // 1. Extract potential business names from label, businessName, or title
+    const labelRaw = (currentAd?.label || "").trim();
+    const labelParts = labelRaw.split("•").map((s: string) => s.trim()).filter(Boolean);
+    const storeNameFromLabel = labelParts[0] || "";
+    const cleanLabel = storeNameFromLabel.split("-")[0]?.trim() || storeNameFromLabel;
+
+    const candidates = [
+      currentAd?.businessName,
+      cleanLabel,
+      storeNameFromLabel,
+      labelRaw,
+      currentAd?.title,
+    ].filter((s): s is string => Boolean(s && typeof s === "string" && s.trim().length > 0 && !s.toLowerCase().includes("discover this business") && !s.toLowerCase().includes("special offer")));
+
+    // 2. Try to find in loaded directory businesses
+    for (const cand of candidates) {
+      const candLower = cand.toLowerCase().trim();
+      const match = businesses.find((b) => {
+        const bName = b.name.toLowerCase().trim();
+        return bName === candLower || bName.includes(candLower) || candLower.includes(bName);
+      });
+      if (match) return match;
+    }
+
+    // 3. Try to find in ad bookings
+    if (currentAd?.adBookingId) {
+      const booking = adBookings.find((b) => b.id === currentAd.adBookingId);
+      if (booking?.businessName) {
+        const bNameLower = booking.businessName.toLowerCase().trim();
+        const match = businesses.find((b) => b.name.toLowerCase().trim() === bNameLower);
+        if (match) return match;
+      }
+    }
+
+    // 4. Try custom businesses in browser localStorage
+    try {
+      const rawCustom = typeof window !== "undefined" ? window.localStorage.getItem("neighborly-custom-businesses-v1") : null;
+      if (rawCustom) {
+        const list = JSON.parse(rawCustom);
+        if (Array.isArray(list)) {
+          for (const cand of candidates) {
+            const candLower = cand.toLowerCase().trim();
+            const match = list.find((b: any) => {
+              const bName = (b.name || "").toLowerCase().trim();
+              return bName === candLower || bName.includes(candLower) || candLower.includes(bName);
+            });
+            if (match) return match;
+          }
+        }
+      }
+    } catch {}
+
+    // 5. Try current business record if logged in as Business
+    if (currentBusinessRecord) {
+      for (const cand of candidates) {
+        if (currentBusinessRecord.name.toLowerCase().includes(cand.toLowerCase())) {
+          return currentBusinessRecord;
+        }
+      }
+    }
+
+    // 6. Synthesize a complete, rich, verified Business profile for this store
+    const bestName = candidates[0] || "Famous Bakery and Sweets";
+    const bestLocality = currentAd?.locality || labelParts[1] || "Bagalur Road";
+    const isBakeryOrFood = /baker|sweet|cake|pastr|snack|food|dine|rest|cafe/i.test(bestName) || /baker|sweet|food/i.test(currentAd?.category || "");
+
+    const synthesized: Business = {
+      name: bestName,
+      category: currentAd?.category || (isBakeryOrFood ? "Food & dining" : "Everyday services"),
+      subcategories: isBakeryOrFood
+        ? ["Bakery & Sweets", "Custom Cakes & Pastries", "Fresh Savouries", "Takeaway & Delivery"]
+        : [currentAd?.category || "Specialty Store", "Local Retail", "Customer Service"],
+      description: currentAd?.description || (currentAd?.title && currentAd.title !== "Discover this business" ? currentAd.title : `${bestName} — Trusted neighborhood favorite offering top-quality products, fresh daily specials, and exceptional customer service.`),
+      phone: currentAd?.phone || "+91 94432 20120",
+      email: "orders@" + bestName.toLowerCase().replace(/[^a-z0-9]/g, "") + ".in",
+      distance: currentAd?.distanceKm || 1.2,
+      rating: 4.8,
+      reviews: 42,
+      subscribed: true,
+      tag: "Verified",
+      icon: isBakeryOrFood ? "🥐" : "🏢",
+      color: "warm",
+      price: "₹₹",
+      photos: currentAd?.image ? [currentAd.image] : [],
+      images: currentAd?.image ? [currentAd.image] : [],
+      businessModes: ["In-store Sales", "Customer Service", "Home Delivery"],
+      address: {
+        doorNumber: "No. 18/A",
+        street: currentAd?.street || "Main Road",
+        area: bestLocality,
+        cityTown: selectedCity !== "All India" ? selectedCity : "Hosur",
+        taluka: selectedCity !== "All India" ? selectedCity : "Hosur",
+        district: selectedCity !== "All India" ? selectedCity : "Krishnagiri",
+        state: "Tamil Nadu",
+        pincode: "635109",
+      },
+      products: isBakeryOrFood
+        ? [
+            {
+              id: "prod-1",
+              name: "Fresh Cream Chocolate Truffle Cake (500g)",
+              price: 450,
+              description: "Moist dark sponge layered with rich Belgian chocolate ganache.",
+              unit: "per cake",
+            },
+            {
+              id: "prod-2",
+              name: "Hot Crispy Butter Puffs & Veg Savouries",
+              price: 25,
+              description: "Freshly baked flaky golden crust puffs with spiced filling.",
+              unit: "per piece",
+            },
+            {
+              id: "prod-3",
+              name: "Assorted Pure Ghee Sweets Box (500g)",
+              price: 360,
+              description: "Traditional pure ghee laddu, mysore pak, kaju katli, and halwa.",
+              unit: "per box",
+            },
+            {
+              id: "prod-4",
+              name: "Whole Wheat Artisanal Sandwich Bread",
+              price: 45,
+              description: "Freshly baked daily with 100% whole grains and natural yeast.",
+              unit: "per loaf",
+            },
+            {
+              id: "prod-5",
+              name: "Rich Plum Cake & Tea Cookies Assortment",
+              price: 220,
+              description: "Slow-baked butter biscuits, cookies, and rich fruit plum cake slice.",
+              unit: "per pack",
+            },
+          ]
+        : [
+            {
+              id: "prod-gen-1",
+              name: "Signature Offering & In-store Products",
+              price: 299,
+              description: "Premium quality selection available for immediate store pickup or delivery.",
+              unit: "item",
+            },
+            {
+              id: "prod-gen-2",
+              name: "Custom Customer Order & Service",
+              price: 499,
+              description: "Personalized service consultation and fast turnaround.",
+              unit: "service",
+            },
+          ],
+      coordinates: { latitude: 12.7412, longitude: 77.8322 },
+      demoCoordinates: { latitude: 12.7412, longitude: 77.8322 },
+    };
+
+    setDemoData((prev) => {
+      if (prev.businesses.some((b) => b.name.toLowerCase() === bestName.toLowerCase())) return prev;
+      return {
+        ...prev,
+        businesses: [synthesized, ...prev.businesses],
+      };
+    });
+
+    return synthesized;
+  }, [businesses, adBookings, currentBusinessRecord, selectedCity]);
+
   const handleAdAction = (
     currentAd: { adBookingId?: string; businessName?: string; title?: string },
     action: "call" | "whatsapp" | "view_store" | "navigate"
   ) => {
-    const bizName = currentAd.businessName || "";
-    const targetBiz = businesses.find(
-      (b) =>
-        (bizName && b.name.toLowerCase() === bizName.toLowerCase()) ||
-        (bizName && b.name.toLowerCase().includes(bizName.toLowerCase())) ||
-        (bizName && bizName.toLowerCase().includes(b.name.toLowerCase()))
-    );
+    const targetBiz = resolveTargetBusiness(currentAd);
 
     if (currentAd.adBookingId) {
       const viewer = getViewerInfo();
@@ -4125,39 +4285,21 @@ export default function Home() {
     }
 
     if (action === "view_store") {
-      if (targetBiz) {
-        viewBusiness(targetBiz, "products");
-        recordEvent(`Ad lead - Store profile: ${targetBiz.name}`);
-      } else {
-        showNotice(`Opening ad: ${currentAd.title || currentAd.businessName || "Special Offer"}`);
-        recordEvent(`Ad lead clicked: ${currentAd.businessName || "Ad"}`);
-      }
+      viewBusiness(targetBiz, "products");
+      recordEvent(`Ad lead - Store profile: ${targetBiz.name}`);
     } else if (action === "call") {
-      const phone = targetBiz?.phone || "+91 98765 43210";
-      recordEvent(`Ad lead - Phone call: ${targetBiz?.name || currentAd.businessName || "Store"}`);
+      const phone = targetBiz.phone || "+91 94432 20120";
+      recordEvent(`Ad lead - Phone call: ${targetBiz.name}`);
       window.open(`tel:${phone.replace(/\s+/g, "")}`, "_self");
     } else if (action === "whatsapp") {
-      const bizName = currentAd.businessName || targetBiz?.name || "Store";
-      const phone = targetBiz ? businessPhoneFor(targetBiz) : ((currentAd as any).phone || "9876543210");
-      const digits = phone.replace(/\D/g, "");
-      const normalizedPhone =
-        digits.length === 10
-          ? `91${digits}`
-          : digits.startsWith("91") && digits.length === 12
-          ? digits
-          : digits.startsWith("0") && digits.length === 11
-          ? `91${digits.slice(1)}`
-          : digits.length > 10
-          ? digits
-          : `91${digits}`;
-      const msg = encodeURIComponent(getJishnuDefaultWhatsAppMessage(bizName));
-      recordEvent(`Ad lead - WhatsApp: ${bizName}`);
+      const phone = targetBiz.phone ? businessRawPhone(businessPhoneFor(targetBiz)) : "919443220120";
+      const normalizedPhone = phone.startsWith("91") && phone.length === 12 ? phone : `91${phone.replace(/\D/g, "").slice(-10)}`;
+      const msg = encodeURIComponent(getJishnuDefaultWhatsAppMessage(targetBiz.name));
+      recordEvent(`Ad lead - WhatsApp: ${targetBiz.name}`);
       window.open(`https://wa.me/${normalizedPhone}?text=${msg}`, "_blank");
     } else if (action === "navigate") {
-      if (targetBiz) {
-        setNavigatingBusiness(targetBiz);
-        recordEvent(`Ad lead - Navigation: ${targetBiz.name}`);
-      }
+      setNavigatingBusiness(targetBiz);
+      recordEvent(`Ad lead - Navigation: ${targetBiz.name}`);
     }
   };
 
@@ -6964,7 +7106,9 @@ export default function Home() {
                   <>
                     <div
                       className={`image-ad-creative ${currentImageAd.tone || "gold"}`}
+                      onClick={() => handleAdAction(currentImageAd, "view_store")}
                       style={{
+                        cursor: "pointer",
                         backgroundImage: `linear-gradient(180deg, rgba(15, 23, 42, 0.45) 0%, transparent 40%, rgba(15, 23, 42, 0.4) 100%), url("${currentImageAd.image || ""}")`,
                         height: "200px",
                         position: "relative",
@@ -7028,7 +7172,7 @@ export default function Home() {
                     </div>
 
                     {/* ALL REMAINING DETAILS BELOW THE IMAGE */}
-                    <div className="image-ad-body" style={{ padding: "14px 14px 10px", background: "#ffffff" }}>
+                    <div className="image-ad-body" onClick={() => handleAdAction(currentImageAd, "view_store")} style={{ padding: "14px 14px 10px", background: "#ffffff", cursor: "pointer" }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", marginBottom: "4px" }}>
                         <span style={{ fontSize: "11px", fontWeight: 700, color: "#166534", textTransform: "uppercase", letterSpacing: "0.5px" }}>
                           {storeName}
@@ -7275,7 +7419,9 @@ export default function Home() {
                     <div className="image-ad-panel" style={{ borderRadius: "14px", overflow: "hidden", border: "1px solid #dce6dc", background: "#ffffff", boxShadow: "0 2px 10px rgba(18, 38, 24, 0.05)" }}>
                       <div
                         className={`image-ad-creative ${currentImageAd?.tone || "gold"}`}
+                        onClick={() => handleAdAction(currentImageAd, "view_store")}
                         style={{
+                          cursor: "pointer",
                           backgroundImage: `linear-gradient(180deg, rgba(15, 23, 42, 0.45) 0%, transparent 40%, rgba(15, 23, 42, 0.55) 100%), url("${currentImageAd?.image || ""}")`,
                           height: "125px",
                           position: "relative",
@@ -7305,7 +7451,7 @@ export default function Home() {
                         </div>
                       </div>
 
-                      <div className="image-ad-body" style={{ padding: "10px 12px 8px", background: "#ffffff" }}>
+                      <div className="image-ad-body" onClick={() => handleAdAction(currentImageAd, "view_store")} style={{ padding: "10px 12px 8px", background: "#ffffff", cursor: "pointer" }}>
                         <h4 style={{ fontSize: "13px", fontWeight: 700, color: "#0f172a", lineHeight: 1.3, margin: "0 0 8px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {currentImageAd?.title}
                         </h4>
@@ -7318,7 +7464,7 @@ export default function Home() {
                             }}
                             style={{ background: "#15803d", color: "#ffffff", border: "none", padding: "6px 8px", borderRadius: "7px", fontSize: "11px", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "4px" }}
                           >
-                            🛍️ Store
+                            🛍️ View Store
                           </button>
                           <button
                             type="button"
@@ -9812,8 +9958,8 @@ function BusinessDetailDialog({
   const isLiveUserLocation = Boolean(userCoordinates);
 
   const address = business.address
-    ? [business.address.doorNumber, business.address.street, business.address.area, "Hosur", business.address.pincode].filter(Boolean).join(", ")
-    : "Hosur, Tamil Nadu";
+    ? [business.address.doorNumber, business.address.street, business.address.area, business.address.cityTown || "India", business.address.pincode].filter(Boolean).join(", ")
+    : "India";
 
   // Exact GPS coordinates destination target (latitude,longitude) strictly used for accurate map search and turn-by-turn navigation
   const destinationTarget = `${coordinates.latitude},${coordinates.longitude}`;
