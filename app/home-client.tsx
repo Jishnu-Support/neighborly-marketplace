@@ -8555,9 +8555,11 @@ export default function Home() {
                 ) : businesses.length === 0 ? (
                   <div className="empty-results zero-businesses-card" style={{ padding: "44px 20px", textAlign: "center", background: "#f8fbf8", border: "1.5px dashed #c8dbcc", borderRadius: "14px", margin: "24px 0" }}>
                     <div style={{ fontSize: "44px", marginBottom: "12px" }}>🏪</div>
-                    <h3 style={{ fontSize: "19px", color: "#1a3a22", marginBottom: "8px", fontWeight: 800 }}>Welcome to Bizearch Hosur</h3>
+                    <h3 style={{ fontSize: "19px", color: "#1a3a22", marginBottom: "8px", fontWeight: 800 }}>
+                      Welcome to Bizearch {selectedCity !== "All India" ? selectedCity : ""}
+                    </h3>
                     <p style={{ fontSize: "13.5px", color: "#4f6553", maxWidth: "500px", margin: "0 auto 20px", lineHeight: 1.5 }}>
-                      Hosur&apos;s verified local business &amp; services network. As real businesses register and get approved, they will appear here live with storefront catalogues, direct WhatsApp leads, and phone contacts.
+                      {selectedCity !== "All India" ? `${selectedCity}'s` : "India's"} verified local business &amp; services network. As real businesses register and get approved, they will appear here live with storefront catalogues, direct WhatsApp leads, and phone contacts.
                     </p>
                     <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
                       <button
@@ -8567,14 +8569,6 @@ export default function Home() {
                         onClick={() => setDialog("business")}
                       >
                         ➕ Register Your Business
-                      </button>
-                      <button
-                        type="button"
-                        className="outline-button"
-                        style={{ padding: "10px 18px", fontSize: "13px", fontWeight: 700 }}
-                        onClick={() => openPortal("Company")}
-                      >
-                        👑 Super Admin Portal
                       </button>
                     </div>
                   </div>
