@@ -8544,7 +8544,26 @@ export default function Home() {
 
       {notice && <div className="toast" role="status"><span>✓</span>{notice}<button onClick={() => setNotice("")} aria-label="Dismiss">×</button></div>}
       {storageError && <div className="storage-warning" role="status">Demo data could not be saved in this browser: {storageError}</div>}
-      {dialog && <Dialog kind={dialog} close={() => setDialog(null)} onOpenProfile={openMemberProfile} profileRole={role === "Account" || role === "Business" || role === "Agent" || role === "Company" ? role : "Account"} profileIdentity={role === "Company" ? sessionIdentity : ""} onLogin={logIn} onRegisterCustomerLocation={registerCustomerLocation} onBusiness={submitBusiness} businesses={role === "Business" ? businessAccountBusinesses : businesses} categories={categoryConfig.sectors} brandLogos={categoryConfig.brandLogos} onCheckout={submitCheckout} showNotice={showNotice} />}
+      {dialog && (
+        <Dialog
+          kind={dialog}
+          close={() => setDialog(null)}
+          onOpenProfile={openMemberProfile}
+          profileRole={role === "Account" || role === "Business" || role === "Agent" || role === "Company" ? role : "Account"}
+          profileIdentity={role === "Company" ? sessionIdentity : ""}
+          onLogin={logIn}
+          onRegisterCustomerLocation={registerCustomerLocation}
+          onBusiness={submitBusiness}
+          businesses={role === "Business" ? businessAccountBusinesses : businesses}
+          categories={categoryConfig.sectors}
+          brandLogos={categoryConfig.brandLogos}
+          onCheckout={submitCheckout}
+          showNotice={showNotice}
+          userCoordinates={locationCoordinates}
+          customerProfile={currentCustomerProfile}
+          sessionIdentity={sessionIdentity}
+        />
+      )}
       {orderingItem && (
         <OrderCheckoutDialog
           business={orderingItem.business}
@@ -20393,6 +20412,9 @@ function Dialog({
   brandLogos,
   onCheckout,
   showNotice,
+  userCoordinates,
+  customerProfile,
+  sessionIdentity,
 }: {
   kind: "login" | "business" | "sos" | "plans";
   close: () => void;
@@ -20418,6 +20440,9 @@ function Dialog({
   brandLogos?: Record<string, string>;
   onCheckout: (businessName: string, plan: string, paymentMethod: string) => void;
   showNotice: (message: string) => void;
+  userCoordinates?: Coordinates | null;
+  customerProfile?: MemberProfile | null;
+  sessionIdentity?: string;
 }) {
   const [isSignup, setIsSignup] = useState(false);
   const [registrationConfig, setRegistrationConfig] = useState<RegistrationFormConfig>(defaultRegistrationFormConfig);
@@ -20556,10 +20581,20 @@ function Dialog({
       setCustomerForgotBusy(false);
     }
   }
-  const [emergencyProfile, setEmergencyProfile] = useState({ customerName: "", customerPhone: "", emergencyPhones: ["", ""] as [string, string] });
+  const [liveGpsCoords, setLiveGpsCoords] = useState<Coordinates | null>(userCoordinates || null);
+  const [gpsStatus, setGpsStatus] = useState<"locating" | "ready" | "denied">("locating");
+  const [emergencyProfile, setEmergencyProfile] = useState({
+    customerName: customerProfile?.fullName || "",
+    customerPhone: customerProfile?.phone || (sessionIdentity && !sessionIdentity.includes("@") ? sessionIdentity : ""),
+    emergencyPhones: ["", ""] as [string, string],
+  });
   const [showEditEmergencyPhone, setShowEditEmergencyPhone] = useState(false);
   const [quickEmergencyPhone, setQuickEmergencyPhone] = useState("");
   const [quickEmergencyName, setQuickEmergencyName] = useState("");
+  const [quickEmergencySelfName, setQuickEmergencySelfName] = useState(customerProfile?.fullName || "");
+  const [quickEmergencySelfPhone, setQuickEmergencySelfPhone] = useState(
+    customerProfile?.phone || (sessionIdentity && !sessionIdentity.includes("@") ? sessionIdentity : "")
+  );
   const [quickEmergencySaving, setQuickEmergencySaving] = useState(false);
   const [quickEmergencySuccess, setQuickEmergencySuccess] = useState("");
   const [sosBusy, setSosBusy] = useState(false);
@@ -20567,6 +20602,66 @@ function Dialog({
   const [selectedEmergencyType, setSelectedEmergencyType] = useState<EmergencyType | "">("");
   const [sosResult, setSosResult] = useState<{ id: string; createdAt: string; customerName: string; emergencyPhones: [string, string]; locationStatus: "shared" | "unavailable"; latitude: number | null; longitude: number | null; accuracyMeters: number | null; emergencyType: EmergencyType; duplicate: boolean } | null>(null);
   const sosRequestKey = useRef("");
+
+  useEffect(() => {
+    if (kind !== "sos") return;
+    if (userCoordinates) {
+      setLiveGpsCoords(userCoordinates);
+      setGpsStatus("ready");
+    }
+    if (typeof navigator !== "undefined" && navigator.geolocation) {
+      setGpsStatus("locating");
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setLiveGpsCoords({
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+          });
+          setGpsStatus("ready");
+        },
+        (err) => {
+          console.warn("SOS live GPS positioning notice:", err.message);
+          setGpsStatus(userCoordinates ? "ready" : "denied");
+        },
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 10000 }
+      );
+    } else {
+      setGpsStatus(userCoordinates ? "ready" : "denied");
+    }
+  }, [kind, userCoordinates]);
+
+  function getEmergencyWhatsAppUrl(targetPhone: string, headline?: string, category?: string) {
+    const digitsOnly = targetPhone.replace(/\D/g, "");
+    const cleanTarget = digitsOnly.startsWith("91") && digitsOnly.length === 12
+      ? digitsOnly
+      : `91${digitsOnly.slice(-10)}`;
+
+    const senderName = emergencyProfile.customerName.trim() || quickEmergencySelfName.trim() || customerProfile?.fullName?.trim() || "Hosur Resident";
+    const senderPhone = emergencyProfile.customerPhone.trim() || quickEmergencySelfPhone.trim() || customerProfile?.phone?.trim() || (sessionIdentity && !sessionIdentity.includes("@") ? sessionIdentity.trim() : "");
+    const cleanSenderPhone = senderPhone
+      ? (senderPhone.startsWith("+") ? senderPhone : `+91 ${senderPhone.replace(/\D/g, "").slice(-10)}`)
+      : "Not provided";
+
+    const lat = liveGpsCoords?.latitude ?? (userCoordinates?.latitude ?? null);
+    const lng = liveGpsCoords?.longitude ?? (userCoordinates?.longitude ?? null);
+    const locationLink = (lat !== null && lng !== null)
+      ? `https://maps.google.com/?q=${lat.toFixed(6)},${lng.toFixed(6)}`
+      : "Location permission denied or unavailable";
+
+    const messageLines = [
+      `🚨 EMERGENCY DISTRESS ALERT!`,
+      headline || `Please help! Immediate SOS alert from ${senderName} via Bizearch Hosur Safety Network.`,
+      ``,
+      `👤 Name: ${senderName}`,
+      `📞 Contact Number: ${cleanSenderPhone}`,
+      `📍 Live Location: ${locationLink}`,
+      category ? `⚠️ Emergency Category: ${category}` : null,
+      ``,
+      `Please send help or contact me immediately!`,
+    ].filter(Boolean).join("\n");
+
+    return `https://wa.me/${cleanTarget}?text=${encodeURIComponent(messageLines)}`;
+  }
   const [step, setStep] = useState(1);
   const [checkoutPlan, setCheckoutPlan] = useState("");
   const [checkoutBusiness, setCheckoutBusiness] = useState(businesses[0]?.name || "");
@@ -20721,13 +20816,17 @@ function Dialog({
       if (saved) {
         const p1 = saved.emergencyPhones?.[0] || saved.emergencyPhone || "";
         const p2 = saved.emergencyPhones?.[1] || "";
+        const sName = saved.fullName || saved.customerName || customerProfile?.fullName || "";
+        const sPhone = saved.phone || saved.customerPhone || customerProfile?.phone || (sessionIdentity && !sessionIdentity.includes("@") ? sessionIdentity : "");
         setEmergencyProfile({
-          customerName: saved.fullName || saved.customerName || "",
-          customerPhone: saved.phone || saved.customerPhone || "",
+          customerName: sName,
+          customerPhone: sPhone,
           emergencyPhones: [p1, p2],
         });
         if (p1) setQuickEmergencyPhone(p1);
         if (saved.emergencyNames?.[0]) setQuickEmergencyName(saved.emergencyNames[0]);
+        if (sName) setQuickEmergencySelfName(sName);
+        if (sPhone) setQuickEmergencySelfPhone(sPhone);
       }
     } catch { /* The user can enter the details directly in the SOS form. */ }
 
@@ -20740,47 +20839,62 @@ function Dialog({
           const c = data.customer;
           const p1 = c.emergencyPhones?.[0] || "";
           const p2 = c.emergencyPhones?.[1] || "";
+          const sName = c.name || customerProfile?.fullName || "Keerthana";
+          const sPhone = c.phone || customerProfile?.phone || "";
           setEmergencyProfile({
-            customerName: c.name || "Customer",
-            customerPhone: c.phone || "",
+            customerName: sName,
+            customerPhone: sPhone,
             emergencyPhones: [p1, p2],
           });
           if (p1) setQuickEmergencyPhone(p1);
           if (c.emergencyNames?.[0]) setQuickEmergencyName(c.emergencyNames[0]);
+          if (sName) setQuickEmergencySelfName(sName);
+          if (sPhone) setQuickEmergencySelfPhone(sPhone);
         } else if (data.business) {
           const b = data.business;
           const p1 = b.emergencyPhone || b.phone || "";
+          const sName = b.ownerName || b.name || "Business Merchant";
+          const sPhone = b.phone || "";
           setEmergencyProfile({
-            customerName: b.ownerName || b.name || "Business Merchant",
-            customerPhone: b.phone || "",
+            customerName: sName,
+            customerPhone: sPhone,
             emergencyPhones: [p1, ""],
           });
           if (p1) setQuickEmergencyPhone(p1);
-          setQuickEmergencyName(b.ownerName || b.name || "Business Owner");
+          setQuickEmergencyName(sName);
+          if (sName) setQuickEmergencySelfName(sName);
+          if (sPhone) setQuickEmergencySelfPhone(sPhone);
         } else if (data.agent) {
           const a = data.agent;
           const p1 = a.emergencyPhone || a.phone || "";
+          const sName = a.name || "Agent Partner";
+          const sPhone = a.phone || "";
           setEmergencyProfile({
-            customerName: a.name || "Agent Partner",
-            customerPhone: a.phone || "",
+            customerName: sName,
+            customerPhone: sPhone,
             emergencyPhones: [p1, ""],
           });
           if (p1) setQuickEmergencyPhone(p1);
-          setQuickEmergencyName(a.name || "Agent");
+          setQuickEmergencyName(sName);
+          if (sName) setQuickEmergencySelfName(sName);
+          if (sPhone) setQuickEmergencySelfPhone(sPhone);
         } else if (data.adminProfile) {
           const adm = data.adminProfile;
           const p1 = adm.emergencyPhone || "+91 94895 21482";
+          const sName = adm.name || "Company Admin";
           setEmergencyProfile({
-            customerName: adm.name || "Company Admin",
+            customerName: sName,
             customerPhone: p1,
             emergencyPhones: [p1, ""],
           });
           if (p1) setQuickEmergencyPhone(p1);
           setQuickEmergencyName(adm.name || "Admin Safety Officer");
+          if (sName) setQuickEmergencySelfName(sName);
+          setQuickEmergencySelfPhone(p1);
         }
       })
       .catch(() => {});
-  }, [kind, profileRole, profileIdentity]);
+  }, [kind, profileRole, profileIdentity, customerProfile, sessionIdentity]);
 
   async function saveQuickEmergencyContact(e?: React.FormEvent) {
     if (e) e.preventDefault();
@@ -20792,10 +20906,14 @@ function Dialog({
     setQuickEmergencySaving(true);
     setSosError("");
     const newEmergencyPhones: [string, string] = [quickEmergencyPhone.trim(), emergencyProfile.emergencyPhones[1] || ""];
+    const effectiveSelfName = quickEmergencySelfName.trim() || emergencyProfile.customerName || customerProfile?.fullName || "Keerthana";
+    const effectiveSelfPhone = quickEmergencySelfPhone.trim() || emergencyProfile.customerPhone || customerProfile?.phone || (sessionIdentity && !sessionIdentity.includes("@") ? sessionIdentity : "");
+
     const updated = {
       ...emergencyProfile,
+      customerName: effectiveSelfName,
+      customerPhone: effectiveSelfPhone,
       emergencyPhones: newEmergencyPhones,
-      customerName: quickEmergencyName.trim() || emergencyProfile.customerName || "Hosur Resident",
     };
     setEmergencyProfile(updated);
 
@@ -20804,6 +20922,8 @@ function Dialog({
       const existing = JSON.parse(window.localStorage.getItem(storageKey) || "{}");
       const next = {
         ...existing,
+        fullName: effectiveSelfName,
+        phone: effectiveSelfPhone,
         emergencyPhones: newEmergencyPhones,
         emergencyPhone: quickEmergencyPhone.trim(),
         emergencyNames: [quickEmergencyName.trim() || "Emergency Contact", ""],
@@ -20819,12 +20939,14 @@ function Dialog({
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
+          name: effectiveSelfName,
+          phone: effectiveSelfPhone,
           emergencyPhone: quickEmergencyPhone.trim(),
           emergencyPhones: newEmergencyPhones,
           emergencyNames: [quickEmergencyName.trim() || "Emergency Contact", ""],
         }),
       });
-      setQuickEmergencySuccess("✓ Emergency number registered for SOS!");
+      setQuickEmergencySuccess("✓ Emergency details registered for SOS!");
       setShowEditEmergencyPhone(false);
       setTimeout(() => setQuickEmergencySuccess(""), 3500);
     } catch {
@@ -21829,7 +21951,7 @@ function Dialog({
                     <span>Call</span>
                   </a>
                   <a
-                    href={`https://wa.me/919489521482?text=${encodeURIComponent("🚨 EMERGENCY 112 SOS: Immediate emergency response required in Hosur!")}`}
+                    href={getEmergencyWhatsAppUrl("919489521482", "🛡️ EMERGENCY 112 SOS: Immediate emergency response required in Hosur!", "112 National Helpline")}
                     target="_blank"
                     rel="noreferrer"
                     style={{
@@ -21882,7 +22004,7 @@ function Dialog({
                     <span>Call</span>
                   </a>
                   <a
-                    href={`https://wa.me/919489521482?text=${encodeURIComponent("🚑 MEDICAL EMERGENCY (108): Urgent Ambulance required in Hosur!")}`}
+                    href={getEmergencyWhatsAppUrl("919489521482", "🚑 MEDICAL EMERGENCY (108): Urgent Ambulance required in Hosur!", "108 Medical Ambulance")}
                     target="_blank"
                     rel="noreferrer"
                     style={{
@@ -21935,7 +22057,7 @@ function Dialog({
                     <span>Call</span>
                   </a>
                   <a
-                    href={`https://wa.me/919498181212?text=${encodeURIComponent("🚓 POLICE EMERGENCY (100): Urgent police assistance required in Hosur!")}`}
+                    href={getEmergencyWhatsAppUrl("919498181212", "🚓 POLICE EMERGENCY (100): Urgent police assistance required in Hosur!", "100 Police Control")}
                     target="_blank"
                     rel="noreferrer"
                     style={{
@@ -21988,7 +22110,7 @@ function Dialog({
                     <span>Call</span>
                   </a>
                   <a
-                    href={`https://wa.me/919489521482?text=${encodeURIComponent("🚒 FIRE EMERGENCY (101): Immediate Fire & Rescue required in Hosur!")}`}
+                    href={getEmergencyWhatsAppUrl("919489521482", "🚒 FIRE EMERGENCY (101): Immediate Fire & Rescue required in Hosur!", "101 Fire & Rescue")}
                     target="_blank"
                     rel="noreferrer"
                     style={{
@@ -22027,7 +22149,7 @@ function Dialog({
                 onClick={() => setShowEditEmergencyPhone(!showEditEmergencyPhone)}
                 style={{ background: "none", border: "none", color: "#2563eb", fontSize: "10.5px", fontWeight: 700, cursor: "pointer", textDecoration: "underline", padding: 0 }}
               >
-                {showEditEmergencyPhone ? "✕ Close" : "Edit Number ✎"}
+                {showEditEmergencyPhone ? "✕ Close" : "Edit Details ✎"}
               </button>
             </div>
 
@@ -22040,24 +22162,52 @@ function Dialog({
             {showEditEmergencyPhone || (!emergencyProfile.emergencyPhones[0] && !quickEmergencyPhone) ? (
               <form onSubmit={saveQuickEmergencyContact} style={{ margin: "2px 0 0" }}>
                 <p style={{ fontSize: "10.5px", color: "#64748b", margin: "0 0 6px" }}>
-                  Enter an emergency contact number for 1-tap Call &amp; WhatsApp distress alerts:
+                  Confirm your details and recipient mobile number for 1-tap WhatsApp distress alerts:
                 </p>
-                <div style={{ display: "flex", gap: "6px", marginBottom: "6px" }}>
-                  <input
-                    type="text"
-                    value={quickEmergencyName}
-                    onChange={(e) => setQuickEmergencyName(e.target.value)}
-                    placeholder="Name (e.g. Spouse / Owner)"
-                    style={{ width: "42%", padding: "6px 8px", fontSize: "11.5px", border: "1px solid #cbd5e1", borderRadius: "6px" }}
-                  />
-                  <input
-                    type="tel"
-                    value={quickEmergencyPhone}
-                    onChange={(e) => setQuickEmergencyPhone(e.target.value)}
-                    placeholder="Mobile Number *"
-                    required
-                    style={{ flex: 1, padding: "6px 8px", fontSize: "11.5px", border: "1px solid #cbd5e1", borderRadius: "6px" }}
-                  />
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", marginBottom: "6px" }}>
+                  <div>
+                    <label style={{ fontSize: "10px", fontWeight: 700, color: "#475569", display: "block", marginBottom: "2px" }}>Your Full Name</label>
+                    <input
+                      type="text"
+                      value={quickEmergencySelfName}
+                      onChange={(e) => setQuickEmergencySelfName(e.target.value)}
+                      placeholder="e.g. Keerthana"
+                      style={{ width: "100%", padding: "6px 8px", fontSize: "11px", border: "1px solid #cbd5e1", borderRadius: "6px", boxSizing: "border-box" }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: "10px", fontWeight: 700, color: "#475569", display: "block", marginBottom: "2px" }}>Your Mobile Number *</label>
+                    <input
+                      type="tel"
+                      value={quickEmergencySelfPhone}
+                      onChange={(e) => setQuickEmergencySelfPhone(e.target.value)}
+                      placeholder="e.g. 9876543210"
+                      style={{ width: "100%", padding: "6px 8px", fontSize: "11px", border: "1px solid #cbd5e1", borderRadius: "6px", boxSizing: "border-box" }}
+                    />
+                  </div>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", marginBottom: "6px" }}>
+                  <div>
+                    <label style={{ fontSize: "10px", fontWeight: 700, color: "#475569", display: "block", marginBottom: "2px" }}>Emergency Contact Name</label>
+                    <input
+                      type="text"
+                      value={quickEmergencyName}
+                      onChange={(e) => setQuickEmergencyName(e.target.value)}
+                      placeholder="e.g. Spouse / Dad"
+                      style={{ width: "100%", padding: "6px 8px", fontSize: "11px", border: "1px solid #cbd5e1", borderRadius: "6px", boxSizing: "border-box" }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: "10px", fontWeight: 700, color: "#475569", display: "block", marginBottom: "2px" }}>Recipient Mobile *</label>
+                    <input
+                      type="tel"
+                      value={quickEmergencyPhone}
+                      onChange={(e) => setQuickEmergencyPhone(e.target.value)}
+                      placeholder="Recipient Mobile *"
+                      required
+                      style={{ width: "100%", padding: "6px 8px", fontSize: "11px", border: "1px solid #cbd5e1", borderRadius: "6px", boxSizing: "border-box" }}
+                    />
+                  </div>
                 </div>
                 <button
                   type="submit"
@@ -22074,17 +22224,48 @@ function Dialog({
                     cursor: "pointer",
                   }}
                 >
-                  {quickEmergencySaving ? "Saving..." : "💾 Save Emergency Number"}
+                  {quickEmergencySaving ? "Saving..." : "💾 Save Emergency Details"}
                 </button>
               </form>
             ) : (
               <div>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "11.5px", fontWeight: 700, color: "#0f172a", marginBottom: "8px" }}>
-                  <span>{emergencyProfile.customerName || "Hosur Resident"}</span>
-                  <span style={{ color: "#2563eb", fontFamily: "monospace", letterSpacing: "0.5px" }}>
-                    {emergencyProfile.emergencyPhones[0] || quickEmergencyPhone}
-                  </span>
+                <div style={{ marginBottom: "8px", background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px 10px" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "11.5px", marginBottom: "3px" }}>
+                    <span style={{ color: "#64748b" }}>Distressed Person:</span>
+                    <strong style={{ color: "#0f172a" }}>
+                      {emergencyProfile.customerName || quickEmergencySelfName || customerProfile?.fullName || "Keerthana"}
+                    </strong>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "11.5px", marginBottom: "3px" }}>
+                    <span style={{ color: "#64748b" }}>Your Contact Number:</span>
+                    <strong style={{ color: "#0f172a", fontFamily: "monospace" }}>
+                      {emergencyProfile.customerPhone || quickEmergencySelfPhone || customerProfile?.phone || (sessionIdentity && !sessionIdentity.includes("@") ? sessionIdentity : "Not specified")}
+                    </strong>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "11px", marginBottom: "3px" }}>
+                    <span style={{ color: "#64748b" }}>Emergency Contact:</span>
+                    <strong style={{ color: "#2563eb", fontFamily: "monospace" }}>
+                      {emergencyProfile.emergencyPhones[0] || quickEmergencyPhone} {quickEmergencyName ? `(${quickEmergencyName})` : ""}
+                    </strong>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "10.5px", paddingTop: "4px", borderTop: "1px dashed #e2e8f0" }}>
+                    <span style={{ color: "#64748b" }}>Live GPS Location:</span>
+                    {liveGpsCoords ? (
+                      <span style={{ color: "#16a34a", fontWeight: 700 }}>
+                        🟢 Ready ({liveGpsCoords.latitude.toFixed(4)}, {liveGpsCoords.longitude.toFixed(4)})
+                      </span>
+                    ) : gpsStatus === "locating" ? (
+                      <span style={{ color: "#d97706", fontWeight: 700 }}>
+                        🟡 Acquiring Live GPS...
+                      </span>
+                    ) : (
+                      <span style={{ color: "#dc2626", fontWeight: 700 }}>
+                        ⚪ GPS unavailable
+                      </span>
+                    )}
+                  </div>
                 </div>
+
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
                   <a
                     href={`tel:${(emergencyProfile.emergencyPhones[0] || quickEmergencyPhone).replace(/\D/g, "")}`}
@@ -22095,7 +22276,7 @@ function Dialog({
                       gap: "5px",
                       background: "#1e293b",
                       color: "#ffffff",
-                      padding: "7px 10px",
+                      padding: "8px 10px",
                       borderRadius: "7px",
                       fontSize: "11px",
                       fontWeight: 700,
@@ -22106,9 +22287,7 @@ function Dialog({
                     <span>Call Contact</span>
                   </a>
                   <a
-                    href={`https://wa.me/91${(emergencyProfile.emergencyPhones[0] || quickEmergencyPhone).replace(/\D/g, "")}?text=${encodeURIComponent(
-                      `🚨 EMERGENCY DISTRESS ALERT!\nPlease help! Immediate SOS alert from ${emergencyProfile.customerName || "me"} via Bizearch Hosur Safety Network.`
-                    )}`}
+                    href={getEmergencyWhatsAppUrl(emergencyProfile.emergencyPhones[0] || quickEmergencyPhone)}
                     target="_blank"
                     rel="noreferrer"
                     style={{
@@ -22118,7 +22297,7 @@ function Dialog({
                       gap: "5px",
                       background: "#16a34a",
                       color: "#ffffff",
-                      padding: "7px 10px",
+                      padding: "8px 10px",
                       borderRadius: "7px",
                       fontSize: "11px",
                       fontWeight: 700,
@@ -22285,17 +22464,12 @@ function Dialog({
                 </a>
 
                 {sosResult.emergencyPhones.filter(Boolean).map((phone, index) => {
-                  const coordinates =
-                    sosResult.latitude !== null && sosResult.longitude !== null
-                      ? `https://maps.google.com/?q=${sosResult.latitude.toFixed(6)},${sosResult.longitude.toFixed(6)}`
-                      : "Location unavailable";
-                  const waMessage = encodeURIComponent(
-                    `🚨 EMERGENCY SOS DISTRESS ALERT!\nType: ${emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.title || "General Emergency"}\nFrom: ${sosResult.customerName}\nLive GPS Coordinates: ${coordinates}\nPlease send help urgently!`
-                  );
+                  const emType = emergencyTypes.find((item) => item.id === sosResult.emergencyType)?.title || "General Emergency";
+                  const waUrl = getEmergencyWhatsAppUrl(phone, undefined, emType);
                   return (
                     <Fragment key={`sos-action-group-${index}`}>
                       <a
-                        href={`https://wa.me/91${phone.replace(/\D/g, "")}?text=${waMessage}`}
+                        href={waUrl}
                         target="_blank"
                         rel="noreferrer"
                         style={{
