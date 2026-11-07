@@ -110,7 +110,7 @@ export function CompanyCustomerRegistrationsPanel({
             How Customers Registered ({registrations.length} Customers)
           </h2>
           <p style={{ fontSize: "12px", color: "#66786c", margin: "4px 0 0", maxWidth: "680px" }}>
-            Comprehensive audit of registered customers in Hosur: verified mobile numbers, full physical addresses,
+            Comprehensive audit of registered customers across India: verified mobile numbers, full physical addresses,
             emergency contacts, browser location consent, and account status.
           </p>
         </div>
@@ -206,7 +206,7 @@ export function CompanyCustomerRegistrationsPanel({
 
         <div style={{ background: "#fefce8", border: "1px solid #fef08a", borderRadius: "8px", padding: "14px 16px" }}>
           <div style={{ fontSize: "11px", color: "#854d0e", fontWeight: 700, textTransform: "uppercase" }}>
-            Hosur Localities
+            Active Localities
           </div>
           <div style={{ fontSize: "24px", fontWeight: 800, color: "#713f12", marginTop: "4px" }}>
             {stats.localities} Areas
@@ -485,12 +485,12 @@ export function CompanyCustomerRegistrationsPanel({
                 {/* Physical Address */}
                 <div>
                   <div style={{ fontSize: "10px", fontWeight: 700, color: "#8a968d", textTransform: "uppercase" }}>
-                    Physical Address (Hosur)
+                    Physical Address
                   </div>
                   <div style={{ color: "#2d4233", lineHeight: 1.4, marginTop: "2px" }}>
                     {r.doorNo ? `${r.doorNo}, ` : ""}
                     {r.street ? `${r.street}, ` : ""}
-                    <strong>{r.locality}</strong>, {r.city || "Hosur"}
+                    <strong>{r.locality}</strong>{r.city ? `, ${r.city}` : ""}
                     {r.pincode ? ` - ${r.pincode}` : ""}
                   </div>
                   {r.district && (

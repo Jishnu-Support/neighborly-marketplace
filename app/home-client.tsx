@@ -1517,6 +1517,141 @@ function translateNeighborhood(name: string, lang: Language): string {
   return NEIGHBORHOOD_LOCALIZED[lang]?.[name] || name;
 }
 
+export const POPULAR_CITIES = [
+  "All India",
+  "Hosur",
+  "Bengaluru",
+  "Chennai",
+  "Mumbai",
+  "Delhi NCR",
+  "Hyderabad",
+  "Pune",
+  "Coimbatore",
+  "Kolkata",
+  "Ahmedabad",
+] as const;
+
+export const CITY_LOCALITIES: Record<string, string[]> = {
+  "Hosur": [
+    "All Localities",
+    "SIPCOT Phase 1",
+    "SIPCOT Phase 2",
+    "Bagalur Road",
+    "Mookandapalli",
+    "Mathigiri",
+    "MG Road / Railway Station",
+    "Denkanikottai Road",
+    "Rayakottai Road",
+    "Thally Road",
+    "Avalapalli",
+    "Moranapalli",
+  ],
+  "Bengaluru": [
+    "All Localities",
+    "Koramangala",
+    "Indiranagar",
+    "HSR Layout",
+    "Whitefield",
+    "Electronic City",
+    "Jayanagar",
+    "JP Nagar",
+    "BTM Layout",
+    "Marathahalli",
+    "Hebbal",
+    "MG Road",
+  ],
+  "Chennai": [
+    "All Localities",
+    "T. Nagar",
+    "Adyar",
+    "Velachery",
+    "Anna Nagar",
+    "Mylapore",
+    "OMR / IT Corridor",
+    "Guindy",
+    "Nungambakkam",
+    "Tambaram",
+    "Porur",
+  ],
+  "Mumbai": [
+    "All Localities",
+    "Andheri East/West",
+    "Bandra",
+    "Juhu",
+    "Powai",
+    "Borivali",
+    "Dadar",
+    "Lower Parel",
+    "Colaba",
+    "Thane",
+    "Navi Mumbai",
+  ],
+  "Delhi NCR": [
+    "All Localities",
+    "Connaught Place",
+    "Hauz Khas",
+    "South Extension",
+    "Dwarka",
+    "Rohini",
+    "Noida Sector 18",
+    "Cyber City Gurgaon",
+    "Saket",
+    "Karol Bagh",
+  ],
+  "Hyderabad": [
+    "All Localities",
+    "Hitec City",
+    "Gachibowli",
+    "Madhapur",
+    "Banjara Hills",
+    "Jubilee Hills",
+    "Kukatpally",
+    "Secunderabad",
+    "Kondapur",
+  ],
+  "Pune": [
+    "All Localities",
+    "Kothrud",
+    "Viman Nagar",
+    "Baner",
+    "Hinjawadi",
+    "Wakad",
+    "Kalyani Nagar",
+    "Aundh",
+    "Hadapsar",
+  ],
+  "Coimbatore": [
+    "All Localities",
+    "RS Puram",
+    "Gandhipuram",
+    "Peelamedu",
+    "Saibaba Colony",
+    "Saravanampatti",
+    "Singanallur",
+    "Race Course",
+  ],
+  "Kolkata": [
+    "All Localities",
+    "Salt Lake",
+    "Park Street",
+    "New Town",
+    "Ballygunge",
+    "Gariahat",
+    "Howrah",
+    "Dum Dum",
+  ],
+  "Ahmedabad": [
+    "All Localities",
+    "Navrangpura",
+    "Satellite",
+    "SG Highway",
+    "Bodakdev",
+    "Vastrapur",
+    "Maninagar",
+    "Prahlad Nagar",
+  ],
+};
+
 const HOSUR_NEIGHBORHOODS = [
   "All Hosur",
   "SIPCOT Phase 1",
@@ -2100,7 +2235,8 @@ export default function Home() {
   const [subscriptionCheckout, setSubscriptionCheckout] = useState<{ businessName?: string; plan?: string } | null>(null);
   const [subscriptionReceipt, setSubscriptionReceipt] = useState<CheckoutRequest | null>(null);
   const [navigatingBusiness, setNavigatingBusiness] = useState<Business | null>(null);
-  const [selectedNeighborhood, setSelectedNeighborhood] = useState("All Hosur");
+  const [selectedCity, setSelectedCity] = useState("All India");
+  const [selectedNeighborhood, setSelectedNeighborhood] = useState("All Localities");
   const [mobileLocalitySheetOpen, setMobileLocalitySheetOpen] = useState(false);
   const [mobileLangSheetOpen, setMobileLangSheetOpen] = useState(false);
   const [mobileCategorySheetOpen, setMobileCategorySheetOpen] = useState(false);
@@ -3851,7 +3987,16 @@ export default function Home() {
       if (filterTopRated && b.rating < 4.5) return false;
       if (filterVerified && !(b.tag === "Verified" || b.tag === "Featured")) return false;
       if (filterWhatsApp && !b.phone) return false;
-      if (selectedNeighborhood !== "All Hosur") {
+      if (selectedCity !== "All India") {
+        const cityLower = selectedCity.toLowerCase();
+        const matchesCity =
+          (b.address?.cityTown && b.address.cityTown.toLowerCase().includes(cityLower)) ||
+          (b.address?.area && b.address.area.toLowerCase().includes(cityLower)) ||
+          (b.address?.state && b.address.state.toLowerCase().includes(cityLower)) ||
+          (b.address?.street && b.address.street.toLowerCase().includes(cityLower));
+        if (!matchesCity) return false;
+      }
+      if (selectedNeighborhood && selectedNeighborhood !== "All Hosur" && selectedNeighborhood !== "All Localities" && selectedNeighborhood !== "All India") {
         const areaLower = selectedNeighborhood.toLowerCase();
         const matchesArea =
           (b.address?.area && b.address.area.toLowerCase().includes(areaLower)) ||
@@ -3862,7 +4007,7 @@ export default function Home() {
       }
       return true;
     });
-  }, [results, filterOpenNow, filterTopRated, filterVerified, filterWhatsApp, selectedNeighborhood]);
+  }, [results, filterOpenNow, filterTopRated, filterVerified, filterWhatsApp, selectedNeighborhood, selectedCity]);
 
   function showNotice(message: string) {
     setNotice(message);
@@ -6316,10 +6461,14 @@ export default function Home() {
                 type="button"
                 className="mobile-locality-pill"
                 onClick={() => setMobileLocalitySheetOpen(true)}
-                title="Change locality in Hosur"
+                title="Change city or locality"
               >
                 <span>📍</span>
-                <span>{selectedNeighborhood === "All Hosur" ? "Hosur" : selectedNeighborhood}</span>
+                <span>
+                  {selectedCity === "All India"
+                    ? (selectedNeighborhood && !selectedNeighborhood.startsWith("All") ? selectedNeighborhood : "🇮🇳 All India")
+                    : (selectedNeighborhood && !selectedNeighborhood.startsWith("All") ? `${selectedNeighborhood}, ${selectedCity}` : selectedCity)}
+                </span>
                 <span style={{ fontSize: "8px", opacity: 0.7 }}>▾</span>
               </button>
             </div>
@@ -6532,7 +6681,7 @@ export default function Home() {
               <span>Customer care</span>
             </a>
             <span style={{ fontWeight: 700, color: "#225a33", whiteSpace: "nowrap", flexShrink: 0 }}>
-              {(authenticatedPortals.includes("Company") || role === "Company") ? "Company Portal" : role === "Discover" ? "Explore Hosur" : role === "Account" ? "Customer Portal" : `${role} Portal`}
+              {(authenticatedPortals.includes("Company") || role === "Company") ? "Company Portal" : role === "Discover" ? (selectedCity === "All India" ? "Explore India" : `Explore ${selectedCity}`) : role === "Account" ? "Customer Portal" : `${role} Portal`}
             </span>
           </div>
         </header>
@@ -6780,7 +6929,7 @@ export default function Home() {
                 </strong>
                 <p style={{ fontSize: "11px", color: "#a7f3d0", margin: "6px 0 14px", lineHeight: "1.4" }}>
                   {adConfig.targetingSummary?.isSearchTargeted
-                    ? `Showing verified Hosur businesses for "${adConfig.targetingSummary.appliedQuery}" below.`
+                    ? `Showing verified businesses for "${adConfig.targetingSummary.appliedQuery}" below.`
                     : `Showing businesses nearby. Expand radius to view more ads.`}
                 </p>
                 <button
@@ -6800,7 +6949,7 @@ export default function Home() {
                     cursor: "pointer",
                   }}
                 >
-                  View All Hosur Ads
+                  View All Ads
                 </button>
               </div>
             ) : (
@@ -6871,7 +7020,7 @@ export default function Home() {
                             gap: "4px",
                             boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
                           }}
-                          title="Verified customer views in Hosur"
+                          title="Verified customer views"
                         >
                           👁️ {(currentImageAd.viewsCount || 1240).toLocaleString("en-IN")} views
                         </span>
@@ -7353,7 +7502,7 @@ export default function Home() {
                         )}
                         <div className="autocomplete-section">
                           <div className="autocomplete-section-header">
-                            <span>🔥 Popular Searches in Hosur</span>
+                            <span>🔥 Popular Searches Near You</span>
                           </div>
                           <div className="autocomplete-popular-chips">
                             {[
@@ -7526,11 +7675,22 @@ export default function Home() {
                   </span>
                   <select
                     id="neighborhood-select"
-                    value={selectedNeighborhood}
+                    value={
+                      selectedCity === "All India" && (selectedNeighborhood === "All Localities" || selectedNeighborhood === "All India" || selectedNeighborhood === "All Hosur")
+                        ? "All India"
+                        : `${selectedCity}:::${selectedNeighborhood}`
+                    }
                     onChange={(e) => {
-                      setSelectedNeighborhood(e.target.value);
-                      if (e.target.value !== "All Hosur") {
-                        showNotice(`Locality filtered: ${e.target.value}`);
+                      const val = e.target.value;
+                      if (val === "All India") {
+                        setSelectedCity("All India");
+                        setSelectedNeighborhood("All Localities");
+                        showNotice("Showing listings across India");
+                      } else {
+                        const [c, n] = val.split(":::");
+                        setSelectedCity(c);
+                        setSelectedNeighborhood(n || "All Localities");
+                        showNotice(n && n !== "All Localities" ? `Filtered to ${n}, ${c}` : `Viewing ${c} listings`);
                       }
                     }}
                     style={{
@@ -7544,10 +7704,14 @@ export default function Home() {
                       width: "100%",
                     }}
                   >
-                    {HOSUR_NEIGHBORHOODS.map((nh) => (
-                      <option key={nh} value={nh}>
-                        {translateNeighborhood(nh, lang)}
-                      </option>
+                    <option value="All India">🇮🇳 All India (Any City)</option>
+                    {POPULAR_CITIES.filter((c) => c !== "All India").map((city) => (
+                      <optgroup key={city} label={city}>
+                        <option value={`${city}:::All Localities`}>All ${city}</option>
+                        {(CITY_LOCALITIES[city] || []).filter((n) => n !== "All Localities").map((loc) => (
+                          <option key={loc} value={`${city}:::${loc}`}>{loc}</option>
+                        ))}
+                      </optgroup>
                     ))}
                   </select>
                 </div>
@@ -7561,7 +7725,7 @@ export default function Home() {
             </div>
 
             {/* Active Locality Filter Status (shown only when not searching) */}
-            {!query.trim() && selectedNeighborhood !== "All Hosur" && (
+            {!query.trim() && (selectedCity !== "All India" || (selectedNeighborhood !== "All Localities" && selectedNeighborhood !== "All India" && selectedNeighborhood !== "All Hosur")) && (
               <div
                 style={{
                   margin: "12px 0 16px",
@@ -7583,14 +7747,18 @@ export default function Home() {
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
                   </svg>
                   <div style={{ fontSize: "12px", color: "#22422b", fontWeight: 600 }}>
-                    Locality: <strong style={{ color: "#16592d", fontWeight: 700 }}>{selectedNeighborhood} ({radius} km radius)</strong>
+                    Territory: <strong style={{ color: "#16592d", fontWeight: 700 }}>{selectedNeighborhood && selectedNeighborhood !== "All Localities" && selectedNeighborhood !== "All India" && selectedNeighborhood !== "All Hosur" ? `${selectedNeighborhood}, ` : ""}{selectedCity} ({radius} km radius)</strong>
                   </div>
                 </div>
 
                 <div style={{ display: "flex", gap: "6px" }}>
                   <button
                     type="button"
-                    onClick={() => setSelectedNeighborhood("All Hosur")}
+                    onClick={() => {
+                      setSelectedCity("All India");
+                      setSelectedNeighborhood("All Localities");
+                      showNotice("Reset filter to All India");
+                    }}
                     style={{
                       background: "#ffffff",
                       border: "1px solid #c8d9cc",
@@ -7602,7 +7770,7 @@ export default function Home() {
                       cursor: "pointer",
                     }}
                   >
-                    All Hosur ✕
+                    Clear Filter ✕
                   </button>
                 </div>
               </div>
@@ -9026,12 +9194,12 @@ export default function Home() {
             if (e.target === e.currentTarget) e.preventDefault();
           }}
         >
-          <div className="mobile-sheet-container" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Select Locality in Hosur">
+          <div className="mobile-sheet-container" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Select City and Locality across India">
             <div className="mobile-sheet-handle" />
             <div className="mobile-sheet-head">
               <div>
-                <h3>📍 {t.nearLocality} in Hosur</h3>
-                <small style={{ color: "#697b6e", fontSize: "11px" }}>Find nearby shops &amp; services</small>
+                <h3>📍 {t.nearLocality} (Pan-India)</h3>
+                <small style={{ color: "#697b6e", fontSize: "11px" }}>Find nearby shops &amp; services in any Indian city</small>
               </div>
               <button
                 type="button"
@@ -9042,10 +9210,52 @@ export default function Home() {
               </button>
             </div>
 
-            <div style={{ marginBottom: "12px" }}>
+            {/* Horizontal City Selector Pills */}
+            <div
+              style={{
+                display: "flex",
+                gap: "6px",
+                overflowX: "auto",
+                paddingBottom: "8px",
+                marginBottom: "10px",
+                WebkitOverflowScrolling: "touch",
+              }}
+            >
+              {POPULAR_CITIES.map((city) => {
+                const isActive = selectedCity === city;
+                return (
+                  <button
+                    key={city}
+                    type="button"
+                    onClick={() => {
+                      setSelectedCity(city);
+                      setSelectedNeighborhood(city === "All India" ? "All India" : "All Localities");
+                      setLocalitySearchInput("");
+                      showNotice(city === "All India" ? "Viewing listings across India" : `Selected city: ${city}`);
+                    }}
+                    style={{
+                      padding: "6px 12px",
+                      borderRadius: "20px",
+                      border: `1.5px solid ${isActive ? "#1f5e33" : "#d1ded3"}`,
+                      background: isActive ? "#1f5e33" : "#f5f9f6",
+                      color: isActive ? "#ffffff" : "#2d4432",
+                      fontSize: "12px",
+                      fontWeight: isActive ? 700 : 500,
+                      whiteSpace: "nowrap",
+                      cursor: "pointer",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {city === "All India" ? "🇮🇳 All India" : city}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div style={{ marginBottom: "10px" }}>
               <input
                 type="text"
-                placeholder="Filter Hosur neighborhood..."
+                placeholder="Filter neighborhood or type any Indian city..."
                 value={localitySearchInput}
                 onChange={(e) => setLocalitySearchInput(e.target.value)}
                 style={{
@@ -9059,6 +9269,40 @@ export default function Home() {
                 }}
               />
             </div>
+
+            {/* 1-Tap Filter by custom city or neighborhood */}
+            {localitySearchInput.trim() && (
+              <button
+                type="button"
+                onClick={() => {
+                  const queryText = localitySearchInput.trim();
+                  setSelectedNeighborhood(queryText);
+                  setSelectedCity(queryText);
+                  setMobileLocalitySheetOpen(false);
+                  setLocalitySearchInput("");
+                  showNotice(`Filtered to: ${queryText} across India`);
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px",
+                  padding: "8px 12px",
+                  borderRadius: "7px",
+                  background: "#eaf5ec",
+                  border: "1.5px dashed #1f5e33",
+                  color: "#16592d",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  marginBottom: "10px",
+                  width: "100%",
+                }}
+              >
+                <span>📍</span>
+                <span>Filter by &quot;{localitySearchInput.trim()}&quot; across India</span>
+              </button>
+            )}
 
             <button
               type="button"
@@ -9093,7 +9337,7 @@ export default function Home() {
                 display: "flex",
                 flexDirection: "column",
                 gap: "6px",
-                maxHeight: "50vh",
+                maxHeight: "45vh",
                 overflowY: "auto",
                 overscrollBehavior: "contain",
                 WebkitOverflowScrolling: "touch",
@@ -9101,47 +9345,58 @@ export default function Home() {
               }}
               onTouchMove={(e) => e.stopPropagation()}
             >
-              {HOSUR_NEIGHBORHOODS.filter((nh) =>
-                !localitySearchInput || nh.toLowerCase().includes(localitySearchInput.toLowerCase()) || translateNeighborhood(nh, lang).toLowerCase().includes(localitySearchInput.toLowerCase())
-              ).map((nh) => (
-                <button
-                  key={nh}
-                  type="button"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "10px 12px",
-                    borderRadius: "8px",
-                    border: "1px solid",
-                    borderColor: selectedNeighborhood === nh ? "#285536" : "#e6ece5",
-                    background: selectedNeighborhood === nh ? "#edf6ee" : "#ffffff",
-                    color: selectedNeighborhood === nh ? "#174825" : "#334538",
-                    fontSize: "12.5px",
-                    fontWeight: selectedNeighborhood === nh ? 700 : 500,
-                    cursor: "pointer",
-                    textAlign: "left",
-                  }}
-                  onClick={() => {
-                    setSelectedNeighborhood(nh);
-                    setMobileLocalitySheetOpen(false);
-                    setLocalitySearchInput("");
-                    showNotice(nh === "All Hosur" ? "Viewing all Hosur listings" : `Filtered to ${translateNeighborhood(nh, lang)}`);
-                  }}
-                >
-                  <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span>📍</span>
-                    <span>{translateNeighborhood(nh, lang)}</span>
-                  </span>
-                  {selectedNeighborhood === nh && <span style={{ color: "#285536", fontWeight: 800 }}>✓</span>}
-                </button>
-              ))}
+              {(selectedCity === "All India"
+                ? ["All India", ...Object.keys(CITY_LOCALITIES).flatMap((c) => (CITY_LOCALITIES[c] || []).filter((l) => l !== "All Localities").map((l) => `${l} (${c})`))]
+                : (CITY_LOCALITIES[selectedCity] || HOSUR_NEIGHBORHOODS)
+              )
+                .filter((nh) =>
+                  !localitySearchInput ||
+                  nh.toLowerCase().includes(localitySearchInput.toLowerCase()) ||
+                  translateNeighborhood(nh, lang).toLowerCase().includes(localitySearchInput.toLowerCase())
+                )
+                .map((nh) => {
+                  const cleanNh = nh.replace(/\s\([^)]+\)$/, "");
+                  const isSelected = selectedNeighborhood === cleanNh || (cleanNh === "All India" && selectedCity === "All India");
+                  return (
+                    <button
+                      key={nh}
+                      type="button"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "10px 12px",
+                        borderRadius: "8px",
+                        border: "1px solid",
+                        borderColor: isSelected ? "#285536" : "#e6ece5",
+                        background: isSelected ? "#edf6ee" : "#ffffff",
+                        color: isSelected ? "#174825" : "#334538",
+                        fontSize: "12.5px",
+                        fontWeight: isSelected ? 700 : 500,
+                        cursor: "pointer",
+                        textAlign: "left",
+                      }}
+                      onClick={() => {
+                        setSelectedNeighborhood(cleanNh);
+                        setMobileLocalitySheetOpen(false);
+                        setLocalitySearchInput("");
+                        showNotice(cleanNh === "All India" || cleanNh === "All Localities" ? `Viewing ${selectedCity} listings` : `Filtered to ${cleanNh}`);
+                      }}
+                    >
+                      <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span>📍</span>
+                        <span>{translateNeighborhood(nh, lang)}</span>
+                      </span>
+                      {isSelected && <span style={{ color: "#285536", fontWeight: 800 }}>✓</span>}
+                    </button>
+                  );
+                })}
             </div>
           </div>
         </div>
       )}
 
-      {/* Mobile Language Bottom Sheet */}
+      {/* Mobile Language Bottom Sheet *}
       {mobileLangSheetOpen && (
         <div
           className="mobile-sheet-overlay"
@@ -10970,7 +11225,7 @@ function OrderCheckoutDialog({
 
                 {deliveryType === "delivery" && (
                   <label style={{ display: "block", marginBottom: "10px", fontSize: "12px", fontWeight: 700, color: "#36593e" }}>
-                    Delivery Address in Hosur
+                    Delivery Address
                     <textarea
                       rows={2}
                       required
@@ -11823,7 +12078,7 @@ function PlanCheckoutDialog({
       monthly: 999,
       yearly: 9590,
       desc: "Top choice for established local stores & service providers.",
-      perks: ["Priority Search Ranking in Hosur", "Unlimited Catalogue & Direct Ordering", "Direct WhatsApp & Call Customer Buttons", "Merchant Order Prep Dashboard", "Monthly Business Performance Insights"],
+      perks: ["Priority Search Ranking", "Unlimited Catalogue & Direct Ordering", "Direct WhatsApp & Call Customer Buttons", "Merchant Order Prep Dashboard", "Monthly Business Performance Insights"],
     },
     Spotlight: {
       monthly: 1999,
@@ -14567,7 +14822,7 @@ function AgentPortal({
               <div className="eyebrow">FIELD VERIFICATIONS</div>
               <h2>Business Visit &amp; Verification Queue</h2>
               <p style={{ fontSize: "12px", color: "#66786c", margin: "4px 0 0" }}>
-                As an authorized field agent, visit new businesses in Hosur, confirm their location, and upload their storefront photo to submit for Admin approval.
+                As an authorized field agent, visit new businesses in your territory, confirm their location, and upload their storefront photo to submit for Admin approval.
               </p>
             </div>
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
@@ -15875,7 +16130,7 @@ function ProfileAndSettingsPanel({
 
           {/* Hosur Address Form */}
           <div className="settings-card-header" style={{ marginTop: "14px" }}>
-            <h3><span>📍</span> Residential / Delivery Address in Hosur</h3>
+            <h3><span>📍</span> Residential / Delivery Address</h3>
             <p>Used to calculate accurate road distance and route navigation to local stores.</p>
           </div>
 
@@ -15974,7 +16229,7 @@ function ProfileAndSettingsPanel({
 
           {/* Emergency SOS Contacts */}
           <div className="settings-card-header" style={{ marginTop: "14px" }}>
-            <h3><span>🛡️</span> Emergency SOS Contacts (Hosur Safety Network)</h3>
+            <h3><span>🛡️</span> Emergency SOS Contacts (Bizearch Safety Network)</h3>
             <p>Saved contacts are included in your Super Admin emergency dispatch ticket when SOS is triggered.</p>
           </div>
 
@@ -18753,7 +19008,7 @@ function CompanyPortal({
       });
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || "Failed to register business.");
-      showNotice("✓ Business registered and published live in Hosur directory! (Auto-approved for Company)");
+      showNotice("✓ Business registered and published live in directory! (Auto-approved for Company)");
       setShowCompanyRegisterModal(false);
       setCompanyBizForm({
         name: "",
@@ -18792,7 +19047,7 @@ function CompanyPortal({
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Failed to process approval.");
-      showNotice(action === "approve" ? "✓ Business approved and published live in Hosur directory!" : "Business rejection recorded.");
+      showNotice(action === "approve" ? "✓ Business approved and published live in directory!" : "Business rejection recorded.");
       loadApprovals();
       window.dispatchEvent(new Event("neighborly-businesses-refresh"));
     } catch (err) {
@@ -20636,7 +20891,7 @@ function Dialog({
       ? digitsOnly
       : `91${digitsOnly.slice(-10)}`;
 
-    const senderName = emergencyProfile.customerName.trim() || quickEmergencySelfName.trim() || customerProfile?.fullName?.trim() || "Hosur Resident";
+    const senderName = emergencyProfile.customerName.trim() || quickEmergencySelfName.trim() || customerProfile?.fullName?.trim() || "Verified Member";
     const senderPhone = emergencyProfile.customerPhone.trim() || quickEmergencySelfPhone.trim() || customerProfile?.phone?.trim() || (sessionIdentity && !sessionIdentity.includes("@") ? sessionIdentity.trim() : "");
     const cleanSenderPhone = senderPhone
       ? (senderPhone.startsWith("+") ? senderPhone : `+91 ${senderPhone.replace(/\D/g, "").slice(-10)}`)
@@ -20650,7 +20905,7 @@ function Dialog({
 
     const messageLines = [
       `🚨 EMERGENCY DISTRESS ALERT!`,
-      headline || `Please help! Immediate SOS alert from ${senderName} via Bizearch Hosur Safety Network.`,
+      headline || `Please help! Immediate SOS alert from ${senderName} via Bizearch Safety Network.`,
       ``,
       `👤 Name: ${senderName}`,
       `📞 Contact Number: ${cleanSenderPhone}`,
@@ -22004,7 +22259,7 @@ function Dialog({
                     <span>Call</span>
                   </a>
                   <a
-                    href={getEmergencyWhatsAppUrl("919489521482", "🚑 MEDICAL EMERGENCY (108): Urgent Ambulance required in Hosur!", "108 Medical Ambulance")}
+                    href={getEmergencyWhatsAppUrl("919489521482", "🚑 MEDICAL EMERGENCY (108): Urgent Ambulance required!", "108 Medical Ambulance")}
                     target="_blank"
                     rel="noreferrer"
                     style={{
@@ -22057,7 +22312,7 @@ function Dialog({
                     <span>Call</span>
                   </a>
                   <a
-                    href={getEmergencyWhatsAppUrl("919498181212", "🚓 POLICE EMERGENCY (100): Urgent police assistance required in Hosur!", "100 Police Control")}
+                    href={getEmergencyWhatsAppUrl("919498181212", "🚓 POLICE EMERGENCY (100): Urgent police assistance required!", "100 Police Control")}
                     target="_blank"
                     rel="noreferrer"
                     style={{
@@ -22110,7 +22365,7 @@ function Dialog({
                     <span>Call</span>
                   </a>
                   <a
-                    href={getEmergencyWhatsAppUrl("919489521482", "🚒 FIRE EMERGENCY (101): Immediate Fire & Rescue required in Hosur!", "101 Fire & Rescue")}
+                    href={getEmergencyWhatsAppUrl("919489521482", "🚒 FIRE EMERGENCY (101): Immediate Fire & Rescue required!", "101 Fire & Rescue")}
                     target="_blank"
                     rel="noreferrer"
                     style={{

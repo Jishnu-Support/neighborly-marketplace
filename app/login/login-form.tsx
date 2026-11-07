@@ -43,6 +43,40 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [termsModalOpen, setTermsModalOpen] = useState(false);
   const [termsModalTab, setTermsModalTab] = useState<"terms" | "privacy">("terms");
+
+  // Controlled form inputs to prevent input leakage between Login and Registration
+  const [loginIdentity, setLoginIdentity] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [regFullName, setRegFullName] = useState("");
+  const [regPhone, setRegPhone] = useState("");
+  const [regEmail, setRegEmail] = useState("");
+  const [regLocality, setRegLocality] = useState("");
+  const [regCity, setRegCity] = useState("");
+  const [regDoorNo, setRegDoorNo] = useState("");
+  const [regStreet, setRegStreet] = useState("");
+  const [regEmergencyName, setRegEmergencyName] = useState("");
+  const [regEmergencyPhone, setRegEmergencyPhone] = useState("");
+  const [regEmergencyRelation, setRegEmergencyRelation] = useState("Family");
+
+  const resetRegistrationFields = () => {
+    setRegFullName("");
+    setRegPhone("");
+    setRegEmail("");
+    setRegLocality("");
+    setRegCity("");
+    setRegDoorNo("");
+    setRegStreet("");
+    setRegEmergencyName("");
+    setRegEmergencyPhone("");
+    setRegEmergencyRelation("Family");
+    setOtp("");
+    setDemoOtp("");
+    setOtpVerified(false);
+    setTermsAccepted(false);
+    setRegPassword("");
+    setRegConfirmPassword("");
+    setPinnedBusinessCoords(null);
+  };
   const info = portalInfo[portal];
 
   // Forgot password flow states
@@ -199,13 +233,14 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
       const name = String(form.get("fullName") || "").trim();
       const phone = String(form.get("phone") || "").trim();
       const email = String(form.get("email") || "").trim();
-      const locality = String(form.get("locality") || "Bagalur Road").trim();
+      const locality = String(form.get("locality") || "").trim();
+      const city = String(form.get("city") || "").trim();
       const doorNo = String(form.get("doorNo") || "").trim();
       const street = String(form.get("street") || "").trim();
       const emergencyContactName = String(form.get("emergencyContactName") || "").trim();
       const emergencyContactPhone = String(form.get("emergencyContactPhone") || "").trim();
       const emergencyContactRelation = String(form.get("emergencyContactRelation") || "Family").trim();
-      const fullAddress = [doorNo, street, locality, "Hosur - 635109"].filter(Boolean).join(", ");
+      const fullAddress = [doorNo, street, locality, city].filter(Boolean).join(", ");
       const password = String(form.get("password") || "").trim();
       const confirmPassword = String(form.get("confirmPassword") || "").trim();
       if (!otpVerified) {
@@ -432,12 +467,12 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
               doorNo,
               street,
               locality,
-              city: "Hosur",
-              district: "Krishnagiri",
-              state: "Tamil Nadu",
-              pincode: "635109",
+              city: city || "India",
+              district: city || "",
+              state: "",
+              pincode: "",
               address: fullAddress,
-              bio: "Hosur resident & verified community member.",
+              bio: "Verified community member.",
               avatarInitials: (name[0] || "C").toUpperCase(),
               avatarBg: "#285536",
               emergencyPhones: [emergencyContactPhone, ""],
@@ -677,6 +712,8 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
                 name="fullName"
                 autoComplete="name"
                 placeholder={portal === "Business" ? "e.g. Sri Lakshmi Automotives" : "e.g. Asha Rao"}
+                value={regFullName}
+                onChange={(e) => setRegFullName(e.target.value)}
                 required
               />
             </label>
@@ -763,7 +800,9 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
                 minLength={8}
                 maxLength={20}
                 required
-                onChange={() => {
+                value={regPhone}
+                onChange={(e) => {
+                  setRegPhone(e.target.value);
                   setOtpVerified(false);
                   setDemoOtp("");
                 }}
@@ -818,7 +857,14 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
             {(portal === "Account" || portal === "Business" || portal === "Agent") && (
               <label>
                 Email address <span className="optional">(optional - for invoices &amp; notifications)</span>
-                <input name="email" type="email" autoComplete="email" placeholder="e.g. contact@example.com" />
+                <input
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="e.g. contact@example.com"
+                  value={regEmail}
+                  onChange={(e) => setRegEmail(e.target.value)}
+                />
               </label>
             )}
 
@@ -867,7 +913,7 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
                   </label>
                   <label style={{ fontSize: "10.5px", fontWeight: 700, color: "#27432f" }}>
                     City / Town *
-                    <input name="city" placeholder="e.g. Hosur, Bengaluru, London" required style={{ background: "#fff" }} />
+                    <input name="city" placeholder="e.g. Bengaluru, Mumbai, Hosur, Delhi" required style={{ background: "#fff" }} />
                   </label>
                 </div>
 
@@ -935,35 +981,70 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                   <label>
                     Locality / Area *
-                    <input name="locality" placeholder="e.g. Bagalur Road" defaultValue="Bagalur Road" required />
+                    <input
+                      name="locality"
+                      placeholder="e.g. Indiranagar, Bagalur Road, Bandra"
+                      value={regLocality}
+                      onChange={(e) => setRegLocality(e.target.value)}
+                      required
+                    />
                   </label>
                   <label>
                     City / Town *
-                    <input name="city" placeholder="e.g. Hosur" defaultValue="Hosur" required />
+                    <input
+                      name="city"
+                      placeholder="e.g. Bengaluru, Hosur, Mumbai, Delhi"
+                      value={regCity}
+                      onChange={(e) => setRegCity(e.target.value)}
+                      required
+                    />
                   </label>
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                   <label>
                     Door / Shop / Flat No. <span className="optional">(optional)</span>
-                    <input name="doorNo" placeholder="e.g. Shop 4B / Flat 102" />
+                    <input
+                      name="doorNo"
+                      placeholder="e.g. Shop 4B / Flat 102"
+                      value={regDoorNo}
+                      onChange={(e) => setRegDoorNo(e.target.value)}
+                    />
                   </label>
                   <label>
                     Street / Landmark <span className="optional">(optional)</span>
-                    <input name="street" placeholder="e.g. Near Bus Stand" />
+                    <input
+                      name="street"
+                      placeholder="e.g. Near Bus Stand"
+                      value={regStreet}
+                      onChange={(e) => setRegStreet(e.target.value)}
+                    />
                   </label>
                 </div>
 
                 <div style={{ background: "#f8faf8", border: "1px solid #dbe6dc", borderRadius: "8px", padding: "12px", display: "grid", gap: "8px" }}>
-                  <div style={{ fontSize: "11px", fontWeight: 700, color: "#285536" }}>🛡️ Emergency SOS Contact (Safety Network)</div>
+                  <div style={{ fontSize: "11px", fontWeight: 700, color: "#285536" }}>🛡️ Emergency SOS Contact (Bizearch Safety Network)</div>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
                     <label style={{ fontSize: "10px", color: "#365c41" }}>
                       Emergency Contact Name <span className="optional">(optional)</span>
-                      <input name="emergencyContactName" placeholder="e.g. Spouse / Parent" style={{ background: "#fff" }} />
+                      <input
+                        name="emergencyContactName"
+                        placeholder="e.g. Spouse / Parent"
+                        value={regEmergencyName}
+                        onChange={(e) => setRegEmergencyName(e.target.value)}
+                        style={{ background: "#fff" }}
+                      />
                     </label>
                     <label style={{ fontSize: "10px", color: "#365c41" }}>
                       Emergency Mobile Number <span className="optional">(optional)</span>
-                      <input name="emergencyContactPhone" type="tel" placeholder="e.g. 98432 12345" style={{ background: "#fff" }} />
+                      <input
+                        name="emergencyContactPhone"
+                        type="tel"
+                        placeholder="e.g. 98432 12345"
+                        value={regEmergencyPhone}
+                        onChange={(e) => setRegEmergencyPhone(e.target.value)}
+                        style={{ background: "#fff" }}
+                      />
                     </label>
                   </div>
                 </div>
@@ -1121,11 +1202,28 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
           <>
             <label>
               Email or mobile number
-              <input key="login-identity" name="identity" autoComplete="username" placeholder="you@example.com or 9876543210" required />
+              <input
+                key="login-identity"
+                name="identity"
+                autoComplete="username"
+                placeholder="you@example.com or 9876543210"
+                value={loginIdentity}
+                onChange={(e) => setLoginIdentity(e.target.value)}
+                required
+              />
             </label>
             <label>
               Password
-              <input key="login-password" name="password" type="password" autoComplete="current-password" placeholder="Enter your password" required />
+              <input
+                key="login-password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                placeholder="Enter your password"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                required
+              />
             </label>
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "-6px" }}>
               <button
@@ -1199,18 +1297,11 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
             <button
               className="outline-button full-button"
               type="button"
-              onClick={(e) => {
-                const form = e.currentTarget.closest(".portal-login-card")?.querySelector("form");
-                if (form) (form as HTMLFormElement).reset();
+              onClick={() => {
+                resetRegistrationFields();
                 setRegistering((value) => !value);
                 setMessage("");
                 setIsSuccess(false);
-                setOtp("");
-                setDemoOtp("");
-                setOtpVerified(false);
-                setRegPassword("");
-                setRegConfirmPassword("");
-                setTermsAccepted(false);
               }}
             >
               {registering

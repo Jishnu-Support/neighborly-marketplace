@@ -16,7 +16,7 @@ interface MapPinModalProps {
   businessName?: string;
 }
 
-const HOSUR_LOCALITIES = [
+const POPULAR_LOCALITIES = [
   { name: "Bagalur Road", lat: 12.7412, lng: 77.8322 },
   { name: "Hosur Bus Stand", lat: 12.7335, lng: 77.8285 },
   { name: "Railway Station", lat: 12.7310, lng: 77.8305 },
@@ -433,10 +433,10 @@ export function MapPinModal({
           {/* Quick Locality Chips */}
           <div>
             <div style={{ fontSize: "11px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
-              Quick Hosur Localities:
+              Quick Landmark Localities:
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-              {HOSUR_LOCALITIES.map((loc) => (
+              {POPULAR_LOCALITIES.map((loc) => (
                 <button
                   key={loc.name}
                   type="button"
