@@ -3,7 +3,7 @@ import BrandSplash from "./brand-splash";
 import "./globals.css";
 
 export const viewport: Viewport = {
-  themeColor: "#2b7744",
+  themeColor: "#00438b",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,

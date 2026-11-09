@@ -5292,11 +5292,11 @@ export default function Home() {
           white-space: nowrap !important;
         }
         .related-search-pill:hover {
-          background: #386b4b !important;
+          background: #00438b !important;
           color: #ffffff !important;
-          border-color: #386b4b !important;
+          border-color: #00438b !important;
           transform: translateY(-1px) !important;
-          box-shadow: 0 3px 8px rgba(40,75,50,0.18) !important;
+          box-shadow: 0 3px 8px rgba(0,67,139,0.18) !important;
         }
         .related-products-shelf {
           background: #fbfdfa !important;
@@ -5460,7 +5460,7 @@ export default function Home() {
         }
         .related-product-enquire-btn {
           border: 0 !important;
-          background: #386b4b !important;
+          background: #00438b !important;
           color: #ffffff !important;
           border-radius: 5px !important;
           padding: 6px 12px !important;
@@ -7846,7 +7846,7 @@ export default function Home() {
                                   </button>
                                   <button
                                     type="button"
-                                    style={{ border: 0, background: "#386b4b", color: "#fff", padding: "4px 8px", borderRadius: "4px", fontSize: "9.5px", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}
+                                    style={{ border: 0, background: "#00438b", color: "#fff", padding: "4px 8px", borderRadius: "4px", fontSize: "9.5px", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setEnquiryProduct({ business, product });
@@ -8665,7 +8665,7 @@ export default function Home() {
                           <button
                             type="button"
                             className="related-product-enquire-btn"
-                            style={{ border: 0, background: "#386b4b", color: "#ffffff", borderRadius: "5px", padding: "6px 11px", font: "700 9.5px Manrope, sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}
+                            style={{ border: 0, background: "#00438b", color: "#ffffff", borderRadius: "5px", padding: "6px 11px", font: "700 9.5px Manrope, sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}
                             onClick={() => {
                               setEnquiryProduct({ business, product });
                               recordEvent(`Related product enquiry: ${product.name}`);
@@ -10428,7 +10428,7 @@ function BusinessDetailDialog({
                   <div key={row.stars} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "11px", color: "#486250" }}>
                     <span style={{ width: "45px", textAlign: "right", fontWeight: 600 }}>{row.stars}</span>
                     <div style={{ flex: 1, height: "8px", background: "#e8efe9", borderRadius: "4px", overflow: "hidden" }}>
-                      <div style={{ width: `${row.pct}%`, height: "100%", background: "#386b4b", borderRadius: "4px" }} />
+                      <div style={{ width: `${row.pct}%`, height: "100%", background: "#00438b", borderRadius: "4px" }} />
                     </div>
                     <span style={{ width: "30px", fontSize: "10px", color: "#7a8c7e", textAlign: "right" }}>{row.pct}%</span>
                   </div>
@@ -10453,7 +10453,7 @@ function BusinessDetailDialog({
                     date: "2 days ago",
                     comment: `Outstanding service and transparent billing! The staff at ${business.name} explained everything clearly and delivered on time. Definitely coming back.`,
                     initials: "KS",
-                    color: "#386b4b",
+                    color: "#00438b",
                   },
                   {
                     author: "Praveen Kumar",
@@ -10484,7 +10484,7 @@ function BusinessDetailDialog({
                       date: "3 days ago",
                       comment: `Exceptional machining accuracy and strict tolerance controls. Supplied 800 precision components for our automotive assembly line without a single rejection.`,
                       initials: "VM",
-                      color: "#386b4b",
+                      color: "#00438b",
                     },
                     {
                       author: "Naveen Prakash",
@@ -10514,7 +10514,7 @@ function BusinessDetailDialog({
                       date: "Yesterday",
                       comment: `Fresh quality, authentic taste, and impeccable hygiene. One of the top recommended dining spots in Hosur!`,
                       initials: "DR",
-                      color: "#386b4b",
+                      color: "#00438b",
                     },
                     {
                       author: "Meenakshi S.",
@@ -10946,7 +10946,7 @@ function ReviewDialog({
                 );
               })}
             </div>
-            <div style={{ marginTop: "8px", fontSize: "12px", fontWeight: 700, color: "#386b4b" }}>
+            <div style={{ marginTop: "8px", fontSize: "12px", fontWeight: 700, color: "#00438b" }}>
               {ratingLabels[hoverStars || stars]}
             </div>
           </div>
@@ -13051,7 +13051,7 @@ function BusinessProfileEditorView({
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       {/* Top Banner / Storefront Quick Info */}
       <div style={{
-        background: "linear-gradient(135deg, #1b3d26 0%, #2b7744 100%)",
+        background: "linear-gradient(135deg, #002d5e 0%, #00438b 100%)",
         color: "#ffffff",
         borderRadius: "14px",
         padding: "20px 24px",
@@ -13060,7 +13060,7 @@ function BusinessProfileEditorView({
         justifyContent: "space-between",
         flexWrap: "wrap",
         gap: "16px",
-        boxShadow: "0 4px 14px rgba(43, 119, 68, 0.2)",
+        boxShadow: "0 4px 14px rgba(0, 67, 139, 0.2)",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
           <div style={{
@@ -13157,10 +13157,10 @@ function BusinessProfileEditorView({
         {/* CARD 1: Core Business Information */}
         <section className="panel" style={{ padding: "20px" }}>
           <div style={{ marginBottom: "16px" }}>
-            <div style={{ fontSize: "11px", fontWeight: 800, color: "#2b7744", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            <div style={{ fontSize: "11px", fontWeight: 800, color: "#00438b", textTransform: "uppercase", letterSpacing: "0.5px" }}>
               STEP 1 · OFFICIAL DETAILS
             </div>
-            <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#193822", margin: "2px 0 4px" }}>
+            <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#0f172a", margin: "2px 0 4px" }}>
               Core Business &amp; Registration
             </h3>
             <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
@@ -13238,10 +13238,10 @@ function BusinessProfileEditorView({
         {/* CARD 2: Contact & Hours */}
         <section className="panel" style={{ padding: "20px" }}>
           <div style={{ marginBottom: "16px" }}>
-            <div style={{ fontSize: "11px", fontWeight: 800, color: "#2b7744", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            <div style={{ fontSize: "11px", fontWeight: 800, color: "#00438b", textTransform: "uppercase", letterSpacing: "0.5px" }}>
               STEP 2 · CONTACT &amp; CHANNELS
             </div>
-            <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#193822", margin: "2px 0 4px" }}>
+            <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#0f172a", margin: "2px 0 4px" }}>
               Direct Customer Contact
             </h3>
             <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
@@ -13326,10 +13326,10 @@ function BusinessProfileEditorView({
         <section className="panel" style={{ padding: "20px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px", marginBottom: "14px" }}>
             <div>
-              <div style={{ fontSize: "11px", fontWeight: 800, color: "#2b7744", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+              <div style={{ fontSize: "11px", fontWeight: 800, color: "#00438b", textTransform: "uppercase", letterSpacing: "0.5px" }}>
                 STEP 3 · STOREFRONT PHOTOS &amp; GALLERY
               </div>
-              <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#193822", margin: "2px 0 4px" }}>
+              <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#0f172a", margin: "2px 0 4px" }}>
                 Storefront &amp; Showcase Images ({images.length})
               </h3>
               <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
@@ -13341,14 +13341,14 @@ function BusinessProfileEditorView({
               display: "inline-flex",
               alignItems: "center",
               gap: "6px",
-              background: "#285536",
+              background: "#00438b",
               color: "#ffffff",
               padding: "9px 16px",
               borderRadius: "8px",
               fontSize: "12px",
               fontWeight: 700,
               cursor: "pointer",
-              boxShadow: "0 2px 6px rgba(40, 85, 54, 0.25)",
+              boxShadow: "0 2px 6px rgba(0, 67, 139, 0.25)",
             }}>
               <span>📸 + Upload Photos</span>
               <input
@@ -13371,7 +13371,7 @@ function BusinessProfileEditorView({
                     aspectRatio: "1 / 1",
                     borderRadius: "10px",
                     overflow: "hidden",
-                    border: idx === 0 ? "2.5px solid #2b7744" : "1px solid #cbd5e1",
+                    border: idx === 0 ? "2.5px solid #00438b" : "1px solid #cbd5e1",
                     boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
                   }}
                 >
@@ -13385,7 +13385,7 @@ function BusinessProfileEditorView({
                       position: "absolute",
                       top: "4px",
                       left: "4px",
-                      background: "#2b7744",
+                      background: "#00438b",
                       color: "#ffffff",
                       fontSize: "9px",
                       fontWeight: 800,
@@ -13465,10 +13465,10 @@ function BusinessProfileEditorView({
         {/* CARD 4: Physical Address in Hosur */}
         <section className="panel" style={{ padding: "20px" }}>
           <div style={{ marginBottom: "16px" }}>
-            <div style={{ fontSize: "11px", fontWeight: 800, color: "#2b7744", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            <div style={{ fontSize: "11px", fontWeight: 800, color: "#00438b", textTransform: "uppercase", letterSpacing: "0.5px" }}>
               STEP 4 · STOREFRONT LOCATION &amp; ADDRESS
             </div>
-            <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#193822", margin: "2px 0 4px" }}>
+            <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#0f172a", margin: "2px 0 4px" }}>
               Storefront Physical Address
             </h3>
             <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
@@ -13561,10 +13561,10 @@ function BusinessProfileEditorView({
         <section className="panel" style={{ padding: "20px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px", marginBottom: "14px" }}>
             <div>
-              <div style={{ fontSize: "11px", fontWeight: 800, color: "#2b7744", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+              <div style={{ fontSize: "11px", fontWeight: 800, color: "#00438b", textTransform: "uppercase", letterSpacing: "0.5px" }}>
                 STEP 5 · MAP PIN &amp; GPS NAVIGATION
               </div>
-              <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#193822", margin: "2px 0 4px" }}>
+              <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#0f172a", margin: "2px 0 4px" }}>
                 Precise GPS Coordinates
               </h3>
               <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
@@ -13833,10 +13833,10 @@ function BusinessSettingsView({
       {/* CARD 1: Password & Security */}
       <section className="panel" style={{ padding: "20px" }}>
         <div style={{ marginBottom: "16px" }}>
-          <div style={{ fontSize: "11px", fontWeight: 800, color: "#2b7744", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+          <div style={{ fontSize: "11px", fontWeight: 800, color: "#00438b", textTransform: "uppercase", letterSpacing: "0.5px" }}>
             SECURITY &amp; CREDENTIALS
           </div>
-          <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#193822", margin: "2px 0 4px" }}>
+          <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#0f172a", margin: "2px 0 4px" }}>
             Change Account Password
           </h3>
           <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
@@ -13907,7 +13907,7 @@ function BusinessSettingsView({
                 padding: "10px 18px",
                 fontSize: "12.5px",
                 fontWeight: 700,
-                background: "#285536",
+                background: "#00438b",
                 cursor: passSaving ? "wait" : "pointer",
               }}
             >
@@ -13920,10 +13920,10 @@ function BusinessSettingsView({
       {/* CARD 2: Alerts & Notifications */}
       <section className="panel" style={{ padding: "20px" }}>
         <div style={{ marginBottom: "16px" }}>
-          <div style={{ fontSize: "11px", fontWeight: 800, color: "#2b7744", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+          <div style={{ fontSize: "11px", fontWeight: 800, color: "#00438b", textTransform: "uppercase", letterSpacing: "0.5px" }}>
             ALERTS &amp; SOUNDS
           </div>
-          <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#193822", margin: "2px 0 4px" }}>
+          <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#0f172a", margin: "2px 0 4px" }}>
             Order &amp; Customer Enquiry Notifications
           </h3>
           <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
@@ -13997,10 +13997,10 @@ function BusinessSettingsView({
       {/* CARD 3: Store Operations & Radius */}
       <section className="panel" style={{ padding: "20px" }}>
         <div style={{ marginBottom: "16px" }}>
-          <div style={{ fontSize: "11px", fontWeight: 800, color: "#2b7744", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+          <div style={{ fontSize: "11px", fontWeight: 800, color: "#00438b", textTransform: "uppercase", letterSpacing: "0.5px" }}>
             OPERATIONS &amp; DISCOVERY
           </div>
-          <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#193822", margin: "2px 0 4px" }}>
+          <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#0f172a", margin: "2px 0 4px" }}>
             Store Availability &amp; Customer Radius
           </h3>
           <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
@@ -14075,10 +14075,10 @@ function BusinessSettingsView({
       {/* CARD 4: Language & Localization */}
       <section className="panel" style={{ padding: "20px" }}>
         <div style={{ marginBottom: "16px" }}>
-          <div style={{ fontSize: "11px", fontWeight: 800, color: "#2b7744", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+          <div style={{ fontSize: "11px", fontWeight: 800, color: "#00438b", textTransform: "uppercase", letterSpacing: "0.5px" }}>
             LOCALIZATION
           </div>
-          <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#193822", margin: "2px 0 4px" }}>
+          <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#0f172a", margin: "2px 0 4px" }}>
             Regional Language Preference
           </h3>
           <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
@@ -14121,10 +14121,10 @@ function BusinessSettingsView({
       {/* CARD 5: Data & Exports */}
       <section className="panel" style={{ padding: "20px" }}>
         <div style={{ marginBottom: "16px" }}>
-          <div style={{ fontSize: "11px", fontWeight: 800, color: "#2b7744", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+          <div style={{ fontSize: "11px", fontWeight: 800, color: "#00438b", textTransform: "uppercase", letterSpacing: "0.5px" }}>
             DATA &amp; RECORDS
           </div>
-          <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#193822", margin: "2px 0 4px" }}>
+          <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#0f172a", margin: "2px 0 4px" }}>
             Export Business Records
           </h3>
           <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>

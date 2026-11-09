@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Find trusted local products and services from nearby businesses on Bizearch.",
     start_url: "/",
     display: "standalone",
-    background_color: "#f6f8f5",
-    theme_color: "#2b7744",
+    background_color: "#f8fafc",
+    theme_color: "#00438b",
     icons: [
       {
         src: "/bizearch-square.png",
