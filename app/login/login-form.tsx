@@ -539,13 +539,12 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
   return <main className="login-page">
     <header className="login-page-header">
       <Link className="brand" href="/" aria-label="Bizearch home">
-        <img className="brand-mark" src="/bizearch-mark.svg" alt="" />
-        <span>bizearch<span className="brand-period">.</span></span>
+        <img className="brand-logo-img" src="/bizearch-logo.png" alt="Bizearch.in - Find • Connect • Grow" />
       </Link>
       <div className="login-page-powered"><span>Powered by</span><img src="/jishnu-infotech-logo.png" alt="Jishnu Infotech" /></div>
     </header>
     <section className="portal-login-card">
-      <img className="login-brand-mark login-brand-mark-image" src="/bizearch-mark.svg" alt="" />
+      <img className="login-brand-mark login-brand-mark-image" src="/bizearch-logo.png" alt="Bizearch.in" />
       <div className="eyebrow"><span /> {forgotPassword ? "FORGOT PASSWORD" : info.label}</div>
       <h1>
         {forgotPassword

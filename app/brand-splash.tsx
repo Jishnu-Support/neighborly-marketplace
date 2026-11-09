@@ -63,13 +63,12 @@ export default function BrandSplash() {
       {/* Crisp & Clean Professional Brand Showcase Card */}
       <div className="brand-splash-clean-card" onClick={(e) => e.stopPropagation()}>
         {/* Bizearch Identity */}
-        <div className="brand-splash-logo-row">
-          <div className="brand-splash-icon-wrapper">
-            <img src="/bizearch-mark.svg" alt="Bizearch" className="brand-splash-icon" />
-          </div>
-          <span className="brand-splash-title">
-            bizearch<span className="brand-splash-period">.</span>
-          </span>
+        <div className="brand-splash-logo-row" style={{ justifyContent: "center", marginBottom: "8px" }}>
+          <img
+            src="/bizearch-logo.png"
+            alt="Bizearch.in - Find • Connect • Grow"
+            style={{ width: "220px", height: "auto", objectFit: "contain", display: "block" }}
+          />
         </div>
 
         {/* Clean Powered By Label */}

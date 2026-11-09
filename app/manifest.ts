@@ -11,15 +11,21 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#2b7744",
     icons: [
       {
+        src: "/bizearch-square.png",
+        sizes: "256x256",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
         src: "/bizearch-mark.svg",
         sizes: "any",
         type: "image/svg+xml",
         purpose: "any",
       },
       {
-        src: "/bizearch-mark.svg",
-        sizes: "512x512",
-        type: "image/svg+xml",
+        src: "/bizearch-square.png",
+        sizes: "256x256",
+        type: "image/png",
         purpose: "maskable",
       },
     ],

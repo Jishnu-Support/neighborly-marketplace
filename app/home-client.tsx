@@ -6357,8 +6357,7 @@ export default function Home() {
 
       <aside className={`sidebar ${mobileMenuOpen ? "mobile-menu-open" : ""}`}>
         <a className="brand" href="#" onClick={(event) => { event.preventDefault(); openPortal("Discover"); }} aria-label="Bizearch home">
-          <img className="brand-mark" src="/bizearch-mark.svg" alt="" />
-          <span>bizearch<span className="brand-period">.</span></span>
+          <img className="brand-logo-img" src="/bizearch-logo.png" alt="Bizearch.in - Find • Connect • Grow" />
         </a>
         <button className="mobile-menu-toggle" type="button" aria-label={mobileMenuOpen ? "Close menu" : "Open menu"} aria-expanded={mobileMenuOpen} onClick={() => setMobileMenuOpen((open) => !open)}>{mobileMenuOpen ? "×" : "☰"}</button>
         <div className="workspace-label">{role === "Discover" && !authenticatedPortals.includes("Account") ? t.workspaceLabel : `${role === "Account" || authenticatedPortals.includes("Account") ? "CUSTOMER" : role.toUpperCase()} ${t.workspaceLabel}`}</div>
@@ -6661,8 +6660,7 @@ export default function Home() {
                 }}
                 aria-label="Bizearch home"
               >
-                <img src="/bizearch-mark.svg" alt="" style={{ width: "24px", height: "24px", objectFit: "contain" }} />
-                <span>bizearch<span className="brand-period">.</span></span>
+                <img className="brand-logo-img" src="/bizearch-logo.png" alt="Bizearch.in" />
               </a>
               <button
                 type="button"
@@ -21584,7 +21582,7 @@ function Dialog({
   return <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
     <section className="modal" role="dialog" aria-modal="true">
       <button className="modal-close" onClick={close} aria-label="Close">×</button>
-      {kind === "login" && <><img className="modal-mark brand-modal-mark" src="/bizearch-mark.svg" alt="" /><div className="eyebrow">{isCustomerForgotPw ? "RESET PASSWORD" : "WELCOME TO BIZEARCH"}</div><h2>{isCustomerForgotPw ? "Reset your password" : isSignup ? customerForm.title : "Good to see you."}</h2><p>{isCustomerForgotPw ? "Verify your registered mobile number via Demo OTP and set a new password." : isSignup ? "Create your account to discover and connect with local businesses." : "Sign in to find the good things around you."}</p>
+      {kind === "login" && <><img className="modal-mark brand-modal-mark" src="/bizearch-logo.png" alt="Bizearch.in" style={{ width: "160px", height: "auto", margin: "0 auto 16px", objectFit: "contain" }} /><div className="eyebrow">{isCustomerForgotPw ? "RESET PASSWORD" : "WELCOME TO BIZEARCH"}</div><h2>{isCustomerForgotPw ? "Reset your password" : isSignup ? customerForm.title : "Good to see you."}</h2><p>{isCustomerForgotPw ? "Verify your registered mobile number via Demo OTP and set a new password." : isSignup ? "Create your account to discover and connect with local businesses." : "Sign in to find the good things around you."}</p>
         {isCustomerForgotPw ? (
           <form onSubmit={handleCustomerForgotSubmit} className="stacked-form">
             <label>

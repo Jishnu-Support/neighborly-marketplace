@@ -40,10 +40,10 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/bizearch-mark.svg",
-        width: 512,
-        height: 512,
-        alt: "Bizearch Logo",
+        url: "/bizearch-logo.png",
+        width: 1024,
+        height: 344,
+        alt: "Bizearch.in - Find • Connect • Grow",
       },
     ],
   },
@@ -52,12 +52,15 @@ export const metadata: Metadata = {
     title: "Bizearch | Your neighborhood, in reach",
     description:
       "Find trusted local products and services from verified nearby businesses on Bizearch.",
-    images: ["/bizearch-mark.svg"],
+    images: ["/bizearch-logo.png"],
   },
   icons: {
-    icon: "/bizearch-mark.svg",
-    shortcut: "/bizearch-mark.svg",
-    apple: "/bizearch-mark.svg",
+    icon: [
+      { url: "/bizearch-square.png", sizes: "256x256", type: "image/png" },
+      { url: "/bizearch-mark.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/bizearch-square.png",
+    apple: "/bizearch-square.png",
   },
   manifest: "/manifest.webmanifest",
 };

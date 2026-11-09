@@ -154,10 +154,7 @@ export default function CompanyLoginForm() {
     <main className="login-page company-login-page">
       <header className="login-page-header">
         <Link className="brand" href="/" aria-label="Bizearch home">
-          <img className="brand-mark" src="/bizearch-mark.svg" alt="" />
-          <span>
-            bizearch<span className="brand-period">.</span>
-          </span>
+          <img className="brand-logo-img" src="/bizearch-logo.png" alt="Bizearch.in - Find • Connect • Grow" />
         </Link>
         <div className="login-page-powered">
           <span>Powered by</span>
@@ -166,7 +163,7 @@ export default function CompanyLoginForm() {
       </header>
 
       <section className="portal-login-card">
-        <img className="login-brand-mark login-brand-mark-image" src="/bizearch-mark.svg" alt="" />
+        <img className="login-brand-mark login-brand-mark-image" src="/bizearch-logo.png" alt="Bizearch.in" />
         <span className="portal-login-pill">{forgotPassword ? "ADMIN PASSWORD RECOVERY" : "COMPANY PORTAL"}</span>
         <h1>{forgotPassword ? "Reset Admin password" : "Company secure sign in"}</h1>
         <p className="portal-login-description">

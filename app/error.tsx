@@ -46,9 +46,9 @@ export default function ErrorBoundary({
     >
       <div style={{ textAlign: "center", padding: "20px" }}>
         <img
-          src="/bizearch-mark.svg"
-          alt="Bizearch"
-          style={{ width: "48px", height: "48px", margin: "0 auto 14px", display: "block" }}
+          src="/bizearch-logo.png"
+          alt="Bizearch.in"
+          style={{ width: "180px", height: "auto", margin: "0 auto 14px", display: "block", objectFit: "contain" }}
         />
         <p style={{ fontSize: "14px", color: "#3d5244", fontWeight: 600, margin: 0 }}>
           Loading Bizearch portal…
