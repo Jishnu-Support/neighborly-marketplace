@@ -47,6 +47,11 @@ const subcategoriesSummary: Record<string, string> = {
   "Education & Coaching": "CBSE schools · Engineering colleges · NEET/TNPSC coaching · Driving schools",
   "Events & Weddings": "Kalyana mandapams · Catering · Stage decor · Sound & DJ · Photography",
   "Agriculture, Nurseries & Pets": "Hosur rose nurseries · Farm seeds · Pet shops · Vet clinics · Cattle feed",
+  "IT & Software": "Web & mobile apps · Cloud & DevOps · IT infrastructure · Computer AMC · AI & SEO",
+  "Schools & Colleges": "Play schools · CBSE & Matriculation · Engineering colleges · Polytechnic diplomas · Arts & Science",
+  "Industries & Manufacturing": "Auto ancillaries · PEB & fabrication · Foundry & die casting · Chemical & polymer · Electrical panels",
+  "Professional & Legal Services": "Chartered Accountants · GST & ITR · Advocates & legal documentation · Company registration · Business loans",
+  "Logistics, Transport & Packers": "Packers & movers · Full truckload (FTL) · 3PL warehousing · Daily parcel service · Air cargo",
 };
 
 type Role = "Discover" | "Account" | "Business" | "Agent" | "Company";
@@ -1338,6 +1343,11 @@ const CATEGORY_LOCALIZED: Record<Language, Record<string, string>> = {
     "Education & Coaching": "கல்வி & பயிற்சி மையங்கள்",
     "Events & Weddings": "திருமணங்கள் & நிகழ்வுகள்",
     "Agriculture, Nurseries & Pets": "விவசாயம், நர்சரி & வளர்ப்பு பிராணிகள்",
+    "IT & Software": "தகவல் தொழில்நுட்பம் & மென்பொருள்",
+    "Schools & Colleges": "பள்ளிகள் & கல்லூரிகள்",
+    "Industries & Manufacturing": "தொழிற்சாலைகள் & உற்பத்தி",
+    "Professional & Legal Services": "தொழில்முறை & சட்ட சேவைகள்",
+    "Logistics, Transport & Packers": "போக்குவரத்து & பேக்கர்ஸ்",
   },
   kn: {
     "Automobiles": "ವಾಹನಗಳು & ಸೇವೆಗಳು",
@@ -1362,6 +1372,11 @@ const CATEGORY_LOCALIZED: Record<Language, Record<string, string>> = {
     "Education & Coaching": "ಶಿಕ್ಷಣ & ತರಬೇತಿ",
     "Events & Weddings": "ವಿವಾಹ & ಸಮಾರಂಭಗಳು",
     "Agriculture, Nurseries & Pets": "ಕೃಷಿ, ನರ್ಸರಿ & ಸಾಕುಪ್ರಾಣಿಗಳು",
+    "IT & Software": "ಮಾಹಿತಿ ತಂತ್ರಜ್ಞಾನ & ಸಾಫ್ಟ್‌ವೇರ್",
+    "Schools & Colleges": "ಶಾಲೆಗಳು & ಕಾಲೇಜುಗಳು",
+    "Industries & Manufacturing": "ಕೈಗಾರಿಕೆಗಳು & ಉತ್ಪಾದನೆ",
+    "Professional & Legal Services": "ವೃತ್ತಿಪರ & ಕಾನೂನು ಸೇವೆಗಳು",
+    "Logistics, Transport & Packers": "ಸಾರಿಗೆ & ಪ್ಯಾಕರ್ಸ್",
   },
   te: {
     "Automobiles": "ఆటోమొబైల్స్ & వాహనాలు",
@@ -1386,6 +1401,11 @@ const CATEGORY_LOCALIZED: Record<Language, Record<string, string>> = {
     "Education & Coaching": "విద్య & కోచింగ్",
     "Events & Weddings": "వివాహాలు & ఈవెంట్లు",
     "Agriculture, Nurseries & Pets": "వ్యవసాయం, నర్సరీలు & పెంపుడు జంతువులు",
+    "IT & Software": "సమాచార సాంకేతికత & సాఫ్ట్‌వేర్",
+    "Schools & Colleges": "పాఠశాలలు & కళాశాలలు",
+    "Industries & Manufacturing": "పరిశ్రమలు & తయారీ",
+    "Professional & Legal Services": "వృత్తిపరమైన & చట్టపరమైన సేవలు",
+    "Logistics, Transport & Packers": "రవాణా & ప్యాకర్స్",
   },
 };
 
@@ -1414,6 +1434,11 @@ const CATEGORY_DESC_LOCALIZED: Record<Language, Record<string, string>> = {
     "Education & Coaching": "பள்ளிகள் · பொறியியல் கல்லூரிகள் · பயிற்சி ↗",
     "Events & Weddings": "திருமண மண்டபங்கள் · கேட்டரிங் · அலங்காரம் ↗",
     "Agriculture, Nurseries & Pets": "ஓசூர் ரோஜா நர்சரி · விதைகள் · செல்லப்பிராணிகள் ↗",
+    "IT & Software": "வலை & மொபைல் செயலிகள் · கணினி சர்வீஸ் · கிளவுட் ↗",
+    "Schools & Colleges": "CBSE பள்ளிகள் · பொறியியல் கல்லூரிகள் ↗",
+    "Industries & Manufacturing": "வாகன உதிரிபாகங்கள் · ஃபேப்ரிகேஷன் · காஸ்டிங் ↗",
+    "Professional & Legal Services": "ஆடிட்டர் · ஜிஎஸ்டி & ஐடிஆர் · வழக்கறிஞர்கள் ↗",
+    "Logistics, Transport & Packers": "பேக்கர்ஸ் & மூவர்ஸ் · லாரி டிரான்ஸ்போர்ட் · குடோன் ↗",
   },
   kn: {
     "Automobiles": "ಮಾರಾಟ · ಸೇವೆ · ದ್ವಿಚಕ್ರ ವಾಹನಗಳು ↗",
@@ -1438,6 +1463,11 @@ const CATEGORY_DESC_LOCALIZED: Record<Language, Record<string, string>> = {
     "Education & Coaching": "ಶಾಲೆಗಳು · ಎಂಜಿನಿಯರಿಂಗ್ ಕಾಲೇಜುಗಳು ↗",
     "Events & Weddings": "ಕಲ್ಯಾಣ ಮಂಟಪಗಳು · ಕ್ಯಾಟರಿಂಗ್ · ಅಲಂಕಾರ ↗",
     "Agriculture, Nurseries & Pets": "ಹೊಸೂರು ಗುಲಾಬಿ ನರ್ಸರಿ · ಬೀಜಗಳು · ಸಾಕುಪ್ರಾಣಿಗಳು ↗",
+    "IT & Software": "ವೆಬ್ ಮತ್ತು ಮೊಬೈಲ್ ಆ್ಯಪ್ಸ್ · ಕಂಪ್ಯೂಟರ್ ಸೇವೆ · ಕ್ಲೌಡ್ ↗",
+    "Schools & Colleges": "CBSE ಶಾಲೆಗಳು · ಎಂಜಿನಿಯರಿಂಗ್ ಕಾಲೇಜುಗಳು ↗",
+    "Industries & Manufacturing": "ಆಟೋ ಭಾಗಗಳು · ಫ್ಯಾಬ್ರಿಕೇಶನ್ · ಕಾಸ್ಟಿಂಗ್ ↗",
+    "Professional & Legal Services": "ಆಡಿಟರ್ · ಜಿಎಸ್‌ಟಿ ಮತ್ತು ಐಟಿಆರ್ · ವಕೀಲರು ↗",
+    "Logistics, Transport & Packers": "ಪ್ಯಾಕರ್ಸ್ & ಮೂವರ್ಸ್ · ಲಾರಿ ಸಾರಿಗೆ · ಗೋದಾಮು ↗",
   },
   te: {
     "Automobiles": "సేల్స్ · సర్వీస్ · ద్విచక్ర వాహనాలు ↗",
@@ -1462,6 +1492,11 @@ const CATEGORY_DESC_LOCALIZED: Record<Language, Record<string, string>> = {
     "Education & Coaching": "పాఠశాలలు · ఇంజనీరింగ్ కళాశాలలు ↗",
     "Events & Weddings": "కల్యాణ మండపాలు · క్యాటరింగ్ · డెకరేషన్ ↗",
     "Agriculture, Nurseries & Pets": "హోసూరు గులాబీ నర్సరీ · విత్తనాలు · పెంపుడు జంతువులు ↗",
+    "IT & Software": "వెబ్ & మొబైల్ యాప్‌లు · కంప్యూటర్ సర్వీస్ · క్లౌడ్ ↗",
+    "Schools & Colleges": "CBSE పాఠశాలలు · ఇంజనీరింగ్ కళాశాలలు ↗",
+    "Industries & Manufacturing": "ఆటో భాగాలు · ఫ్యాబ్రికేషన్ · కాస్టింగ్ ↗",
+    "Professional & Legal Services": "ఆడిటర్ · జీఎస్టీ & ఐటీఆర్ · న్యాయవాదులు ↗",
+    "Logistics, Transport & Packers": "ప్యాకర్స్ & మూవర్స్ · లారీ రవాణా · వేర్‌హౌస్ ↗",
   },
 };
 
@@ -3765,7 +3800,7 @@ export default function Home() {
           ],
           businesses: businesses.slice(0, 3),
           products: businesses.flatMap((b) => b.products.slice(0, 1).map((p) => ({ product: p, business: b }))).slice(0, 3),
-          categories: ["Automobiles", "Heavy Industries & Machinery", "Electronics", "Electricals", "Hardware", "Home Appliances", "Real Estate & Construction", "Industrial & B2B Manufacturing", "Education & Coaching", "Events & Weddings", "Agriculture, Nurseries & Pets", "Books & Stationery", "Toys & Fancy Stores", "Public & Common Places", "Health & wellness"]
+          categories: ["IT & Software", "Schools & Colleges", "Industries & Manufacturing", "Automobiles", "Heavy Industries & Machinery", "Electronics", "Electricals", "Hardware", "Home Appliances", "Real Estate & Construction", "Industrial & B2B Manufacturing", "Education & Coaching", "Logistics, Transport & Packers", "Professional & Legal Services", "Events & Weddings", "Agriculture, Nurseries & Pets", "Books & Stationery", "Toys & Fancy Stores", "Public & Common Places", "Health & wellness"]
         };
       }
       const matchedQueries = new Set<string>();

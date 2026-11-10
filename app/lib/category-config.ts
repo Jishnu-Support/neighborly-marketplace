@@ -27,7 +27,7 @@ export function validateCategoryConfig(input: unknown): input is CategoryConfig 
     Object.entries(value.brandLogos).length > 500 ||
     Object.entries(value.brandLogos).some(([name, url]) => !name.trim() || name.length > 60 ||
       typeof url !== "string" || !/^\/api\/ads\/media\/[0-9a-f-]{36}\.(?:jpe?g|png|webp)$/i.test(url)))) return false;
-  if (!Array.isArray(sectors) || sectors.length < 1 || sectors.length > 30) return false;
+  if (!Array.isArray(sectors) || sectors.length < 1 || sectors.length > 50) return false;
   const names = new Set<string>();
   for (const value of sectors) {
     if (!value || typeof value !== "object") return false;
@@ -47,7 +47,7 @@ export function validateCategoryConfig(input: unknown): input is CategoryConfig 
       paths.add(normalizedPath);
     }
     const checkChildren = (nodes: { name: string; children: any[] }[], depth = 0): boolean =>
-      nodes.length <= (depth < 2 ? 6 : 100) && nodes.every((node) => checkChildren(node.children, depth + 1));
+      nodes.length <= (depth < 2 ? 15 : 100) && nodes.every((node) => checkChildren(node.children, depth + 1));
     if (!checkChildren(buildTree(sector.paths))) return false;
   }
   return true;
