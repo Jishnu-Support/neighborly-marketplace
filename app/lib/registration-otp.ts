@@ -9,12 +9,24 @@ const MIN_SEND_INTERVAL_MS = 30_000;
 const MAX_SENDS_PER_HOUR = 5;
 const MAX_VERIFY_ATTEMPTS = 5;
 
-function normalizedPhone(phone: string) { return phone.replace(/\D/g, ""); }
-function challengeKey(role: "Account" | "Business" | "Agent", phone: string) { return `${role}:${normalizedPhone(phone)}`; }
-function digest(key: string, code: string) { return createHash("sha256").update(`${key}:${code}:${process.env.NEIGHBORLY_AUTH_SECRET || "neighborly-local-otp-demo"}`).digest(); }
+export function normalizeRegistrationIdentity(identity: string): string {
+  const trimmed = String(identity || "").trim().toLowerCase();
+  if (trimmed.includes("@")) {
+    return trimmed;
+  }
+  return trimmed.replace(/\D/g, "");
+}
 
-export function issueRegistrationOtp(role: "Account" | "Business" | "Agent", phone: string) {
-  const normalized = normalizedPhone(phone);
+function challengeKey(role: "Account" | "Business" | "Agent", identity: string) {
+  return `${role}:${normalizeRegistrationIdentity(identity)}`;
+}
+
+function digest(key: string, code: string) {
+  return createHash("sha256").update(`${key}:${code}:${process.env.NEIGHBORLY_AUTH_SECRET || "neighborly-local-otp-demo"}`).digest();
+}
+
+export function issueRegistrationOtp(role: "Account" | "Business" | "Agent", identity: string) {
+  const normalized = normalizeRegistrationIdentity(identity);
   const key = challengeKey(role, normalized);
   const now = Date.now();
   const recentSends = (sendHistory.get(key) || []).filter((timestamp) => now - timestamp < 60 * 60_000);
@@ -26,8 +38,8 @@ export function issueRegistrationOtp(role: "Account" | "Business" | "Agent", pho
   return code;
 }
 
-export function verifyRegistrationOtp(role: "Account" | "Business" | "Agent", phone: string, code: string) {
-  const key = challengeKey(role, phone);
+export function verifyRegistrationOtp(role: "Account" | "Business" | "Agent", identity: string, code: string) {
+  const key = challengeKey(role, identity);
   const challenge = challenges.get(key);
   if (!challenge || Date.now() > challenge.expiresAt || challenge.attempts >= MAX_VERIFY_ATTEMPTS) {
     challenges.delete(key);
@@ -43,8 +55,8 @@ export function verifyRegistrationOtp(role: "Account" | "Business" | "Agent", ph
   return true;
 }
 
-export function consumeVerifiedRegistrationOtp(role: "Account" | "Business" | "Agent", phone: string) {
-  const key = challengeKey(role, phone);
+export function consumeVerifiedRegistrationOtp(role: "Account" | "Business" | "Agent", identity: string) {
+  const key = challengeKey(role, identity);
   const challenge = challenges.get(key);
   if (!challenge || !challenge.verifiedUntil || Date.now() > challenge.verifiedUntil) return false;
   challenges.delete(key);

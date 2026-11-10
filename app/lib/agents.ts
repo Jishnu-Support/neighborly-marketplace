@@ -138,19 +138,22 @@ export async function createAgentPartner(input: {
   referralCode?: string;
 }): Promise<AgentPartner> {
   const existing = await readAgentRecords();
-  const cleanPhone = input.phone.replace(/\D/g, "");
+  const cleanPhone = (input.phone || "").replace(/\D/g, "");
+  const normalizedEmail = (input.email || "").trim().toLowerCase();
 
   const duplicate = existing.find((a) => {
-    const p = a.phone.replace(/\D/g, "");
-    return cleanPhone.length >= 8 && (p === cleanPhone || p.endsWith(cleanPhone) || cleanPhone.endsWith(p));
+    const p = (a.phone || "").replace(/\D/g, "");
+    if (cleanPhone.length >= 8 && (p === cleanPhone || p.endsWith(cleanPhone) || cleanPhone.endsWith(p))) return true;
+    if (normalizedEmail && a.email && a.email.toLowerCase() === normalizedEmail) return true;
+    return false;
   });
 
   if (duplicate) {
-    throw new Error("An agent partner with this mobile number already exists.");
+    throw new Error("An agent partner with this mobile number or email already exists.");
   }
 
   const salt = randomBytes(16).toString("hex");
-  const password = input.password || `Agent@${cleanPhone.slice(-4)}`;
+  const password = input.password || (cleanPhone ? `Agent@${cleanPhone.slice(-4)}` : "Agent@2026");
   const passwordHash = hashPassword(password, salt);
 
   const cleanName = input.name.trim().toUpperCase().replace(/[^A-Z]/g, "").slice(0, 4) || "AGNT";

@@ -213,14 +213,18 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
     }
   }
 
-  async function handleOtp(action: "send" | "verify", phone: string) {
+  async function handleOtp(action: "send" | "verify", targetIdentity: string) {
     setOtpBusy(true);
     setMessage("");
     setIsSuccess(false);
     try {
-      const response = await fetch("/api/registration/otp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, role: portal, phone, code: otp }) });
+      const response = await fetch("/api/registration/otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, role: portal, identity: targetIdentity, code: otp }),
+      });
       const result = await response.json() as { error?: string; demoCode?: string };
-      if (!response.ok) throw new Error(result.error || "Could not verify this mobile number.");
+      if (!response.ok) throw new Error(result.error || "Could not verify username.");
       if (action === "send") {
         setDemoOtp(result.demoCode || "");
         if (result.demoCode) {
@@ -230,16 +234,16 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
         }
         setOtpVerified(false);
         setIsSuccess(true);
-        setMessage(result.demoCode ? `Verification code ${result.demoCode} generated. Click 'Verify OTP' to proceed.` : "OTP sent to your mobile number.");
+        setMessage(result.demoCode ? `Verification code ${result.demoCode} generated. Click 'Verify OTP' to proceed.` : `OTP sent to ${targetIdentity}.`);
       } else {
         setOtpVerified(true);
         setIsSuccess(true);
-        setMessage("Mobile number verified ✓. Enter your password to complete registration.");
+        setMessage("Username verified ✓. Enter your password to complete registration.");
       }
     } catch (error) {
       setOtpVerified(false);
       setIsSuccess(false);
-      setMessage(error instanceof Error ? error.message : "Could not verify this mobile number.");
+      setMessage(error instanceof Error ? error.message : "Could not verify username.");
     } finally {
       setOtpBusy(false);
     }
@@ -255,6 +259,12 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
       const name = String(form.get("fullName") || "").trim();
       const phone = String(form.get("phone") || "").trim();
       const email = String(form.get("email") || "").trim();
+      if (!phone && !email) {
+        setIsSuccess(false);
+        setMessage("Please enter either your mobile number or email address as your username.");
+        setBusy(false);
+        return;
+      }
       const locality = String(form.get("locality") || "").trim();
       const city = String(form.get("city") || "").trim();
       const doorNo = String(form.get("doorNo") || "").trim();
@@ -267,7 +277,7 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
       const confirmPassword = String(form.get("confirmPassword") || "").trim();
       if (!otpVerified) {
         setIsSuccess(false);
-        setMessage("Verify your mobile number before submitting registration.");
+        setMessage("Verify your mobile number or email username before submitting registration.");
         setBusy(false);
         return;
       }
@@ -798,27 +808,52 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
               </>
             )}
 
-            <label>
-              Mobile number *
-              <input
-                name="phone"
-                type="tel"
-                autoComplete="tel"
-                placeholder="+91 98765 43210"
-                minLength={8}
-                maxLength={20}
-                required
-                value={regPhone}
-                onChange={(e) => {
-                  setRegPhone(e.target.value);
-                  setOtpVerified(false);
-                  setDemoOtp("");
-                }}
-              />
-            </label>
+            <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "8px", padding: "10px 14px", margin: "6px 0 10px 0", fontSize: "12px", color: "#166534", display: "flex", alignItems: "center", gap: "8px" }}>
+              <span>🔑</span>
+              <span><strong>Sign-In Username:</strong> You can use your <strong>Mobile Number</strong> or <strong>Email Address</strong> as your username to sign in.</span>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "10px" }}>
+              <label>
+                Mobile number {regEmail.trim() ? "(Username - Optional if Email provided)" : "(Username) *"}
+                <input
+                  name="phone"
+                  type="tel"
+                  autoComplete="tel"
+                  placeholder="+91 98765 43210"
+                  required={!regEmail.trim()}
+                  value={regPhone}
+                  onChange={(e) => {
+                    setRegPhone(e.target.value);
+                    setOtpVerified(false);
+                    setDemoOtp("");
+                  }}
+                />
+              </label>
+
+              <label>
+                Email address {regPhone.trim() ? "(Username - Optional if Mobile provided)" : "(Username) *"}
+                <input
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="e.g. you@example.com"
+                  required={!regPhone.trim()}
+                  value={regEmail}
+                  onChange={(e) => {
+                    setRegEmail(e.target.value);
+                    if (!regPhone.trim()) {
+                      setOtpVerified(false);
+                      setDemoOtp("");
+                    }
+                  }}
+                />
+              </label>
+            </div>
+
             <div className="otp-row">
               <label>
-                One-time password (OTP) *
+                Verification OTP *
                 <input
                   name="otp"
                   inputMode="numeric"
@@ -835,20 +870,28 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
               <div className="otp-actions">
                 <button
                   type="button"
-                  disabled={otpBusy || busy}
+                  disabled={otpBusy || busy || (!regPhone.trim() && !regEmail.trim())}
                   onClick={(event) => {
                     const phone = String(new FormData(event.currentTarget.form || undefined).get("phone") || "").trim();
-                    void handleOtp("send", phone);
+                    const email = String(new FormData(event.currentTarget.form || undefined).get("email") || "").trim();
+                    const target = phone || email;
+                    if (!target) {
+                      setMessage("Please enter either your mobile number or email address as your username.");
+                      return;
+                    }
+                    void handleOtp("send", target);
                   }}
                 >
                   {otpBusy ? "Please wait…" : "Send OTP"}
                 </button>
                 <button
                   type="button"
-                  disabled={otpBusy || busy || otp.length !== 6}
+                  disabled={otpBusy || busy || otp.length !== 6 || (!regPhone.trim() && !regEmail.trim())}
                   onClick={(event) => {
                     const phone = String(new FormData(event.currentTarget.form || undefined).get("phone") || "").trim();
-                    void handleOtp("verify", phone);
+                    const email = String(new FormData(event.currentTarget.form || undefined).get("email") || "").trim();
+                    const target = phone || email;
+                    void handleOtp("verify", target);
                   }}
                 >
                   Verify OTP
@@ -860,21 +903,7 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
                 Verification OTP: <strong>{demoOtp}</strong> <span>Auto-filled. Click &apos;Verify OTP&apos; to continue.</span>
               </p>
             )}
-            {otpVerified && <p className="otp-verified" role="status">Mobile number verified ✓</p>}
-
-            {(portal === "Account" || portal === "Business" || portal === "Agent") && (
-              <label>
-                Email address <span className="optional">(optional - for invoices &amp; notifications)</span>
-                <input
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="e.g. contact@example.com"
-                  value={regEmail}
-                  onChange={(e) => setRegEmail(e.target.value)}
-                />
-              </label>
-            )}
+            {otpVerified && <p className="otp-verified" role="status">Username verified ✓ (You can sign in using your mobile number or email)</p>}
 
             {portal === "Business" && (
               <label>

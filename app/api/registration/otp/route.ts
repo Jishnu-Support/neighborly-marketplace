@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { consumeVerifiedRegistrationOtp, issueRegistrationOtp, validRegistrationRole, verifyRegistrationOtp } from "@/app/lib/registration-otp";
+import { consumeVerifiedRegistrationOtp, issueRegistrationOtp, normalizeRegistrationIdentity, validRegistrationRole, verifyRegistrationOtp } from "@/app/lib/registration-otp";
 
 const digits = (value: unknown) => typeof value === "string" ? value.replace(/\D/g, "") : "";
 
@@ -63,14 +63,31 @@ async function sendRealSms(phone: string, code: string): Promise<"twilio" | "msg
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json() as { action?: unknown; role?: unknown; phone?: unknown; code?: unknown };
+    const body = await request.json() as { action?: unknown; role?: unknown; phone?: unknown; identity?: unknown; email?: unknown; code?: unknown };
     if (!validRegistrationRole(body.role)) return NextResponse.json({ error: "Choose a valid registration type." }, { status: 400 });
-    const phone = digits(body.phone);
-    if (phone.length < 8 || phone.length > 15) return NextResponse.json({ error: "Enter a valid mobile number." }, { status: 400 });
+
+    const rawInput = String(body.identity || body.phone || body.email || "").trim();
+    const isEmail = rawInput.includes("@");
+    const cleanPhone = digits(rawInput);
+
+    if (isEmail) {
+      if (rawInput.length < 5 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawInput)) {
+        return NextResponse.json({ error: "Enter a valid email address as your username." }, { status: 400 });
+      }
+    } else {
+      if (cleanPhone.length < 8 || cleanPhone.length > 15) {
+        return NextResponse.json({ error: "Enter a valid mobile number or email address as your username." }, { status: 400 });
+      }
+    }
+
+    const identifier = normalizeRegistrationIdentity(rawInput);
 
     if (body.action === "send") {
-      const code = issueRegistrationOtp(body.role, phone);
-      const deliveryProvider = await sendRealSms(phone, code);
+      const code = issueRegistrationOtp(body.role, identifier);
+      let deliveryProvider: "twilio" | "msg91" | null = null;
+      if (!isEmail) {
+        deliveryProvider = await sendRealSms(cleanPhone, code);
+      }
 
       if (deliveryProvider) {
         return NextResponse.json(
@@ -79,15 +96,16 @@ export async function POST(request: Request) {
         );
       }
 
-      // If no external SMS gateway is configured (or failed), provide the instant OTP code
-      // so registration continues smoothly without blocking real users from creating accounts
+      // If no external SMS gateway is configured (or if email), provide the instant OTP code
       return NextResponse.json(
         {
           sent: true,
           demoCode: code,
           demoOnly: true,
           expiresInSeconds: 300,
-          notice: "SMS Gateway not configured; using instant verification code.",
+          notice: isEmail
+            ? `Verification code for ${identifier}`
+            : "SMS Gateway not configured; using instant verification code.",
         },
         { headers: { "Cache-Control": "no-store" } }
       );
@@ -95,15 +113,15 @@ export async function POST(request: Request) {
 
     if (body.action === "verify") {
       const code = typeof body.code === "string" ? body.code.trim() : "";
-      if (!/^\d{6}$/.test(code) || !verifyRegistrationOtp(body.role, phone, code)) {
+      if (!/^\d{6}$/.test(code) || !verifyRegistrationOtp(body.role, identifier, code)) {
         return NextResponse.json({ error: "That OTP is incorrect or expired. Request a new code and try again." }, { status: 400 });
       }
-      return NextResponse.json({ verified: true, expiresInSeconds: 600 }, { headers: { "Cache-Control": "no-store" } });
+      return NextResponse.json({ verified: true, expiresInSeconds: 600, message: "Username verified successfully." }, { headers: { "Cache-Control": "no-store" } });
     }
 
     if (body.action === "consume") {
-      if (!consumeVerifiedRegistrationOtp(body.role, phone)) {
-        return NextResponse.json({ error: "Verify your mobile number before submitting registration." }, { status: 400 });
+      if (!consumeVerifiedRegistrationOtp(body.role, identifier)) {
+        return NextResponse.json({ error: "Verify your mobile number or email username before submitting registration." }, { status: 400 });
       }
       return NextResponse.json({ verified: true }, { headers: { "Cache-Control": "no-store" } });
     }

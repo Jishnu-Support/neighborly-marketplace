@@ -42,8 +42,12 @@ export async function POST(request: Request) {
     }
 
     const cleanPhone = String(phone || "").replace(/\D/g, "");
-    if (!cleanPhone || cleanPhone.length < 8 || cleanPhone.length > 15) {
-      return NextResponse.json({ error: "Please enter a valid mobile number." }, { status: 400 });
+    const cleanEmail = email && typeof email === "string" ? email.trim().toLowerCase() : "";
+    const hasPhone = cleanPhone.length >= 8 && cleanPhone.length <= 15;
+    const hasEmail = cleanEmail.length >= 5 && cleanEmail.includes("@");
+
+    if (!hasPhone && !hasEmail) {
+      return NextResponse.json({ error: "Please enter a valid mobile number or email address as your username." }, { status: 400 });
     }
 
     const isCompanyCreator = Boolean(session && session.role === "Company");
@@ -51,15 +55,17 @@ export async function POST(request: Request) {
 
     // OTP verification required only for self-registration, not for authenticated Company Admins or Agents
     if (!isCompanyCreator && !isAgentCreator) {
-      const otpConsumed = consumeVerifiedRegistrationOtp("Business", cleanPhone);
+      const otpConsumed =
+        (hasPhone && consumeVerifiedRegistrationOtp("Business", cleanPhone)) ||
+        (hasEmail && consumeVerifiedRegistrationOtp("Business", cleanEmail));
       if (!otpConsumed && cleanPhone !== "9876543210" && !cleanPhone.endsWith("9876543210")) {
-        return NextResponse.json({ error: "Please verify your mobile number with OTP first." }, { status: 400 });
+        return NextResponse.json({ error: "Please verify your mobile number or email with OTP first." }, { status: 400 });
       }
     }
 
     const defaultBizPassword = password && typeof password === "string" && password.length >= 6
       ? password
-      : `Biz@${cleanPhone.slice(-4) || "1234"}`;
+      : (cleanPhone ? `Biz@${cleanPhone.slice(-4) || "1234"}` : "Biz@2026");
 
     // Mandatory address validation
     if (!doorNo || typeof doorNo !== "string" || !doorNo.trim()) {
@@ -140,8 +146,8 @@ export async function POST(request: Request) {
     const business = await registerBusinessAccount({
       name: name.trim(),
       category: category.trim(),
-      phone: phone.trim(),
-      emergencyPhone: typeof emergencyPhone === "string" && emergencyPhone.trim() ? emergencyPhone.trim() : phone.trim(),
+      phone: cleanPhone || cleanEmail,
+      emergencyPhone: typeof emergencyPhone === "string" && emergencyPhone.trim() ? emergencyPhone.trim() : (cleanPhone || cleanEmail),
       password: defaultBizPassword,
       doorNo: doorNo.trim(),
       street: street.trim(),
@@ -182,7 +188,8 @@ export async function POST(request: Request) {
     }
 
     // Standard business registration: set auth cookie for business
-    const token = createSessionToken("Business", business.phone);
+    const primaryIdentity = business.phone || business.email || cleanPhone || cleanEmail;
+    const token = createSessionToken("Business", primaryIdentity);
     const response = NextResponse.json({
       success: true,
       business,

@@ -256,12 +256,15 @@ export async function registerBusinessAccount(input: {
     throw new Error("Business location GPS coordinates are mandatory. Please pin your storefront location on the map.");
   }
 
-  const cleanPhone = input.phone.replace(/\D/g, "");
+  const cleanPhone = (input.phone || "").replace(/\D/g, "");
   const normalizedEmail = (input.email || "").trim().toLowerCase();
+  if (!cleanPhone && !normalizedEmail) {
+    throw new Error("A valid mobile number or email address is required as the business username.");
+  }
   const records = await readBusinessRecords();
 
   const existingIndex = records.findIndex((b) => {
-    const bPhoneClean = b.phone.replace(/\D/g, "");
+    const bPhoneClean = (b.phone || "").replace(/\D/g, "");
     if (cleanPhone.length >= 8 && (bPhoneClean === cleanPhone || bPhoneClean.endsWith(cleanPhone) || cleanPhone.endsWith(bPhoneClean))) {
       return true;
     }
@@ -272,7 +275,9 @@ export async function registerBusinessAccount(input: {
   });
 
   const salt = randomBytes(16).toString("hex");
-  const defaultPassword = input.password && input.password.length >= 6 ? input.password : `Biz@${cleanPhone.slice(-4) || "1234"}`;
+  const defaultPassword = input.password && input.password.length >= 6
+    ? input.password
+    : (cleanPhone ? `Biz@${cleanPhone.slice(-4) || "1234"}` : "Biz@2026");
   const passwordHash = hashPassword(defaultPassword, salt);
 
   const cityVal = (input.city || input.cityTown || "").trim() || (existingIndex >= 0 ? records[existingIndex].address.cityTown : "Hosur");
