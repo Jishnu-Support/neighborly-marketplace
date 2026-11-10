@@ -430,7 +430,59 @@ export default function CompanyLoginForm() {
           </form>
         )}
 
-        {message && <p className={isSuccess ? "company-login-success" : "company-login-message"} role={isSuccess ? "status" : "alert"}>{message}</p>}
+        {message && (
+          <div
+            className={isSuccess ? "company-login-success" : "company-login-message"}
+            role={isSuccess ? "status" : "alert"}
+            style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+          >
+            <span>{message}</span>
+            {message.includes("Super Admin") && accessLevel !== "Super Admin" && (
+              <button
+                type="button"
+                onClick={() => {
+                  setAccessLevel("Super Admin");
+                  setMessage("");
+                }}
+                style={{
+                  alignSelf: "flex-start",
+                  background: "#b45309",
+                  color: "#ffffff",
+                  border: "none",
+                  padding: "6px 12px",
+                  borderRadius: "6px",
+                  fontSize: "11.5px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Switch to Super Admin 👑
+              </button>
+            )}
+            {message.includes("regular Admin") && accessLevel !== "Admin" && (
+              <button
+                type="button"
+                onClick={() => {
+                  setAccessLevel("Admin");
+                  setMessage("");
+                }}
+                style={{
+                  alignSelf: "flex-start",
+                  background: "#15803d",
+                  color: "#ffffff",
+                  border: "none",
+                  padding: "6px 12px",
+                  borderRadius: "6px",
+                  fontSize: "11.5px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Switch to Admin 🛡️
+              </button>
+            )}
+          </div>
+        )}
 
         <p className="portal-login-demo-note">
           Super Admin accounts manage categories, advertisement placements, and provision Admin accounts in the Company terminal.

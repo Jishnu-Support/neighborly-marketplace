@@ -25,12 +25,66 @@ export async function POST(request: Request) {
     let matchedAccessLevel: "Admin" | "Super Admin" | undefined = undefined;
 
     if (body.role === "Company") {
-      if (await verifyCredentials("Company", body.identity, body.password, "Super Admin")) {
-        matchedRole = "Company";
-        matchedAccessLevel = "Super Admin";
-      } else if (await verifyCredentials("Company", body.identity, body.password, "Admin")) {
-        matchedRole = "Company";
-        matchedAccessLevel = "Admin";
+      const requestedLevel =
+        body.accessLevel === "Super Admin" || body.accessLevel === "Admin"
+          ? (body.accessLevel as "Admin" | "Super Admin")
+          : undefined;
+
+      if (requestedLevel === "Admin") {
+        // Enforce: Super Admin credentials cannot sign in under Admin role tab
+        const isSuper = await verifyCredentials("Company", body.identity, body.password, "Super Admin");
+        if (isSuper) {
+          return NextResponse.json(
+            {
+              error:
+                "These credentials belong to a Super Admin account. Please switch to the 'Super Admin' tab above to sign in.",
+            },
+            { status: 400 }
+          );
+        }
+
+        const isAdmin = await verifyCredentials("Company", body.identity, body.password, "Admin");
+        if (isAdmin) {
+          matchedRole = "Company";
+          matchedAccessLevel = "Admin";
+        } else {
+          return NextResponse.json(
+            { error: "Invalid Admin work email or password." },
+            { status: 401 }
+          );
+        }
+      } else if (requestedLevel === "Super Admin") {
+        // Enforce: regular Admin credentials cannot sign in under Super Admin role tab
+        const isAdmin = await verifyCredentials("Company", body.identity, body.password, "Admin");
+        if (isAdmin) {
+          return NextResponse.json(
+            {
+              error:
+                "These credentials belong to a regular Admin account. Please switch to the 'Admin' tab above to sign in.",
+            },
+            { status: 400 }
+          );
+        }
+
+        const isSuper = await verifyCredentials("Company", body.identity, body.password, "Super Admin");
+        if (isSuper) {
+          matchedRole = "Company";
+          matchedAccessLevel = "Super Admin";
+        } else {
+          return NextResponse.json(
+            { error: "Invalid Super Admin work email or password." },
+            { status: 401 }
+          );
+        }
+      } else {
+        // Fallback when accessLevel is not explicitly passed
+        if (await verifyCredentials("Company", body.identity, body.password, "Super Admin")) {
+          matchedRole = "Company";
+          matchedAccessLevel = "Super Admin";
+        } else if (await verifyCredentials("Company", body.identity, body.password, "Admin")) {
+          matchedRole = "Company";
+          matchedAccessLevel = "Admin";
+        }
       }
     } else if (await verifyCredentials(body.role, body.identity, body.password)) {
       matchedRole = body.role;

@@ -261,35 +261,69 @@ export function isSuperAdminIdentity(identity: string | undefined): boolean {
 export async function verifyCredentials(role: PortalRole, identity: string, password: string, accessLevel?: CompanyAccessLevel) {
   const normalizedIdentity = identity.trim().toLowerCase();
   if (role === "Company") {
-    // If the identity is a recognized Super Admin email
-    if (isSuperAdminIdentity(normalizedIdentity)) {
+    const isSuper = isSuperAdminIdentity(normalizedIdentity);
+
+    if (accessLevel === "Super Admin") {
+      // Must strictly be a Super Admin identity
+      if (!isSuper) return false;
       const configuredPassword = process.env.NEIGHBORLY_SUPER_ADMIN_PASSWORD;
-      const isMatch =
+      if (
         password === "SuperAdmin123!" ||
         password === "SuperAdminSecret2026!" ||
-        Boolean(configuredPassword && password === configuredPassword);
-      if (isMatch) return true;
-    }
-    if (accessLevel === "Super Admin") {
-      const configuredEmail = process.env.NEIGHBORLY_SUPER_ADMIN_EMAIL?.trim().toLowerCase();
-      const configuredPassword = process.env.NEIGHBORLY_SUPER_ADMIN_PASSWORD;
-      const adminEmail = configuredEmail || "admin@bizearch.in";
-      const isKnownSuper =
-        normalizedIdentity === adminEmail ||
-        normalizedIdentity === "admin@bizearch.in";
-      if (
-        isKnownSuper &&
-        (password === "SuperAdmin123!" ||
-          password === "SuperAdminSecret2026!" ||
-          Boolean(configuredPassword && password === configuredPassword))
+        Boolean(configuredPassword && password === configuredPassword)
       ) {
+        return true;
+      }
+      const admin = (await readAdminRecords()).find(
+        (item) => item.email.toLowerCase() === normalizedIdentity && item.active
+      );
+      if (admin && passwordsMatch(password, admin.salt, admin.passwordHash)) {
         return true;
       }
       return false;
     }
-    if (accessLevel !== "Admin" && !isSuperAdminIdentity(normalizedIdentity)) return false;
+
+    if (accessLevel === "Admin") {
+      // Super Admin credentials must strictly NOT be accepted as regular Admin
+      if (isSuper) {
+        return false;
+      }
+      const admin = (await readAdminRecords()).find(
+        (item) =>
+          !isSuperAdminIdentity(item.email) &&
+          (item.email.toLowerCase() === normalizedIdentity || item.name.toLowerCase() === normalizedIdentity) &&
+          item.active
+      );
+      if (!admin) return false;
+      const defaultDef = defaultAdmins.find((d) => d.email.toLowerCase() === normalizedIdentity);
+      if (defaultDef && password === defaultDef.defaultPassword) {
+        return true;
+      }
+      return Boolean(passwordsMatch(password, admin.salt, admin.passwordHash));
+    }
+
+    // If accessLevel is not specified, evaluate role-specific match:
+    if (isSuper) {
+      const configuredPassword = process.env.NEIGHBORLY_SUPER_ADMIN_PASSWORD;
+      if (
+        password === "SuperAdmin123!" ||
+        password === "SuperAdminSecret2026!" ||
+        Boolean(configuredPassword && password === configuredPassword)
+      ) {
+        return true;
+      }
+      const admin = (await readAdminRecords()).find(
+        (item) => item.email.toLowerCase() === normalizedIdentity && item.active
+      );
+      if (admin && passwordsMatch(password, admin.salt, admin.passwordHash)) {
+        return true;
+      }
+      return false;
+    }
+
     const admin = (await readAdminRecords()).find(
       (item) =>
+        !isSuperAdminIdentity(item.email) &&
         (item.email.toLowerCase() === normalizedIdentity || item.name.toLowerCase() === normalizedIdentity) &&
         item.active
     );
