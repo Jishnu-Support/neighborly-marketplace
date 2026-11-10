@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { readBusinessRecords, writeBusinessRecords } from "@/app/lib/businesses";
+import { randomUUID } from "node:crypto";
+import { readBusinessRecords, writeBusinessRecords, type BusinessReview } from "@/app/lib/businesses";
 import { saveActivityLog } from "@/app/lib/activity-logs";
 
 export async function POST(request: Request) {
@@ -13,8 +14,8 @@ export async function POST(request: Request) {
       userPhone?: string;
     };
 
-    const rating = Number(body.rating);
-    if (!rating || rating < 1 || rating > 5) {
+    const rating = Math.min(5, Math.max(1, Math.round(Number(body.rating))));
+    if (!rating || isNaN(rating)) {
       return NextResponse.json({ error: "Rating must be an integer between 1 and 5." }, { status: 400 });
     }
 
@@ -35,14 +36,25 @@ export async function POST(request: Request) {
     }
 
     const business = records[index];
-    const prevRating = typeof business.rating === "number" && !isNaN(business.rating) ? business.rating : 4.5;
-    const prevReviews = typeof business.reviews === "number" && !isNaN(business.reviews) ? business.reviews : 1;
+    const newReview: BusinessReview = {
+      id: randomUUID(),
+      userName: body.userName?.trim() || "Verified Resident",
+      userPhone: body.userPhone?.trim(),
+      rating,
+      comment: body.comment?.trim() || "",
+      createdAt: new Date().toISOString(),
+    };
 
-    const nextReviews = prevReviews + 1;
-    const nextRating = Number((((prevRating * prevReviews) + rating) / nextReviews).toFixed(1));
+    const existingReviews = Array.isArray(business.customerReviews) ? business.customerReviews : [];
+    const updatedReviews = [newReview, ...existingReviews];
 
-    business.rating = nextRating;
+    const nextReviews = updatedReviews.length;
+    const totalScore = updatedReviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0);
+    const nextRating = Number((totalScore / nextReviews).toFixed(1));
+
+    business.customerReviews = updatedReviews;
     business.reviews = nextReviews;
+    business.rating = nextRating;
     records[index] = business;
 
     await writeBusinessRecords(records);
@@ -52,7 +64,7 @@ export async function POST(request: Request) {
       await saveActivityLog({
         action: `Customer rated ${business.name} (${rating}★)`,
         category: "Review",
-        actorName: body.userName?.trim() || "Verified Customer",
+        actorName: newReview.userName,
         actorPhone: body.userPhone?.trim() || undefined,
         actorRole: "Customer",
         locality: business.address?.area || "Hosur",
@@ -62,6 +74,7 @@ export async function POST(request: Request) {
           businessName: business.name,
           rating,
           comment: body.comment?.trim() || "",
+          reviewId: newReview.id,
         },
       });
     } catch (e) {
@@ -73,6 +86,8 @@ export async function POST(request: Request) {
       businessName: business.name,
       rating: nextRating,
       reviews: nextReviews,
+      review: newReview,
+      customerReviews: updatedReviews,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to record customer review.";

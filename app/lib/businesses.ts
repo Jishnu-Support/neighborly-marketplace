@@ -51,6 +51,15 @@ export type BusinessProduct = {
   category?: string;
 };
 
+export type BusinessReview = {
+  id: string;
+  userName: string;
+  userPhone?: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+};
+
 export type StoredBusiness = {
   id: string;
   name: string;
@@ -89,6 +98,7 @@ export type StoredBusiness = {
   createdAt: string;
   rating?: number;
   reviews?: number;
+  customerReviews?: BusinessReview[];
 };
 
 export type PublicBusiness = Omit<StoredBusiness, "salt" | "passwordHash">;
@@ -692,6 +702,7 @@ export async function updateBusinessProfile(idOrIdentity: string, updates: Parti
   coordinates: { latitude: number; longitude: number } | null;
   rating?: number;
   reviews?: number;
+  customerReviews?: BusinessReview[];
 }>): Promise<PublicBusiness | null> {
   const records = await readBusinessRecords();
   const cleanDigits = idOrIdentity.replace(/\D/g, "");
@@ -729,6 +740,7 @@ export async function updateBusinessProfile(idOrIdentity: string, updates: Parti
   if (updates.products !== undefined) current.products = updates.products;
   if (updates.rating !== undefined) current.rating = updates.rating;
   if (updates.reviews !== undefined) current.reviews = updates.reviews;
+  if (updates.customerReviews !== undefined) current.customerReviews = updates.customerReviews;
   if (updates.address) {
     const rawAddr = updates.address as Record<string, unknown>;
     current.address = {

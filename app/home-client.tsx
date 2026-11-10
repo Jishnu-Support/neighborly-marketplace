@@ -210,6 +210,14 @@ type Business = {
   demoCoordinates: Coordinates;
   rating: number;
   reviews: number;
+  customerReviews?: {
+    id: string;
+    userName: string;
+    userPhone?: string;
+    rating: number;
+    comment: string;
+    createdAt: string;
+  }[];
   price: string;
   icon: string;
   color: string;
@@ -2575,8 +2583,9 @@ export default function Home() {
         website: currentBusinessRecord.website || "",
         hours: currentBusinessRecord.hours || "",
         distance: 0.5,
-        rating: currentBusinessRecord.rating || 5,
-        reviews: currentBusinessRecord.reviews || 0,
+        rating: (Array.isArray(currentBusinessRecord.customerReviews) && currentBusinessRecord.customerReviews.length > 0) ? (currentBusinessRecord.rating || 5) : 0,
+        reviews: Array.isArray(currentBusinessRecord.customerReviews) ? currentBusinessRecord.customerReviews.length : 0,
+        customerReviews: Array.isArray(currentBusinessRecord.customerReviews) ? currentBusinessRecord.customerReviews : [],
         subscribed: Boolean(currentBusinessRecord.subscribed),
         products: (currentBusinessRecord.products || []).map((p: any, idx: number) => ({
           id: p.id || `prod-${idx}`,
@@ -3703,7 +3712,10 @@ export default function Home() {
               ? NEIGHBORHOOD_CENTROIDS[b.address.area]
               : { latitude: 12.7409, longitude: 77.8253 };
 
+          const realCustomerReviews = Array.isArray(b.customerReviews) ? b.customerReviews : [];
+          const hasReviews = realCustomerReviews.length > 0;
           return {
+            id: b.id,
             name: b.name,
             category: b.category,
             subcategories: b.categories || [b.category],
@@ -3712,8 +3724,9 @@ export default function Home() {
             email: b.email || "",
             distance: 1.5,
             distanceKm: 1.5,
-            rating: b.rating || 5,
-            reviews: b.reviews || 0,
+            rating: hasReviews ? (typeof b.rating === "number" ? b.rating : 5) : 0,
+            reviews: realCustomerReviews.length,
+            customerReviews: realCustomerReviews,
             subscribed: b.subscribed ?? true,
             products: Array.isArray(b.products)
               ? b.products.map((p: any, idx: number) => ({
@@ -8491,7 +8504,13 @@ export default function Home() {
                                   color: "#275934",
                                 }}
                               >
-                                <span className="rating">★ <b>{business.rating.toFixed(1)}</b> <small>({business.reviews} {t.reviewsLabel})</small></span>
+                                <span className="rating">
+                                  {business.reviews > 0 ? (
+                                    <>★ <b>{business.rating.toFixed(1)}</b> <small>({business.reviews} {t.reviewsLabel})</small></>
+                                  ) : (
+                                    <><span style={{ color: "#94a3b8" }}>☆</span> <small style={{ color: "#64748b", fontWeight: 600 }}>No reviews yet</small></>
+                                  )}
+                                </span>
                                 <span style={{ fontSize: "9px", color: "#366e47", textDecoration: "underline", marginLeft: "4px" }}>{t.rate}</span>
                               </button>
                               <span className="price">{business.price}</span>
@@ -9070,18 +9089,33 @@ export default function Home() {
             setReviewBusiness(null);
             setSelectedBusiness(b);
           }}
-          onSubmit={(stars, comment) => {
-            const currentRating = reviewBusiness.rating || 4.5;
-            const currentReviews = reviewBusiness.reviews || 1;
-            const nextReviews = currentReviews + 1;
-            const nextRating = Number((((currentRating * currentReviews) + stars) / nextReviews).toFixed(1));
+          onSubmit={(stars, comment, authorName) => {
+            const finalAuthorName = (authorName || "").trim() || currentCustomerProfile?.fullName || (role === "Account" ? sessionIdentity : "Verified Resident");
+            const newReviewObj = {
+              id: `rev-${Date.now()}`,
+              userName: finalAuthorName,
+              userPhone: currentCustomerProfile?.phone,
+              rating: stars,
+              comment: (comment || "").trim(),
+              createdAt: new Date().toISOString(),
+            };
+
+            const prevReviewsList = Array.isArray(reviewBusiness.customerReviews) ? reviewBusiness.customerReviews : [];
+            const nextReviewsList = [newReviewObj, ...prevReviewsList];
+            const nextReviews = nextReviewsList.length;
+            const nextRating = Number((nextReviewsList.reduce((sum, r) => sum + r.rating, 0) / nextReviews).toFixed(1));
+
+            const updatedBiz = {
+              ...reviewBusiness,
+              rating: nextRating,
+              reviews: nextReviews,
+              customerReviews: nextReviewsList,
+            };
 
             setDemoData((prev) => ({
               ...prev,
               businesses: prev.businesses.map((b) =>
-                b.name === reviewBusiness.name
-                  ? { ...b, rating: nextRating, reviews: nextReviews }
-                  : b
+                b.name === reviewBusiness.name ? updatedBiz : b
               ),
             }));
 
@@ -9093,7 +9127,7 @@ export default function Home() {
                 businessName: reviewBusiness.name,
                 rating: stars,
                 comment,
-                userName: currentCustomerProfile?.fullName || (role === "Account" ? sessionIdentity : "Customer"),
+                userName: finalAuthorName,
                 userPhone: currentCustomerProfile?.phone,
               }),
             }).catch(() => {});
@@ -9101,6 +9135,7 @@ export default function Home() {
             showNotice(`Thank you! Your ${stars}-star rating for "${reviewBusiness.name}" was recorded.`);
             recordEvent(`Customer rated ${reviewBusiness.name} ${stars} stars`);
             setReviewBusiness(null);
+            setSelectedBusiness(updatedBiz);
           }}
         />
       )}
@@ -10258,7 +10293,13 @@ function BusinessDetailDialog({
         {/* Rating and Claim Bar */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px", margin: "10px 0 8px", padding: "8px 12px", background: "#f8faf8", borderRadius: "8px", border: "1px solid #e7eee6" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "#254e32" }}>
-            <span>★</span> <strong>{business.rating.toFixed(1)}</strong> <span style={{ color: "#6a7c6f" }}>({business.reviews} reviews)</span>
+            {business.reviews > 0 ? (
+              <>
+                <span style={{ color: "#f59e0b" }}>★</span> <strong>{business.rating.toFixed(1)}</strong> <span style={{ color: "#6a7c6f" }}>({business.reviews} {business.reviews === 1 ? "verified review" : "verified reviews"})</span>
+              </>
+            ) : (
+              <span style={{ color: "#6a7c6f", fontSize: "11.5px" }}>☆ <strong>No reviews yet</strong> · Be the first to review</span>
+            )}
           </div>
           <div>
             <button
@@ -10274,8 +10315,8 @@ function BusinessDetailDialog({
           </div>
         </div>
 
-        {/* Yelp-style Amenities & Attributes */}
-        <div className="yelp-amenities-strip" style={{ display: "flex", gap: "6px", flexWrap: "wrap", margin: "4px 0 14px" }}>
+        {/* Business Amenities & Attributes */}
+        <div className="business-amenities-strip" style={{ display: "flex", gap: "6px", flexWrap: "wrap", margin: "4px 0 14px" }}>
           <span style={{ fontSize: "10px", fontWeight: 700, padding: "3px 8px", background: "#f2f7f1", color: "#255333", borderRadius: "12px", border: "1px solid #d4e5d5" }}>
             ✓ Accepts UPI & Cash
           </span>
@@ -10429,184 +10470,145 @@ function BusinessDetailDialog({
         )}
 
         {activeTab === "reviews" && (
-          <div className="yelp-reviews-tab-content">
-            {/* Yelp Rating Summary & Distribution */}
-            <div className="yelp-rating-summary-card" style={{ display: "grid", gridTemplateColumns: "180px 1fr", gap: "20px", padding: "18px 20px", background: "#fbfcfb", border: "1px solid #e2ebe1", borderRadius: "10px", margin: "14px 0 20px" }}>
-              <div style={{ textAlign: "center", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", borderRight: "1px solid #e8eee7", paddingRight: "16px" }}>
-                <div style={{ font: "800 36px Manrope, sans-serif", color: "#1f4a2d", lineHeight: 1 }}>{business.rating.toFixed(1)}</div>
-                <div style={{ color: "#f59e0b", fontSize: "18px", margin: "6px 0 4px" }}>
-                  {"★".repeat(Math.round(business.rating)) + "☆".repeat(5 - Math.round(business.rating))}
-                </div>
-                <div style={{ fontSize: "11px", color: "#6a7c6f", fontWeight: 600 }}>Overall Rating</div>
-                <div style={{ fontSize: "10px", color: "#8a9b8e" }}>{business.reviews} verified reviews</div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    close();
-                    onRate?.(business);
-                  }}
-                  className="primary-button"
-                  style={{ marginTop: "12px", padding: "7px 14px", fontSize: "10.5px", borderRadius: "6px", width: "100%" }}
-                >
-                  ✍️ Write a Review
-                </button>
-              </div>
+          <div className="reviews-tab-content">
+            {(() => {
+              const reviewsList = Array.isArray(business.customerReviews) ? business.customerReviews : [];
+              const hasReviews = reviewsList.length > 0;
 
-              <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: "6px" }}>
-                {[
-                  { stars: "5 stars", pct: 76, count: Math.round(business.reviews * 0.76) },
-                  { stars: "4 stars", pct: 18, count: Math.round(business.reviews * 0.18) },
-                  { stars: "3 stars", pct: 4, count: Math.round(business.reviews * 0.04) },
-                  { stars: "2 stars", pct: 1, count: Math.round(business.reviews * 0.01) },
-                  { stars: "1 star", pct: 1, count: Math.max(0, business.reviews - Math.round(business.reviews * 0.98)) },
-                ].map((row) => (
-                  <div key={row.stars} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "11px", color: "#486250" }}>
-                    <span style={{ width: "45px", textAlign: "right", fontWeight: 600 }}>{row.stars}</span>
-                    <div style={{ flex: 1, height: "8px", background: "#e8efe9", borderRadius: "4px", overflow: "hidden" }}>
-                      <div style={{ width: `${row.pct}%`, height: "100%", background: "#00438b", borderRadius: "4px" }} />
-                    </div>
-                    <span style={{ width: "30px", fontSize: "10px", color: "#7a8c7e", textAlign: "right" }}>{row.pct}%</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Yelp Community Reviews Feed */}
-            <div className="yelp-reviews-list" style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
-                <h3 style={{ font: "700 14px Manrope, sans-serif", color: "#1f3b28", margin: 0 }}>Community Reviews &amp; Experiences</h3>
-                <span style={{ fontSize: "10.5px", color: "#2d633b", background: "#eef5ed", padding: "3px 8px", borderRadius: "10px", fontWeight: 700 }}>✓ Yelp-Verified Reviews</span>
-              </div>
-
-              {(() => {
-                const cat = (business.category || "").toLowerCase();
-                let sampleReviews = [
-                  {
-                    author: "Karthik Sundaram",
-                    role: "Hosur Local Guide · 18 reviews",
-                    stars: 5,
-                    date: "2 days ago",
-                    comment: `Outstanding service and transparent billing! The staff at ${business.name} explained everything clearly and delivered on time. Definitely coming back.`,
-                    initials: "KS",
-                    color: "#00438b",
-                  },
-                  {
-                    author: "Praveen Kumar",
-                    role: "Verified Customer · SIPCOT Phase 1",
-                    stars: 5,
-                    date: "1 week ago",
-                    comment: `Quick turnaround and great value. They accept UPI payments and provided a proper GST tax invoice without delay.`,
-                    initials: "PK",
-                    color: "#ce8d66",
-                  },
-                  {
-                    author: "Anitha R.",
-                    role: "Frequent Buyer · Hosur",
-                    stars: 4,
-                    date: "3 weeks ago",
-                    comment: `Very reliable place in Hosur. Easy parking and convenient location. WhatsApp support answered my stock queries in under 5 minutes.`,
-                    initials: "AR",
-                    color: "#748da1",
-                  },
-                ];
-
-                if (/machin|metal|industrial|manufactur|cnc/.test(cat)) {
-                  sampleReviews = [
-                    {
-                      author: "Venkatesh Murthy",
-                      role: "SIPCOT Quality Manager · 24 reviews",
-                      stars: 5,
-                      date: "3 days ago",
-                      comment: `Exceptional machining accuracy and strict tolerance controls. Supplied 800 precision components for our automotive assembly line without a single rejection.`,
-                      initials: "VM",
-                      color: "#00438b",
-                    },
-                    {
-                      author: "Naveen Prakash",
-                      role: "Industrial Procurement · 12 reviews",
-                      stars: 5,
-                      date: "2 weeks ago",
-                      comment: `Competitive batch pricing and timely delivery. Material test certificates and GST tax invoice were provided with the dispatch.`,
-                      initials: "NP",
-                      color: "#ce8d66",
-                    },
-                    {
-                      author: "Senthil Kumar",
-                      role: "Tool Room Lead · Hosur",
-                      stars: 4,
-                      date: "1 month ago",
-                      comment: `Professional engineering team. They reviewed our 2D/3D CAD drawings promptly and suggested cost-effective manufacturing optimizations.`,
-                      initials: "SK",
-                      color: "#748da1",
-                    },
-                  ];
-                } else if (/food|dining|restaurant|baker/.test(cat)) {
-                  sampleReviews = [
-                    {
-                      author: "Deepak Raj",
-                      role: "Hosur Food Explorer · 32 reviews",
-                      stars: 5,
-                      date: "Yesterday",
-                      comment: `Fresh quality, authentic taste, and impeccable hygiene. One of the top recommended dining spots in Hosur!`,
-                      initials: "DR",
-                      color: "#00438b",
-                    },
-                    {
-                      author: "Meenakshi S.",
-                      role: "Local Guide · 15 reviews",
-                      stars: 5,
-                      date: "5 days ago",
-                      comment: `Courteous staff and quick service even during peak lunch hours. The flavors are authentic and price is very reasonable.`,
-                      initials: "MS",
-                      color: "#ce8d66",
-                    },
-                    {
-                      author: "Arun Pandian",
-                      role: "Verified Diner",
-                      stars: 4,
-                      date: "2 weeks ago",
-                      comment: `Great packaging for takeaway orders. Everything was piping hot and fresh.`,
-                      initials: "AP",
-                      color: "#748da1",
-                    },
-                  ];
-                }
-
-                return sampleReviews.map((rev, idx) => (
-                  <div key={idx} style={{ background: "#ffffff", border: "1px solid #e7eee6", borderRadius: "8px", padding: "14px 16px" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: rev.color, color: "#fff", display: "grid", placeItems: "center", font: "700 12px Manrope, sans-serif" }}>
-                          {rev.initials}
-                        </div>
-                        <div>
-                          <div style={{ font: "700 12px Manrope, sans-serif", color: "#1f3825" }}>{rev.author}</div>
-                          <div style={{ fontSize: "9.5px", color: "#748677" }}>{rev.role}</div>
-                        </div>
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <div style={{ color: "#f59e0b", fontSize: "13px" }}>{"★".repeat(rev.stars)}</div>
-                        <div style={{ fontSize: "9px", color: "#8b9c8e" }}>{rev.date}</div>
-                      </div>
-                    </div>
-                    <p style={{ fontSize: "11.5px", lineHeight: "1.55", color: "#455d4c", margin: "6px 0 10px" }}>
-                      {rev.comment}
+              if (!hasReviews) {
+                return (
+                  <div style={{ textAlign: "center", padding: "40px 24px", background: "#fbfcfb", border: "1px dashed #cde0d1", borderRadius: "12px", margin: "16px 0" }}>
+                    <div style={{ fontSize: "40px", marginBottom: "10px" }}>✍️</div>
+                    <h3 style={{ font: "700 16px Manrope, sans-serif", color: "#1f4a2d", margin: "0 0 6px" }}>
+                      No reviews yet for {business.name}
+                    </h3>
+                    <p style={{ fontSize: "12.5px", color: "#5a6e60", maxWidth: "440px", margin: "0 auto 18px", lineHeight: "1.5" }}>
+                      Only genuine, user-submitted customer reviews appear on Bizearch. Have you visited or transacted with {business.name}? Be the first customer to share your real experience!
                     </p>
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "10px", color: "#728776", borderTop: "1px solid #f2f6f1", paddingTop: "8px" }}>
-                      <span style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                        👍 Helpful ({4 + idx * 3})
-                      </span>
-                      <span>•</span>
-                      <span style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                        💬 Comment
-                      </span>
-                      <span>•</span>
-                      <span style={{ color: "#2d633b", fontWeight: 600 }}>✓ Verified Resident</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        close();
+                        onRate?.(business);
+                      }}
+                      className="primary-button"
+                      style={{ padding: "9px 22px", fontSize: "12px", borderRadius: "8px", fontWeight: 700 }}
+                    >
+                      ✍️ Write the First Review
+                    </button>
+                  </div>
+                );
+              }
+
+              const totalReviews = reviewsList.length;
+              const totalScore = reviewsList.reduce((acc, r) => acc + (Number(r.rating) || 0), 0);
+              const computedRating = Number((totalScore / totalReviews).toFixed(1));
+              const starCounts = [5, 4, 3, 2, 1].map((s) => {
+                const count = reviewsList.filter((r) => Math.round(Number(r.rating)) === s).length;
+                const pct = Math.round((count / totalReviews) * 100);
+                return { stars: `${s} star${s > 1 ? "s" : ""}`, count, pct };
+              });
+
+              return (
+                <>
+                  {/* Rating Summary & Genuine Distribution */}
+                  <div className="rating-summary-card" style={{ display: "grid", gridTemplateColumns: "180px 1fr", gap: "20px", padding: "18px 20px", background: "#fbfcfb", border: "1px solid #e2ebe1", borderRadius: "10px", margin: "14px 0 20px" }}>
+                    <div style={{ textAlign: "center", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", borderRight: "1px solid #e8eee7", paddingRight: "16px" }}>
+                      <div style={{ font: "800 36px Manrope, sans-serif", color: "#1f4a2d", lineHeight: 1 }}>{computedRating.toFixed(1)}</div>
+                      <div style={{ color: "#f59e0b", fontSize: "18px", margin: "6px 0 4px" }}>
+                        {"★".repeat(Math.round(computedRating)) + "☆".repeat(5 - Math.round(computedRating))}
+                      </div>
+                      <div style={{ fontSize: "11px", color: "#6a7c6f", fontWeight: 600 }}>Overall Rating</div>
+                      <div style={{ fontSize: "10px", color: "#8a9b8e" }}>{totalReviews} verified {totalReviews === 1 ? "review" : "reviews"}</div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          close();
+                          onRate?.(business);
+                        }}
+                        className="primary-button"
+                        style={{ marginTop: "12px", padding: "7px 14px", fontSize: "10.5px", borderRadius: "6px", width: "100%" }}
+                      >
+                        ✍️ Write a Review
+                      </button>
+                    </div>
+
+                    <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: "6px" }}>
+                      {starCounts.map((row) => (
+                        <div key={row.stars} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "11px", color: "#486250" }}>
+                          <span style={{ width: "45px", textAlign: "right", fontWeight: 600 }}>{row.stars}</span>
+                          <div style={{ flex: 1, height: "8px", background: "#e8efe9", borderRadius: "4px", overflow: "hidden" }}>
+                            <div style={{ width: `${row.pct}%`, height: "100%", background: "#00438b", borderRadius: "4px" }} />
+                          </div>
+                          <span style={{ width: "45px", fontSize: "10px", color: "#7a8c7e", textAlign: "right" }}>{row.pct}% ({row.count})</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                ));
-              })()}
-            </div>
+
+                  {/* Customer Reviews Feed */}
+                  <div className="reviews-list" style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
+                      <h3 style={{ font: "700 14px Manrope, sans-serif", color: "#1f3b28", margin: 0 }}>
+                        Customer Reviews &amp; Experiences ({totalReviews})
+                      </h3>
+                      <span style={{ fontSize: "10.5px", color: "#2d633b", background: "#eef5ed", padding: "3px 8px", borderRadius: "10px", fontWeight: 700 }}>
+                        ✓ Genuine Customer Reviews
+                      </span>
+                    </div>
+
+                    {reviewsList.map((rev, idx) => {
+                      const author = rev.userName?.trim() || "Verified Customer";
+                      const initials = author.split(" ").filter(Boolean).map((n) => n[0]).slice(0, 2).join("").toUpperCase() || "VC";
+                      const avatarColors = ["#00438b", "#275934", "#ce8d66", "#748da1", "#7c3aed"];
+                      const color = avatarColors[idx % avatarColors.length];
+
+                      let dateLabel = "Recently";
+                      if (rev.createdAt) {
+                        try {
+                          const d = new Date(rev.createdAt);
+                          if (!isNaN(d.getTime())) {
+                            dateLabel = d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+                          }
+                        } catch {
+                          dateLabel = "Recently";
+                        }
+                      }
+
+                      return (
+                        <div key={rev.id || idx} style={{ background: "#ffffff", border: "1px solid #e7eee6", borderRadius: "8px", padding: "14px 16px" }}>
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                              <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: color, color: "#fff", display: "grid", placeItems: "center", font: "700 12px Manrope, sans-serif" }}>
+                                {initials}
+                              </div>
+                              <div>
+                                <div style={{ font: "700 12px Manrope, sans-serif", color: "#1f3825" }}>{author}</div>
+                                <div style={{ fontSize: "9.5px", color: "#748677" }}>Verified Customer</div>
+                              </div>
+                            </div>
+                            <div style={{ textAlign: "right" }}>
+                              <div style={{ color: "#f59e0b", fontSize: "13px" }}>
+                                {"★".repeat(Math.min(5, Math.max(1, Math.round(Number(rev.rating) || 5)))) + "☆".repeat(5 - Math.min(5, Math.max(1, Math.round(Number(rev.rating) || 5))))}
+                              </div>
+                              <div style={{ fontSize: "9px", color: "#8b9c8e" }}>{dateLabel}</div>
+                            </div>
+                          </div>
+                          {rev.comment ? (
+                            <p style={{ fontSize: "11.5px", lineHeight: "1.55", color: "#455d4c", margin: "6px 0 10px" }}>
+                              {rev.comment}
+                            </p>
+                          ) : null}
+                          <div style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "10px", color: "#728776", borderTop: "1px solid #f2f6f1", paddingTop: "8px" }}>
+                            <span style={{ color: "#2d633b", fontWeight: 600 }}>✓ Genuine Customer Review</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              );
+            })()}
           </div>
         )}
 
@@ -10882,7 +10884,7 @@ function ReviewDialog({
   business: Business;
   close: () => void;
   onBack?: () => void;
-  onSubmit: (rating: number, review: string) => void;
+  onSubmit: (rating: number, review: string, authorName?: string) => void;
 }) {
   const [stars, setStars] = useState(5);
   const [hoverStars, setHoverStars] = useState(0);
@@ -10891,7 +10893,7 @@ function ReviewDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(stars, comment);
+    onSubmit(stars, comment, userName);
   };
 
   const ratingLabels = [
