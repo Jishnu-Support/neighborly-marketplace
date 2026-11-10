@@ -15451,7 +15451,7 @@ function AgentPortal({
                     onChange={(e) => setOnboardForm((p) => ({ ...p, category: e.target.value }))}
                     style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px", background: "#fff" }}
                   >
-                    {["Automobiles", "Electronics", "Electricals", "Hardware", "Home Appliances", "Fashion", "Home & furniture", "Food & dining", "Health & wellness", "Sports & fitness", "Travel", "Entertainment", "Everyday services", "Books & Stationery"].map((c) => (
+                    {defaultCategoryConfig.sectors.map((s) => s.name).map((c) => (
                       <option key={c} value={c}>{c}</option>
                     ))}
                   </select>
@@ -20167,9 +20167,9 @@ function CompanyPortal({
                   onChange={(e) => setCompanyBizForm((p) => ({ ...p, category: e.target.value }))}
                   style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px", background: "#fff" }}
                 >
-                  {["Automobiles", "Electronics", "Electricals", "Hardware", "Home Appliances", "Fashion", "Home & furniture", "Food & dining", "Health & wellness", "Sports & fitness", "Travel", "Entertainment", "Everyday services", "Books & Stationery"].map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
+                  {defaultCategoryConfig.sectors.map((s) => s.name).map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
                 </select>
               </div>
               <div>

@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { MapPinModal, type Coordinates } from "../map-pin-modal";
 import { TermsModal } from "../terms-modal";
+import { defaultCategoryConfig } from "@/app/lib/category-config.shared";
 
 export type PortalRole = "Account" | "Business" | "Agent";
 
@@ -29,6 +30,27 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
   const [message, setMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [availableCategories, setAvailableCategories] = useState<string[]>(() =>
+    defaultCategoryConfig.sectors.map((s) => s.name)
+  );
+
+  useEffect(() => {
+    fetch("/api/categories")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.config?.sectors && Array.isArray(data.config.sectors)) {
+          const names = data.config.sectors
+            .map((s: any) => (typeof s?.name === "string" ? s.name.trim() : ""))
+            .filter((name: string) => name && name !== "All");
+          if (names.length > 0) {
+            setAvailableCategories(names);
+          }
+        }
+      })
+      .catch(() => {
+        // Keep defaultCategoryConfig fallback
+      });
+  }, []);
   const [registering, setRegistering] = useState(false);
   const [otp, setOtp] = useState("");
   const [demoOtp, setDemoOtp] = useState("");
@@ -734,24 +756,11 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
                     Business Category / Sector *
                     <select
                       name="category"
-                      defaultValue="Automobiles"
+                      defaultValue={availableCategories[0] || "Automobiles"}
                       style={{ background: "#fff", cursor: "pointer", padding: "10px", borderRadius: "5px", border: "1px solid #e1e7e0" }}
                       required
                     >
-                      {[
-                        "Automobiles",
-                        "Electronics",
-                        "Electricals",
-                        "Hardware",
-                        "Home appliances",
-                        "Fashion",
-                        "Food & dining",
-                        "Health & wellness",
-                        "Sports & fitness",
-                        "Travel",
-                        "Entertainment",
-                        "Everyday services",
-                      ].map((cat) => (
+                      {availableCategories.map((cat) => (
                         <option key={cat} value={cat}>
                           {cat}
                         </option>
