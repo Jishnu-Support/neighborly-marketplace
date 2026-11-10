@@ -130,8 +130,25 @@ export default function CompanyLoginForm() {
     setIsSuccess(false);
     setBusy(true);
     const form = new FormData(event.currentTarget);
-    const identity = String(form.get("identity") || "");
+    const identity = String(form.get("identity") || "").trim();
     const password = String(form.get("password") || "");
+
+    const normalizedIdentity = identity.toLowerCase();
+    const isSuperAdminEmail = normalizedIdentity === "admin@bizearch.in";
+
+    if (accessLevel === "Admin" && isSuperAdminEmail) {
+      setMessage("These credentials belong to a Super Admin account. Please switch to the 'Super Admin' tab above to sign in.");
+      setIsSuccess(false);
+      setBusy(false);
+      return;
+    }
+
+    if (accessLevel === "Super Admin" && !isSuperAdminEmail) {
+      setMessage("These credentials belong to a regular Admin account. Please switch to the 'Admin' tab above to sign in.");
+      setIsSuccess(false);
+      setBusy(false);
+      return;
+    }
 
     const response = await fetch("/api/auth/login", {
       method: "POST",
