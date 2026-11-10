@@ -914,10 +914,10 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
 
             {portal === "Business" && (
               <label>
-                Agent Referral Code <span className="optional">(optional — leave blank to let company assign an agent)</span>
+                Agent Referral Code <span className="optional">(Optional — if blank, verification assigned to default JIT agent)</span>
                 <input
                   name="referralCode"
-                  placeholder="e.g. JIT (optional — leave blank for company selection)"
+                  placeholder="e.g. JIT (Optional — leave blank for default JIT agent)"
                   style={{ textTransform: "uppercase" }}
                 />
               </label>

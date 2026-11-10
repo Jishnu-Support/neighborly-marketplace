@@ -1,7 +1,7 @@
 import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from "node:crypto";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { readAgentRecords, writeAgentRecords } from "./agents";
+import { readAgentRecords, writeAgentRecords, createDefaultJitAgent } from "./agents";
 import { resolveStorePath } from "./storage-paths";
 import { NEIGHBORHOOD_CENTROIDS, calculateDistanceMeters } from "./ad-booking.shared";
 
@@ -370,6 +370,17 @@ export async function registerBusinessAccount(input: {
     };
   } else {
     // Standard public or business self-registration
+    const findJit = () => {
+      let jit = agents.find(
+        (a) => (a.referralCode || "").trim().toUpperCase() === "JIT" || (a.name || "").trim().toUpperCase() === "JIT"
+      );
+      if (!jit) {
+        jit = createDefaultJitAgent();
+        agents.push(jit);
+      }
+      return jit;
+    };
+
     if (rawRef) {
       const matchedAgent = agents.find(
         (a) =>
@@ -386,26 +397,26 @@ export async function registerBusinessAccount(input: {
         verificationStatus = "Pending Agent Visit";
         await writeAgentRecords(agents);
       } else {
-        const jitAgent = agents.find(
-          (a) => (a.referralCode || "").trim().toUpperCase() === "JIT" || (a.name || "").trim().toUpperCase() === "JIT"
-        );
-        if (jitAgent) {
-          assignedAgentId = jitAgent.id;
-          assignedAgentName = jitAgent.name;
-          assignedAgentPhone = jitAgent.phone;
-          matchedAgentReferralCode = "JIT";
-          jitAgent.referredCount = (jitAgent.referredCount || 0) + 1;
-          verificationStatus = "Pending Agent Visit";
-          await writeAgentRecords(agents);
-        }
+        // If referral code is not found, automatically assign to default JIT agent
+        const jitAgent = findJit();
+        assignedAgentId = jitAgent.id;
+        assignedAgentName = jitAgent.name;
+        assignedAgentPhone = jitAgent.phone;
+        matchedAgentReferralCode = "JIT";
+        jitAgent.referredCount = (jitAgent.referredCount || 0) + 1;
+        verificationStatus = "Pending Agent Visit";
+        await writeAgentRecords(agents);
       }
     } else {
-      // Left blank: verification sent to Company records (Super Admin & Admin) to select agent!
-      verificationStatus = "Pending Agent Assignment";
-      assignedAgentId = "";
-      assignedAgentName = "Unassigned (Pending Company Assignment)";
-      assignedAgentPhone = "";
-      matchedAgentReferralCode = "";
+      // If the business does not enter any referral code, assign verification to default JIT agent!
+      const jitAgent = findJit();
+      assignedAgentId = jitAgent.id;
+      assignedAgentName = jitAgent.name;
+      assignedAgentPhone = jitAgent.phone;
+      matchedAgentReferralCode = "JIT";
+      jitAgent.referredCount = (jitAgent.referredCount || 0) + 1;
+      verificationStatus = "Pending Agent Visit";
+      await writeAgentRecords(agents);
     }
   }
 
