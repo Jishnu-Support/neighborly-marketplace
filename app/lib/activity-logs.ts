@@ -16,6 +16,7 @@ export type ActivityLogCategory =
   | "Advertisement"
   | "Customer Care"
   | "Review"
+  | "Removal Request"
   | "General";
 
 export type ActivityActorRole =

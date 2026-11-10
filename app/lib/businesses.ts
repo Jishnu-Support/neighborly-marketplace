@@ -95,6 +95,7 @@ export type StoredBusiness = {
   agentVerification?: AgentVerificationDetails;
   adminApproval?: AdminApprovalDetails;
   rejectionReason?: string;
+  disabledReason?: string;
   createdAt: string;
   rating?: number;
   reviews?: number;
@@ -703,6 +704,8 @@ export async function updateBusinessProfile(idOrIdentity: string, updates: Parti
   rating?: number;
   reviews?: number;
   customerReviews?: BusinessReview[];
+  active?: boolean;
+  disabledReason?: string;
 }>): Promise<PublicBusiness | null> {
   const records = await readBusinessRecords();
   const cleanDigits = idOrIdentity.replace(/\D/g, "");
@@ -741,6 +744,8 @@ export async function updateBusinessProfile(idOrIdentity: string, updates: Parti
   if (updates.rating !== undefined) current.rating = updates.rating;
   if (updates.reviews !== undefined) current.reviews = updates.reviews;
   if (updates.customerReviews !== undefined) current.customerReviews = updates.customerReviews;
+  if (updates.active !== undefined) current.active = Boolean(updates.active);
+  if (updates.disabledReason !== undefined) current.disabledReason = updates.disabledReason.trim();
   if (updates.address) {
     const rawAddr = updates.address as Record<string, unknown>;
     current.address = {

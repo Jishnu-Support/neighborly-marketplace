@@ -222,6 +222,8 @@ type Business = {
   icon: string;
   color: string;
   subscribed: boolean;
+  active?: boolean;
+  disabledReason?: string;
   taxonomyTags?: string[];
   tag?: string;
   images?: string[];
@@ -3698,7 +3700,7 @@ export default function Home() {
   }, [demoData.favorites, demoData.recentSearches, demoData.enquiries, demoData.checkouts, demoData.orders, storageReady]);
 
   const loadRegisteredBusinesses = useCallback(() => {
-    fetch("/api/businesses", { cache: "no-store" })
+    fetch("/api/businesses", { cache: "no-store", credentials: "include" })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (!data || !Array.isArray(data.businesses)) return;
@@ -3728,6 +3730,8 @@ export default function Home() {
             reviews: realCustomerReviews.length,
             customerReviews: realCustomerReviews,
             subscribed: b.subscribed ?? true,
+            active: b.active ?? true,
+            disabledReason: b.disabledReason || "",
             products: Array.isArray(b.products)
               ? b.products.map((p: any, idx: number) => ({
                   id: p.id || `reg-p-${idx}`,
@@ -8945,6 +8949,7 @@ export default function Home() {
             onOpenPortal={openPortal}
             onLanguageChange={(l) => setLang(l)}
             showNotice={showNotice}
+            onRefreshBusinesses={loadRegisteredBusinesses}
           />
         )}
         {role === "Company" && (
@@ -8963,6 +8968,7 @@ export default function Home() {
             onOpenPortal={openPortal}
             onLanguageChange={(l) => setLang(l)}
             showNotice={showNotice}
+            onRefreshBusinesses={loadRegisteredBusinesses}
           />
         )}
       </section>
@@ -14582,11 +14588,13 @@ function AgentPortal({
   onOpenPortal,
   onLanguageChange,
   showNotice,
+  onRefreshBusinesses,
 }: {
   initialTab?: string;
   onOpenPortal?: (role: Role) => void;
   onLanguageChange?: (lang: "en" | "ta" | "kn" | "te") => void;
   showNotice: (message: string) => void;
+  onRefreshBusinesses?: () => void;
 }) {
   const [copied, setCopied] = useState(false);
   const [tab, setTab] = useState(initialTab || "Overview");
@@ -14624,6 +14632,77 @@ function AgentPortal({
   const [onboardGpsLoading, setOnboardGpsLoading] = useState(false);
   const [onboardSubmitting, setOnboardSubmitting] = useState(false);
   const [onboardPhotoUploading, setOnboardPhotoUploading] = useState(false);
+
+  // Field agent removal / deletion request state
+  const [removalTargetBusiness, setRemovalTargetBusiness] = useState<{
+    id: string;
+    name: string;
+    category?: string;
+    phone?: string;
+    address?: string;
+  } | null>(null);
+  const [removalRequestType, setRemovalRequestType] = useState<"Disable" | "Delete">("Disable");
+  const [removalReason, setRemovalReason] = useState("Shop / Business permanently closed or vacated");
+  const [removalRemarks, setRemovalRemarks] = useState("");
+  const [removalSubmitting, setRemovalSubmitting] = useState(false);
+  const [agentRemovalRequests, setAgentRemovalRequests] = useState<any[]>([]);
+
+  const loadAgentRemovalRequests = useCallback(() => {
+    fetch("/api/agent/removal-requests", { cache: "no-store", credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && Array.isArray(data.requests)) {
+          setAgentRemovalRequests(data.requests);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    loadAgentRemovalRequests();
+  }, [loadAgentRemovalRequests]);
+
+  const handleAgentRemovalSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!removalTargetBusiness) return;
+    if (!removalReason.trim()) {
+      showNotice("Please select a reason category.");
+      return;
+    }
+    if (removalRemarks.trim().length < 5) {
+      showNotice("Please provide detailed field remarks (at least 5 characters).");
+      return;
+    }
+
+    setRemovalSubmitting(true);
+    try {
+      const res = await fetch("/api/agent/removal-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          businessId: removalTargetBusiness.id,
+          businessName: removalTargetBusiness.name,
+          requestType: removalRequestType,
+          reason: removalReason,
+          remarks: removalRemarks.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to submit request.");
+
+      showNotice(`✓ Request to ${removalRequestType.toLowerCase()} "${removalTargetBusiness.name}" submitted to Admins.`);
+      setRemovalTargetBusiness(null);
+      setRemovalRemarks("");
+      loadAgentRemovalRequests();
+      loadVerifications();
+      onRefreshBusinesses?.();
+    } catch (err) {
+      showNotice(err instanceof Error ? err.message : "Failed to submit request.");
+    } finally {
+      setRemovalSubmitting(false);
+    }
+  };
 
   const verificationDistance = useMemo(() => {
     if (!verifyingBusiness?.coordinates || !verifiedGps) return null;
@@ -15041,9 +15120,30 @@ function AgentPortal({
                   <span>{row.businessName}</span>
                   <span>{row.category}</span>
                   <span>{row.joined}</span>
-                  <span className={`status-pill ${row.status === "Subscribed" ? "verified" : "pending"}`}>
-                    <i>● </i>{row.status}
-                  </span>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                    <span className={`status-pill ${row.status === "Subscribed" ? "verified" : "pending"}`}>
+                      <i>● </i>{row.status}
+                    </span>
+                    <button
+                      type="button"
+                      className="text-link"
+                      style={{ fontSize: "11px", color: "#b45309", cursor: "pointer", border: 0, background: "none" }}
+                      onClick={() => {
+                        const foundBiz = verifications.find((v) => v.name.toLowerCase() === row.businessName.toLowerCase());
+                        setRemovalTargetBusiness({
+                          id: foundBiz?.id || row.businessName,
+                          name: row.businessName,
+                          category: row.category,
+                          phone: foundBiz?.phone,
+                        });
+                        setRemovalRequestType("Disable");
+                        setRemovalRemarks("");
+                      }}
+                      title="Request Admin to disable or delete this business"
+                    >
+                      ⚠️ Request Removal
+                    </button>
+                  </div>
                 </div>
               ))
             )}
@@ -15168,6 +15268,36 @@ function AgentPortal({
                             ✓ Verified by Agent · Awaiting Admin Approval
                           </div>
                         )}
+
+                        <button
+                          type="button"
+                          className="outline-button"
+                          style={{
+                            fontSize: "11px",
+                            padding: "5px 12px",
+                            color: "#b45309",
+                            borderColor: "#fcd34d",
+                            background: "#fffbeb",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => {
+                            setRemovalTargetBusiness({
+                              id: biz.id,
+                              name: biz.name,
+                              category: biz.category,
+                              phone: biz.phone,
+                              address: addressStr,
+                            });
+                            setRemovalRequestType("Disable");
+                            setRemovalRemarks("");
+                          }}
+                          title="Request Admin to disable or delete this business"
+                        >
+                          ⚠️ Request Disable / Delete
+                        </button>
                       </div>
                     </div>
 
@@ -15197,7 +15327,243 @@ function AgentPortal({
               })}
             </div>
           )}
+
+          {/* Submitted Agent Removal Requests Queue */}
+          {agentRemovalRequests.length > 0 && (
+            <div style={{ marginTop: "24px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "10px", padding: "16px 20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px", flexWrap: "wrap", gap: "8px" }}>
+                <h3 style={{ margin: 0, fontSize: "14px", color: "#1e293b" }}>
+                  Your Submitted Removal &amp; Deletion Requests ({agentRemovalRequests.length})
+                </h3>
+                <button type="button" className="text-link" onClick={loadAgentRemovalRequests} style={{ fontSize: "11px" }}>
+                  ↻ Refresh
+                </button>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {agentRemovalRequests.map((req) => (
+                  <div
+                    key={req.id}
+                    style={{
+                      background: "#fff",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "6px",
+                      padding: "10px 14px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                      gap: "8px",
+                    }}
+                  >
+                    <div>
+                      <strong>{req.businessName}</strong>
+                      <span
+                        style={{
+                          fontSize: "11px",
+                          marginLeft: "8px",
+                          color: req.requestType === "Delete" ? "#dc2626" : "#b45309",
+                          fontWeight: 700,
+                        }}
+                      >
+                        [{req.requestType} Request]
+                      </span>
+                      <div style={{ fontSize: "11px", color: "#64748b", marginTop: "2px" }}>
+                        Reason: <strong>{req.reason}</strong> — &ldquo;{req.remarks}&rdquo;
+                      </div>
+                      {req.reviewedBy && (
+                        <div style={{ fontSize: "10.5px", color: "#475569", marginTop: "2px" }}>
+                          Reviewed by {req.reviewedBy} on {new Date(req.reviewedAt).toLocaleDateString()}
+                          {req.reviewNotes && ` · Notes: ${req.reviewNotes}`}
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <span
+                        className={`status-pill ${req.status === "Approved" ? "verified" : req.status === "Rejected" ? "pending" : "pending"}`}
+                        style={{
+                          background: req.status === "Approved" ? "#f0fdf4" : req.status === "Rejected" ? "#fef2f2" : "#fffbeb",
+                          color: req.status === "Approved" ? "#166534" : req.status === "Rejected" ? "#991b1b" : "#92400e",
+                          border: req.status === "Approved" ? "1px solid #bbf7d0" : req.status === "Rejected" ? "1px solid #fecaca" : "1px solid #fde68a",
+                          fontSize: "11px",
+                          fontWeight: 700,
+                        }}
+                      >
+                        ● {req.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </section>
+      )}
+
+      {/* Modal: Agent Request Business Disable / Delete */}
+      {removalTargetBusiness && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.6)",
+            display: "grid",
+            placeItems: "center",
+            zIndex: 9999,
+            padding: "20px",
+          }}
+          onClick={() => setRemovalTargetBusiness(null)}
+        >
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: "14px",
+              padding: "24px",
+              maxWidth: "520px",
+              width: "100%",
+              maxHeight: "90vh",
+              overflowY: "auto",
+              boxShadow: "0 20px 25px -5px rgba(0,0,0,0.2)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #e2e8f0", paddingBottom: "12px", marginBottom: "16px" }}>
+              <div>
+                <span style={{ fontSize: "11px", fontWeight: 800, color: "#92400e", textTransform: "uppercase" }}>
+                  FIELD AGENT ACTION
+                </span>
+                <h3 style={{ margin: "2px 0 0", fontSize: "17px", color: "#0f172a" }}>
+                  Request Removal for {removalTargetBusiness.name}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setRemovalTargetBusiness(null)}
+                style={{ background: "none", border: 0, fontSize: "20px", cursor: "pointer", color: "#64748b" }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ background: "#f8fafc", borderRadius: "8px", padding: "10px 14px", marginBottom: "16px", fontSize: "12px", color: "#334155" }}>
+              <p style={{ margin: "0 0 2px" }}><strong>Business:</strong> {removalTargetBusiness.name}</p>
+              {removalTargetBusiness.category && <p style={{ margin: "0 0 2px" }}><strong>Sector:</strong> {removalTargetBusiness.category}</p>}
+              {removalTargetBusiness.phone && <p style={{ margin: "0 0 2px" }}><strong>Phone:</strong> {removalTargetBusiness.phone}</p>}
+              {removalTargetBusiness.address && <p style={{ margin: 0 }}><strong>Address:</strong> {removalTargetBusiness.address}</p>}
+            </div>
+
+            <form onSubmit={handleAgentRemovalSubmit}>
+              <div style={{ marginBottom: "16px" }}>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "8px" }}>
+                  1. Request Action Type *
+                </label>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                  <label
+                    style={{
+                      border: removalRequestType === "Disable" ? "2px solid #b45309" : "1px solid #cbd5e1",
+                      background: removalRequestType === "Disable" ? "#fffbeb" : "#fff",
+                      borderRadius: "8px",
+                      padding: "10px 12px",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      color: "#78350f",
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name="removalType"
+                      value="Disable"
+                      checked={removalRequestType === "Disable"}
+                      onChange={() => setRemovalRequestType("Disable")}
+                    />
+                    ⏸ Request Disable (Temporary)
+                  </label>
+                  <label
+                    style={{
+                      border: removalRequestType === "Delete" ? "2px solid #dc2626" : "1px solid #cbd5e1",
+                      background: removalRequestType === "Delete" ? "#fef2f2" : "#fff",
+                      borderRadius: "8px",
+                      padding: "10px 12px",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      color: "#991b1b",
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name="removalType"
+                      value="Delete"
+                      checked={removalRequestType === "Delete"}
+                      onChange={() => setRemovalRequestType("Delete")}
+                    />
+                    🗑 Request Delete (Permanent)
+                  </label>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: "14px" }}>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "6px" }}>
+                  2. Select Reason Category *
+                </label>
+                <select
+                  value={removalReason}
+                  onChange={(e) => setRemovalReason(e.target.value)}
+                  style={{ width: "100%", padding: "8px 12px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
+                >
+                  <option value="Shop / Business permanently closed or vacated">Shop / Business permanently closed or vacated</option>
+                  <option value="Duplicate or invalid listing">Duplicate or invalid listing</option>
+                  <option value="Owner explicitly requested removal">Owner explicitly requested removal</option>
+                  <option value="Storefront does not exist / fake address">Storefront does not exist / fake address</option>
+                  <option value="Fraudulent or non-compliant business">Fraudulent or non-compliant business</option>
+                  <option value="Temporary closure / owner under renovation">Temporary closure / owner under renovation</option>
+                  <option value="Other operational reason">Other operational reason</option>
+                </select>
+              </div>
+
+              <div style={{ marginBottom: "18px" }}>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "6px" }}>
+                  3. Field Investigation Remarks &amp; Proper Reason *
+                </label>
+                <textarea
+                  rows={4}
+                  required
+                  placeholder="Provide clear field details (e.g., visited location, shop shutter locked with 'To-Let' sign, spoke with neighboring shopkeeper, owner phone switched off)..."
+                  value={removalRemarks}
+                  onChange={(e) => setRemovalRemarks(e.target.value)}
+                  style={{ width: "100%", padding: "8px 12px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px", lineHeight: "1.4" }}
+                />
+                <small style={{ color: "#64748b", fontSize: "11px" }}>
+                  Admins and Super Admins review this reason before taking action.
+                </small>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+                <button
+                  type="button"
+                  className="outline-button"
+                  onClick={() => setRemovalTargetBusiness(null)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="primary-button"
+                  disabled={removalSubmitting}
+                  style={{ background: removalRequestType === "Delete" ? "#dc2626" : "#b45309" }}
+                >
+                  {removalSubmitting ? "Submitting..." : `Submit ${removalRequestType} Request →`}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
       {/* Field Inspection & Photo Upload Modal */}
@@ -18999,6 +19365,7 @@ function CompanyPortal({
   showNotice,
   accessLevel,
   identity,
+  onRefreshBusinesses,
 }: {
   accessLevel: CompanyAccessLevel;
   identity: string;
@@ -19014,6 +19381,7 @@ function CompanyPortal({
   onOpenPortal?: (role: Role) => void;
   onLanguageChange?: (lang: "en" | "ta" | "kn" | "te") => void;
   showNotice: (message: string) => void;
+  onRefreshBusinesses?: () => void;
 }) {
   const [activeTab, setActiveTab] = useState(initialTab || "Overview");
   const [companyAdSubTab, setCompanyAdSubTab] = useState<"bookings" | "default">("bookings");
@@ -19134,6 +19502,104 @@ function CompanyPortal({
   });
   const [companyBizSubmitting, setCompanyBizSubmitting] = useState(false);
   const [companyGpsLoading, setCompanyGpsLoading] = useState(false);
+
+  // Business Disable & Delete state for Admins & Super Admins
+  const [removalRequests, setRemovalRequests] = useState<any[]>([]);
+  const [removalRequestsLoading, setRemovalRequestsLoading] = useState(false);
+  const [disablingBusiness, setDisablingBusiness] = useState<Business | null>(null);
+  const [disableReason, setDisableReason] = useState("");
+  const [deletingBusiness, setDeletingBusiness] = useState<Business | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  const loadRemovalRequests = useCallback(() => {
+    setRemovalRequestsLoading(true);
+    fetch("/api/company/removal-requests", { cache: "no-store", credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && Array.isArray(data.requests)) {
+          setRemovalRequests(data.requests);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setRemovalRequestsLoading(false));
+  }, []);
+
+  useEffect(() => {
+    loadRemovalRequests();
+  }, [loadRemovalRequests]);
+
+  const handleToggleBusinessActive = async (business: Business, enable: boolean, reason?: string) => {
+    setActionLoading(true);
+    try {
+      const res = await fetch("/api/businesses", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          businessId: business.id || business.name,
+          active: enable,
+          disabledReason: enable ? "" : (reason?.trim() || "Disabled by Administrator"),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update business status.");
+
+      showNotice(enable ? `✓ "${business.name}" is now enabled and active.` : `⏸ "${business.name}" has been disabled.`);
+      setDisablingBusiness(null);
+      setDisableReason("");
+      onRefreshBusinesses?.();
+    } catch (err) {
+      showNotice(err instanceof Error ? err.message : "Failed to update business.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handlePermanentDelete = async (business: Business) => {
+    if (accessLevel !== "Super Admin") {
+      showNotice("Only Super Administrators can permanently delete businesses.");
+      return;
+    }
+    setActionLoading(true);
+    try {
+      const res = await fetch(`/api/businesses?id=${encodeURIComponent(business.id || business.name)}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to delete business.");
+
+      showNotice(`🗑 "${business.name}" was permanently deleted.`);
+      setDeletingBusiness(null);
+      onRefreshBusinesses?.();
+    } catch (err) {
+      showNotice(err instanceof Error ? err.message : "Failed to delete business.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReviewRemovalRequest = async (requestId: string, action: "Approved" | "Rejected", notes?: string) => {
+    setActionLoading(true);
+    try {
+      const res = await fetch("/api/company/removal-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ requestId, action, notes }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to review request.");
+
+      showNotice(`✓ Removal request ${action.toLowerCase()}.`);
+      loadRemovalRequests();
+      onRefreshBusinesses?.();
+    } catch (err) {
+      showNotice(err instanceof Error ? err.message : "Failed to review request.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const loadApprovals = () => {
     setApprovalsLoading(true);
@@ -19589,7 +20055,476 @@ function CompanyPortal({
         }}
       />
     )}
-    {activeTab === "Businesses" && <><section className="panel tab-panel"><div className="panel-heading"><div><div className="eyebrow">PARTNER DIRECTORY</div><h2>All registered businesses & common places ({businesses.length} records)</h2></div><div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}><button type="button" className="primary-button" style={{ fontSize: "12px", padding: "8px 14px", display: "inline-flex", alignItems: "center", gap: "6px" }} onClick={() => setShowCompanyRegisterModal(true)}>+ Register Business (Auto-Approved)</button><a href="/api/company/businesses/export?format=xlsx" className="primary-button" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", padding: "8px 14px" }}>📊 Export Excel (.xlsx)</a><a href="/api/company/businesses/export?format=csv" className="outline-button" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", padding: "8px 14px" }}>📄 Export CSV</a></div></div>{businesses.map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category} / {business.products.length} catalogue items / sample distance {business.distance} km</small><small style={{ color: "#166534", fontWeight: 700, display: "block", marginTop: "2px" }}>📞 Phone / WhatsApp: {businessPhoneFor(business)}</small>{business.address && <small>Address: {Object.values(business.address).filter(Boolean).join(", ")}</small>}{business.coordinates && <small>Coordinates: {business.coordinates.latitude.toFixed(6)}, {business.coordinates.longitude.toFixed(6)}</small>}{business.businessModes?.length ? <small>Activity: {business.businessModes.join(", ")}</small> : null}{business.vehicleTypes?.length ? <small>Vehicles: {business.vehicleTypes.join(", ")}</small> : null}{business.vehicleMakes?.length ? <small>Makes: {business.vehicleMakes.join(", ")}</small> : null}{business.vehicleModels?.length ? <small>Models: {business.vehicleModels.join(", ")}</small> : null}</span><span className={`status-pill ${business.subscribed ? "verified" : "pending"}`}>● {business.subscribed ? "Subscribed" : "Pending"}</span></div>)}</section></>}
+    {activeTab === "Businesses" && (
+      <>
+        <section className="panel tab-panel">
+          <div className="panel-heading">
+            <div>
+              <div className="eyebrow">PARTNER DIRECTORY</div>
+              <h2>All registered businesses &amp; common places ({businesses.length} records)</h2>
+            </div>
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
+              <button
+                type="button"
+                className="primary-button"
+                style={{ fontSize: "12px", padding: "8px 14px", display: "inline-flex", alignItems: "center", gap: "6px" }}
+                onClick={() => setShowCompanyRegisterModal(true)}
+              >
+                + Register Business (Auto-Approved)
+              </button>
+              <a
+                href="/api/company/businesses/export?format=xlsx"
+                className="primary-button"
+                style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", padding: "8px 14px" }}
+              >
+                📊 Export Excel (.xlsx)
+              </a>
+              <a
+                href="/api/company/businesses/export?format=csv"
+                className="outline-button"
+                style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", padding: "8px 14px" }}
+              >
+                📄 Export CSV
+              </a>
+            </div>
+          </div>
+
+          {/* Agent Removal & Deletion Requests Section */}
+          {(() => {
+            const pendingRequests = removalRequests.filter((r) => r.status === "Pending");
+            if (!pendingRequests.length) return null;
+            return (
+              <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: "10px", padding: "16px 20px", margin: "0 0 20px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", flexWrap: "wrap", gap: "8px" }}>
+                  <div>
+                    <div style={{ fontSize: "11px", fontWeight: 800, color: "#92400e", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                      ⚠️ AGENT REMOVAL &amp; DISABLE REQUESTS
+                    </div>
+                    <h3 style={{ margin: "2px 0 0", fontSize: "15px", color: "#78350f" }}>
+                      {pendingRequests.length} pending request{pendingRequests.length > 1 ? "s" : ""} from field agents
+                    </h3>
+                  </div>
+                  <button type="button" className="outline-button" onClick={loadRemovalRequests} style={{ fontSize: "11px", padding: "4px 10px" }}>
+                    {removalRequestsLoading ? "Refreshing..." : "↻ Refresh Requests"}
+                  </button>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {pendingRequests.map((req) => (
+                    <div
+                      key={req.id}
+                      style={{
+                        background: "#fff",
+                        border: "1px solid #fed7aa",
+                        borderRadius: "8px",
+                        padding: "14px 16px",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        flexWrap: "wrap",
+                        gap: "12px",
+                      }}
+                    >
+                      <div style={{ flex: 1, minWidth: "260px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                          <strong style={{ fontSize: "14px", color: "#1c2e22" }}>{req.businessName}</strong>
+                          <span
+                            style={{
+                              fontSize: "10.5px",
+                              fontWeight: 700,
+                              padding: "2px 8px",
+                              borderRadius: "10px",
+                              background: req.requestType === "Delete" ? "#fee2e2" : "#fef3c7",
+                              color: req.requestType === "Delete" ? "#991b1b" : "#92400e",
+                              border: req.requestType === "Delete" ? "1px solid #fca5a5" : "1px solid #fcd34d",
+                            }}
+                          >
+                            {req.requestType === "Delete" ? "🔴 Permanent Deletion Request" : "⏸ Temporary Disable Request"}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: "12px", color: "#475569", margin: "4px 0" }}>
+                          Requested by: <strong>{req.agentName}</strong> ({req.agentPhone}) · {new Date(req.createdAt).toLocaleDateString()}
+                        </div>
+                        <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "8px 12px", marginTop: "6px", fontSize: "11.5px" }}>
+                          <span style={{ fontWeight: 700, color: "#92400e" }}>Reason: {req.reason}</span>
+                          <p style={{ margin: "2px 0 0", color: "#334155" }}>&ldquo;{req.remarks}&rdquo;</p>
+                        </div>
+                      </div>
+
+                      <div style={{ display: "flex", flexDirection: "column", gap: "6px", alignItems: "flex-end" }}>
+                        {accessLevel === "Super Admin" ? (
+                          <>
+                            <button
+                              type="button"
+                              className="primary-button"
+                              disabled={actionLoading}
+                              style={{
+                                fontSize: "11.5px",
+                                padding: "6px 14px",
+                                background: req.requestType === "Delete" ? "#dc2626" : "#b45309",
+                              }}
+                              onClick={() => handleReviewRemovalRequest(req.id, "Approved")}
+                            >
+                              Approve &amp; {req.requestType === "Delete" ? "Delete Permanently" : "Disable"}
+                            </button>
+                            <button
+                              type="button"
+                              className="outline-button"
+                              disabled={actionLoading}
+                              style={{ fontSize: "11.5px", padding: "6px 14px" }}
+                              onClick={() => handleReviewRemovalRequest(req.id, "Rejected")}
+                            >
+                              Reject Request
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            {req.requestType === "Disable" ? (
+                              <button
+                                type="button"
+                                className="primary-button"
+                                disabled={actionLoading}
+                                style={{ fontSize: "11.5px", padding: "6px 14px", background: "#b45309" }}
+                                onClick={() => handleReviewRemovalRequest(req.id, "Approved")}
+                              >
+                                Approve &amp; Disable
+                              </button>
+                            ) : (
+                              <>
+                                <button
+                                  type="button"
+                                  className="outline-button"
+                                  disabled={actionLoading}
+                                  style={{ fontSize: "11px", padding: "5px 12px", color: "#b45309" }}
+                                  onClick={() => {
+                                    const found = businesses.find((b) => b.id === req.businessId || b.name === req.businessName);
+                                    if (found) handleToggleBusinessActive(found, false, `Agent delete request approved as disable: ${req.remarks}`);
+                                    handleReviewRemovalRequest(req.id, "Approved", "Disabled by Admin (Deletion requires Super Admin)");
+                                  }}
+                                >
+                                  Disable Instead (Admin)
+                                </button>
+                                <span style={{ fontSize: "10px", color: "#92400e", fontStyle: "italic" }}>
+                                  Permanent delete requires Super Admin
+                                </span>
+                              </>
+                            )}
+                            <button
+                              type="button"
+                              className="outline-button"
+                              disabled={actionLoading}
+                              style={{ fontSize: "11.5px", padding: "6px 14px" }}
+                              onClick={() => handleReviewRemovalRequest(req.id, "Rejected")}
+                            >
+                              Reject Request
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Business Listings */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {businesses.map((business, index) => (
+              <div
+                className="listing-row"
+                key={`${business.name}-${index}`}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: "12px",
+                  background: business.active === false ? "#fffdfa" : "#fff",
+                  border: business.active === false ? "1px solid #fcd34d" : undefined,
+                  borderRadius: "8px",
+                  padding: "12px 16px",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", flex: 1, minWidth: "280px" }}>
+                  <span className={`listing-icon ${business.color}`}>{business.icon}</span>
+                  <span className="listing-name" style={{ flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                      <strong style={{ fontSize: "14px" }}>{business.name}</strong>
+                      {business.active === false ? (
+                        <span
+                          className="status-pill disabled"
+                          style={{
+                            background: "#fef2f2",
+                            color: "#991b1b",
+                            border: "1px solid #fecaca",
+                            fontSize: "10px",
+                            fontWeight: 700,
+                            padding: "2px 8px",
+                          }}
+                        >
+                          ⏸ Disabled / Inactive
+                        </span>
+                      ) : (
+                        <span
+                          className="status-pill verified"
+                          style={{
+                            background: "#f0fdf4",
+                            color: "#166534",
+                            border: "1px solid #bbf7d0",
+                            fontSize: "10px",
+                            fontWeight: 700,
+                            padding: "2px 8px",
+                          }}
+                        >
+                          ● Active
+                        </span>
+                      )}
+                      <span className={`status-pill ${business.subscribed ? "verified" : "pending"}`} style={{ fontSize: "10px" }}>
+                        ● {business.subscribed ? "Subscribed" : "Pending"}
+                      </span>
+                    </div>
+
+                    {business.active === false && business.disabledReason && (
+                      <small style={{ color: "#b91c1c", display: "block", marginTop: "3px", fontWeight: 600 }}>
+                        Disabled: {business.disabledReason}
+                      </small>
+                    )}
+
+                    <small style={{ display: "block", marginTop: "3px" }}>
+                      {business.category} / {business.products.length} catalogue items / sample distance {business.distance} km
+                    </small>
+                    <small style={{ color: "#166534", fontWeight: 700, display: "block", marginTop: "2px" }}>
+                      📞 Phone / WhatsApp: {businessPhoneFor(business)}
+                    </small>
+                    {business.address && (
+                      <small style={{ display: "block", color: "#475569" }}>
+                        Address: {Object.values(business.address).filter(Boolean).join(", ")}
+                      </small>
+                    )}
+                    {business.coordinates && (
+                      <small style={{ display: "block", color: "#64748b" }}>
+                        Coordinates: {business.coordinates.latitude.toFixed(6)}, {business.coordinates.longitude.toFixed(6)}
+                      </small>
+                    )}
+                    {business.businessModes?.length ? (
+                      <small style={{ display: "block", color: "#64748b" }}>
+                        Activity: {business.businessModes.join(", ")}
+                      </small>
+                    ) : null}
+                  </span>
+                </div>
+
+                {/* Action Buttons for Super Admin and Regular Admin */}
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                  {business.active === false ? (
+                    <button
+                      type="button"
+                      className="primary-button"
+                      disabled={actionLoading}
+                      style={{
+                        fontSize: "11px",
+                        padding: "6px 14px",
+                        background: "#166534",
+                        border: "1px solid #14532d",
+                      }}
+                      onClick={() => handleToggleBusinessActive(business, true)}
+                      title="Re-enable business to appear in public directory"
+                    >
+                      ✓ Enable Business
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="outline-button"
+                      disabled={actionLoading}
+                      style={{
+                        fontSize: "11px",
+                        padding: "6px 14px",
+                        color: "#b45309",
+                        borderColor: "#fde68a",
+                        background: "#fffbeb",
+                      }}
+                      onClick={() => {
+                        setDisablingBusiness(business);
+                        setDisableReason("");
+                      }}
+                      title="Temporarily disable business from appearing in public directory"
+                    >
+                      ⏸ Disable
+                    </button>
+                  )}
+
+                  {/* Delete Option: STRICTLY SUPER ADMIN ONLY */}
+                  {accessLevel === "Super Admin" && (
+                    <button
+                      type="button"
+                      className="outline-button"
+                      disabled={actionLoading}
+                      style={{
+                        fontSize: "11px",
+                        padding: "6px 14px",
+                        color: "#dc2626",
+                        borderColor: "#fca5a5",
+                        background: "#fff",
+                      }}
+                      onClick={() => setDeletingBusiness(business)}
+                      title="Permanently delete business record (Super Admin only)"
+                    >
+                      🗑 Delete
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Modal: Disable Business Confirmation */}
+        {disablingBusiness && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0, 0, 0, 0.6)",
+              display: "grid",
+              placeItems: "center",
+              zIndex: 9999,
+              padding: "20px",
+            }}
+            onClick={() => setDisablingBusiness(null)}
+          >
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: "12px",
+                padding: "24px",
+                maxWidth: "480px",
+                width: "100%",
+                boxShadow: "0 20px 25px -5px rgba(0,0,0,0.2)",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+                <h3 style={{ margin: 0, fontSize: "17px", color: "#92400e" }}>
+                  ⏸ Disable &ldquo;{disablingBusiness.name}&rdquo;
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setDisablingBusiness(null)}
+                  style={{ background: "none", border: 0, fontSize: "20px", cursor: "pointer", color: "#64748b" }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <p style={{ fontSize: "12.5px", color: "#475569", lineHeight: "1.5", margin: "0 0 14px" }}>
+                Disabling this business will immediately hide it from public search and storefront directories. The business records and catalogue are preserved, and you can re-enable it at any time.
+              </p>
+
+              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "6px" }}>
+                Reason for Disabling (Optional / Recommended)
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Temporary renovation, Shop closed, Under dispute, Non-compliant"
+                value={disableReason}
+                onChange={(e) => setDisableReason(e.target.value)}
+                style={{ width: "100%", padding: "8px 12px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px", marginBottom: "18px" }}
+              />
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+                <button
+                  type="button"
+                  className="outline-button"
+                  onClick={() => setDisablingBusiness(null)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="primary-button"
+                  disabled={actionLoading}
+                  style={{ background: "#b45309" }}
+                  onClick={() => handleToggleBusinessActive(disablingBusiness, false, disableReason)}
+                >
+                  {actionLoading ? "Disabling..." : "Confirm Disable"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal: Permanent Delete Confirmation (Super Admin Only) */}
+        {deletingBusiness && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0, 0, 0, 0.65)",
+              display: "grid",
+              placeItems: "center",
+              zIndex: 9999,
+              padding: "20px",
+            }}
+            onClick={() => setDeletingBusiness(null)}
+          >
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: "12px",
+                padding: "24px",
+                maxWidth: "480px",
+                width: "100%",
+                boxShadow: "0 20px 25px -5px rgba(0,0,0,0.25)",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+                <h3 style={{ margin: 0, fontSize: "17px", color: "#dc2626" }}>
+                  🗑 Permanently Delete Business
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setDeletingBusiness(null)}
+                  style={{ background: "none", border: 0, fontSize: "20px", cursor: "pointer", color: "#64748b" }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "8px", padding: "12px 14px", marginBottom: "16px" }}>
+                <strong style={{ color: "#991b1b", fontSize: "13px", display: "block" }}>
+                  ⚠️ Irreversible Action (Super Admin)
+                </strong>
+                <p style={{ margin: "4px 0 0", color: "#7f1d1d", fontSize: "12px", lineHeight: "1.45" }}>
+                  Are you sure you want to permanently delete <strong>&ldquo;{deletingBusiness.name}&rdquo;</strong>? This will permanently erase the business, its catalogue items, reviews, and all associated platform records. This action cannot be undone.
+                </p>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+                <button
+                  type="button"
+                  className="outline-button"
+                  onClick={() => setDeletingBusiness(null)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="primary-button"
+                  disabled={actionLoading}
+                  style={{ background: "#dc2626", borderColor: "#b91c1c" }}
+                  onClick={() => handlePermanentDelete(deletingBusiness)}
+                >
+                  {actionLoading ? "Deleting..." : "Permanently Delete Business"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
+    )}
     {activeTab.startsWith("Approvals") && (
       <section className="panel tab-panel">
         <div className="panel-heading">

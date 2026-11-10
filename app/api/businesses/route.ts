@@ -1,8 +1,19 @@
 import { NextResponse } from "next/server";
 import { getCurrentSession } from "@/app/lib/auth";
-import { listRegisteredBusinesses, updateBusinessProfile, deleteBusinessRecord } from "@/app/lib/businesses";
+import { listRegisteredBusinesses, updateBusinessProfile, deleteBusinessRecord, readBusinessRecords } from "@/app/lib/businesses";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const session = await getCurrentSession(request);
+  const isCompany = session && session.role === "Company";
+  const { searchParams } = new URL(request.url);
+  const includeAll = searchParams.get("all") === "true" || isCompany;
+
+  if (includeAll) {
+    const records = await readBusinessRecords();
+    const businesses = records.map(({ salt, passwordHash, ...pub }) => pub);
+    return NextResponse.json({ businesses }, { headers: { "Cache-Control": "no-store" } });
+  }
+
   const businesses = await listRegisteredBusinesses();
   return NextResponse.json({ businesses }, { headers: { "Cache-Control": "no-store" } });
 }
@@ -38,6 +49,12 @@ export async function DELETE(request: Request) {
   const session = await getCurrentSession(request);
   if (!session || session.role !== "Company") {
     return NextResponse.json({ error: "Only Company administrators can delete businesses." }, { status: 403 });
+  }
+
+  if (session.accessLevel !== "Super Admin") {
+    return NextResponse.json({
+      error: "Only Super Administrators can permanently delete businesses. Admins can disable businesses instead.",
+    }, { status: 403 });
   }
 
   const { searchParams } = new URL(request.url);
