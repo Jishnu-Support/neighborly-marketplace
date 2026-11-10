@@ -125,6 +125,7 @@ export function ensureStoresInitialized(): void {
     initFileIfNotExists(resolveStorePath("NEIGHBORLY_TRANSACTIONS_STORE", ".neighborly-transactions.json"), "[]");
     initFileIfNotExists(resolveStorePath("NEIGHBORLY_CUSTOMER_LOCATION_STORE", ".neighborly-customer-locations.json"), "[]");
     initFileIfNotExists(resolveStorePath("NEIGHBORLY_SOS_ALERT_STORE", ".neighborly-sos-alerts.json"), "[]");
+    initFileIfNotExists(resolveStorePath("NEIGHBORLY_QUOTES_STORE", ".neighborly-quotes.json"), "[]");
   } catch {
     // Graceful fallback
   }

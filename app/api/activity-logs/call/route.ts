@@ -6,7 +6,7 @@ export async function POST(request: Request) {
     const body = (await request.json()) as {
       targetName?: string;
       targetPhone?: string;
-      targetType?: "Business" | "Customer Care" | "Emergency";
+      targetType?: "Business" | "Customer Care" | "Emergency" | "Customer";
       callerName?: string;
       callerPhone?: string;
       callerRole?: string;

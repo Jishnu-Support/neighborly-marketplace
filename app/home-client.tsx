@@ -31,6 +31,7 @@ import {
   STATE_SUGGESTIONS,
   PINCODE_SUGGESTIONS,
 } from "./lib/address-suggestions";
+import type { QuoteEnquiry } from "./lib/quotes.shared";
 
 const subcategoriesSummary: Record<string, string> = {
   Automobiles: "Sales · Service → Two wheelers · Three wheelers · Four wheelers · Heavy vehicles",
@@ -271,7 +272,11 @@ type DemoEnquiry = {
   productName: string;
   message: string;
   createdAt: string;
-  status: "New";
+  status: string;
+  customerName?: string;
+  customerPhone?: string;
+  customerEmail?: string;
+  replyNote?: string;
 };
 type DemoEvent = {
   id: string;
@@ -465,7 +470,7 @@ function isDemoData(value: unknown): value is DemoData {
     Array.isArray(data.enquiries) && data.enquiries.every((item) =>
       isRecord(item) && typeof item.id === "string" && typeof item.businessName === "string" &&
       typeof item.productName === "string" && typeof item.message === "string" &&
-      typeof item.createdAt === "string" && item.status === "New") &&
+      typeof item.createdAt === "string" && typeof item.status === "string") &&
     Array.isArray(data.events) && data.events.every((item) =>
       isRecord(item) && typeof item.id === "string" && typeof item.action === "string" &&
       typeof item.createdAt === "string") &&
@@ -3783,6 +3788,23 @@ export default function Home() {
     return () => window.removeEventListener("neighborly-businesses-refresh", loadRegisteredBusinesses);
   }, [loadRegisteredBusinesses]);
 
+  const [serverQuotes, setServerQuotes] = useState<QuoteEnquiry[]>([]);
+
+  const loadServerQuotes = useCallback(() => {
+    fetch("/api/quotes", { cache: "no-store", credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && Array.isArray(data.quotes)) {
+          setServerQuotes(data.quotes);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    loadServerQuotes();
+  }, [loadServerQuotes, role]);
+
   const { results, relatedProducts, relatedSearches, correctedQuery, searchDurationMs, autocompleteData } = useMemo(() => {
     const t0 = typeof performance !== "undefined" ? performance.now() : Date.now();
     const q = query.trim().toLowerCase();
@@ -4537,44 +4559,109 @@ export default function Home() {
     showNotice("Device location use stopped. The app no longer uses your coordinates in this session.");
   }
 
-  function submitEnquiry(business: Business, product: Product, message: string) {
-    const enquiry: DemoEnquiry = {
-      id: `${Date.now()}-${Math.random()}`,
-      businessName: business.name,
-      productName: product.name,
-      message,
-      createdAt: new Date().toISOString(),
-      status: "New",
-    };
-    setDemoData((current) => ({ ...current, enquiries: [enquiry, ...current.enquiries] }));
-    recordEvent("Customer enquiry submitted");
-    setEnquiryProduct(null);
-    showNotice("Enquiry saved in this browser. It has not been sent to the business.");
-    addNotification({
-      title: `Enquiry Sent: ${business.name}`,
-      message: `Your enquiry for ${product.name} was successfully submitted.`,
-      type: "enquiry",
-      linkText: "View store",
-      action: { type: "business", payload: business.name },
-    });
-    fetch("/api/activity-logs", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action: `Customer enquiry for "${business.name}"`,
-        category: "Lead",
-        actorName: currentCustomerProfile?.fullName || (role === "Account" ? sessionIdentity : "Customer"),
-        actorPhone: currentCustomerProfile?.phone,
-        actorRole: "Customer",
-        locality: business.address?.area || "Hosur",
-        details: `${product.name}: "${message.slice(0, 100)}"`,
-        metadata: {
+  async function submitEnquiry(data: {
+    business: Business;
+    product: Product;
+    message: string;
+    customerName: string;
+    customerPhone: string;
+    customerEmail?: string;
+    openWhatsApp?: boolean;
+  }) {
+    const { business, product, message, customerName, customerPhone, customerEmail, openWhatsApp } = data;
+    try {
+      const res = await fetch("/api/quotes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          businessId: business.id,
           businessName: business.name,
+          businessPhone: business.phone,
+          businessEmail: business.email,
           productName: product.name,
-          enquiryId: enquiry.id,
-        },
-      }),
-    }).catch(() => {});
+          productPrice: product.price,
+          productUnit: product.unit,
+          customerName,
+          customerPhone,
+          customerEmail,
+          customerLocality: business.address?.area || "Hosur",
+          message,
+        }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Could not submit quote inquiry.");
+
+      const newQuote: QuoteEnquiry = result.quote || {
+        id: `quote-${Date.now()}`,
+        businessName: business.name,
+        productName: product.name,
+        message,
+        customerName,
+        customerPhone,
+        customerEmail,
+        status: "New",
+        createdAt: new Date().toISOString(),
+      };
+
+      setServerQuotes((current) => [newQuote, ...current.filter((q) => q.id !== newQuote.id)]);
+      setDemoData((current) => ({
+        ...current,
+        enquiries: [
+          {
+            id: newQuote.id,
+            businessName: newQuote.businessName,
+            productName: newQuote.productName,
+            message: newQuote.message,
+            createdAt: newQuote.createdAt,
+            status: "New",
+            customerName: newQuote.customerName,
+            customerPhone: newQuote.customerPhone,
+          } as any,
+          ...current.enquiries,
+        ],
+      }));
+
+      recordEvent("Customer enquiry submitted");
+      showNotice(result.message || `✓ Quote enquiry sent directly to ${business.name}!`);
+      addNotification({
+        title: `Quote Request Sent: ${business.name}`,
+        message: `Your quote request for "${product.name}" was sent directly to ${business.name}.`,
+        type: "enquiry",
+        linkText: "View store",
+        action: { type: "business", payload: business.name },
+      });
+
+      if (openWhatsApp && result.whatsappUrl) {
+        window.open(result.whatsappUrl, "_blank", "noopener,noreferrer");
+      }
+
+      return result;
+    } catch (error) {
+      showNotice(error instanceof Error ? error.message : "Could not submit quote enquiry.");
+      throw error;
+    }
+  }
+
+  async function handleUpdateQuoteStatus(id: string, newStatus: string, replyNote?: string) {
+    try {
+      const res = await fetch("/api/quotes", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status: newStatus, replyNote }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update quote status.");
+      setServerQuotes((prev) =>
+        prev.map((q) => (q.id === id ? { ...q, status: newStatus as any, replyNote: replyNote || q.replyNote } : q))
+      );
+      setDemoData((prev) => ({
+        ...prev,
+        enquiries: prev.enquiries.map((e) => (e.id === id ? { ...e, status: newStatus } : e)),
+      }));
+      showNotice(`✓ Quote enquiry marked as ${newStatus}`);
+    } catch (err) {
+      showNotice(err instanceof Error ? err.message : "Failed to update quote status.");
+    }
   }
 
   function placeOrder(orderData: Omit<OrderRecord, "id" | "createdAt">) {
@@ -8902,6 +8989,7 @@ export default function Home() {
         {role === "Account" && (!authenticatedPortals.includes("Company")) && (
           <CustomerPortal
             data={demoData}
+            quotes={serverQuotes}
             initialTab={portalActiveTab}
             onRemoveFavorite={toggleFavorite}
             onSearch={(term) => {
@@ -8925,7 +9013,17 @@ export default function Home() {
           <BusinessPortal
             businesses={businessAccountBusinesses}
             categoryConfig={categoryConfig}
-            enquiries={businessAccountBusinesses[0]?.name ? demoData.enquiries.filter((e) => e.businessName?.toLowerCase() === businessAccountBusinesses[0]?.name.toLowerCase()) : []}
+            enquiries={
+              businessAccountBusinesses[0]?.name
+                ? (() => {
+                    const bName = businessAccountBusinesses[0]?.name.toLowerCase();
+                    const sq = serverQuotes.filter((e) => e.businessName?.toLowerCase() === bName);
+                    if (sq.length > 0) return sq as any[];
+                    return demoData.enquiries.filter((e) => e.businessName?.toLowerCase() === bName);
+                  })()
+                : []
+            }
+            onUpdateQuoteStatus={handleUpdateQuoteStatus}
             checkouts={businessAccountBusinesses[0]?.name ? demoData.checkouts.filter((c) => c.businessName?.toLowerCase() === businessAccountBusinesses[0]?.name.toLowerCase()) : []}
             orders={businessAccountBusinesses[0]?.name ? (demoData.orders || []).filter((o) => o.businessName?.toLowerCase() === businessAccountBusinesses[0]?.name.toLowerCase()) : []}
             initialTab={portalActiveTab}
@@ -8965,7 +9063,7 @@ export default function Home() {
             accessLevel={companyAccessLevel}
             identity={sessionIdentity}
             businesses={businesses}
-            enquiries={demoData.enquiries}
+            enquiries={serverQuotes.length > 0 ? (serverQuotes as any[]) : demoData.enquiries}
             events={demoData.events}
             checkouts={demoData.checkouts}
             initialTab={portalActiveTab}
@@ -9091,6 +9189,9 @@ export default function Home() {
             setEnquiryProduct(null);
             setSelectedBusiness(b);
           }}
+          defaultCustomerName={currentCustomerProfile?.fullName || (role === "Account" && !sessionIdentity.includes("@") ? sessionIdentity : "")}
+          defaultCustomerPhone={currentCustomerProfile?.phone || (role === "Account" && !sessionIdentity.includes("@") ? sessionIdentity : "")}
+          defaultCustomerEmail={currentCustomerProfile?.email || (role === "Account" && sessionIdentity.includes("@") ? sessionIdentity : "")}
           submit={submitEnquiry}
         />
       )}
@@ -9922,6 +10023,7 @@ export default function Home() {
 
 function CustomerPortal({
   data,
+  quotes = [],
   initialTab = "Overview",
   onRemoveFavorite,
   onSearch,
@@ -9933,6 +10035,7 @@ function CustomerPortal({
   showNotice,
 }: {
   data: DemoData;
+  quotes?: QuoteEnquiry[];
   initialTab?: string;
   onRemoveFavorite: (businessName: string) => void;
   onSearch: (term: string) => void;
@@ -9956,20 +10059,21 @@ function CustomerPortal({
     return () => window.removeEventListener("neighborly-open-profile", openProfile);
   }, []);
   const savedBusinesses = data.businesses.filter((business) => data.favorites.includes(business.name));
+  const displayEnquiries = (quotes && quotes.length > 0) ? quotes : data.enquiries;
   return <div className="page-content portal-content">
-    <div className="portal-header"><div><div className="eyebrow"><span /> YOUR NEIGHBORHOOD ACTIVITY</div><h1>Your local <em>shortlist.</em></h1><p>Saved places, searches and enquiries stay in this browser in this demo.</p></div><button className="primary-button" onClick={onOpenAccount}>Sign in or register ↗</button></div>
+    <div className="portal-header"><div><div className="eyebrow"><span /> YOUR NEIGHBORHOOD ACTIVITY</div><h1>Your local <em>shortlist.</em></h1><p>Saved places, searches and active enquiries with neighborhood businesses.</p></div><button className="primary-button" onClick={onOpenAccount}>Sign in or register ↗</button></div>
     <div className="portal-tabs">{["Overview", "Orders", "Saved", "Recent searches", "Enquiries", "Profile details", "Settings"].map((item) => <button key={item} className={tab === item || (item === "Profile details" && tab === "Profile") ? "current" : ""} onClick={() => setTab(item)}>{item}</button>)}</div>
     {tab === "Overview" && <>
       <div className="metric-grid">
         <Metric label="Orders placed" value={String((data.orders || []).length)} delta="Active orders on device" icon="🛍️" />
         <Metric label="Saved businesses" value={String(data.favorites.length)} delta="Stored on this device" icon="♡" />
         <Metric label="Recent searches" value={String(data.recentSearches.length)} delta="Searches you chose to run" icon="⌕" />
-        <Metric label="Enquiries" value={String(data.enquiries.length)} delta="Local demo drafts" icon="↗" />
+        <Metric label="Quotes & Enquiries" value={String(displayEnquiries.length)} delta="Direct inquiries sent" icon="💬" />
       </div>
       <section className="panel tab-panel"><div className="panel-heading"><div><div className="eyebrow">YOUR SHORTLIST</div><h2>Saved businesses</h2></div><button className="text-link" onClick={() => setTab("Saved")}>See saved →</button></div>
         {savedBusinesses.length ? savedBusinesses.slice(0, 4).map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category}</small></span><button className="outline-button" onClick={() => onFindBusiness(business.name)}>View catalogue</button></div>) : <EmptyState title="Your shortlist is ready" text="Save a local business from Discover to find it here." />}
       </section>
-      <div className="form-note"><strong>Private to this browser</strong><span>Favorites, searches and enquiries use this device's local storage. They are not synced to a customer account or sent to businesses.</span></div>
+      <div className="form-note"><strong>Direct Merchant Communication</strong><span>Your quote requests and enquiries are delivered directly to verified local businesses in real-time.</span></div>
     </>}
     {tab === "Orders" && (
       <section className="panel tab-panel">
@@ -9987,7 +10091,25 @@ function CustomerPortal({
     )}
     {tab === "Saved" && <section className="panel tab-panel"><div className="eyebrow">SAVED BUSINESSES</div><h2>Your favorites</h2>{savedBusinesses.length ? savedBusinesses.map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category} · {business.distance.toFixed(1)} km (sample distance)</small></span><button className="outline-button" onClick={() => onFindBusiness(business.name)}>View</button><button className="row-more" aria-label={`Remove ${business.name} from saved`} onClick={() => onRemoveFavorite(business.name)}>×</button></div>) : <EmptyState title="No saved businesses yet" text="Tap the heart on a search result to save it on this device." />}</section>}
     {tab === "Recent searches" && <section className="panel tab-panel"><div className="eyebrow">YOUR RECENT SEARCHES</div><h2>Pick up where you left off</h2>{data.recentSearches.length ? data.recentSearches.map((term) => <button className="history-row" key={term} onClick={() => onSearch(term)}><span>⌕</span><strong>{term}</strong><span>Search again →</span></button>) : <EmptyState title="No recent searches" text="Your search history appears here after you choose Find nearby." />}</section>}
-    {tab === "Enquiries" && <section className="panel tab-panel"><div className="eyebrow">YOUR ENQUIRY HISTORY</div><h2>Requests saved on this device</h2>{data.enquiries.length ? data.enquiries.map((enquiry) => <EnquiryRow enquiry={enquiry} key={enquiry.id} />) : <EmptyState title="No enquiries yet" text="Open a product or service and choose Request information to create a local demo enquiry." />}</section>}
+    {tab === "Enquiries" && (
+      <section className="panel tab-panel">
+        <div className="eyebrow">YOUR ENQUIRY HISTORY</div>
+        <h2>Quotes &amp; Enquiries Sent to Businesses ({displayEnquiries.length})</h2>
+        <p style={{ fontSize: "13px", color: "#4b5563", marginBottom: "16px" }}>
+          Track the status of your direct quote requests sent to local businesses. Merchants can call or WhatsApp you directly to provide pricing.
+        </p>
+        {displayEnquiries.length ? (
+          displayEnquiries.map((enquiry) => (
+            <EnquiryRow enquiry={enquiry} key={enquiry.id} isBusinessView={false} />
+          ))
+        ) : (
+          <EmptyState
+            title="No enquiries yet"
+            text="Open any product or service and tap 'Ask about Custom Quote / Estimate' to send your request directly to the business."
+          />
+        )}
+      </section>
+    )}
     {(tab === "Profile details" || tab === "Profile") && (
       <ProfileAndSettingsPanel
         role="Account"
@@ -10019,14 +10141,195 @@ function EmptyState({ title, text }: { title: string; text: string }) {
   return <div className="local-empty"><strong>{title}</strong><p>{text}</p></div>;
 }
 
-function EnquiryRow({ enquiry }: { enquiry: DemoEnquiry }) {
-  return <div className="enquiry-row"><div className="enquiry-icon">↗</div><div className="listing-name"><strong>{enquiry.productName}</strong><small>{enquiry.businessName} · {new Date(enquiry.createdAt).toLocaleString()}</small><p>{enquiry.message}</p></div><span className="status-pill pending">Local draft</span></div>;
+function EnquiryRow({
+  enquiry,
+  isBusinessView = false,
+  onUpdateStatus,
+}: {
+  enquiry: any;
+  isBusinessView?: boolean;
+  onUpdateStatus?: (id: string, status: string) => void;
+}) {
+  const [updating, setUpdating] = useState(false);
+  const status = enquiry.status || "New";
+
+  const statusThemes: Record<string, { bg: string; color: string; border: string; label: string }> = {
+    New: { bg: "#eef2ff", color: "#3730a3", border: "#c7d2fe", label: "New Lead" },
+    Contacted: { bg: "#fef3c7", color: "#92400e", border: "#fde68a", label: "Contacted" },
+    Quoted: { bg: "#f3e8ff", color: "#6b21a8", border: "#e9d5ff", label: "Quoted" },
+    Completed: { bg: "#ecfdf5", color: "#065f46", border: "#a7f3d0", label: "Completed" },
+    Declined: { bg: "#f3f4f6", color: "#4b5563", border: "#e5e7eb", label: "Declined" },
+  };
+
+  const theme = statusThemes[status] || statusThemes.New;
+  const rawCustomerPhone = enquiry.customerPhone || "";
+  const cleanPhone = rawCustomerPhone.replace(/\D/g, "");
+  const waPhone = cleanPhone.startsWith("91") ? cleanPhone : `91${cleanPhone}`;
+  const waUrl = cleanPhone
+    ? `https://wa.me/${waPhone}?text=${encodeURIComponent(`Hello ${enquiry.customerName || "Customer"}, regarding your enquiry for "${enquiry.productName}" on Bizearch:`)}`
+    : "";
+
+  return (
+    <div
+      className="enquiry-card"
+      style={{
+        background: "#ffffff",
+        border: "1px solid #e2e8f0",
+        borderRadius: "10px",
+        padding: "16px",
+        marginBottom: "14px",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px", flexWrap: "wrap", marginBottom: "8px" }}>
+        <div>
+          <span style={{ fontSize: "11px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            {isBusinessView ? "Customer Lead" : "Quote Enquiry"}
+          </span>
+          <h4 style={{ margin: "2px 0 2px", fontSize: "15px", fontWeight: 700, color: "#0f172a" }}>
+            {enquiry.productName || "Custom Quote / Estimate"}
+          </h4>
+          <span style={{ fontSize: "12px", color: "#475569" }}>
+            {isBusinessView
+              ? `From: ${enquiry.customerName || "Customer"}${enquiry.customerLocality ? ` (${enquiry.customerLocality})` : ""}`
+              : `To: ${enquiry.businessName || "Local Merchant"}`}
+            {" · "}
+            {enquiry.createdAt ? new Date(enquiry.createdAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "Recent"}
+          </span>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+          <span
+            style={{
+              fontSize: "11px",
+              fontWeight: 700,
+              padding: "4px 10px",
+              borderRadius: "20px",
+              background: theme.bg,
+              color: theme.color,
+              border: `1px solid ${theme.border}`,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "4px",
+            }}
+          >
+            ● {theme.label}
+          </span>
+          {isBusinessView && onUpdateStatus && (
+            <select
+              value={status}
+              disabled={updating}
+              onChange={async (e) => {
+                setUpdating(true);
+                try {
+                  await onUpdateStatus(enquiry.id, e.target.value);
+                } finally {
+                  setUpdating(false);
+                }
+              }}
+              style={{
+                fontSize: "11.5px",
+                padding: "3px 8px",
+                borderRadius: "6px",
+                border: "1px solid #cbd5e1",
+                background: "#f8fafc",
+                color: "#1e293b",
+                cursor: "pointer",
+              }}
+            >
+              <option value="New">Update: New Lead</option>
+              <option value="Contacted">Update: Contacted</option>
+              <option value="Quoted">Update: Quoted</option>
+              <option value="Completed">Update: Completed</option>
+              <option value="Declined">Update: Declined</option>
+            </select>
+          )}
+        </div>
+      </div>
+
+      <div
+        style={{
+          background: "#f8fafc",
+          border: "1px solid #f1f5f9",
+          borderRadius: "8px",
+          padding: "10px 14px",
+          fontSize: "13px",
+          color: "#334155",
+          lineHeight: 1.5,
+          marginTop: "6px",
+        }}
+      >
+        <strong style={{ display: "block", fontSize: "11px", color: "#64748b", textTransform: "uppercase", marginBottom: "3px" }}>
+          Requirements / Message:
+        </strong>
+        {enquiry.message}
+      </div>
+
+      {isBusinessView && (
+        <div style={{ marginTop: "12px", paddingTop: "10px", borderTop: "1px dashed #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+          <div style={{ fontSize: "12px", color: "#334155" }}>
+            <strong>Customer Contact: </strong>
+            {rawCustomerPhone ? (
+              <span style={{ fontFamily: "monospace", fontWeight: 700, color: "#0f172a" }}>{rawCustomerPhone}</span>
+            ) : "No phone provided"}
+            {enquiry.customerEmail && <span style={{ color: "#64748b" }}> · {enquiry.customerEmail}</span>}
+          </div>
+
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+            {cleanPhone && (
+              <a
+                href={`tel:${cleanPhone}`}
+                onClick={() => triggerCallLog(enquiry.customerName || "Customer", enquiry.customerPhone, "Customer")}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  padding: "6px 12px",
+                  borderRadius: "6px",
+                  background: "#eff6ff",
+                  color: "#1d4ed8",
+                  border: "1px solid #bfdbfe",
+                  textDecoration: "none",
+                }}
+              >
+                📞 Call Customer
+              </a>
+            )}
+            {waUrl && (
+              <a
+                href={waUrl}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  padding: "6px 12px",
+                  borderRadius: "6px",
+                  background: "#ecfdf5",
+                  color: "#047857",
+                  border: "1px solid #a7f3d0",
+                  textDecoration: "none",
+                }}
+              >
+                💬 WhatsApp Chat
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function triggerCallLog(
   targetName: string,
   targetPhone: string,
-  targetType: "Business" | "Customer Care" | "Emergency" = "Business",
+  targetType: "Business" | "Customer Care" | "Emergency" | "Customer" = "Business",
   metadata?: { businessId?: string; businessName?: string }
 ) {
   try {
@@ -10833,19 +11136,132 @@ function EnquiryDialog({
   product,
   close,
   onBack,
+  defaultCustomerName = "",
+  defaultCustomerPhone = "",
+  defaultCustomerEmail = "",
   submit,
 }: {
   business: Business;
   product: Product;
   close: () => void;
   onBack?: () => void;
-  submit: (business: Business, product: Product, message: string) => void;
+  defaultCustomerName?: string;
+  defaultCustomerPhone?: string;
+  defaultCustomerEmail?: string;
+  submit: (data: {
+    business: Business;
+    product: Product;
+    message: string;
+    customerName: string;
+    customerPhone: string;
+    customerEmail?: string;
+    openWhatsApp?: boolean;
+  }) => Promise<any>;
 }) {
+  const [customerName, setCustomerName] = useState(defaultCustomerName);
+  const [customerPhone, setCustomerPhone] = useState(defaultCustomerPhone);
+  const [customerEmail, setCustomerEmail] = useState(defaultCustomerEmail);
   const [message, setMessage] = useState("");
+  const [openWhatsApp, setOpenWhatsApp] = useState(Boolean(business.phone));
+  const [submitting, setSubmitting] = useState(false);
+  const [submittedResult, setSubmittedResult] = useState<{ success: boolean; whatsappUrl?: string; message?: string } | null>(null);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg("");
+    const trimmedMsg = message.trim();
+    if (!trimmedMsg) {
+      setErrorMsg("Please enter your quote requirements or enquiry message.");
+      return;
+    }
+    const cleanPhone = customerPhone.replace(/\D/g, "");
+    if (!cleanPhone || cleanPhone.length < 10) {
+      setErrorMsg("Please enter a valid 10-digit mobile number so the business can contact you.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const res = await submit({
+        business,
+        product,
+        message: trimmedMsg,
+        customerName: customerName.trim() || "Resident Shopper",
+        customerPhone: customerPhone.trim(),
+        customerEmail: customerEmail.trim() || undefined,
+        openWhatsApp,
+      });
+      setSubmittedResult(res || { success: true });
+    } catch (err: any) {
+      setErrorMsg(err?.message || "Failed to submit quote enquiry. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (submittedResult) {
+    return (
+      <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
+        <section className="modal" role="dialog" aria-modal="true" style={{ maxWidth: "480px", textAlign: "center" }}>
+          <div style={{ margin: "0 auto 12px", width: "54px", height: "54px", borderRadius: "50%", background: "#ecfdf5", border: "2px solid #a7f3d0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", color: "#059669" }}>
+            ✓
+          </div>
+          <div className="eyebrow" style={{ color: "#059669" }}>ENQUIRY DELIVERED DIRECTLY</div>
+          <h2 style={{ fontSize: "20px", margin: "6px 0 10px", color: "#111827" }}>Quote Request Sent to {business.name}!</h2>
+          <p style={{ fontSize: "13px", color: "#4b5563", lineHeight: 1.5, margin: "0 0 18px" }}>
+            Your request for <strong>{product.name}</strong> was submitted directly to the store. The merchant will review your requirements and contact you at <strong>{customerPhone}</strong>.
+          </p>
+
+          <div style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: "8px", padding: "12px", textAlign: "left", fontSize: "12px", color: "#374151", marginBottom: "18px" }}>
+            <div><strong>Store:</strong> {business.name}</div>
+            <div style={{ marginTop: "4px" }}><strong>Item / Service:</strong> {product.name}</div>
+            {customerPhone && <div style={{ marginTop: "4px" }}><strong>Your Contact:</strong> {customerPhone}</div>}
+            <div style={{ marginTop: "4px" }}><strong>Status:</strong> <span style={{ color: "#059669", fontWeight: 700 }}>● Sent directly to Merchant Lead Inbox</span></div>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {submittedResult.whatsappUrl && (
+              <a
+                href={submittedResult.whatsappUrl}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  background: "#25D366",
+                  color: "#ffffff",
+                  borderRadius: "8px",
+                  padding: "10px 18px",
+                  fontWeight: 700,
+                  fontSize: "13px",
+                  textDecoration: "none",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  boxShadow: "0 2px 8px rgba(37,211,102,0.3)",
+                }}
+              >
+                💬 Open WhatsApp Chat with {business.name} →
+              </a>
+            )}
+            <button
+              type="button"
+              className="primary-button"
+              onClick={close}
+              style={{ background: "#184224", borderColor: "#184224" }}
+            >
+              Done / Return to Listings
+            </button>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
   return (
     <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) (onBack || close)(); }}>
-      <section className="modal" role="dialog" aria-modal="true">
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+      <section className="modal" role="dialog" aria-modal="true" style={{ maxWidth: "520px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
           <button
             type="button"
             onClick={onBack || close}
@@ -10856,8 +11272,8 @@ function EnquiryDialog({
               background: "#edf5ee",
               border: "1px solid #c2dec6",
               borderRadius: "7px",
-              padding: "5px 10px",
-              fontSize: "11.5px",
+              padding: "5px 12px",
+              fontSize: "12px",
               fontWeight: 700,
               color: "#184e27",
               cursor: "pointer",
@@ -10867,23 +11283,102 @@ function EnquiryDialog({
           </button>
           <button className="modal-close" onClick={close} aria-label="Close" style={{ position: "static", margin: 0 }}>×</button>
         </div>
-        <div className="modal-mark">↗</div>
-        <div className="eyebrow">LOCAL ENQUIRY · DEMO</div>
-        <h2>Ask about {product.name}.</h2>
-        <p>{business.name} · {product.price ? `₹${product.price.toLocaleString("en-IN")} ${product.unit}` : product.unit}</p>
-        <form className="stacked-form" onSubmit={(event) => { event.preventDefault(); submit(business, product, message.trim()); }}>
-          <label>
-            Your message
-            <textarea value={message} onChange={(event) => setMessage(event.target.value)} rows={4} maxLength={500} placeholder="Ask about availability, options or an appointment. Do not include sensitive information." required />
+
+        <div className="eyebrow" style={{ color: "#166534" }}>DIRECT BUSINESS QUOTE &amp; ENQUIRY</div>
+        <h2 style={{ fontSize: "20px", margin: "4px 0 6px" }}>Ask about {product.name}</h2>
+        <div style={{ fontSize: "12px", color: "#4b5563", marginBottom: "14px", display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+          <span style={{ fontWeight: 600, color: "#111827" }}>{business.name}</span>
+          {business.phone && <span>· 📞 {business.phone}</span>}
+          {product.price ? <span style={{ color: "#166534", fontWeight: 700 }}>· ₹{product.price.toLocaleString("en-IN")} {product.unit}</span> : (product.unit ? <span>· {product.unit}</span> : null)}
+        </div>
+
+        {errorMsg && (
+          <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#991b1b", padding: "8px 12px", borderRadius: "6px", fontSize: "12px", marginBottom: "12px" }}>
+            ⚠ {errorMsg}
+          </div>
+        )}
+
+        <form className="stacked-form" onSubmit={handleSubmit}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+            <label style={{ display: "flex", flexDirection: "column", gap: "4px", fontSize: "12px", fontWeight: 600 }}>
+              Your Name *
+              <input
+                type="text"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                placeholder="e.g. Keerthana Elango"
+                required
+                style={{ padding: "8px 10px", borderRadius: "6px", border: "1px solid #d1d5db", fontSize: "13px" }}
+              />
+            </label>
+            <label style={{ display: "flex", flexDirection: "column", gap: "4px", fontSize: "12px", fontWeight: 600 }}>
+              Mobile Number (WhatsApp) *
+              <input
+                type="tel"
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
+                placeholder="e.g. 9876543210"
+                required
+                maxLength={15}
+                style={{ padding: "8px 10px", borderRadius: "6px", border: "1px solid #d1d5db", fontSize: "13px" }}
+              />
+            </label>
+          </div>
+
+          <label style={{ display: "flex", flexDirection: "column", gap: "4px", fontSize: "12px", fontWeight: 600, marginTop: "8px" }}>
+            Email Address (Optional)
+            <input
+              type="email"
+              value={customerEmail}
+              onChange={(e) => setCustomerEmail(e.target.value)}
+              placeholder="e.g. yourname@gmail.com"
+              style={{ padding: "8px 10px", borderRadius: "6px", border: "1px solid #d1d5db", fontSize: "13px" }}
+            />
           </label>
-          <div className="form-button-row">
-            <button type="button" className="outline-button" onClick={onBack || close}>
+
+          <label style={{ display: "flex", flexDirection: "column", gap: "4px", fontSize: "12px", fontWeight: 600, marginTop: "8px" }}>
+            Your Requirements / Questions *
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              rows={4}
+              maxLength={800}
+              placeholder="Describe your requirements, quantity needed, preferred date/time, or request for custom price estimate..."
+              required
+              style={{ padding: "8px 10px", borderRadius: "6px", border: "1px solid #d1d5db", fontSize: "13px", resize: "vertical" }}
+            />
+          </label>
+
+          {business.phone && (
+            <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#374151", cursor: "pointer", marginTop: "4px" }}>
+              <input
+                type="checkbox"
+                checked={openWhatsApp}
+                onChange={(e) => setOpenWhatsApp(e.target.checked)}
+                style={{ width: "16px", height: "16px", accentColor: "#25D366" }}
+              />
+              <span>Also open direct WhatsApp chat with {business.name} after sending</span>
+            </label>
+          )}
+
+          <div className="form-button-row" style={{ marginTop: "14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <button type="button" className="outline-button" onClick={onBack || close} disabled={submitting}>
               ← Back
             </button>
-            <button type="submit" className="primary-button">Save enquiry locally →</button>
+            <button
+              type="submit"
+              className="primary-button"
+              disabled={submitting}
+              style={{ background: "#184224", borderColor: "#184224", display: "inline-flex", alignItems: "center", gap: "6px" }}
+            >
+              {submitting ? "Sending quote request…" : "Send Quote Request to Store →"}
+            </button>
           </div>
         </form>
-        <div className="fine-print">Your message stays in this browser. It is not delivered to the business in this demo.</div>
+
+        <div style={{ marginTop: "12px", paddingTop: "10px", borderTop: "1px solid #f3f4f6", fontSize: "11px", color: "#6b7280", textAlign: "center" }}>
+          🔒 Secure Delivery · Your quote enquiry is sent directly to {business.name} and logged in their merchant portal.
+        </div>
       </section>
     </div>
   );
@@ -14249,10 +14744,11 @@ function BusinessPortal({
   onLanguageChange,
   showNotice,
   onUpdateBusinessProfile,
+  onUpdateQuoteStatus,
 }: {
   businesses: Business[];
   categoryConfig: CategoryConfig;
-  enquiries: DemoEnquiry[];
+  enquiries: any[];
   checkouts: CheckoutRequest[];
   orders?: OrderRecord[];
   initialTab?: string;
@@ -14262,6 +14758,7 @@ function BusinessPortal({
   onOpenAdBookingWizard?: () => void;
   onPayBooking?: (booking: AdBookingRequest) => void;
   onUpdateOrderStatus?: (orderId: string, status: OrderStatus) => void;
+  onUpdateQuoteStatus?: (id: string, status: string, replyNote?: string) => void;
   openBusinessProfile: () => void;
   openPlans: () => void;
   onSelectPlan?: (plan: string) => void;
@@ -14452,7 +14949,30 @@ function BusinessPortal({
         />
       </section>
     )}
-    {tab === "Enquiries" && <section className="panel tab-panel"><div className="eyebrow">CUSTOMER ENQUIRIES</div><h2>Requests for your business</h2><p>These are local demo enquiries and have not been delivered to customers or businesses.</p>{accountEnquiries.length ? accountEnquiries.map((enquiry) => <EnquiryRow enquiry={enquiry} key={enquiry.id} />) : <EmptyState title="No enquiries yet" text="Customer requests for your business will appear here." />}</section>}
+    {tab === "Enquiries" && (
+      <section className="panel tab-panel">
+        <div className="eyebrow">CUSTOMER LEADS &amp; ENQUIRIES</div>
+        <h2>Quote Requests for Your Store ({accountEnquiries.length})</h2>
+        <p style={{ fontSize: "13px", color: "#4b5563", marginBottom: "16px" }}>
+          Direct customer enquiries and quote requests submitted for your store. Call or WhatsApp customers directly to convert leads into orders, and update enquiry progress.
+        </p>
+        {accountEnquiries.length ? (
+          accountEnquiries.map((enquiry) => (
+            <EnquiryRow
+              enquiry={enquiry}
+              key={enquiry.id}
+              isBusinessView={true}
+              onUpdateStatus={onUpdateQuoteStatus}
+            />
+          ))
+        ) : (
+          <EmptyState
+            title="No enquiries yet"
+            text="When local customers request a custom quote or estimate for your products and services, their requests will appear here instantly."
+          />
+        )}
+      </section>
+    )}
     {tab === "Plans & billing" && <>
       {activeSub && (
         <section className="panel tab-panel active-subscription-banner" style={{ background: "linear-gradient(135deg, #184224 0%, #2b6139 100%)", color: "#fff", borderRadius: "12px", padding: "20px 24px", marginBottom: "18px", boxShadow: "0 6px 20px rgba(24,66,36,0.18)" }}>
