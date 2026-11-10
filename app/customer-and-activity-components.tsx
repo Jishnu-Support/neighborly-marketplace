@@ -727,7 +727,26 @@ export function CompanyActivityLogsPanel({
               padding: "8px 14px",
             }}
           >
-            📊 Export Logs (.xlsx)
+            📊 Export Excel (.xlsx)
+          </a>
+          <a
+            href={`/api/company/activity-logs/export?format=pdf&category=${categoryFilter}&role=${roleFilter}`}
+            download="bizearch-activity-logs.pdf"
+            className="outline-button"
+            style={{
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              fontSize: "12px",
+              padding: "8px 14px",
+              background: "#fff1f2",
+              borderColor: "#fecdd3",
+              color: "#be123c",
+              fontWeight: 700,
+            }}
+          >
+            📑 Export PDF (.pdf)
           </a>
           <a
             href={`/api/company/activity-logs/export?format=csv&category=${categoryFilter}&role=${roleFilter}`}

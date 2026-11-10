@@ -15,6 +15,7 @@ import {
   CompanyCustomerRegistrationsPanel,
   CompanyActivityLogsPanel,
 } from "./customer-and-activity-components";
+import { CompanyAdsActivityLogsPanel } from "./ads-activity-components";
 import { defaultCategoryConfig, legacyDefaultCategoryConfig, type CategoryConfig, type CategorySector } from "./lib/category-config.shared";
 import { defaultRegistrationFormConfig, type RegistrationFormConfig, type RegistrationForm, type RegistrationField } from "./lib/registration-form-config.shared";
 import { buildAutomobileTaxonomyPaths as buildSharedAutomobileTaxonomyPaths, commercialVehicleSubcategories, getVehicleModelsForType as getSharedVehicleModelsForType } from "./lib/vehicle-taxonomy.shared";
@@ -19811,8 +19812,8 @@ function CompanyPortal({
   const pendingApprovalsCount = approvals.filter((b) => b.verificationStatus === "Pending Admin Approval" || b.verificationStatus === "Pending Agent Assignment").length;
 
   const tabNames = accessLevel === "Super Admin"
-    ? ["Overview", "Businesses", `Approvals${pendingApprovalsCount > 0 ? ` (${pendingApprovalsCount})` : ""}`, "Agents", "Transactions", "Advertisements", "Categories", "Registration forms", "Customer registrations", "Admins", "Activity log", "Safety", "Profile details", "Settings"]
-    : ["Overview", "Businesses", `Approvals${pendingApprovalsCount > 0 ? ` (${pendingApprovalsCount})` : ""}`, "Agents", "Transactions", "Advertisements", "Categories", "Customer registrations", "Activity log", "Safety", "Profile details", "Settings"];
+    ? ["Overview", "Businesses", `Approvals${pendingApprovalsCount > 0 ? ` (${pendingApprovalsCount})` : ""}`, "Agents", "Transactions", "Advertisements", "Ads Activity log", "Categories", "Registration forms", "Customer registrations", "Admins", "Activity log", "Safety", "Profile details", "Settings"]
+    : ["Overview", "Businesses", `Approvals${pendingApprovalsCount > 0 ? ` (${pendingApprovalsCount})` : ""}`, "Agents", "Transactions", "Advertisements", "Ads Activity log", "Categories", "Customer registrations", "Activity log", "Safety", "Profile details", "Settings"];
 
   const loadCustomerRegistrations = useCallback(() => {
     let cancelled = false;
@@ -21032,6 +21033,11 @@ function CompanyPortal({
           ))
         )}
       </section>
+    )}
+    {activeTab === "Ads Activity log" && (
+      <CompanyAdsActivityLogsPanel
+        accessLevel={accessLevel}
+      />
     )}
     {activeTab === "Activity log" && (
       <CompanyActivityLogsPanel

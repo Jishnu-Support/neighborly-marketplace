@@ -16,6 +16,7 @@ import {
 export { resolveScheduledAds, createSampleViewRecords, createSampleClickRecords };
 import { type AdConfig } from "./ad-config.shared";
 import { saveActivityLog } from "./activity-logs";
+import { saveAdActivityLog } from "./ad-activity-logs";
 
 const bookingsFilePath = resolveStorePath("NEIGHBORLY_AD_BOOKINGS_STORE", ".neighborly-ad-bookings.json");
 
@@ -82,6 +83,26 @@ export async function createAdBooking(
 
   bookings.unshift(newBooking);
   await saveAdBookings(bookings);
+
+  try {
+    await saveAdActivityLog({
+      adBookingId: id,
+      campaignTitle: newBooking.poster?.title || newBooking.businessName,
+      businessName: newBooking.businessName,
+      action: `Ad Campaign Booked: ${newBooking.businessName} (${newBooking.format} format, ${newBooking.durationDays} days)`,
+      type: "Booking",
+      surface: "Advertisement Billboard",
+      actorName: newBooking.businessName,
+      actorPhone: newBooking.contactPhone,
+      actorRole: "Business",
+      locality: (newBooking as any).locality || (newBooking as any).neighborhood || "Hosur",
+      details: `Plan format: ${newBooking.format}, timing: ${newBooking.slotTiming}, total: INR ${newBooking.totalAmount}.`,
+      metadata: { id, format: newBooking.format, totalAmount: newBooking.totalAmount },
+    });
+  } catch (e) {
+    console.warn("Failed to log ad booking activity:", e);
+  }
+
   return newBooking;
 }
 
@@ -115,6 +136,37 @@ export async function updateAdBooking(
 
   bookings[index] = updated;
   await saveAdBookings(bookings);
+
+  try {
+    if (updates.status === "Active") {
+      await saveAdActivityLog({
+        adBookingId: id,
+        campaignTitle: updated.poster?.title || updated.businessName,
+        businessName: updated.businessName,
+        action: `Ad Campaign Approved & Activated: ${updated.businessName}`,
+        type: "Approval",
+        surface: "Billboard Network",
+        actorName: "Company Admin",
+        actorRole: "Admin",
+        locality: (updated as any).locality || (updated as any).neighborhood || "Hosur",
+        details: `Ad campaign ${id} verified and activated for live broadcast.`,
+      });
+    } else if (updates.status === "Rejected") {
+      await saveAdActivityLog({
+        adBookingId: id,
+        campaignTitle: updated.poster?.title || updated.businessName,
+        businessName: updated.businessName,
+        action: `Ad Campaign Rejected: ${updated.businessName}`,
+        type: "Rejection",
+        surface: "Billboard Network",
+        actorName: "Company Admin",
+        actorRole: "Admin",
+        locality: (updated as any).locality || (updated as any).neighborhood || "Hosur",
+        details: `Ad campaign ${id} was rejected by company admin review.`,
+      });
+    }
+  } catch {}
+
   return updated;
 }
 
@@ -130,13 +182,34 @@ export async function markAdBookingPaid(
     `TXN-AD-${Math.random().toString(36).substring(2, 8).toUpperCase()}-${Date.now().toString().slice(-4)}`;
   const invoiceNumber = `INV-AD-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-  return updateAdBooking(id, {
+  const res = await updateAdBooking(id, {
     status: "Paid",
     paymentMethod: paymentDetails.paymentMethod,
     transactionId,
     invoiceNumber,
     paidAt: new Date().toISOString(),
   });
+
+  if (res) {
+    try {
+      await saveAdActivityLog({
+        adBookingId: id,
+        campaignTitle: res.poster?.title || res.businessName,
+        businessName: res.businessName,
+        action: `Ad Payment Confirmed: ${res.businessName} (INR ${res.totalAmount})`,
+        type: "Payment",
+        surface: "Payment Gateway",
+        actorName: res.businessName,
+        actorPhone: res.contactPhone,
+        actorRole: "Business",
+        locality: (res as any).locality || (res as any).neighborhood || "Hosur",
+        details: `Paid via ${paymentDetails.paymentMethod}. Transaction ID: ${transactionId}, Invoice: ${invoiceNumber}.`,
+        metadata: { id, transactionId, invoiceNumber, amount: res.totalAmount },
+      });
+    } catch {}
+  }
+
+  return res;
 }
 
 export async function recordAdImpression(
@@ -216,24 +289,24 @@ export async function recordAdImpression(
 
   await saveAdBookings(bookings);
 
-  // Record verified advertisement impression activity log
+  // Record dedicated ad activity log
   try {
-    await saveActivityLog({
-      action: `Ad viewed: ${booking.poster?.title || booking.businessName}`,
-      category: "Advertisement",
+    await saveAdActivityLog({
+      adBookingId,
+      campaignTitle: booking.poster?.title || booking.businessName,
+      businessName: booking.businessName,
+      action: `Ad Impression: ${booking.poster?.title || booking.businessName}`,
+      type: "Impression",
+      surface: surfaceLabels[surface] || surface,
       actorName: viewerDetails?.viewerName || "Local Shopper",
       actorPhone: viewerDetails?.viewerPhone || "",
       actorRole: (viewerDetails?.viewerRole as any) || "Customer",
       locality: viewerDetails?.locality || "Hosur",
-      details: `Viewed on ${surfaceLabels[surface] || surface} billboard banner (${viewerDetails?.device || "Browser"}).`,
-      metadata: {
-        adBookingId,
-        businessName: booking.businessName,
-        surface,
-      },
+      details: `Ad banner viewed on ${surfaceLabels[surface] || surface} (${viewerDetails?.device || "Browser"}).`,
+      metadata: { adBookingId, surface, businessName: booking.businessName },
     });
   } catch (err) {
-    console.warn("Failed to save booked ad view activity log:", err);
+    console.warn("Failed to save ad activity log:", err);
   }
 
   return { success: true, viewsCount: booking.viewsCount, booking, record: newRecord };
@@ -328,20 +401,19 @@ export async function recordAdClick(
       });
     }
 
-    await saveActivityLog({
-      action: `Ad Interaction: ${booking.businessName} (${actionLabels[action] || action})`,
-      category: "Advertisement",
+    await saveAdActivityLog({
+      adBookingId,
+      campaignTitle: booking.poster?.title || booking.businessName,
+      businessName: booking.businessName,
+      action: `Ad Click: ${actionLabels[action] || action}`,
+      type: "Click",
+      surface: "Ad Billboard Banner",
       actorName: viewerDetails?.viewerName || "Visitor",
       actorPhone: viewerDetails?.viewerPhone || "",
       actorRole: "Customer",
       locality: viewerDetails?.locality || "Hosur",
-      details: `Lead clicked "${actionLabels[action] || action}" on ${booking.businessName}'s ad campaign.`,
-      metadata: {
-        adBookingId,
-        businessName: booking.businessName,
-        action,
-        device: viewerDetails?.device || "Mobile / Web",
-      },
+      details: `Lead clicked "${actionLabels[action] || action}" on ${booking.businessName}'s campaign (${viewerDetails?.device || "Mobile / Web"}).`,
+      metadata: { action, device: viewerDetails?.device },
     });
   } catch {
     // Non-blocking log

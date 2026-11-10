@@ -46,6 +46,8 @@ export type NewActivityLog = Omit<ActivityLogRecord, "id" | "timestamp"> & {
 
 const activityLogsStorePath = resolveStorePath("NEIGHBORLY_ACTIVITY_LOGS_STORE", ".neighborly-activity-logs.json");
 
+export const ONE_YEAR_RETENTION_MS = 365 * 24 * 60 * 60 * 1000; // 365 days retention
+
 export function getDefaultSeedActivityLogs(): ActivityLogRecord[] {
   // All demo activity records removed per real-world production clean state.
   return [];
@@ -56,45 +58,39 @@ export function sanitizeActivityLogs(records: ActivityLogRecord[]): { logs: Acti
     return { logs: [], changed: false };
   }
 
-  const demoPhones = ["9043022219", "9962773219", "9962775630", "9876543210", "9443211223", "9443287654", "9900112233", "9900122334"];
-  const demoNames = ["Murali", "Keerthana B", "G Venkatesan Sir", "Dharshan Ramesh", "Radha Krishnan", "Agent Partner", "Karthik Raj"];
+  const cutoff = Date.now() - ONE_YEAR_RETENTION_MS;
 
-  // Filter out spam impressions and fake demo seed records
+  // Retain all genuine activity logs within the 1-year retention window
   const valid = records.filter((r) => {
     if (!r || !r.action) return false;
-    // Strip passive ad impressions that flooded the audit trail
-    if (r.action.startsWith("Ad viewed:")) return false;
-    if (r.category === "Advertisement" && r.details?.includes("Advertisement impression on")) return false;
-    // Strip demo seed IDs
+    // Strip artificial seed IDs
     if (r.id && r.id.startsWith("act-seed-")) return false;
-    // Strip demo actors
-    if (r.actorName && demoNames.includes(r.actorName)) return false;
-    if (r.actorPhone) {
-      const clean = r.actorPhone.replace(/\D/g, "");
-      if (demoPhones.some((p) => clean.includes(p))) return false;
-    }
+    // Check 1-year retention
+    const timeMs = new Date(r.timestamp).getTime();
+    if (isNaN(timeMs) || timeMs < cutoff) return false;
     return true;
   });
 
-  // Deduplicate rapid repeat actions from the same actor
+  // Light deduplication: prevent identical rapid microsecond duplicate spam
   const deduped: ActivityLogRecord[] = [];
-  const seenTimeBuckets = new Set<string>();
+  const seenSeconds = new Set<string>();
 
   for (const r of valid) {
     const timeMs = new Date(r.timestamp).getTime();
-    // 5-minute bucket per action and actor
-    const bucket = Math.floor(timeMs / (5 * 60 * 1000));
+    // 10-second deduplication bucket per action and actor
+    const bucket = Math.floor(timeMs / 10000);
     const actorKey = r.actorPhone || r.actorName || "anon";
     const key = `${r.action}:::${actorKey}:::${bucket}`;
 
-    if (seenTimeBuckets.has(key)) {
+    if (seenSeconds.has(key)) {
       continue;
     }
-    seenTimeBuckets.add(key);
+    seenSeconds.add(key);
     deduped.push(r);
   }
 
-  return { logs: deduped.slice(0, 1000), changed: deduped.length !== records.length };
+  // Keep full 1-year history (up to 100,000 events)
+  return { logs: deduped.slice(0, 100000), changed: deduped.length !== records.length };
 }
 
 export async function readActivityLogs(): Promise<ActivityLogRecord[]> {
@@ -142,13 +138,13 @@ export async function saveActivityLog(input: NewActivityLog): Promise<ActivityLo
   const records = await readActivityLogs();
   const nowMs = Date.now();
 
-  // Guard against runaway duplicates: if identical action + actor happened in last 3 minutes, skip
-  const recentDuplicate = records.slice(0, 15).find((r) => {
+  // Guard against rapid duplicate clicks (within 10 seconds for exact identical action + actor)
+  const recentDuplicate = records.slice(0, 10).find((r) => {
     if (r.action !== input.action) return false;
     const sameActor = (r.actorPhone && r.actorPhone === input.actorPhone) || (r.actorName === input.actorName);
     if (!sameActor) return false;
     const diff = Math.abs(nowMs - new Date(r.timestamp).getTime());
-    return diff < 3 * 60 * 1000;
+    return diff < 10 * 1000;
   });
 
   if (recentDuplicate) {
@@ -168,8 +164,14 @@ export async function saveActivityLog(input: NewActivityLog): Promise<ActivityLo
     timestamp: input.timestamp || new Date().toISOString(),
   };
 
-  // Keep latest 1000 real records
-  const updated = [record, ...records].slice(0, 1000);
+  // Keep full 1-year history (records within 365 days, up to 100,000 items)
+  const cutoff = nowMs - ONE_YEAR_RETENTION_MS;
+  const retainedRecords = records.filter((r) => {
+    const t = new Date(r.timestamp).getTime();
+    return !isNaN(t) && t >= cutoff;
+  });
+  const updated = [record, ...retainedRecords].slice(0, 100000);
+
   try {
     await writeActivityLogs(updated);
   } catch {

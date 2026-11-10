@@ -3,6 +3,7 @@ import path from "node:path";
 import { defaultAdConfig, type AdConfig } from "./ad-config.shared";
 import { resolveStorePath } from "./storage-paths";
 import { saveActivityLog } from "./activity-logs";
+import { saveAdActivityLog } from "./ad-activity-logs";
 
 const configPath = resolveStorePath("NEIGHBORLY_AD_CONFIG_STORE", ".neighborly-ad-config.json");
 
@@ -136,11 +137,14 @@ export async function recordPlatformAdImpression(params: {
 
   await saveAdConfig(config);
 
-  // Save verified ad activity log
+  // Save dedicated ad activity log
   try {
-    await saveActivityLog({
-      action: `Ad viewed: ${targetAdTitle}`,
-      category: "Advertisement",
+    await saveAdActivityLog({
+      campaignTitle: targetAdTitle,
+      businessName: params.businessName || targetAdTitle,
+      action: `Ad Impression: ${targetAdTitle}`,
+      type: "Impression",
+      surface: surface === "video" ? "Video Spotlight" : surface === "content" ? "Marquee Ticker" : "Poster Billboard",
       actorName: params.viewerDetails?.viewerName || "Local Shopper",
       actorPhone: params.viewerDetails?.viewerPhone || "",
       actorRole: (params.viewerDetails?.viewerRole as any) || "Customer",
@@ -198,9 +202,12 @@ export async function recordPlatformAdClick(params: {
       });
     }
 
-    await saveActivityLog({
-      action: `Ad Interaction: ${targetName} (${actionLabels[params.action] || params.action})`,
-      category: "Advertisement",
+    await saveAdActivityLog({
+      campaignTitle: targetName,
+      businessName: targetName,
+      action: `Ad Click: ${actionLabels[params.action] || params.action}`,
+      type: "Click",
+      surface: "Poster Billboard",
       actorName: params.viewerDetails?.viewerName || "Visitor",
       actorPhone: params.viewerDetails?.viewerPhone || "",
       actorRole: "Customer",

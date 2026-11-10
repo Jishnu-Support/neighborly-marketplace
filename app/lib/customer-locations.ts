@@ -144,3 +144,11 @@ export async function saveCustomerRegistrationLocation(input: NewCustomerRegistr
 export async function listCustomerRegistrationLocations(): Promise<CustomerRegistrationLocation[]> {
   return readRecords();
 }
+
+export async function deleteCustomerRegistrationLocation(id: string): Promise<boolean> {
+  const records = await readRecords();
+  const next = records.filter((r) => r.id !== id);
+  if (next.length === records.length) return false;
+  await writeRecords(next);
+  return true;
+}
