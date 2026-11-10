@@ -2,20 +2,22 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { AUTH_COOKIE, verifySessionToken } from "@/app/lib/auth";
 import { createAgentPartner, listAgentPartners, toggleAgentActive } from "@/app/lib/agents";
+import { saveActivityLog } from "@/app/lib/activity-logs";
 
 const noStore = { "Cache-Control": "no-store, no-cache, must-revalidate" };
 
-async function verifyCompanyAdminSession(): Promise<boolean> {
+async function getCompanyAdminSession() {
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get(AUTH_COOKIE)?.value;
   const session = verifySessionToken(sessionToken);
-  return Boolean(session && session.role === "Company");
+  if (!session || session.role !== "Company") return null;
+  return session;
 }
 
 export async function GET() {
   try {
-    const isCompany = await verifyCompanyAdminSession();
-    if (!isCompany) {
+    const session = await getCompanyAdminSession();
+    if (!session) {
       return NextResponse.json({ error: "Only Company Admins can access agent partner records." }, { status: 403, headers: noStore });
     }
 
@@ -29,16 +31,32 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const isCompany = await verifyCompanyAdminSession();
-    if (!isCompany) {
+    const session = await getCompanyAdminSession();
+    if (!session) {
       return NextResponse.json({ error: "Only Company Admins can manage agent partner records." }, { status: 403, headers: noStore });
     }
 
     const body = await request.json() as { action?: string; id?: string; active?: boolean; name?: string; phone?: string; email?: string; password?: string; referralCode?: string };
 
     if (body.action === "toggle" && typeof body.id === "string" && typeof body.active === "boolean") {
+      if (session.accessLevel !== "Super Admin") {
+        return NextResponse.json({ error: "Only Super Admins can disable or activate agent accounts." }, { status: 403, headers: noStore });
+      }
+      const agentsBefore = await listAgentPartners();
+      const targetAgent = agentsBefore.find((a) => a.id === body.id);
       const ok = await toggleAgentActive(body.id, body.active);
       if (!ok) return NextResponse.json({ error: "Agent partner not found." }, { status: 404, headers: noStore });
+
+      try {
+        await saveActivityLog({
+          action: `Agent partner ${body.active ? "activated" : "disabled"} by Super Admin`,
+          category: "Admin",
+          actorName: session.identity || "Super Admin",
+          actorRole: "Super Admin",
+          details: `Agent ${targetAgent ? targetAgent.name : body.id} status changed to ${body.active ? "Active" : "Disabled"}.`,
+        });
+      } catch {}
+
       const agents = await listAgentPartners();
       return NextResponse.json({ success: true, agents, count: agents.length }, { headers: noStore });
     }
@@ -51,6 +69,18 @@ export async function POST(request: Request) {
         password: body.password,
         referralCode: body.referralCode,
       });
+
+      try {
+        await saveActivityLog({
+          action: `Agent partner registered: ${agent.name} (Code: ${agent.referralCode})`,
+          category: "Registration",
+          actorName: agent.name,
+          actorPhone: agent.phone,
+          actorRole: "Agent",
+          details: `Field agent provisioned by ${session.accessLevel || "Admin"} (${session.identity}). Referral code: ${agent.referralCode}.`,
+        });
+      } catch {}
+
       const agents = await listAgentPartners();
       return NextResponse.json({ success: true, agent, agents, count: agents.length }, { status: 201, headers: noStore });
     }

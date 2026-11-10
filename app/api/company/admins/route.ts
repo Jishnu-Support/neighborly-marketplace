@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentSession, isSuperAdminIdentity, listCompanyAdmins, registerCompanyAdmin, updateCompanyAdmin } from "@/app/lib/auth";
+import { saveActivityLog } from "@/app/lib/activity-logs";
 
 async function isAuthorizedAdmin(request: Request) {
   const session = await getCurrentSession(request);
@@ -27,6 +28,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Enter a name, valid email and password of at least 6 characters." }, { status: 400 });
     }
     const admin = await registerCompanyAdmin(name, email, password);
+    try {
+      await saveActivityLog({
+        action: `Admin account provisioned: ${admin.name} (${admin.email})`,
+        category: "Registration",
+        actorName: admin.name,
+        actorRole: "Admin",
+        details: `Company Admin account provisioned. Email: ${admin.email}.`,
+      });
+    } catch {}
     return NextResponse.json({ admin }, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Could not register Admin." }, { status: 409 });

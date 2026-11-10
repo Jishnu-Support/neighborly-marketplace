@@ -3,6 +3,7 @@ import { registerBusinessAccount } from "@/app/lib/businesses";
 import { createSessionToken, AUTH_COOKIE, authCookieOptions, getCurrentSession, getCompanyAdminByIdentity } from "@/app/lib/auth";
 import { getAgentByIdentity } from "@/app/lib/agents";
 import { consumeVerifiedRegistrationOtp } from "@/app/lib/registration-otp";
+import { saveActivityLog } from "@/app/lib/activity-logs";
 
 export async function POST(request: Request) {
   try {
@@ -170,6 +171,21 @@ export async function POST(request: Request) {
       creatorIdentity,
       creatorName,
     });
+
+    // Record persistent activity log for business registration
+    try {
+      await saveActivityLog({
+        action: `Business registered: ${business.name} (${business.category})`,
+        category: "Registration",
+        actorName: business.name,
+        actorPhone: business.phone,
+        actorRole: "Business",
+        locality: locality.trim(),
+        details: `New business "${business.name}" registered. Category: ${business.category}. Address: ${business.address || locality}. Status: ${business.verificationStatus || "Pending Verification"}. Assigned Agent: ${resolvedReferralCode || "JIT (Default)"}.${creatorName ? ` Registered by ${creatorRole} (${creatorName}).` : ""}`,
+      });
+    } catch {
+      // Non-blocking log
+    }
 
     if (isCompanyCreator) {
       return NextResponse.json({

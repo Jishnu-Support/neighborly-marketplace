@@ -24,6 +24,7 @@ export type CustomerRegistrationRecord = {
   registeredAt: string;
   verificationStatus: string;
   registrationMethod?: string;
+  active?: boolean;
 };
 
 export type ActivityLogRecord = {
@@ -61,17 +62,24 @@ export function CompanyCustomerRegistrationsPanel({
   registrations,
   loading,
   error,
+  accessLevel,
   onRefresh,
   onViewCustomerActivity,
+  onShowNotice,
 }: {
   registrations: CustomerRegistrationRecord[];
   loading: boolean;
   error: string;
+  accessLevel?: string;
   onRefresh: () => void;
   onViewCustomerActivity?: (customerName: string) => void;
+  onShowNotice?: (msg: string) => void;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [locationFilter, setLocationFilter] = useState<string>("All");
+  const [actionBusyId, setActionBusyId] = useState<string | null>(null);
+
+  const isSuperAdmin = accessLevel === "Super Admin";
 
   const filtered = useMemo(() => {
     return registrations.filter((r) => {
@@ -361,12 +369,12 @@ export function CompanyCustomerRegistrationsPanel({
                           fontWeight: 700,
                           padding: "2px 8px",
                           borderRadius: "10px",
-                          background: "#ecfdf5",
-                          color: "#065f46",
-                          border: "1px solid #a7f3d0",
+                          background: r.active === false ? "#fef2f2" : "#ecfdf5",
+                          color: r.active === false ? "#b91c1c" : "#065f46",
+                          border: `1px solid ${r.active === false ? "#fca5a5" : "#a7f3d0"}`,
                         }}
                       >
-                        ● {r.verificationStatus}
+                        ● {r.active === false ? "Disabled" : r.verificationStatus}
                       </span>
                     </div>
                     <small style={{ fontSize: "11px", color: "#77877c" }}>
@@ -380,8 +388,8 @@ export function CompanyCustomerRegistrationsPanel({
                   </div>
                 </div>
 
-                {/* Registration Method Badge & Activity link */}
-                <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                {/* Action buttons: Status badge, Audit, Disable/Activate, Delete */}
+                <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
                   <span
                     style={{
                       fontSize: "11px",
@@ -410,6 +418,90 @@ export function CompanyCustomerRegistrationsPanel({
                       }}
                     >
                       Audit Activity →
+                    </button>
+                  )}
+                  {isSuperAdmin && (
+                    <button
+                      type="button"
+                      disabled={actionBusyId === r.id}
+                      onClick={async () => {
+                        const willDisable = r.active !== false;
+                        const confirmed = window.confirm(
+                          willDisable
+                            ? `Are you sure you want to disable customer "${r.name}"? They will not be able to sign in.`
+                            : `Activate customer account "${r.name}"?`
+                        );
+                        if (!confirmed) return;
+                        try {
+                          setActionBusyId(r.id);
+                          const res = await fetch("/api/company/customer-locations", {
+                            method: "PATCH",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ id: r.id, active: !willDisable }),
+                          });
+                          const data = await res.json();
+                          if (!res.ok) throw new Error(data.error || "Could not update customer status.");
+                          onRefresh();
+                          if (onShowNotice) onShowNotice(`Customer "${r.name}" ${willDisable ? "disabled" : "activated"} successfully.`);
+                        } catch (err) {
+                          alert(err instanceof Error ? err.message : "Error updating customer.");
+                        } finally {
+                          setActionBusyId(null);
+                        }
+                      }}
+                      style={{
+                        background: r.active === false ? "#15803d" : "#ffffff",
+                        border: `1px solid ${r.active === false ? "#15803d" : "#ef4444"}`,
+                        color: r.active === false ? "#ffffff" : "#b91c1c",
+                        padding: "4px 10px",
+                        borderRadius: "6px",
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px",
+                      }}
+                    >
+                      {r.active === false ? "Activate Customer" : "Disable Customer"}
+                    </button>
+                  )}
+                  {isSuperAdmin && (
+                    <button
+                      type="button"
+                      disabled={actionBusyId === r.id}
+                      onClick={async () => {
+                        const confirmed = window.confirm(
+                          `Are you sure you want to permanently delete customer registration record for "${r.name}"? This action cannot be undone.`
+                        );
+                        if (!confirmed) return;
+                        try {
+                          setActionBusyId(r.id);
+                          const res = await fetch(`/api/company/customer-locations?id=${encodeURIComponent(r.id)}`, {
+                            method: "DELETE",
+                          });
+                          const data = await res.json();
+                          if (!res.ok) throw new Error(data.error || "Could not delete customer record.");
+                          onRefresh();
+                          if (onShowNotice) onShowNotice(`Customer record for "${r.name}" deleted.`);
+                        } catch (err) {
+                          alert(err instanceof Error ? err.message : "Error deleting record.");
+                        } finally {
+                          setActionBusyId(null);
+                        }
+                      }}
+                      style={{
+                        background: "#ffffff",
+                        border: "1px solid #cbd5e1",
+                        color: "#64748b",
+                        padding: "4px 8px",
+                        borderRadius: "6px",
+                        fontSize: "11px",
+                        cursor: "pointer",
+                      }}
+                      title="Delete this customer record"
+                    >
+                      🗑️ Delete
                     </button>
                   )}
                 </div>

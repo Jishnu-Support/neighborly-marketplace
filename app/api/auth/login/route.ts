@@ -5,13 +5,14 @@ import {
   createSessionToken,
   getCustomerByIdentity,
   isCompanyAccessLevel,
+  isCustomerAccountDisabled,
   isPortalRole,
   isSuperAdminIdentity,
   PortalRole,
   verifyCredentials,
 } from "@/app/lib/auth";
 import { getBusinessByIdentity } from "@/app/lib/businesses";
-import { getAgentByIdentity } from "@/app/lib/agents";
+import { getAgentByIdentity, isAgentPartnerDisabled } from "@/app/lib/agents";
 import { saveActivityLog } from "@/app/lib/activity-logs";
 
 export async function POST(request: Request) {
@@ -92,6 +93,25 @@ export async function POST(request: Request) {
     }
 
     if (!matchedRole) {
+      // Check if the account was disabled by Super Admin
+      if (body.role === "Agent" && (await isAgentPartnerDisabled(body.identity, body.password))) {
+        return NextResponse.json(
+          {
+            error: "This Agent Partner account has been disabled by Super Admin. Please contact company administration.",
+          },
+          { status: 403 }
+        );
+      }
+
+      if (body.role === "Account" && (await isCustomerAccountDisabled(body.identity, body.password))) {
+        return NextResponse.json(
+          {
+            error: "This Customer account has been disabled by Super Admin. Please contact customer care for assistance.",
+          },
+          { status: 403 }
+        );
+      }
+
       // Credentials did not match the portal the user is signing into.
       // Check which portal these credentials belong to, and provide an exact, helpful guidance message
       // rather than auto-redirecting to an unintended portal:

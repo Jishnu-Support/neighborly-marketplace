@@ -238,6 +238,26 @@ export async function toggleAgentActive(id: string, active: boolean): Promise<bo
   return true;
 }
 
+export async function isAgentPartnerDisabled(identity: string, password?: string): Promise<boolean> {
+  const agents = await readAgentRecords();
+  const normalized = identity.trim().toLowerCase();
+  const cleanDigits = normalized.replace(/\D/g, "");
+  const agent = agents.find((a) => {
+    if (a.email && a.email.toLowerCase() === normalized) return true;
+    if (a.referralCode && a.referralCode.toLowerCase() === normalized) return true;
+    if (cleanDigits.length >= 8 && a.phone) {
+      const aDigits = a.phone.replace(/\D/g, "");
+      if (aDigits === cleanDigits || (aDigits.length >= 10 && cleanDigits.length >= 10 && aDigits.slice(-10) === cleanDigits.slice(-10))) {
+        return true;
+      }
+    }
+    return false;
+  });
+  if (!agent) return false;
+  if (password && !passwordsMatch(password, agent.salt, agent.passwordHash)) return false;
+  return agent.active === false;
+}
+
 export async function getAgentByIdentity(identity: string): Promise<AgentPartner | null> {
   const cleanDigits = identity.replace(/\D/g, "");
   const normalizedIdentity = identity.trim().toLowerCase();

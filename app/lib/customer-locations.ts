@@ -26,6 +26,7 @@ export type CustomerRegistrationLocation = {
   registeredAt: string;
   verificationStatus: string;
   registrationMethod?: string;
+  active?: boolean;
 };
 
 export type NewCustomerRegistrationLocation = {
@@ -48,6 +49,7 @@ export type NewCustomerRegistrationLocation = {
   longitude: number | null;
   verificationStatus?: string;
   registrationMethod?: string;
+  active?: boolean;
 };
 
 const recordsPath = resolveStorePath("NEIGHBORLY_CUSTOMER_LOCATION_STORE", ".neighborly-customer-locations.json");
@@ -115,6 +117,7 @@ export async function saveCustomerRegistrationLocation(input: NewCustomerRegistr
     registeredAt: new Date().toISOString(),
     verificationStatus: input.verificationStatus || "Active · Mobile OTP verified",
     registrationMethod: input.registrationMethod || "Mobile + OTP Verification & Password",
+    active: input.active !== false,
   };
 
   await writeRecords([record, ...records]);
@@ -151,4 +154,26 @@ export async function deleteCustomerRegistrationLocation(id: string): Promise<bo
   if (next.length === records.length) return false;
   await writeRecords(next);
   return true;
+}
+
+export async function toggleCustomerRegistrationActive(idOrPhone: string, active: boolean): Promise<CustomerRegistrationLocation | null> {
+  const records = await readRecords();
+  const normalized = idOrPhone.trim().toLowerCase();
+  const cleanDigits = normalized.replace(/\D/g, "");
+  const index = records.findIndex((r) => {
+    if (r.id === idOrPhone) return true;
+    if (r.email && r.email.toLowerCase() === normalized) return true;
+    if (cleanDigits.length >= 8 && r.phone) {
+      const rDigits = r.phone.replace(/\D/g, "");
+      if (rDigits === cleanDigits || (rDigits.length >= 10 && cleanDigits.length >= 10 && rDigits.slice(-10) === cleanDigits.slice(-10))) {
+        return true;
+      }
+    }
+    return false;
+  });
+  if (index === -1) return null;
+  records[index].active = active;
+  records[index].verificationStatus = active ? "Active · Mobile OTP verified" : "Disabled by Super Admin";
+  await writeRecords(records);
+  return records[index];
 }

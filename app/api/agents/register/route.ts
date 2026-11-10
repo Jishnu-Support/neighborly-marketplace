@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAgentPartner } from "@/app/lib/agents";
 import { consumeVerifiedRegistrationOtp } from "@/app/lib/registration-otp";
 import { AUTH_COOKIE, authCookieOptions, createSessionToken } from "@/app/lib/auth";
+import { saveActivityLog } from "@/app/lib/activity-logs";
 
 export async function POST(request: Request) {
   try {
@@ -43,6 +44,20 @@ export async function POST(request: Request) {
       email,
       password: password.length >= 6 ? password : undefined,
     });
+
+    // Record persistent activity log for agent registration
+    try {
+      await saveActivityLog({
+        action: `Agent partner registered: ${agent.name} (Code: ${agent.referralCode})`,
+        category: "Registration",
+        actorName: agent.name,
+        actorPhone: agent.phone,
+        actorRole: "Agent",
+        details: `Field agent registered. Referral code assigned: ${agent.referralCode}. Contact: ${agent.phone}${agent.email ? ` · ${agent.email}` : ""}.`,
+      });
+    } catch {
+      // Non-blocking log
+    }
 
     const primaryIdentity = agent.phone || agent.email || cleanPhone || cleanEmail;
     const token = createSessionToken("Agent", primaryIdentity);

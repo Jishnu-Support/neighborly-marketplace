@@ -20064,28 +20064,44 @@ function CompanyPortal({
               <small>Referral Code: <strong>{agent.referralCode}</strong> · Businesses referred: {agent.referredCount || 0}</small>
             </span>
             <span className={`status-pill ${agent.active ? "verified" : "pending"}`}>
-              {agent.active ? "● Active partner" : "● Inactive"}
+              {agent.active ? "● Active partner" : "● Inactive (Disabled)"}
             </span>
-            <button
-              className="outline-button"
-              type="button"
-              onClick={async () => {
-                try {
-                  const res = await fetch("/api/company/agents", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ action: "toggle", id: agent.id, active: !agent.active }),
-                  });
-                  if (!res.ok) throw new Error("Could not update agent status.");
-                  loadAgents();
-                  showNotice(`Agent ${agent.name} ${!agent.active ? "activated" : "deactivated"}.`);
-                } catch (e) {
-                  showNotice(e instanceof Error ? e.message : "Error updating agent.");
-                }
-              }}
-            >
-              {agent.active ? "Disable" : "Activate"}
-            </button>
+            {accessLevel === "Super Admin" && (
+              <button
+                className="outline-button"
+                type="button"
+                style={{
+                  color: agent.active ? "#b91c1c" : "#15803d",
+                  borderColor: agent.active ? "#fca5a5" : "#86efac",
+                  fontWeight: 600,
+                  fontSize: "12px",
+                }}
+                onClick={async () => {
+                  const willDisable = agent.active;
+                  const confirmed = window.confirm(
+                    willDisable
+                      ? `Are you sure you want to disable agent "${agent.name}"? They will not be able to log in or verify businesses.`
+                      : `Activate agent partner "${agent.name}"?`
+                  );
+                  if (!confirmed) return;
+                  try {
+                    const res = await fetch("/api/company/agents", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ action: "toggle", id: agent.id, active: !agent.active }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || "Could not update agent status.");
+                    loadAgents();
+                    showNotice(`Agent ${agent.name} ${!agent.active ? "activated" : "disabled"} successfully.`);
+                  } catch (e) {
+                    showNotice(e instanceof Error ? e.message : "Error updating agent.");
+                  }
+                }}
+              >
+                {agent.active ? "Disable Agent" : "Activate Agent"}
+              </button>
+            )}
           </div>
         ))}
       </section>
@@ -20095,7 +20111,9 @@ function CompanyPortal({
         registrations={customerRegistrations}
         loading={registrationLoading}
         error={registrationError}
+        accessLevel={accessLevel}
         onRefresh={loadCustomerRegistrations}
+        onShowNotice={showNotice}
         onViewCustomerActivity={(_name) => {
           setActiveTab("Activity log");
         }}

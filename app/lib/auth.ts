@@ -240,6 +240,46 @@ export async function listCustomerAccounts(): Promise<CustomerAccount[]> {
   return customers.map(({ id, name, phone, email, active, createdAt }) => ({ id, name, phone, email, active, createdAt }));
 }
 
+export async function toggleCustomerActive(idOrIdentity: string, active: boolean): Promise<boolean> {
+  const customers = await readCustomerRecords();
+  const normalized = idOrIdentity.trim().toLowerCase();
+  const cleanDigits = normalized.replace(/\D/g, "");
+  const index = customers.findIndex((c) => {
+    if (c.id === idOrIdentity) return true;
+    if (c.email && c.email.toLowerCase() === normalized) return true;
+    if (cleanDigits.length >= 8 && c.phone) {
+      const cDigits = c.phone.replace(/\D/g, "");
+      if (cDigits === cleanDigits || (cDigits.length >= 10 && cleanDigits.length >= 10 && cDigits.slice(-10) === cleanDigits.slice(-10))) {
+        return true;
+      }
+    }
+    return false;
+  });
+  if (index === -1) return false;
+  customers[index].active = active;
+  await writeCustomerRecords(customers);
+  return true;
+}
+
+export async function isCustomerAccountDisabled(identity: string, password?: string): Promise<boolean> {
+  const customers = await readCustomerRecords();
+  const normalized = identity.trim().toLowerCase();
+  const cleanDigits = normalized.replace(/\D/g, "");
+  const customer = customers.find((c) => {
+    if (c.email && c.email.toLowerCase() === normalized) return true;
+    if (cleanDigits.length >= 8 && c.phone) {
+      const cDigits = c.phone.replace(/\D/g, "");
+      if (cDigits === cleanDigits || (cDigits.length >= 10 && cleanDigits.length >= 10 && cDigits.slice(-10) === cleanDigits.slice(-10))) {
+        return true;
+      }
+    }
+    return false;
+  });
+  if (!customer) return false;
+  if (password && !passwordsMatch(password, customer.salt, customer.passwordHash)) return false;
+  return customer.active === false;
+}
+
 export function isPortalRole(value: unknown): value is PortalRole {
   return typeof value === "string" && validRoles.includes(value as PortalRole);
 }
