@@ -5,6 +5,13 @@ import { useState, useEffect, type FormEvent } from "react";
 import { MapPinModal, type Coordinates } from "../map-pin-modal";
 import { TermsModal } from "../terms-modal";
 import { defaultCategoryConfig } from "@/app/lib/category-config.shared";
+import { TypeaheadAddressInput } from "@/app/lib/TypeaheadAddressInput";
+import {
+  LOCALITY_SUGGESTIONS,
+  CITY_SUGGESTIONS,
+  STATE_SUGGESTIONS,
+  PINCODE_SUGGESTIONS,
+} from "@/app/lib/address-suggestions";
 
 export type PortalRole = "Account" | "Business" | "Agent";
 
@@ -80,6 +87,12 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
   const [regEmergencyPhone, setRegEmergencyPhone] = useState("");
   const [regEmergencyRelation, setRegEmergencyRelation] = useState("Family");
 
+  // Controlled address states for Business registration with typeahead dropdowns
+  const [bizLocality, setBizLocality] = useState("");
+  const [bizCity, setBizCity] = useState("");
+  const [bizState, setBizState] = useState("");
+  const [bizPincode, setBizPincode] = useState("");
+
   const resetRegistrationFields = () => {
     setRegFullName("");
     setRegPhone("");
@@ -91,6 +104,10 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
     setRegEmergencyName("");
     setRegEmergencyPhone("");
     setRegEmergencyRelation("Family");
+    setBizLocality("");
+    setBizCity("");
+    setBizState("");
+    setBizPincode("");
     setOtp("");
     setDemoOtp("");
     setOtpVerified(false);
@@ -946,22 +963,70 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                   <label style={{ fontSize: "10.5px", fontWeight: 700, color: "#27432f" }}>
                     Locality / Area *
-                    <input name="locality" placeholder="e.g. Indiranagar / Bagalur Road" required style={{ background: "#fff" }} />
+                    <TypeaheadAddressInput
+                      name="locality"
+                      placeholder="e.g. Indiranagar / Bagalur Road"
+                      required
+                      value={bizLocality}
+                      onChange={(val) => setBizLocality(val)}
+                      onSelect={(opt) => {
+                        setBizLocality(opt.value);
+                        if (!bizCity && opt.city) setBizCity(opt.city);
+                        if (!bizState && opt.state) setBizState(opt.state);
+                        if (!bizPincode && opt.pincode) setBizPincode(opt.pincode);
+                      }}
+                      suggestions={LOCALITY_SUGGESTIONS}
+                      inputStyle={{ background: "#fff" }}
+                    />
                   </label>
                   <label style={{ fontSize: "10.5px", fontWeight: 700, color: "#27432f" }}>
                     City / Town *
-                    <input name="city" placeholder="e.g. Bengaluru, Mumbai, Hosur, Delhi" required style={{ background: "#fff" }} />
+                    <TypeaheadAddressInput
+                      name="city"
+                      placeholder="e.g. Bengaluru, Mumbai, Hosur, Delhi"
+                      required
+                      value={bizCity}
+                      onChange={(val) => setBizCity(val)}
+                      onSelect={(opt) => {
+                        setBizCity(opt.value);
+                        if (!bizState && opt.state) setBizState(opt.state);
+                      }}
+                      suggestions={CITY_SUGGESTIONS}
+                      inputStyle={{ background: "#fff" }}
+                    />
                   </label>
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                   <label style={{ fontSize: "10.5px", fontWeight: 700, color: "#27432f" }}>
                     State / Province *
-                    <input name="state" placeholder="e.g. Tamil Nadu, Karnataka" required style={{ background: "#fff" }} />
+                    <TypeaheadAddressInput
+                      name="state"
+                      placeholder="e.g. Tamil Nadu, Karnataka"
+                      required
+                      value={bizState}
+                      onChange={(val) => setBizState(val)}
+                      suggestions={STATE_SUGGESTIONS}
+                      inputStyle={{ background: "#fff" }}
+                    />
                   </label>
                   <label style={{ fontSize: "10.5px", fontWeight: 700, color: "#27432f" }}>
                     Pincode / Postal Code *
-                    <input name="pincode" placeholder="e.g. 635109" required maxLength={10} style={{ background: "#fff" }} />
+                    <TypeaheadAddressInput
+                      name="pincode"
+                      placeholder="e.g. 635109"
+                      required
+                      maxLength={10}
+                      value={bizPincode}
+                      onChange={(val) => setBizPincode(val)}
+                      onSelect={(opt) => {
+                        setBizPincode(opt.value);
+                        if (!bizCity && opt.city) setBizCity(opt.city);
+                        if (!bizState && opt.state) setBizState(opt.state);
+                      }}
+                      suggestions={PINCODE_SUGGESTIONS}
+                      inputStyle={{ background: "#fff" }}
+                    />
                   </label>
                 </div>
 
@@ -1018,21 +1083,27 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                   <label>
                     Locality / Area *
-                    <input
+                    <TypeaheadAddressInput
                       name="locality"
                       placeholder="e.g. Indiranagar, Bagalur Road, Bandra"
                       value={regLocality}
-                      onChange={(e) => setRegLocality(e.target.value)}
+                      onChange={(val) => setRegLocality(val)}
+                      onSelect={(opt) => {
+                        setRegLocality(opt.value);
+                        if (!regCity && opt.city) setRegCity(opt.city);
+                      }}
+                      suggestions={LOCALITY_SUGGESTIONS}
                       required
                     />
                   </label>
                   <label>
                     City / Town *
-                    <input
+                    <TypeaheadAddressInput
                       name="city"
                       placeholder="e.g. Bengaluru, Hosur, Mumbai, Delhi"
                       value={regCity}
-                      onChange={(e) => setRegCity(e.target.value)}
+                      onChange={(val) => setRegCity(val)}
+                      suggestions={CITY_SUGGESTIONS}
                       required
                     />
                   </label>

@@ -23,6 +23,13 @@ import { atozCatalog, type AtoZItem } from "./lib/atoz-catalog";
 import { defaultSupportConfig, type SupportConfig } from "./lib/support-config.shared";
 import { MapPinModal } from "./map-pin-modal";
 import { TermsModal } from "./terms-modal";
+import { TypeaheadAddressInput } from "./lib/TypeaheadAddressInput";
+import {
+  LOCALITY_SUGGESTIONS,
+  CITY_SUGGESTIONS,
+  STATE_SUGGESTIONS,
+  PINCODE_SUGGESTIONS,
+} from "./lib/address-suggestions";
 
 const subcategoriesSummary: Record<string, string> = {
   Automobiles: "Sales · Service → Two wheelers · Three wheelers · Four wheelers · Heavy vehicles",
@@ -13544,23 +13551,33 @@ function BusinessProfileEditorView({
 
             <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
               <span>Locality / Industrial Area</span>
-              <input
-                type="text"
+              <TypeaheadAddressInput
                 value={area}
-                onChange={(e) => setArea(e.target.value)}
+                onChange={(val) => setArea(val)}
+                onSelect={(opt) => {
+                  setArea(opt.value);
+                  if (!cityTown && opt.city) setCityTown(opt.city);
+                  if (!state && opt.state) setState(opt.state);
+                  if (!pincode && opt.pincode) setPincode(opt.pincode);
+                }}
+                suggestions={LOCALITY_SUGGESTIONS}
                 placeholder="e.g. Bagalur Road / SIPCOT Phase 1"
-                style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+                inputStyle={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
               />
             </label>
 
             <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
               <span>City / Town</span>
-              <input
-                type="text"
+              <TypeaheadAddressInput
                 value={cityTown}
-                onChange={(e) => setCityTown(e.target.value)}
+                onChange={(val) => setCityTown(val)}
+                onSelect={(opt) => {
+                  setCityTown(opt.value);
+                  if (!state && opt.state) setState(opt.state);
+                }}
+                suggestions={CITY_SUGGESTIONS}
                 placeholder="Hosur"
-                style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+                inputStyle={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
               />
             </label>
 
@@ -13577,24 +13594,29 @@ function BusinessProfileEditorView({
 
             <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
               <span>State</span>
-              <input
-                type="text"
+              <TypeaheadAddressInput
                 value={state}
-                onChange={(e) => setState(e.target.value)}
+                onChange={(val) => setState(val)}
+                suggestions={STATE_SUGGESTIONS}
                 placeholder="Tamil Nadu"
-                style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+                inputStyle={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
               />
             </label>
 
             <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
               <span>PIN Code</span>
-              <input
-                type="text"
+              <TypeaheadAddressInput
                 value={pincode}
-                onChange={(e) => setPincode(e.target.value)}
+                onChange={(val) => setPincode(val)}
+                onSelect={(opt) => {
+                  setPincode(opt.value);
+                  if (!cityTown && opt.city) setCityTown(opt.city);
+                  if (!state && opt.state) setState(opt.state);
+                }}
+                suggestions={PINCODE_SUGGESTIONS}
                 placeholder="635109"
                 maxLength={6}
-                style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+                inputStyle={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
               />
             </label>
           </div>
@@ -15900,26 +15922,34 @@ function AgentPortal({
                   <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>
                     Area / Locality *
                   </label>
-                  <input
-                    type="text"
+                  <TypeaheadAddressInput
                     required
                     placeholder="e.g. Ram Nagar"
                     value={onboardForm.locality}
-                    onChange={(e) => setOnboardForm((p) => ({ ...p, locality: e.target.value }))}
-                    style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
+                    onChange={(val) => setOnboardForm((p) => ({ ...p, locality: val }))}
+                    onSelect={(opt) => {
+                      setOnboardForm((p) => ({
+                        ...p,
+                        locality: opt.value,
+                        pincode: p.pincode || opt.pincode || p.pincode,
+                      }));
+                    }}
+                    suggestions={LOCALITY_SUGGESTIONS}
+                    inputStyle={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
                   />
                 </div>
                 <div>
                   <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>
                     PIN code *
                   </label>
-                  <input
-                    type="text"
+                  <TypeaheadAddressInput
                     required
                     placeholder="635109"
                     value={onboardForm.pincode}
-                    onChange={(e) => setOnboardForm((p) => ({ ...p, pincode: e.target.value }))}
-                    style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
+                    onChange={(val) => setOnboardForm((p) => ({ ...p, pincode: val }))}
+                    suggestions={PINCODE_SUGGESTIONS}
+                    maxLength={10}
+                    inputStyle={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
                   />
                 </div>
               </div>
@@ -16765,46 +16795,61 @@ function ProfileAndSettingsPanel({
 
             <label style={{ display: "grid", gap: "6px", fontSize: "11px", color: "#3e5243", fontWeight: 700 }}>
               Locality / Area
-              <input
-                type="text"
+              <TypeaheadAddressInput
                 value={profile.locality || ""}
-                onChange={(e) => updateProfile("locality", e.target.value)}
+                onChange={(val) => updateProfile("locality", val)}
+                onSelect={(opt) => {
+                  updateProfile("locality", opt.value);
+                  if (!profile.city && opt.city) updateProfile("city", opt.city);
+                  if (!profile.state && opt.state) updateProfile("state", opt.state);
+                  if (!profile.pincode && opt.pincode) updateProfile("pincode", opt.pincode);
+                }}
+                suggestions={LOCALITY_SUGGESTIONS}
                 placeholder="e.g. Bagalur Road / Indiranagar"
-                style={{ padding: "8px 12px", border: "1px solid #d3e0d5", borderRadius: "8px", fontSize: "12px" }}
+                inputStyle={{ padding: "8px 12px", border: "1px solid #d3e0d5", borderRadius: "8px", fontSize: "12px" }}
               />
             </label>
 
             <label style={{ display: "grid", gap: "6px", fontSize: "11px", color: "#3e5243", fontWeight: 700 }}>
               City / Town
-              <input
-                type="text"
+              <TypeaheadAddressInput
                 value={profile.city || ""}
-                onChange={(e) => updateProfile("city", e.target.value)}
+                onChange={(val) => updateProfile("city", val)}
+                onSelect={(opt) => {
+                  updateProfile("city", opt.value);
+                  if (!profile.state && opt.state) updateProfile("state", opt.state);
+                }}
+                suggestions={CITY_SUGGESTIONS}
                 placeholder="e.g. Hosur, Bengaluru, London"
-                style={{ padding: "8px 12px", border: "1px solid #d3e0d5", borderRadius: "8px", fontSize: "12px" }}
+                inputStyle={{ padding: "8px 12px", border: "1px solid #d3e0d5", borderRadius: "8px", fontSize: "12px" }}
               />
             </label>
 
             <label style={{ display: "grid", gap: "6px", fontSize: "11px", color: "#3e5243", fontWeight: 700 }}>
               State / Region
-              <input
-                type="text"
+              <TypeaheadAddressInput
                 value={profile.state || ""}
-                onChange={(e) => updateProfile("state", e.target.value)}
+                onChange={(val) => updateProfile("state", val)}
+                suggestions={STATE_SUGGESTIONS}
                 placeholder="e.g. Tamil Nadu, Karnataka"
-                style={{ padding: "8px 12px", border: "1px solid #d3e0d5", borderRadius: "8px", fontSize: "12px" }}
+                inputStyle={{ padding: "8px 12px", border: "1px solid #d3e0d5", borderRadius: "8px", fontSize: "12px" }}
               />
             </label>
 
             <label style={{ display: "grid", gap: "6px", fontSize: "11px", color: "#3e5243", fontWeight: 700 }}>
               Pincode / Postal Code
-              <input
-                type="text"
+              <TypeaheadAddressInput
                 value={profile.pincode || ""}
-                onChange={(e) => updateProfile("pincode", e.target.value)}
+                onChange={(val) => updateProfile("pincode", val)}
+                onSelect={(opt) => {
+                  updateProfile("pincode", opt.value);
+                  if (!profile.city && opt.city) updateProfile("city", opt.city);
+                  if (!profile.state && opt.state) updateProfile("state", opt.state);
+                }}
+                suggestions={PINCODE_SUGGESTIONS}
                 maxLength={10}
                 placeholder="e.g. 635109"
-                style={{ padding: "8px 12px", border: "1px solid #d3e0d5", borderRadius: "8px", fontSize: "12px" }}
+                inputStyle={{ padding: "8px 12px", border: "1px solid #d3e0d5", borderRadius: "8px", fontSize: "12px" }}
               />
             </label>
           </div>
@@ -21185,26 +21230,34 @@ function CompanyPortal({
                 <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>
                   Area / Locality *
                 </label>
-                <input
-                  type="text"
+                <TypeaheadAddressInput
                   required
                   placeholder="e.g. Hosur Center"
                   value={companyBizForm.locality}
-                  onChange={(e) => setCompanyBizForm((p) => ({ ...p, locality: e.target.value }))}
-                  style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
+                  onChange={(val) => setCompanyBizForm((p) => ({ ...p, locality: val }))}
+                  onSelect={(opt) => {
+                    setCompanyBizForm((p) => ({
+                      ...p,
+                      locality: opt.value,
+                      pincode: p.pincode || opt.pincode || p.pincode,
+                    }));
+                  }}
+                  suggestions={LOCALITY_SUGGESTIONS}
+                  inputStyle={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
                 />
               </div>
               <div>
                 <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>
                   PIN code *
                 </label>
-                <input
-                  type="text"
+                <TypeaheadAddressInput
                   required
                   placeholder="635109"
                   value={companyBizForm.pincode}
-                  onChange={(e) => setCompanyBizForm((p) => ({ ...p, pincode: e.target.value }))}
-                  style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
+                  onChange={(val) => setCompanyBizForm((p) => ({ ...p, pincode: val }))}
+                  suggestions={PINCODE_SUGGESTIONS}
+                  maxLength={10}
+                  inputStyle={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
                 />
               </div>
             </div>
