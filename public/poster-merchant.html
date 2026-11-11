@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Bizearch.in - Attention Business Owners (All Features & Growth Poster)</title>
+  <title>Bizearch.in - Attention Business Owners Poster (Register Before Dec 10, 2026)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -27,36 +27,37 @@
       min-height: 100vh;
     }
 
+    /* Standard A4/Poster Proportions (1:1.414 ratio: 980px x 1386px) */
     .poster-canvas {
       width: 980px;
-      min-height: 1420px;
+      height: 1386px;
       background: #ffffff;
       position: relative;
       overflow: hidden;
-      padding: 34px 40px 24px;
+      padding: 26px 36px 20px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
 
-    /* Ambient background graphics */
+    /* Subtle background graphics */
     .poster-bg-glow-orange {
       position: absolute;
       top: -100px;
       right: -100px;
-      width: 480px;
-      height: 480px;
-      background: radial-gradient(circle, rgba(234, 88, 12, 0.14) 0%, rgba(255, 255, 255, 0) 70%);
+      width: 440px;
+      height: 440px;
+      background: radial-gradient(circle, rgba(234, 88, 12, 0.12) 0%, rgba(255, 255, 255, 0) 70%);
       border-radius: 50%;
       pointer-events: none;
     }
 
     .poster-bg-glow-blue {
       position: absolute;
-      bottom: 60px;
+      bottom: 40px;
       left: -80px;
-      width: 440px;
-      height: 440px;
+      width: 420px;
+      height: 420px;
       background: radial-gradient(circle, rgba(0, 75, 135, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
       border-radius: 50%;
       pointer-events: none;
@@ -64,13 +65,13 @@
 
     .poster-bg-dots {
       position: absolute;
-      top: 24px;
-      left: 24px;
-      width: 140px;
-      height: 140px;
+      top: 18px;
+      left: 20px;
+      width: 130px;
+      height: 130px;
       background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
-      background-size: 14px 14px;
-      opacity: 0.6;
+      background-size: 13px 13px;
+      opacity: 0.55;
       pointer-events: none;
     }
 
@@ -79,13 +80,13 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
       position: relative;
       z-index: 2;
     }
 
     .poster-logo-wrap img {
-      height: 72px;
+      height: 64px;
       width: auto;
       object-fit: contain;
       display: block;
@@ -97,18 +98,18 @@
       gap: 10px;
     }
 
-    .zero-comm-badge {
-      background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+    .urgency-header-badge {
+      background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
       color: #ffffff;
       padding: 6px 14px;
       border-radius: 20px;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 800;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.4px;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      box-shadow: 0 3px 10px rgba(22, 101, 52, 0.25);
+      box-shadow: 0 3px 10px rgba(220, 38, 38, 0.28);
     }
 
     .store-3d-card {
@@ -117,12 +118,12 @@
       background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
       border: 1.5px solid #93c5fd;
       border-radius: 12px;
-      padding: 6px 14px;
+      padding: 5px 12px;
       gap: 8px;
     }
 
     .store-3d-card .icon {
-      font-size: 24px;
+      font-size: 22px;
     }
 
     .store-3d-card .text {
@@ -131,42 +132,43 @@
     }
 
     .store-3d-card .title {
-      font-size: 10.5px;
+      font-size: 10px;
       font-weight: 800;
       color: #1e40af;
       letter-spacing: 0.5px;
+      text-transform: uppercase;
     }
 
     .store-3d-card .sub {
-      font-size: 12.5px;
+      font-size: 11.5px;
       font-weight: 900;
       color: #1d4ed8;
     }
 
-    /* ATTENTION CALLOUT */
+    /* ATTENTION CALLOUT & HEADLINE */
     .attention-pill {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       background: #003366;
       color: #ffffff;
-      padding: 6px 18px;
+      padding: 5px 16px;
       border-radius: 20px;
-      font-size: 13px;
+      font-size: 11.5px;
       font-weight: 800;
       letter-spacing: 0.6px;
       text-transform: uppercase;
-      box-shadow: 0 4px 12px rgba(0, 51, 102, 0.22);
-      margin-bottom: 8px;
+      box-shadow: 0 3px 10px rgba(0, 51, 102, 0.2);
+      margin-bottom: 6px;
     }
 
     .hero-title {
-      font-size: 34px;
+      font-size: 32px;
       font-weight: 900;
       color: #0b2545;
       line-height: 1.15;
       letter-spacing: -0.6px;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
 
     .hero-title .highlight-grow {
@@ -177,195 +179,224 @@
     }
 
     .hero-subtitle {
-      font-size: 15px;
+      font-size: 13.5px;
       font-weight: 700;
       color: #475569;
-      margin-bottom: 12px;
-      line-height: 1.35;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    /* DEC 10 LIMITED TIME OFFER RIBBON */
+    .dec10-offer-ribbon {
+      background: linear-gradient(90deg, #b91c1c 0%, #ea580c 50%, #d97706 100%);
+      color: #ffffff;
+      border-radius: 10px;
+      padding: 9px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      box-shadow: 0 4px 14px rgba(234, 88, 12, 0.25);
+    }
+
+    .dec10-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dec10-icon {
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .dec10-title {
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+
+    .dec10-sub {
+      font-size: 11.5px;
+      font-weight: 600;
+      opacity: 0.95;
+    }
+
+    .dec10-pill {
+      background: #ffffff;
+      color: #b91c1c;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 5px 12px;
+      border-radius: 20px;
+      white-space: nowrap;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     }
 
     /* 4 PILLARS STRIP */
     .pillars-strip {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-bottom: 14px;
+      gap: 8px;
+      margin-bottom: 10px;
     }
 
     .pillar-card {
       background: #ffffff;
       border: 1.5px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 10px 12px;
+      border-radius: 10px;
+      padding: 8px 10px;
       display: flex;
       align-items: center;
-      gap: 10px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+      gap: 8px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
     }
 
-    .pillar-card.gold {
-      background: #fffbeb;
-      border-color: #fde68a;
-    }
-
-    .pillar-card.green {
-      background: #f0fdf4;
-      border-color: #bbf7d0;
-    }
-
-    .pillar-card.blue {
-      background: #eff6ff;
-      border-color: #bfdbfe;
-    }
-
-    .pillar-card.purple {
-      background: #faf5ff;
-      border-color: #e9d5ff;
-    }
+    .pillar-card.gold { background: #fffbeb; border-color: #fde68a; }
+    .pillar-card.green { background: #f0fdf4; border-color: #bbf7d0; }
+    .pillar-card.blue { background: #eff6ff; border-color: #bfdbfe; }
+    .pillar-card.purple { background: #faf5ff; border-color: #e9d5ff; }
 
     .pillar-icon {
-      font-size: 26px;
+      font-size: 22px;
       line-height: 1;
       flex-shrink: 0;
     }
 
     .pillar-text h5 {
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 900;
       color: #0f172a;
-      line-height: 1.2;
-      margin-bottom: 2px;
+      line-height: 1.15;
+      margin-bottom: 1px;
     }
 
     .pillar-text p {
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 600;
       color: #475569;
       line-height: 1.25;
     }
 
-    /* DUAL QUESTION & DISCOVERY STRIP */
-    .discovery-strip {
-      background: linear-gradient(90deg, #004b87 0%, #0066b2 100%);
-      color: #ffffff;
-      border-radius: 12px;
-      padding: 12px 18px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 14px;
-      box-shadow: 0 4px 14px rgba(0, 75, 135, 0.22);
-    }
-
-    .discovery-left {
-      display: flex;
-      align-items: center;
+    /* CONTRAST STRIP */
+    .contrast-strip {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 8px 14px;
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
       gap: 12px;
+      margin-bottom: 10px;
     }
 
-    .discovery-left .rocket {
-      font-size: 28px;
-      line-height: 1;
-    }
-
-    .discovery-left h4 {
-      font-size: 15px;
-      font-weight: 900;
-      margin-bottom: 2px;
-    }
-
-    .discovery-left p {
-      font-size: 12px;
-      opacity: 0.95;
-      font-weight: 500;
-    }
-
-    .discovery-right {
-      background: rgba(255, 255, 255, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      padding: 6px 14px;
-      border-radius: 20px;
+    .contrast-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
       font-size: 11.5px;
-      font-weight: 800;
-      white-space: nowrap;
+      font-weight: 600;
+      color: #1e293b;
+      line-height: 1.35;
+    }
+
+    .contrast-left div {
       display: flex;
       align-items: center;
       gap: 6px;
     }
 
-    /* 8 FEATURES GRID (THE BIG SELLING POINT) */
-    .features-heading-row {
+    .contrast-right {
+      background: #fffbeb;
+      border: 1px dashed #f59e0b;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #92400e;
+      line-height: 1.3;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .contrast-right span.bulb {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    /* 8 FEATURES GRID */
+    .features-section-header {
       display: flex;
       justify-content: space-between;
-      align-items: flex-end;
-      margin-bottom: 8px;
+      align-items: center;
+      margin-bottom: 6px;
     }
 
-    .features-heading-row h3 {
-      font-size: 15px;
+    .features-section-header h3 {
+      font-size: 13.5px;
       font-weight: 900;
-      color: #0b2545;
+      color: #004b87;
       display: flex;
       align-items: center;
       gap: 6px;
     }
 
-    .features-heading-row span {
-      font-size: 12px;
-      font-weight: 700;
+    .features-section-header span {
+      font-size: 11px;
+      font-weight: 800;
       color: #ea580c;
     }
 
     .features-8-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-bottom: 14px;
+      gap: 7px;
+      margin-bottom: 10px;
     }
 
     .feature-tile {
       background: #ffffff;
       border: 1.5px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 12px 10px;
+      border-radius: 10px;
+      padding: 9px 8px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
-      transition: transform 0.15s;
+      gap: 3px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
     }
 
     .tile-top {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .tile-icon {
-      font-size: 22px;
+      font-size: 17px;
       line-height: 1;
     }
 
     .tile-title {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 900;
       color: #0f172a;
-      line-height: 1.25;
+      line-height: 1.2;
     }
 
     .tile-desc {
-      font-size: 10.5px;
+      font-size: 9.5px;
       font-weight: 500;
       color: #475569;
-      line-height: 1.35;
+      line-height: 1.3;
     }
 
     .tile-tag {
-      margin-top: auto;
-      font-size: 9.5px;
+      margin-top: 2px;
+      font-size: 8.5px;
       font-weight: 800;
-      padding: 2px 6px;
+      padding: 1px 5px;
       border-radius: 4px;
       width: fit-content;
     }
@@ -375,69 +406,69 @@
     .tile-tag.orange { background: #ffedd5; color: #c2410c; }
     .tile-tag.purple { background: #f3e8ff; color: #7e22ce; }
 
-    /* MIDSECTION: LIVE PHONE MOCKUP + REGISTER BENEFITS + QR */
+    /* REGISTER SHOWCASE (BENEFITS + MOCKUP + QR) */
     .register-showcase-box {
       background: #f8fafc;
-      border: 2px solid #cbd5e1;
-      border-radius: 16px;
-      padding: 14px 18px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 14px;
+      padding: 12px 16px;
       display: grid;
-      grid-template-columns: 1.2fr 0.9fr 1.05fr;
-      gap: 16px;
+      grid-template-columns: 1.25fr 0.85fr 1.05fr;
+      gap: 14px;
       align-items: center;
-      margin-bottom: 12px;
-      box-shadow: 0 4px 14px rgba(0, 30, 60, 0.05);
+      margin-bottom: 10px;
+      box-shadow: 0 3px 12px rgba(0, 30, 60, 0.04);
     }
 
     .reg-benefits h4 {
-      font-size: 15px;
+      font-size: 13.5px;
       font-weight: 900;
       color: #ea580c;
-      margin-bottom: 3px;
+      margin-bottom: 2px;
     }
 
     .reg-benefits .sub {
-      font-size: 11.5px;
+      font-size: 10.5px;
       font-weight: 700;
       color: #475569;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .reg-list {
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
     }
 
     .reg-list li {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 12px;
+      gap: 6px;
+      font-size: 11px;
       font-weight: 800;
       color: #0f172a;
     }
 
     .reg-list li .check {
       color: #16a34a;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 900;
     }
 
-    /* MOCKUP SHOWING INCOMING LEAD */
+    /* PHONE MOCKUP */
     .phone-mockup-wrap {
       display: flex;
       justify-content: center;
     }
 
     .phone-mockup {
-      width: 165px;
-      height: 228px;
+      width: 145px;
+      height: 200px;
       background: #0f172a;
-      border-radius: 22px;
-      padding: 6px;
-      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.28);
+      border-radius: 18px;
+      padding: 5px;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.25);
       position: relative;
     }
 
@@ -445,20 +476,20 @@
       width: 100%;
       height: 100%;
       background: #ffffff;
-      border-radius: 16px;
+      border-radius: 13px;
       overflow: hidden;
-      padding: 8px 6px;
+      padding: 6px 5px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
     }
 
     .screen-header {
       background: #004b87;
       color: #ffffff;
-      border-radius: 6px;
-      padding: 4px 6px;
-      font-size: 8px;
+      border-radius: 5px;
+      padding: 3px 5px;
+      font-size: 7px;
       font-weight: 800;
       display: flex;
       justify-content: space-between;
@@ -468,30 +499,30 @@
     .screen-lead-card {
       background: #eff6ff;
       border: 1px solid #bfdbfe;
-      border-radius: 6px;
-      padding: 6px 5px;
+      border-radius: 5px;
+      padding: 5px;
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 2px;
     }
 
     .lead-badge {
-      font-size: 6.5px;
+      font-size: 6px;
       font-weight: 900;
       color: #1d4ed8;
       text-transform: uppercase;
     }
 
     .lead-title {
-      font-size: 8px;
+      font-size: 7.5px;
       font-weight: 800;
       color: #0f172a;
     }
 
     .lead-msg {
-      font-size: 6.5px;
+      font-size: 6px;
       color: #475569;
-      line-height: 1.25;
+      line-height: 1.2;
     }
 
     .lead-actions {
@@ -503,8 +534,8 @@
     .lead-btn {
       flex: 1;
       padding: 2px;
-      border-radius: 4px;
-      font-size: 6.5px;
+      border-radius: 3px;
+      font-size: 6px;
       font-weight: 800;
       text-align: center;
       color: #ffffff;
@@ -516,9 +547,9 @@
     .screen-store-preview {
       background: #f8fafc;
       border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      padding: 5px;
-      font-size: 7px;
+      border-radius: 4px;
+      padding: 4px;
+      font-size: 6.5px;
     }
 
     .store-status {
@@ -526,7 +557,7 @@
       font-weight: 800;
       display: flex;
       align-items: center;
-      gap: 3px;
+      gap: 2px;
     }
 
     /* QR CARD */
@@ -538,34 +569,34 @@
     .qr-card {
       background: #002b49;
       color: #ffffff;
-      border-radius: 14px;
-      padding: 12px 14px;
+      border-radius: 12px;
+      padding: 10px 12px;
       text-align: center;
-      box-shadow: 0 8px 22px rgba(0, 43, 73, 0.28);
+      box-shadow: 0 6px 18px rgba(0, 43, 73, 0.25);
       width: 100%;
-      max-width: 185px;
+      max-width: 175px;
     }
 
     .qr-code-box {
       background: #ffffff;
-      border-radius: 8px;
-      padding: 6px;
-      margin-bottom: 8px;
+      border-radius: 6px;
+      padding: 5px;
+      margin-bottom: 6px;
       display: flex;
       justify-content: center;
       align-items: center;
     }
 
     .qr-code-box img {
-      width: 115px;
-      height: 115px;
+      width: 100px;
+      height: 100px;
       display: block;
     }
 
     .qr-card .scan-text {
-      font-size: 11.5px;
+      font-size: 10.5px;
       font-weight: 800;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -573,61 +604,78 @@
     .qr-card .url-pill {
       background: #ffffff;
       color: #002b49;
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 800;
       padding: 3px 8px;
-      border-radius: 12px;
+      border-radius: 10px;
       display: inline-block;
       text-decoration: none;
     }
 
     /* FOUNDING PARTNERS OFFER */
     .special-offer-banner {
-      background: linear-gradient(90deg, #dc2626 0%, #b91c1c 100%);
+      background: linear-gradient(90deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
       color: #ffffff;
-      border-radius: 12px;
-      padding: 10px 16px;
-      text-align: center;
-      margin-bottom: 12px;
-      box-shadow: 0 4px 14px rgba(220, 38, 38, 0.25);
+      border-radius: 10px;
+      padding: 9px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      box-shadow: 0 3px 12px rgba(37, 99, 235, 0.2);
+    }
+
+    .special-offer-banner .offer-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .special-offer-banner .offer-icon {
+      font-size: 22px;
     }
 
     .special-offer-banner .offer-title {
-      font-size: 14px;
+      font-size: 12.5px;
       font-weight: 900;
-      letter-spacing: 0.6px;
+      letter-spacing: 0.4px;
       text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      margin-bottom: 3px;
     }
 
     .special-offer-banner .offer-desc {
-      font-size: 12px;
-      font-weight: 600;
-      opacity: 0.98;
+      font-size: 11px;
+      font-weight: 500;
+      opacity: 0.95;
+    }
+
+    .special-offer-banner .offer-badge {
+      background: #fde047;
+      color: #854d0e;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 4px 10px;
+      border-radius: 12px;
+      white-space: nowrap;
     }
 
     /* CTA SLOGAN ROW */
     .cta-slogan-row {
       background: #ffffff;
       border: 1.5px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 10px 16px;
-      margin-bottom: 12px;
+      border-radius: 10px;
+      padding: 8px 14px;
+      margin-bottom: 8px;
     }
 
     .cta-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
     .cta-register-pill {
-      font-size: 13.5px;
+      font-size: 12.5px;
       font-weight: 900;
       color: #004b87;
       display: flex;
@@ -643,9 +691,9 @@
       background: #e0f2fe;
       color: #0369a1;
       border: 1px solid #bae6fd;
-      padding: 4px 12px;
-      border-radius: 16px;
-      font-size: 11.5px;
+      padding: 3px 10px;
+      border-radius: 14px;
+      font-size: 10.5px;
       font-weight: 800;
       font-style: italic;
     }
@@ -654,11 +702,11 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 11.5px;
+      font-size: 10.5px;
       font-weight: 700;
       color: #475569;
       border-top: 1px solid #edf2f7;
-      padding-top: 6px;
+      padding-top: 4px;
     }
 
     .grow-together {
@@ -673,49 +721,49 @@
 
     .footer-brand-strip {
       background: linear-gradient(90deg, #002b49 0%, #004b87 100%);
-      border-radius: 12px;
-      padding: 10px 18px;
+      border-radius: 10px;
+      padding: 8px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       color: #ffffff;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .footer-team {
-      font-size: 12.5px;
+      font-size: 11.5px;
       font-weight: 800;
       letter-spacing: 0.5px;
     }
 
     .footer-powered-box {
       background: #ffffff;
-      padding: 4px 12px;
+      padding: 3px 10px;
       border-radius: 6px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .footer-powered-box .powered-text {
-      font-size: 9px;
+      font-size: 8.5px;
       font-weight: 700;
       color: #64748b;
       text-transform: uppercase;
     }
 
     .footer-powered-box img {
-      height: 28px;
+      height: 24px;
       width: auto;
       display: block;
     }
 
     .footer-care {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
     }
 
     .footer-care .phone-num {
@@ -728,8 +776,8 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 14px;
-      font-size: 10px;
+      gap: 12px;
+      font-size: 9px;
       font-weight: 700;
       color: #64748b;
       text-transform: uppercase;
@@ -750,8 +798,8 @@
       </div>
 
       <div class="header-badges">
-        <div class="zero-comm-badge">
-          <span>✓</span> 0% COMMISSION · 100% PROFIT IS YOURS
+        <div class="urgency-header-badge">
+          <span>⏰</span> REGISTER BEFORE DEC 10, 2026: FREE 1 YEAR!
         </div>
         <div class="store-3d-card">
           <span class="icon">🏪</span>
@@ -766,64 +814,76 @@
     <!-- MAIN HEADLINE -->
     <div>
       <div class="attention-pill">
-        <span>📢</span> ATTENTION RETAILERS, STORES &amp; SERVICE PROVIDERS!
+        <span>📢</span> ATTENTION RETAILERS, STORES, CLINICS &amp; SERVICE PROVIDERS!
       </div>
       <h1 class="hero-title">
-        Big or Small, Every Business Deserves to <span className="highlight-grow">Grow 10X!</span>
+        Big or Small, Every Business Deserves to <span class="highlight-grow">Grow!</span>
       </h1>
       <p class="hero-subtitle">
         Growth is what matters — not the size of your store. Connect directly with thousands of nearby shoppers across Hosur.
       </p>
 
-      <!-- 4 KILLER PILLARS (INSTANT ATTRACTION) -->
+      <!-- LIMITED TIME EARLY BIRD OFFER RIBBON -->
+      <div class="dec10-offer-ribbon">
+        <div class="dec10-left">
+          <span class="dec10-icon">🔥</span>
+          <div>
+            <div class="dec10-title">LIMITED-TIME FOUNDING PARTNER WINDOW</div>
+            <div class="dec10-sub">Register before Dec 10th, 2026 to unlock a <strong>FREE Business Listing for 1 Full Year</strong>!</div>
+          </div>
+        </div>
+        <div class="dec10-pill">
+          Valid Until Dec 10, 2026
+        </div>
+      </div>
+
+      <!-- 4 KILLER PILLARS (NO EMPTY SPACE) -->
       <div class="pillars-strip">
         <div class="pillar-card gold">
           <span class="pillar-icon">💰</span>
           <div class="pillar-text">
             <h5>0% Commission</h5>
-            <p>Zero cuts on your sales. Keep 100% of customer payments.</p>
+            <p>Keep 100% profit — zero cuts on orders or deals.</p>
           </div>
         </div>
         <div class="pillar-card green">
           <span class="pillar-icon">💬</span>
           <div class="pillar-text">
             <h5>Direct WhatsApp Leads</h5>
-            <p>Customer inquiries delivered straight to your WhatsApp.</p>
+            <p>Customer inquiries straight to your phone.</p>
           </div>
         </div>
         <div class="pillar-card blue">
           <span class="pillar-icon">📍</span>
           <div class="pillar-text">
-            <h5>Hyperlocal GPS Walk-ins</h5>
-            <p>Nearby residents navigate straight to your shop door.</p>
+            <h5>Hyperlocal GPS Footfall</h5>
+            <p>Nearby residents navigate straight to your shop.</p>
           </div>
         </div>
         <div class="pillar-card purple">
           <span class="pillar-icon">🛡️</span>
           <div class="pillar-text">
-            <h5>JIT Verified Trust Badge</h5>
-            <p>On-ground certified badge for 5X higher customer trust.</p>
+            <h5>JIT Verified Trust Seal</h5>
+            <p>On-ground certified badge for 5X higher trust.</p>
           </div>
         </div>
       </div>
 
-      <!-- BLUE SEARCH ENGINE STRIP -->
-      <div class="discovery-strip">
-        <div class="discovery-left">
-          <span class="rocket">🚀</span>
-          <div>
-            <h4>Give Your Business a Dominant Digital Presence in Your Area!</h4>
-            <p>Customers in your area are actively searching for products. Put your business right in front of them.</p>
-          </div>
+      <!-- PROBLEM / SOLUTION STRIP -->
+      <div class="contrast-strip">
+        <div class="contrast-left">
+          <div><span style="font-size: 15px;">🔍</span> <span>Nearby shoppers actively search daily for products, services &amp; estimates.</span></div>
+          <div><span style="font-size: 15px;">🏪</span> <span>Your store is ready to serve them with genuine quality &amp; fair prices.</span></div>
         </div>
-        <div class="discovery-right">
-          <span>⭐</span> 100% FREE REGISTRATION
+        <div class="contrast-right">
+          <span class="bulb">💡</span>
+          <div><strong>What if they could find you right now?</strong> Put your store directly on Hosur&apos;s neighborhood search engine!</div>
         </div>
       </div>
 
       <!-- 8 COMPLETE BUSINESS FEATURES -->
-      <div class="features-heading-row">
-        <h3>✨ Complete Business Toolkit — Included for Every Merchant</h3>
+      <div class="features-section-header">
+        <h3>✨ Complete Business Toolkit — Included with Your 1-Year Free Listing</h3>
         <span>Why Local Stores Choose Bizearch.in →</span>
       </div>
 
@@ -831,45 +891,45 @@
         <div class="feature-tile">
           <div class="tile-top">
             <span class="tile-icon">🏪</span>
-            <div class="tile-title">Dedicated Digital Storefront</div>
+            <div class="tile-title">Digital Storefront</div>
           </div>
-          <div class="tile-desc">Showcase exterior/interior photos, store hours, address, and Google Map pin.</div>
-          <span class="tile-tag blue">Professional Profile</span>
+          <div class="tile-desc">Store photos, timings, phone, address &amp; 1-tap Google Maps directions.</div>
+          <span class="tile-tag blue">Verified Profile</span>
         </div>
 
         <div class="feature-tile">
           <div class="tile-top">
             <span class="tile-icon">🛍️</span>
-            <div class="tile-title">Live Products &amp; Services Catalog</div>
+            <div class="tile-title">Live Product Catalog</div>
           </div>
-          <div class="tile-desc">Publish your items, prices, variants, discounts, and accept direct pickup/delivery orders.</div>
+          <div class="tile-desc">Publish items, prices, offers &amp; receive direct pickup/delivery orders.</div>
           <span class="tile-tag green">Online Catalog</span>
         </div>
 
         <div class="feature-tile">
           <div class="tile-top">
             <span class="tile-icon">📄</span>
-            <div class="tile-title">Instant Custom Quote Manager</div>
+            <div class="tile-title">Custom Quote Manager</div>
           </div>
-          <div class="tile-desc">Receive real-time quotation requests from customers with their phone number and specs.</div>
+          <div class="tile-desc">Receive real-time customer price inquiries with verified phone numbers.</div>
           <span class="tile-tag orange">Real Leads</span>
         </div>
 
         <div class="feature-tile">
           <div class="tile-top">
             <span class="tile-icon">📞</span>
-            <div class="tile-title">1-Tap Direct Call &amp; WhatsApp</div>
+            <div class="tile-title">1-Tap Direct Call &amp; WA</div>
           </div>
-          <div class="tile-desc">No middleman call centers. Customers tap once to ring your mobile or start a chat.</div>
-          <span class="tile-tag green">Direct Contact</span>
+          <div class="tile-desc">Zero middleman call centers. Customers ring your mobile or WhatsApp.</div>
+          <span class="tile-tag green">Direct Connect</span>
         </div>
 
         <div class="feature-tile">
           <div class="tile-top">
             <span class="tile-icon">📲</span>
-            <div class="tile-title">Shareable QR &amp; Digital Card</div>
+            <div class="tile-title">Countertop QR Code</div>
           </div>
-          <div class="tile-desc">Custom QR code for your cash counter to let customers bookmark and re-order easily.</div>
+          <div class="tile-desc">Custom QR for your cash desk so shoppers bookmark &amp; re-order easily.</div>
           <span class="tile-tag purple">Easy Sharing</span>
         </div>
 
@@ -878,39 +938,41 @@
             <span class="tile-icon">🗣️</span>
             <div class="tile-title">4 Regional Languages</div>
           </div>
-          <div class="tile-desc">Reach shoppers in English, தமிழ் (Tamil), ಕನ್ನಡ (Kannada), and తెలుగు (Telugu).</div>
+          <div class="tile-desc">Reach shoppers in English, தமிழ் (Tamil), ಕನ್ನಡ (Kannada) &amp; తెలుగు (Telugu).</div>
           <span class="tile-tag blue">Broader Reach</span>
         </div>
 
         <div class="feature-tile">
           <div class="tile-top">
             <span class="tile-icon">📢</span>
-            <div class="tile-title">Hyperlocal Ad Boost &amp; Banners</div>
+            <div class="tile-title">Hyperlocal Ad Boost</div>
           </div>
-          <div class="tile-desc">Target shoppers during peak hours with sponsored banners and category highlights.</div>
+          <div class="tile-desc">Promote festival offers, clearance sales &amp; top category banners.</div>
           <span class="tile-tag orange">Self-Service Ads</span>
         </div>
 
         <div class="feature-tile">
           <div class="tile-top">
             <span class="tile-icon">🤝</span>
-            <div class="tile-title">Free Agent Onboarding Support</div>
+            <div class="tile-title">Free Agent Onboarding</div>
           </div>
-          <div class="tile-desc">JIT field agents visit your store to verify and help set up your catalog at zero cost.</div>
-          <span class="tile-tag green">Doorstep Help</span>
+          <div class="tile-desc">JIT agents visit your store to verify and help set up your catalog free.</div>
+          <span class="tile-tag green">Doorstep Setup</span>
         </div>
       </div>
 
       <!-- REGISTER BENEFITS + LIVE MOCKUP + QR -->
       <div class="register-showcase-box">
         <div class="reg-benefits">
-          <h4>⭐ Register Your Business in 60 Seconds!</h4>
-          <div class="sub">Everything you need to attract more customers:</div>
+          <h4>⭐ Register Before Dec 10, 2026!</h4>
+          <div class="sub">Free 1-Year access includes all of this:</div>
           <ul class="reg-list">
-            <li><span class="check">✓</span> 100% Free Lifetime Business Listing</li>
+            <li><span class="check">✓</span> FREE 1-Year Full Business Listing</li>
             <li><span class="check">✓</span> Real-Time Customer Lead Inbox on Phone</li>
             <li><span class="check">✓</span> Direct Customer Callback &amp; WhatsApp</li>
-            <li><span class="check">✓</span> Zero Commission — Zero Hidden Fees</li>
+            <li><span class="check">✓</span> 0% Commission — Keep 100% Profits</li>
+            <li><span class="check">✓</span> Showcase Unlimited Products &amp; Services</li>
+            <li><span class="check">✓</span> Doorstep JIT Field Verification Badge</li>
           </ul>
         </div>
 
@@ -923,9 +985,9 @@
                 <span>● LIVE</span>
               </div>
               <div class="screen-lead-card">
-                <span class="lead-badge">🔥 NEW INCOMING LEAD</span>
+                <span class="lead-badge">🔥 NEW CUSTOMER LEAD</span>
                 <span class="lead-title">Quote Request from Resident</span>
-                <span class="lead-msg">&quot;Need quote &amp; availability for immediate delivery.&quot;</span>
+                <span class="lead-msg">&quot;Need price estimate &amp; delivery today.&quot;</span>
                 <div class="lead-actions">
                   <span class="lead-btn call">📞 Call</span>
                   <span class="lead-btn wa">💬 WhatsApp</span>
@@ -933,7 +995,7 @@
               </div>
               <div class="screen-store-preview">
                 <div class="store-status">✓ JIT Verified Store</div>
-                <div style="font-size: 6.5px; color: #64748b; margin-top: 2px;">Your storefront is live to nearby customers!</div>
+                <div style="font-size: 6px; color: #64748b; margin-top: 1px;">Discoverable to nearby customers!</div>
               </div>
             </div>
           </div>
@@ -955,11 +1017,15 @@
 
       <!-- FOUNDING PARTNER PRIVILEGES -->
       <div class="special-offer-banner">
-        <div class="offer-title">
-          <span>👑</span> EXCLUSIVE PRIVILEGES FOR FOUNDING BUSINESS PARTNERS
+        <div class="offer-left">
+          <span class="offer-icon">👑</span>
+          <div>
+            <div class="offer-title">FOUNDING MERCHANT PRIVILEGES (DECEMBER 2026 BATCH)</div>
+            <div class="offer-desc">Early registrants receive Priority Search Ranking, Free Geotagging, and Dedicated Verification Support!</div>
+          </div>
         </div>
-        <div class="offer-desc">
-          Register now to unlock Lifetime Priority Placement, Free On-Ground Store Verification, and Guaranteed Zero Middleman Fees!
+        <div class="offer-badge">
+          FREE 1 YEAR LISTING
         </div>
       </div>
 
@@ -967,7 +1033,7 @@
       <div class="cta-slogan-row">
         <div class="cta-top">
           <div class="cta-register-pill">
-            <span>📲</span> Register Your Business Today <span>For Free!</span>
+            <span>📲</span> Register Your Business Today — <span>Offer Ends Dec 10, 2026!</span>
           </div>
           <div class="tagline-badge">Your Business. Your Visibility. Your Growth.</div>
         </div>
@@ -995,13 +1061,15 @@
       </div>
 
       <div class="hashtag-bar">
+        <span>#RegisterBeforeDec10</span>
+        <span>•</span>
+        <span>#Free1YearListing</span>
+        <span>•</span>
         <span>#0PercentCommission</span>
         <span>•</span>
         <span>#DirectWhatsAppLeads</span>
         <span>•</span>
-        <span>#LocalBusinessGrowth</span>
-        <span>•</span>
-        <span>#FreeBusinessListing</span>
+        <span>#HosurBusiness</span>
         <span>•</span>
         <span>#VocalForLocal</span>
       </div>
