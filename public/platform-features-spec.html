@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bizearch.in - Comprehensive Platform Features Specification</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 18mm 16mm 18mm 16mm;
+      @bottom-right {
+        content: counter(page);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+      color: #0f172a;
+      background: #ffffff;
+      line-height: 1.5;
+      font-size: 11pt;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .doc-container {
+      width: 100%;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    .doc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #004b87;
+      padding-bottom: 14px;
+      margin-bottom: 22px;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-logo {
+      height: 48px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .doc-meta {
+      text-align: right;
+    }
+
+    .doc-meta .doc-badge {
+      display: inline-block;
+      background: #eff6ff;
+      color: #004b87;
+      border: 1px solid #bfdbfe;
+      font-size: 8.5pt;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 12px;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .doc-meta .doc-date {
+      font-size: 8.5pt;
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    /* TITLE BANNER */
+    .title-banner {
+      background: linear-gradient(135deg, #002b49 0%, #004b87 100%);
+      color: #ffffff;
+      padding: 20px 24px;
+      border-radius: 10px;
+      margin-bottom: 24px;
+    }
+
+    .title-banner h1 {
+      font-size: 20pt;
+      font-weight: 900;
+      line-height: 1.2;
+      margin-bottom: 6px;
+      letter-spacing: -0.3px;
+    }
+
+    .title-banner p {
+      font-size: 10.5pt;
+      color: #e0f2fe;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .kpi-box {
+      text-align: left;
+    }
+
+    .kpi-box .val {
+      font-size: 14pt;
+      font-weight: 900;
+      color: #fde047;
+    }
+
+    .kpi-box .lbl {
+      font-size: 8pt;
+      color: #bae6fd;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+    }
+
+    /* SECTION STYLING */
+    .feature-section {
+      margin-bottom: 20px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #f8fafc;
+      border-left: 4px solid #004b87;
+      padding: 8px 14px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 10px;
+      page-break-after: avoid;
+    }
+
+    .section-header.green { border-left-color: #16a34a; }
+    .section-header.orange { border-left-color: #ea580c; }
+    .section-header.purple { border-left-color: #7e22ce; }
+    .section-header.red { border-left-color: #dc2626; }
+
+    .section-icon {
+      font-size: 16pt;
+      line-height: 1;
+    }
+
+    .section-title {
+      font-size: 13pt;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .section-badge {
+      margin-left: auto;
+      font-size: 8pt;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: #e2e8f0;
+      color: #475569;
+      text-transform: uppercase;
+    }
+
+    .section-intro {
+      font-size: 9.5pt;
+      color: #64748b;
+      margin-bottom: 10px;
+      padding-left: 4px;
+      font-style: italic;
+      page-break-after: avoid;
+    }
+
+    /* FEATURE LIST */
+    .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .feature-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      page-break-inside: avoid;
+    }
+
+    .feature-bullet {
+      width: 7px;
+      height: 7px;
+      background: #004b87;
+      border-radius: 50%;
+      margin-top: 6px;
+      flex-shrink: 0;
+    }
+
+    .feature-card.green .feature-bullet { background: #16a34a; }
+    .feature-card.orange .feature-bullet { background: #ea580c; }
+    .feature-card.purple .feature-bullet { background: #7e22ce; }
+    .feature-card.red .feature-bullet { background: #dc2626; }
+
+    .feature-text {
+      flex: 1;
+    }
+
+    .feature-name {
+      font-size: 10.5pt;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 2px;
+    }
+
+    .feature-desc {
+      font-size: 9pt;
+      color: #475569;
+      line-height: 1.4;
+    }
+
+    /* FOOTER */
+    .doc-footer {
+      border-top: 1.5px solid #cbd5e1;
+      padding-top: 14px;
+      margin-top: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 8.5pt;
+      color: #64748b;
+      page-break-inside: avoid;
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .footer-powered-img {
+      height: 22px;
+      width: auto;
+    }
+
+    .footer-contact {
+      text-align: right;
+      font-weight: 600;
+    }
+
+    .footer-contact strong {
+      color: #004b87;
+    }
+  </style>
+</head>
+<body>
+  <div class="doc-container">
+    <!-- HEADER -->
+    <header class="doc-header">
+      <div class="brand-wrap">
+        <img class="brand-logo" src="file:///C:/Users/HP/.gemini/antigravity/scratch/neighborly-marketplace/public/bizearch-logo.jpg" alt="Bizearch.in">
+      </div>
+      <div class="doc-meta">
+        <div class="doc-badge">Official Platform Architecture</div>
+        <div class="doc-date">Master Feature Specification &bull; November 2026</div>
+      </div>
+    </header>
+
+    <!-- TITLE BANNER -->
+    <div class="title-banner">
+      <h1>Bizearch.in — Master Platform Feature Catalog</h1>
+      <p>Comprehensive breakdown of all system capabilities from frontline micro-utilities to full-stack super administrative governance and ad infrastructure.</p>
+      
+      <div class="kpi-row">
+        <div class="kpi-box">
+          <div class="val">7 Modules</div>
+          <div class="lbl">Core Subsystems</div>
+        </div>
+        <div class="kpi-box">
+          <div class="val">60+ Features</div>
+          <div class="lbl">Built &amp; Verified</div>
+        </div>
+        <div class="kpi-box">
+          <div class="val">4 Languages</div>
+          <div class="lbl">Regional Multilingual</div>
+        </div>
+        <div class="kpi-box">
+          <div class="val">100% Audit</div>
+          <div class="lbl">1-Year PDF/XLSX Logs</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1. MICRO-FEATURES -->
+    <div class="feature-section">
+      <div class="section-header">
+        <span class="section-icon">⚡</span>
+        <h2 class="section-title">1. Micro-Features &amp; Quick Utilities</h2>
+        <span class="section-badge">Small Features &bull; 1-Tap Actions</span>
+      </div>
+      <p class="section-intro">Frictionless convenience tools and quick-action triggers designed for instant, high-speed user actions on mobile and desktop.</p>
+
+      <div class="feature-list">
+        <div class="feature-card">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">1-Tap Direct WhatsApp Connect</div>
+            <div class="feature-desc">Instantly opens the official WhatsApp chat with the store owner, automatically pre-filling the inquiry text and customer inquiry details with zero typing required.</div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">1-Tap Direct Phone Call Dialer</div>
+            <div class="feature-desc">Triggers the merchant's verified direct phone number straight into the user's mobile dialer with zero middleman call centers.</div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">1-Tap Google Maps Navigation</div>
+            <div class="feature-desc">Launches turn-by-turn Google Maps driving or walking navigation using exact latitude and longitude coordinates pinned to the shop front.</div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Native Web Share API Integration</div>
+            <div class="feature-desc">Allows 1-click sharing of store storefronts, product catalogs, and promo offers across WhatsApp groups, Telegram, Instagram, and SMS.</div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Live Store "Open / Closed" Indicator</div>
+            <div class="feature-desc">Real-time status badge that dynamically calculates current store status against operating hours and displays a green/red pill.</div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">"Top Rated 4.5+ ★" Quick Filter Chip</div>
+            <div class="feature-desc">Single-tap discovery filter enabling shoppers to immediately isolate top-rated local establishments based on customer reviews.</div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">"WhatsApp Ready" Quick Filter Chip</div>
+            <div class="feature-desc">Instantly isolates merchants who accept direct orders, inquiry chats, and price estimates over WhatsApp.</div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">"Verified JIT Badge" Trust Filter</div>
+            <div class="feature-desc">Filters stores that have undergone on-ground physical inspection by JIT field verification agents.</div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Interactive Radius Slider (1 km to 50 km)</div>
+            <div class="feature-desc">Dynamic, real-time radius selector adjusting neighborhood search boundaries instantly without reloading the page.</div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Cash Desk Countertop QR Code Generator</div>
+            <div class="feature-desc">Generates dedicated, high-contrast QR codes for store cash registers so visiting customers can scan, bookmark, and reorder from home.</div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">1-Click Copy-to-Clipboard</div>
+            <div class="feature-desc">Fast copying of phone numbers, physical addresses, bank details, and direct store URLs with instant tooltip confirmation.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. CUSTOMER DISCOVERY -->
+    <div class="feature-section">
+      <div class="section-header green">
+        <span class="section-icon">🔍</span>
+        <h2 class="section-title">2. Customer Discovery &amp; Community Experience</h2>
+        <span class="section-badge">Shopper &bull; Resident Tools</span>
+      </div>
+      <p class="section-intro">Hyperlocal search engine designed to connect residents with nearby shops, services, emergency help, and verified prices.</p>
+
+      <div class="feature-list">
+        <div class="feature-card green">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Intelligent Hyperlocal Search Bar</div>
+            <div class="feature-desc">Multi-attribute search engine indexing store names, keywords, item titles, services, and micro-neighborhoods with real-time suggestions.</div>
+          </div>
+        </div>
+
+        <div class="feature-card green">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Dual-Mode Locality Selector</div>
+            <div class="feature-desc">Seamless switching between granular local Hosur hubs (Bagalur Road, HUDCO, SIPCOT, Mathigiri, Gandhi Nagar) and All-India exploration.</div>
+          </div>
+        </div>
+
+        <div class="feature-card green">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Automatic GPS Geolocation Pinning</div>
+            <div class="feature-desc">Captures browser coordinates with transparent user consent to calculate real Euclidean driving/walking distances from user to storefront.</div>
+          </div>
+        </div>
+
+        <div class="feature-card green">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">4 Regional Languages Switcher</div>
+            <div class="feature-desc">Native multi-language UI supporting English, தமிழ் (Tamil), ಕನ್ನಡ (Kannada), and తెలుగు (Telugu) for seamless community adoption.</div>
+          </div>
+        </div>
+
+        <div class="feature-card green">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">A–Z Master Product &amp; Service Directory</div>
+            <div class="feature-desc">Alphabetically cataloged master index linking thousands of items and services directly to local stocking merchants.</div>
+          </div>
+        </div>
+
+        <div class="feature-card green">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Interactive Custom Quote &amp; Estimate System</div>
+            <div class="feature-desc">Enables shoppers to request price estimates directly from businesses, logging full inquiry history and dispatching notifications to merchants.</div>
+          </div>
+        </div>
+
+        <div class="feature-card green">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Star Ratings &amp; Verified Reviews</div>
+            <div class="feature-desc">Community reviews with 1–5 star ratings, feedback commentary, and verified reviewer badges preventing spam reviews.</div>
+          </div>
+        </div>
+
+        <div class="feature-card green">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Floating Emergency SOS Panic Button</div>
+            <div class="feature-desc">High-priority floating SOS trigger broadcasting live coordinates to local emergency contacts, hospitals, and police helplines.</div>
+          </div>
+        </div>
+
+        <div class="feature-card green">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Customer Profile &amp; Address Book</div>
+            <div class="feature-desc">Dedicated account portal storing delivery coordinates, emergency contacts, past inquiries, and review history.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. MERCHANT TOOLKIT -->
+    <div class="feature-section">
+      <div class="section-header orange">
+        <span class="section-icon">🏪</span>
+        <h2 class="section-title">3. Merchant &amp; Store Owner Toolkit</h2>
+        <span class="section-badge">Business Onboarding &bull; Sales</span>
+      </div>
+      <p class="section-intro">End-to-end digital storefront builder giving retail shops the digital capabilities of big e-commerce platforms.</p>
+
+      <div class="feature-list">
+        <div class="feature-card orange">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Self-Service Merchant Registration</div>
+            <div class="feature-desc">Quick 60-second onboarding form capturing business details, categories, subcategories, physical addresses, and contact numbers.</div>
+          </div>
+        </div>
+
+        <div class="feature-card orange">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Storefront Photo &amp; Banner Uploader</div>
+            <div class="feature-desc">High-capacity media uploader allowing shop owners to showcase storefront signage, interior photos, and product shelves.</div>
+          </div>
+        </div>
+
+        <div class="feature-card orange">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Live Product Catalog Builder</div>
+            <div class="feature-desc">Allows merchants to list products, service menus, prices, discounts, and inventory status with instant visibility to nearby shoppers.</div>
+          </div>
+        </div>
+
+        <div class="feature-card orange">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Real-Time Lead &amp; Quote Inbox</div>
+            <div class="feature-desc">Direct customer price inquiries arrive directly on the merchant's mobile device with verified phone numbers for immediate closing.</div>
+          </div>
+        </div>
+
+        <div class="feature-card orange">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">0% Commission Guarantee</div>
+            <div class="feature-desc">Merchants retain 100% of order values and customer payments with zero commission cuts or transaction surcharges.</div>
+          </div>
+        </div>
+
+        <div class="feature-card orange">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">On-Ground JIT Verification Seal</div>
+            <div class="feature-desc">Field-verified physical certification seal boosting customer trust and giving priority placement in local search results.</div>
+          </div>
+        </div>
+
+        <div class="feature-card orange">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Doorstep Field Agent Assistance</div>
+            <div class="feature-desc">Busy shop owners can request a visiting JIT field agent to digitize their storefront, capture photos, and configure catalog items free of cost.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. FIELD AGENTS -->
+    <div class="feature-section">
+      <div class="section-header purple">
+        <span class="section-icon">🤝</span>
+        <h2 class="section-title">4. Field Agent &amp; Verification Network</h2>
+        <span class="section-badge">Field Operations &bull; Ground Trust</span>
+      </div>
+      <p class="section-intro">On-ground operations module coordinating neighborhood field agents, verification audits, and physical geotagging.</p>
+
+      <div class="feature-list">
+        <div class="feature-card purple">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Field Agent Registration &amp; Portal</div>
+            <div class="feature-desc">Dedicated onboarding workflow for regional field verification agents with credentials and assigned operational zones.</div>
+          </div>
+        </div>
+
+        <div class="feature-card purple">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Doorstep Store Verification Protocol</div>
+            <div class="feature-desc">Structured verification pipeline where agents visit physical store locations, verify shop ownership, and inspect business legitimacy.</div>
+          </div>
+        </div>
+
+        <div class="feature-card purple">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Precise GPS Store Geotagging</div>
+            <div class="feature-desc">Field agents capture on-site latitude/longitude pins directly from their mobile devices, ensuring pin-point navigational accuracy.</div>
+          </div>
+        </div>
+
+        <div class="feature-card purple">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Store Delisting &amp; Removal Pipeline</div>
+            <div class="feature-desc">Agents can submit structured removal requests for closed, relocated, or fraudulent stores, accompanied by audit notes and review logs.</div>
+          </div>
+        </div>
+
+        <div class="feature-card purple">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Super Admin Agent Oversight</div>
+            <div class="feature-desc">Real-time performance metrics tracking businesses verified per agent, pending reviews, and 1-click agent enable/disable controls.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. ADS ENGINE -->
+    <div class="feature-section">
+      <div class="section-header orange">
+        <span class="section-icon">📢</span>
+        <h2 class="section-title">5. Hyperlocal Advertisement &amp; Analytics Engine</h2>
+        <span class="section-badge">Monetization &bull; Analytics</span>
+      </div>
+      <p class="section-intro">Precision ad-serving engine delivering relevant banner promotions to shoppers strictly within the merchant's target delivery radius.</p>
+
+      <div class="feature-list">
+        <div class="feature-card orange">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Hyperlocal Radius-Targeted Banner Ads</div>
+            <div class="feature-desc">Serves sponsored store banners exclusively to users located within the merchant's chosen kilometer boundary.</div>
+          </div>
+        </div>
+
+        <div class="feature-card orange">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Impression &amp; Click Tracking Engine</div>
+            <div class="feature-desc">High-throughput tracking engine recording every ad view and customer tap with fraud-prevention filters.</div>
+          </div>
+        </div>
+
+        <div class="feature-card orange">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Ad Booking &amp; Media Upload Portal</div>
+            <div class="feature-desc">Self-service ad booking workflow allowing merchants to select placement duration, set budgets, and upload banner graphics.</div>
+          </div>
+        </div>
+
+        <div class="feature-card orange">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Super Admin Ad Moderation Queue</div>
+            <div class="feature-desc">Editorial control center to review ad creative banners, verify destination landing pages, and approve, pause, or reject campaigns.</div>
+          </div>
+        </div>
+
+        <div class="feature-card orange">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Dedicated Ads Activity Log Module</div>
+            <div class="feature-desc">Separate, standalone audit module recording all advertising transactions, impression logs, clicks, campaign approvals, and ad renewals.</div>
+          </div>
+        </div>
+
+        <div class="feature-card orange">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Ads Analytics Export to PDF &amp; XLSX</div>
+            <div class="feature-desc">1-click export of complete ad performance and revenue logs into formatted Microsoft Excel (.xlsx) and printable PDF reports.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. SUPER ADMIN -->
+    <div class="feature-section">
+      <div class="section-header red">
+        <span class="section-icon">👑</span>
+        <h2 class="section-title">6. Super Admin Workspace &amp; Governance Center</h2>
+        <span class="section-badge">Enterprise Control &bull; Full Audit</span>
+      </div>
+      <p class="section-intro">Unified command center providing platform oversight, account lifecycle management, security audits, and data export tools.</p>
+
+      <div class="feature-list">
+        <div class="feature-card red">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Executive KPI Dashboard</div>
+            <div class="feature-desc">Real-time overview tracking total business listings, verification ratios, active ad campaigns, customer registrations, and platform revenue.</div>
+          </div>
+        </div>
+
+        <div class="feature-card red">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Business Approvals &amp; Delisting Center</div>
+            <div class="feature-desc">Review pipeline to evaluate submitted store profiles, approve verified badges, or flag and delist non-compliant businesses.</div>
+          </div>
+        </div>
+
+        <div class="feature-card red">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Customer &amp; Agent Account Suspension Controls</div>
+            <div class="feature-desc">1-click enable/disable toggle allowing super admins to ban or deactivate accounts without deleting historical transaction records.</div>
+          </div>
+        </div>
+
+        <div class="feature-card red">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Permanent Customer Onboarding Audit Vault</div>
+            <div class="feature-desc">Comprehensive database tracking all customer registrations, mobile OTP verification timestamps, full physical addresses, and GPS consent.</div>
+          </div>
+        </div>
+
+        <div class="feature-card red">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">1-Year Activity Log &amp; Audit Archive</div>
+            <div class="feature-desc">Enterprise-grade 1-year persistent log storing logins, password updates, quote submissions, SOS triggers, OTP requests, and admin actions.</div>
+          </div>
+        </div>
+
+        <div class="feature-card red">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">1-Click Activity Log Exports (.PDF &amp; .XLSX)</div>
+            <div class="feature-desc">Full audit log export pipeline generating formatted Excel (.xlsx) spreadsheets and printable vector PDF compliance documents.</div>
+          </div>
+        </div>
+
+        <div class="feature-card red">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Dynamic Registration Form Customizer</div>
+            <div class="feature-desc">Visual form builder allowing super admins to add, reorder, or customize fields across customer and merchant onboarding forms.</div>
+          </div>
+        </div>
+
+        <div class="feature-card red">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Emergency Safety SOS Response Center</div>
+            <div class="feature-desc">Centralized distress monitoring hub displaying incoming emergency alerts with live pinned GPS coordinates for immediate emergency dispatch.</div>
+          </div>
+        </div>
+
+        <div class="feature-card red">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Platform Support &amp; Contact Configuration</div>
+            <div class="feature-desc">Centralized controls to update official customer care numbers, emergency helplines, WhatsApp support contacts, and support email addresses.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. MARKETING SUITE -->
+    <div class="feature-section">
+      <div class="section-header">
+        <span class="section-icon">🎨</span>
+        <h2 class="section-title">7. Poster Studio &amp; Marketing Acquisition Suite</h2>
+        <span class="section-badge">Offline Growth &bull; Print Studio</span>
+      </div>
+      <p class="section-intro">Professional vector design suite generating print-ready promotional posters for merchant field acquisition and street marketing.</p>
+
+      <div class="feature-list">
+        <div class="feature-card">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Merchant Growth Poster Generator</div>
+            <div class="feature-desc">Standard A4 ratio (1000 &times; 1414 px) full-bleed canvas featuring balanced, gap-free typography and 8 merchant feature cards.</div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Dec 10, 2026 Limited-Time Early Bird Promotion</div>
+            <div class="feature-desc">Prominent deadline badges and promotional ribbons: <em>"Register before Dec 10th, 2026: FREE Business Listing for 1 Full Year!"</em>.</div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Sector Onboarding Bar &amp; 3-Step Simple Flow</div>
+            <div class="feature-desc">Integrated category strip showcasing retail sectors welcomed and a clear 3-step guide for local shop owners to onboard in 60 seconds.</div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">All-Features Platform Showcase Poster</div>
+            <div class="feature-desc">Consumer-facing promotional poster highlighting localized search, SOS safety, 4 languages, and direct WhatsApp ordering.</div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">Automated Dual-Format Exporters (2x PNG &amp; Vector PDF)</div>
+            <div class="feature-desc">Automated Puppeteer rendering pipeline exporting crisp 2000 &times; 2828 px retina images and print-ready A4 vector PDFs.</div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-bullet"></div>
+          <div class="feature-text">
+            <div class="feature-name">In-App Live Route (/poster)</div>
+            <div class="feature-desc">Integrated Next.js interactive route with 1-click browser printing, offline standalone HTML files, and variant toggling.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="doc-footer">
+      <div class="footer-left">
+        <span>Powered by</span>
+        <img class="footer-powered-img" src="file:///C:/Users/HP/.gemini/antigravity/scratch/neighborly-marketplace/public/jishnu-infotech-logo.jpg" alt="Jishnu Infotech">
+      </div>
+      <div class="footer-contact">
+        <div>Bizearch.in &bull; Find &bull; Connect &bull; Grow</div>
+        <div>Merchant &amp; Customer Care: <strong>+91 95668 23219</strong></div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
