@@ -282,7 +282,7 @@ export default function PosterPage() {
         }
 
         .hero-title {
-          font-size: 32px;
+          font-size: 37px;
           font-weight: 900;
           color: #0b2545;
           line-height: 1.15;
@@ -298,7 +298,7 @@ export default function PosterPage() {
         }
 
         .hero-subtitle {
-          font-size: 14.5px;
+          font-size: 15.5px;
           font-weight: 700;
           color: #475569;
           margin-bottom: 14px;
@@ -898,15 +898,15 @@ function MerchantGrowthPoster() {
         </div>
 
         <div className="header-graphic-wrap">
-          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-            <div style={{ background: "linear-gradient(135deg, #b91c1c 0%, #dc2626 100%)", color: "#fff", padding: "6px 14px", borderRadius: "20px", fontSize: "11px", fontWeight: 800, boxShadow: "0 2px 8px rgba(220,38,38,0.25)" }}>
+          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+            <div style={{ background: "linear-gradient(135deg, #b91c1c 0%, #dc2626 100%)", color: "#fff", padding: "6px 18px", borderRadius: "20px", fontSize: "13px", fontWeight: 800, boxShadow: "0 3px 10px rgba(220,38,38,0.25)" }}>
               ⏰ REGISTER BEFORE DEC 10, 2026: FREE UNTIL MARCH 31ST, 2027!
             </div>
-            <div className="store-3d-card">
-              <span className="store-icon-3d">🏪</span>
+            <div className="store-3d-card" style={{ padding: "5px 14px", gap: "8px" }}>
+              <span className="store-icon-3d" style={{ fontSize: "24px" }}>🏪</span>
               <div className="store-badge-text">
-                <span className="store-badge-title">LOCAL MERCHANTS</span>
-                <span className="store-badge-sub">VERIFIED PLATFORM</span>
+                <span className="store-badge-title" style={{ fontSize: "11px" }}>LOCAL MERCHANTS</span>
+                <span className="store-badge-sub" style={{ fontSize: "13.5px" }}>VERIFIED PLATFORM</span>
               </div>
             </div>
           </div>
@@ -915,26 +915,26 @@ function MerchantGrowthPoster() {
 
       {/* MAIN HEADLINE */}
       <div>
-        <div className="attention-pill">
+        <div className="attention-pill" style={{ padding: "6px 18px", fontSize: "13px" }}>
           <span>📢</span> ATTENTION RETAILERS, STORES, CLINICS &amp; SERVICE PROVIDERS!
         </div>
-        <h1 className="hero-title">
+        <h1 className="hero-title" style={{ fontSize: "37px" }}>
           Big or Small, Every Business Deserves to <span className="highlight-grow">Grow!</span>
         </h1>
-        <p className="hero-subtitle">
+        <p className="hero-subtitle" style={{ fontSize: "15.5px" }}>
           Growth is what matters — not the size of your store. Connect directly with thousands of nearby shoppers in your neighborhood.
         </p>
 
         {/* DEC 10 LIMITED TIME EARLY BIRD RIBBON */}
         <div style={{ background: "linear-gradient(90deg, #b91c1c 0%, #ea580c 50%, #d97706 100%)", color: "#ffffff", borderRadius: "10px", padding: "9px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px", boxShadow: "0 3px 12px rgba(234,88,12,0.25)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{ fontSize: "22px" }}>🔥</span>
+            <span style={{ fontSize: "26px" }}>🔥</span>
             <div>
-              <div style={{ fontSize: "12.5px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.4px" }}>LIMITED-TIME FOUNDING PARTNER WINDOW</div>
-              <div style={{ fontSize: "11.5px", fontWeight: 600, opacity: 0.95 }}>Register before Dec 10th, 2026 to unlock a <strong>FREE Business Listing until March 31st, 2027</strong>!</div>
+              <div style={{ fontSize: "14px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.4px" }}>LIMITED-TIME FOUNDING PARTNER WINDOW</div>
+              <div style={{ fontSize: "13px", fontWeight: 600, opacity: 0.95 }}>Register before Dec 10th, 2026 to unlock a <strong>FREE Business Listing until March 31st, 2027</strong>!</div>
             </div>
           </div>
-          <div style={{ background: "#ffffff", color: "#b91c1c", fontSize: "11px", fontWeight: 900, padding: "5px 12px", borderRadius: "16px", whiteSpace: "nowrap" }}>
+          <div style={{ background: "#ffffff", color: "#b91c1c", fontSize: "12.5px", fontWeight: 900, padding: "6px 16px", borderRadius: "18px", whiteSpace: "nowrap", boxShadow: "0 2px 6px rgba(0,0,0,0.15)" }}>
             Valid Until Dec 10, 2026
           </div>
         </div>
@@ -942,42 +942,42 @@ function MerchantGrowthPoster() {
         {/* 4 KILLER PILLARS (NO EMPTY SPACE) */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px", marginBottom: "10px" }}>
           <div style={{ background: "#fffbeb", border: "1.5px solid #fde68a", borderRadius: "10px", padding: "8px 10px", display: "flex", gap: "8px", alignItems: "center" }}>
-            <span style={{ fontSize: "22px" }}>💰</span>
+            <span style={{ fontSize: "24px" }}>💰</span>
             <div>
-              <div style={{ fontSize: "11px", fontWeight: 900, color: "#92400e" }}>0% Commission</div>
-              <div style={{ fontSize: "9.5px", color: "#78350f" }}>Keep 100% profit — zero cuts on orders.</div>
+              <div style={{ fontSize: "13.5px", fontWeight: 900, color: "#92400e" }}>0% Commission</div>
+              <div style={{ fontSize: "10.5px", fontWeight: 600, color: "#78350f" }}>Keep 100% profit — zero cuts on orders.</div>
             </div>
           </div>
           <div style={{ background: "#f0fdf4", border: "1.5px solid #bbf7d0", borderRadius: "10px", padding: "8px 10px", display: "flex", gap: "8px", alignItems: "center" }}>
-            <span style={{ fontSize: "22px" }}>💬</span>
+            <span style={{ fontSize: "24px" }}>💬</span>
             <div>
-              <div style={{ fontSize: "11px", fontWeight: 900, color: "#166534" }}>WhatsApp Leads</div>
-              <div style={{ fontSize: "9.5px", color: "#14532d" }}>Customer inquiries straight to your phone.</div>
+              <div style={{ fontSize: "13.5px", fontWeight: 900, color: "#166534" }}>WhatsApp Leads</div>
+              <div style={{ fontSize: "10.5px", fontWeight: 600, color: "#14532d" }}>Customer inquiries straight to your phone.</div>
             </div>
           </div>
           <div style={{ background: "#eff6ff", border: "1.5px solid #bfdbfe", borderRadius: "10px", padding: "8px 10px", display: "flex", gap: "8px", alignItems: "center" }}>
-            <span style={{ fontSize: "22px" }}>📍</span>
+            <span style={{ fontSize: "24px" }}>📍</span>
             <div>
-              <div style={{ fontSize: "11px", fontWeight: 900, color: "#1e40af" }}>Hyperlocal GPS</div>
-              <div style={{ fontSize: "9.5px", color: "#1e3a8a" }}>Nearby residents navigate straight to you.</div>
+              <div style={{ fontSize: "13.5px", fontWeight: 900, color: "#1e40af" }}>Hyperlocal GPS</div>
+              <div style={{ fontSize: "10.5px", fontWeight: 600, color: "#1e3a8a" }}>Nearby residents navigate straight to you.</div>
             </div>
           </div>
           <div style={{ background: "#faf5ff", border: "1.5px solid #e9d5ff", borderRadius: "10px", padding: "8px 10px", display: "flex", gap: "8px", alignItems: "center" }}>
-            <span style={{ fontSize: "22px" }}>🛡️</span>
+            <span style={{ fontSize: "24px" }}>🛡️</span>
             <div>
-              <div style={{ fontSize: "11px", fontWeight: 900, color: "#6b21a8" }}>JIT Verified</div>
-              <div style={{ fontSize: "9.5px", color: "#581c87" }}>On-ground certified badge for 5X trust.</div>
+              <div style={{ fontSize: "13.5px", fontWeight: 900, color: "#6b21a8" }}>JIT Verified</div>
+              <div style={{ fontSize: "10.5px", fontWeight: 600, color: "#581c87" }}>On-ground certified badge for 5X trust.</div>
             </div>
           </div>
         </div>
 
         {/* CONTRAST STRIP */}
         <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "10px", padding: "8px 14px", display: "grid", gridTemplateColumns: "1.1fr 1fr", gap: "10px", marginBottom: "10px" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "3px", fontSize: "11px", fontWeight: 600, color: "#1e293b" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "3px", fontSize: "12.5px", fontWeight: 600, color: "#1e293b" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span>🔍</span> <span>Nearby shoppers actively search daily for products, services &amp; estimates.</span></div>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span>🏪</span> <span>Your store is ready to serve them with genuine quality &amp; fair prices.</span></div>
           </div>
-          <div style={{ background: "#fffbeb", border: "1px dashed #f59e0b", borderRadius: "8px", padding: "6px 10px", fontSize: "11px", fontWeight: 600, color: "#92400e", display: "flex", alignItems: "center", gap: "8px" }}>
+          <div style={{ background: "#fffbeb", border: "1px dashed #f59e0b", borderRadius: "8px", padding: "6px 10px", fontSize: "12px", fontWeight: 600, color: "#92400e", display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ fontSize: "18px" }}>💡</span>
             <div><strong>What if they could find you right now?</strong> Put your store on India&apos;s fastest growing neighborhood search engine!</div>
           </div>
@@ -986,85 +986,85 @@ function MerchantGrowthPoster() {
         {/* 8 COMPLETE FEATURES GRID */}
         <div style={{ marginBottom: "10px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-            <h3 style={{ fontSize: "13.5px", fontWeight: 900, color: "#004b87", display: "flex", alignItems: "center", gap: "6px" }}>
+            <h3 style={{ fontSize: "15.5px", fontWeight: 900, color: "#004b87", display: "flex", alignItems: "center", gap: "6px" }}>
               ✨ Complete Business Toolkit — Free Business Listing Until March 31, 2027
             </h3>
-            <span style={{ fontSize: "11px", fontWeight: 800, color: "#ea580c" }}>Why Local Stores Choose Bizearch.in →</span>
+            <span style={{ fontSize: "12.5px", fontWeight: 800, color: "#ea580c" }}>Why Local Stores Choose Bizearch.in →</span>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "7px" }}>
             <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px", display: "flex", flexDirection: "column", gap: "2px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                 <span style={{ fontSize: "16px" }}>🏪</span>
-                <strong style={{ fontSize: "11px", color: "#0f172a" }}>Digital Storefront</strong>
+                <strong style={{ fontSize: "12px", color: "#0f172a" }}>Digital Storefront</strong>
               </div>
-              <p style={{ fontSize: "9.5px", color: "#64748b", margin: 0 }}>Photos, timings, phone, address &amp; 1-tap Google Maps directions.</p>
+              <p style={{ fontSize: "10.5px", color: "#64748b", margin: 0 }}>Photos, timings, phone, address &amp; 1-tap Google Maps directions.</p>
             </div>
 
             <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px", display: "flex", flexDirection: "column", gap: "2px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                 <span style={{ fontSize: "16px" }}>🛍️</span>
-                <strong style={{ fontSize: "11px", color: "#0f172a" }}>Live Product Catalog</strong>
+                <strong style={{ fontSize: "12px", color: "#0f172a" }}>Live Product Catalog</strong>
               </div>
-              <p style={{ fontSize: "9.5px", color: "#64748b", margin: 0 }}>Publish items, prices, offers &amp; receive direct customer orders.</p>
+              <p style={{ fontSize: "10.5px", color: "#64748b", margin: 0 }}>Publish items, prices, offers &amp; receive direct customer orders.</p>
             </div>
 
             <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px", display: "flex", flexDirection: "column", gap: "2px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                 <span style={{ fontSize: "16px" }}>📄</span>
-                <strong style={{ fontSize: "11px", color: "#0f172a" }}>Custom Quote Inbox</strong>
+                <strong style={{ fontSize: "12px", color: "#0f172a" }}>Custom Quote Inbox</strong>
               </div>
-              <p style={{ fontSize: "9.5px", color: "#64748b", margin: 0 }}>Receive real-time customer price inquiries with verified numbers.</p>
+              <p style={{ fontSize: "10.5px", color: "#64748b", margin: 0 }}>Receive real-time customer price inquiries with verified numbers.</p>
             </div>
 
             <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px", display: "flex", flexDirection: "column", gap: "2px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                 <span style={{ fontSize: "16px" }}>📞</span>
-                <strong style={{ fontSize: "11px", color: "#0f172a" }}>1-Tap Direct Call &amp; WA</strong>
+                <strong style={{ fontSize: "12px", color: "#0f172a" }}>1-Tap Direct Call &amp; WA</strong>
               </div>
-              <p style={{ fontSize: "9.5px", color: "#64748b", margin: 0 }}>Zero middleman call centers. Customers ring your mobile or WhatsApp.</p>
+              <p style={{ fontSize: "10.5px", color: "#64748b", margin: 0 }}>Zero middleman call centers. Customers ring your mobile or WhatsApp.</p>
             </div>
 
             <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px", display: "flex", flexDirection: "column", gap: "2px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                 <span style={{ fontSize: "16px" }}>📲</span>
-                <strong style={{ fontSize: "11px", color: "#0f172a" }}>Countertop QR Code</strong>
+                <strong style={{ fontSize: "12px", color: "#0f172a" }}>Countertop QR Code</strong>
               </div>
-              <p style={{ fontSize: "9.5px", color: "#64748b", margin: 0 }}>Custom QR for your cash desk so shoppers bookmark &amp; re-order easily.</p>
+              <p style={{ fontSize: "10.5px", color: "#64748b", margin: 0 }}>Custom QR for your cash desk so shoppers bookmark &amp; re-order easily.</p>
             </div>
 
             <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px", display: "flex", flexDirection: "column", gap: "2px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                 <span style={{ fontSize: "16px" }}>🗣️</span>
-                <strong style={{ fontSize: "11px", color: "#0f172a" }}>4 Regional Languages</strong>
+                <strong style={{ fontSize: "12px", color: "#0f172a" }}>4 Regional Languages</strong>
               </div>
-              <p style={{ fontSize: "9.5px", color: "#64748b", margin: 0 }}>Reach shoppers in English, தமிழ், ಕನ್ನಡ, and తెలుగు.</p>
+              <p style={{ fontSize: "10.5px", color: "#64748b", margin: 0 }}>Reach shoppers in English, தமிழ், ಕನ್ನಡ, and తెలుగు.</p>
             </div>
 
             <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px", display: "flex", flexDirection: "column", gap: "2px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                 <span style={{ fontSize: "16px" }}>📢</span>
-                <strong style={{ fontSize: "11px", color: "#0f172a" }}>Hyperlocal Ad Boost</strong>
+                <strong style={{ fontSize: "12px", color: "#0f172a" }}>Hyperlocal Ad Boost</strong>
               </div>
-              <p style={{ fontSize: "9.5px", color: "#64748b", margin: 0 }}>Promote festival offers, clearance sales &amp; top category banners.</p>
+              <p style={{ fontSize: "10.5px", color: "#64748b", margin: 0 }}>Promote festival offers, clearance sales &amp; top category banners.</p>
             </div>
 
             <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px", display: "flex", flexDirection: "column", gap: "2px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                 <span style={{ fontSize: "16px" }}>🤝</span>
-                <strong style={{ fontSize: "11px", color: "#0f172a" }}>Free Agent Onboarding</strong>
+                <strong style={{ fontSize: "12px", color: "#0f172a" }}>Free Agent Onboarding</strong>
               </div>
-              <p style={{ fontSize: "9.5px", color: "#64748b", margin: 0 }}>JIT agents visit your store to verify and help set up your catalog free.</p>
+              <p style={{ fontSize: "10.5px", color: "#64748b", margin: 0 }}>JIT agents visit your store to verify and help set up your catalog free.</p>
             </div>
           </div>
         </div>
 
         {/* ONBOARDING CATEGORIES STRIP */}
         <div style={{ background: "#f1f5f9", border: "1px solid #cbd5e1", borderRadius: "8px", padding: "6px 12px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", marginBottom: "8px" }}>
-          <span style={{ fontSize: "10px", fontWeight: 900, color: "#004b87", textTransform: "uppercase", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>Categories We Welcome:</span>
+          <span style={{ fontSize: "12px", fontWeight: 900, color: "#004b87", textTransform: "uppercase", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>Categories We Welcome:</span>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", alignItems: "center" }}>
             {["🛒 Supermarkets & Groceries", "👗 Fashion & Boutiques", "📱 Electronics & Mobiles", "🚗 Automobiles & Service", "🍽️ Restaurants & Bakeries", "🩺 Clinics & Pharmacies", "🔧 Hardware & Repairs"].map((cat) => (
-              <span key={cat} style={{ background: "#ffffff", border: "1px solid #cbd5e1", padding: "2px 7px", borderRadius: "12px", fontSize: "9.5px", fontWeight: 700, color: "#334155" }}>
+              <span key={cat} style={{ background: "#ffffff", border: "1px solid #cbd5e1", padding: "3px 9px", borderRadius: "14px", fontSize: "11px", fontWeight: 700, color: "#334155" }}>
                 {cat}
               </span>
             ))}
@@ -1074,24 +1074,24 @@ function MerchantGrowthPoster() {
         {/* HOW IT WORKS 3-STEP BAR */}
         <div style={{ background: "#f0fdf4", border: "1.5px solid #86efac", borderRadius: "8px", padding: "6px 14px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px", marginBottom: "8px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
-            <div style={{ width: "20px", height: "20px", background: "#16a34a", color: "#fff", borderRadius: "50%", fontSize: "10px", fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>1</div>
+            <div style={{ width: "24px", height: "24px", background: "#16a34a", color: "#fff", borderRadius: "50%", fontSize: "12px", fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>1</div>
             <div>
-              <div style={{ fontSize: "10.5px", fontWeight: 900, color: "#14532d" }}>Scan QR or Visit Bizearch.in</div>
-              <div style={{ fontSize: "9px", color: "#166534" }}>Takes only 60 seconds to register your store.</div>
+              <div style={{ fontSize: "12px", fontWeight: 900, color: "#14532d" }}>Scan QR or Visit Bizearch.in</div>
+              <div style={{ fontSize: "10.5px", fontWeight: 600, color: "#166534" }}>Takes only 60 seconds to register your store.</div>
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
-            <div style={{ width: "20px", height: "20px", background: "#16a34a", color: "#fff", borderRadius: "50%", fontSize: "10px", fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>2</div>
+            <div style={{ width: "24px", height: "24px", background: "#16a34a", color: "#fff", borderRadius: "50%", fontSize: "12px", fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>2</div>
             <div>
-              <div style={{ fontSize: "10.5px", fontWeight: 900, color: "#14532d" }}>Add Your Store &amp; Products</div>
-              <div style={{ fontSize: "9px", color: "#166534" }}>Upload photos, prices, hours and phone numbers.</div>
+              <div style={{ fontSize: "12px", fontWeight: 900, color: "#14532d" }}>Add Your Store &amp; Products</div>
+              <div style={{ fontSize: "10.5px", fontWeight: 600, color: "#166534" }}>Upload photos, prices, hours and phone numbers.</div>
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
-            <div style={{ width: "20px", height: "20px", background: "#16a34a", color: "#fff", borderRadius: "50%", fontSize: "10px", fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>3</div>
+            <div style={{ width: "24px", height: "24px", background: "#16a34a", color: "#fff", borderRadius: "50%", fontSize: "12px", fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>3</div>
             <div>
-              <div style={{ fontSize: "10.5px", fontWeight: 900, color: "#14532d" }}>Get JIT Verified &amp; Grow</div>
-              <div style={{ fontSize: "9px", color: "#166534" }}>Receive direct WhatsApp orders &amp; quote leads.</div>
+              <div style={{ fontSize: "12px", fontWeight: 900, color: "#14532d" }}>Get JIT Verified &amp; Grow</div>
+              <div style={{ fontSize: "10.5px", fontWeight: 600, color: "#166534" }}>Receive direct WhatsApp orders &amp; quote leads.</div>
             </div>
           </div>
         </div>
@@ -1100,15 +1100,15 @@ function MerchantGrowthPoster() {
         <div className="value-section" style={{ padding: "10px 14px", gap: "12px", marginBottom: "10px" }}>
           {/* Left: Benefits */}
           <div className="benefits-col">
-            <h4 style={{ fontSize: "13px" }}>⭐ Register Before Dec 10, 2026!</h4>
-            <div className="benefits-subtitle" style={{ fontSize: "10.5px", marginBottom: "6px" }}>Free listing until March 31st, 2027 includes:</div>
-            <ul className="benefits-list" style={{ gap: "4px" }}>
-              <li style={{ fontSize: "11px" }}><span className="check-icon">✓</span> FREE Full Business Listing until March 31, 2027</li>
-              <li style={{ fontSize: "11px" }}><span className="check-icon">✓</span> Real-Time Customer Lead Inbox on Phone</li>
-              <li style={{ fontSize: "11px" }}><span className="check-icon">✓</span> Direct Customer Callback &amp; WhatsApp</li>
-              <li style={{ fontSize: "11px" }}><span className="check-icon">✓</span> 0% Commission — Keep 100% Profits</li>
-              <li style={{ fontSize: "11px" }}><span className="check-icon">✓</span> Showcase Unlimited Products &amp; Services</li>
-              <li style={{ fontSize: "11px" }}><span className="check-icon">✓</span> Doorstep JIT Field Verification Badge</li>
+            <h4 style={{ fontSize: "16px" }}>⭐ Register Before Dec 10, 2026!</h4>
+            <div className="benefits-subtitle" style={{ fontSize: "12px", marginBottom: "6px" }}>Free listing until March 31st, 2027 includes:</div>
+            <ul className="benefits-list" style={{ gap: "5px" }}>
+              <li style={{ fontSize: "12px" }}><span className="check-icon" style={{ fontSize: "15px" }}>✓</span> FREE Full Business Listing until March 31, 2027</li>
+              <li style={{ fontSize: "12px" }}><span className="check-icon" style={{ fontSize: "15px" }}>✓</span> Real-Time Customer Lead Inbox on Phone</li>
+              <li style={{ fontSize: "12px" }}><span className="check-icon" style={{ fontSize: "15px" }}>✓</span> Direct Customer Callback &amp; WhatsApp</li>
+              <li style={{ fontSize: "12px" }}><span className="check-icon" style={{ fontSize: "15px" }}>✓</span> 0% Commission — Keep 100% Profits</li>
+              <li style={{ fontSize: "12px" }}><span className="check-icon" style={{ fontSize: "15px" }}>✓</span> Showcase Unlimited Products &amp; Services</li>
+              <li style={{ fontSize: "12px" }}><span className="check-icon" style={{ fontSize: "15px" }}>✓</span> Doorstep JIT Field Verification Badge</li>
             </ul>
           </div>
 
@@ -1116,20 +1116,20 @@ function MerchantGrowthPoster() {
           <div className="mockup-col">
             <div className="phone-mockup" style={{ width: "140px", height: "190px" }}>
               <div className="phone-screen" style={{ padding: "5px", gap: "4px" }}>
-                <div style={{ background: "#004b87", color: "#fff", borderRadius: "4px", padding: "3px 5px", fontSize: "7px", fontWeight: 800, display: "flex", justifyContent: "space-between" }}>
+                <div style={{ background: "#004b87", color: "#fff", borderRadius: "4px", padding: "3px 5px", fontSize: "8px", fontWeight: 800, display: "flex", justifyContent: "space-between" }}>
                   <span>bizearch.in Merchant</span>
                   <span>● LIVE</span>
                 </div>
                 <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "5px", padding: "4px", display: "flex", flexDirection: "column", gap: "2px" }}>
-                  <span style={{ fontSize: "6px", fontWeight: 900, color: "#1d4ed8" }}>🔥 NEW CUSTOMER LEAD</span>
-                  <span style={{ fontSize: "7px", fontWeight: 800, color: "#0f172a" }}>Quote Request from Resident</span>
-                  <span style={{ fontSize: "6px", color: "#475569" }}>&quot;Need price estimate &amp; delivery today.&quot;</span>
+                  <span style={{ fontSize: "7.5px", fontWeight: 900, color: "#1d4ed8" }}>🔥 NEW CUSTOMER LEAD</span>
+                  <span style={{ fontSize: "9px", fontWeight: 800, color: "#0f172a" }}>Quote Request from Resident</span>
+                  <span style={{ fontSize: "7.5px", color: "#475569", lineHeight: 1.25 }}>&quot;Need price estimate &amp; delivery today.&quot;</span>
                   <div style={{ display: "flex", gap: "3px", marginTop: "2px" }}>
-                    <span style={{ flex: 1, background: "#2563eb", color: "#fff", borderRadius: "3px", fontSize: "6px", fontWeight: 800, textAlign: "center", padding: "2px" }}>📞 Call</span>
-                    <span style={{ flex: 1, background: "#16a34a", color: "#fff", borderRadius: "3px", fontSize: "6px", fontWeight: 800, textAlign: "center", padding: "2px" }}>💬 WhatsApp</span>
+                    <span style={{ flex: 1, background: "#2563eb", color: "#fff", borderRadius: "3px", fontSize: "7.5px", fontWeight: 800, textAlign: "center", padding: "2.5px" }}>📞 Call</span>
+                    <span style={{ flex: 1, background: "#16a34a", color: "#fff", borderRadius: "3px", fontSize: "7.5px", fontWeight: 800, textAlign: "center", padding: "2.5px" }}>💬 WhatsApp</span>
                   </div>
                 </div>
-                <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "4px", padding: "3px", fontSize: "6px", color: "#16a34a", fontWeight: 800 }}>
+                <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "4px", padding: "3px", fontSize: "7.5px", color: "#16a34a", fontWeight: 800 }}>
                   ✓ JIT Verified Store
                 </div>
               </div>
@@ -1143,8 +1143,8 @@ function MerchantGrowthPoster() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/bizearch-qr.png" alt="Scan QR Code to Register" style={{ width: "95px", height: "95px" }} />
               </div>
-              <div className="scan-text" style={{ fontSize: "10px", marginBottom: "2px" }}>Scan &amp; Register</div>
-              <a href="https://bizearch.in" className="url-pill" target="_blank" rel="noreferrer" style={{ fontSize: "9px" }}>
+              <div className="scan-text" style={{ fontSize: "12px", marginBottom: "2px" }}>Scan &amp; Register</div>
+              <a href="https://bizearch.in" className="url-pill" target="_blank" rel="noreferrer" style={{ fontSize: "10px" }}>
                 🔗 https://bizearch.in
               </a>
             </div>
@@ -1154,13 +1154,13 @@ function MerchantGrowthPoster() {
         {/* FOUNDING PARTNERS OFFER */}
         <div style={{ background: "linear-gradient(90deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%)", color: "#ffffff", borderRadius: "10px", padding: "8px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ fontSize: "20px" }}>👑</span>
+            <span style={{ fontSize: "24px" }}>👑</span>
             <div>
-              <div style={{ fontSize: "12px", fontWeight: 900, textTransform: "uppercase" }}>FOUNDING MERCHANT PRIVILEGES (DECEMBER 2026 BATCH)</div>
-              <div style={{ fontSize: "10.5px", opacity: 0.95 }}>Early registrants receive Priority Search Ranking, Free Geotagging, and Dedicated Verification Support!</div>
+              <div style={{ fontSize: "13.5px", fontWeight: 900, textTransform: "uppercase" }}>FOUNDING MERCHANT PRIVILEGES (DECEMBER 2026 BATCH)</div>
+              <div style={{ fontSize: "11.5px", opacity: 0.95 }}>Early registrants receive Priority Search Ranking, Free Geotagging, and Dedicated Verification Support!</div>
             </div>
           </div>
-          <div style={{ background: "#fde047", color: "#854d0e", fontSize: "10px", fontWeight: 900, padding: "3px 10px", borderRadius: "12px", whiteSpace: "nowrap" }}>
+          <div style={{ background: "#fde047", color: "#854d0e", fontSize: "11.5px", fontWeight: 900, padding: "4px 12px", borderRadius: "12px", whiteSpace: "nowrap" }}>
             FREE UNTIL MARCH 31, 2027
           </div>
         </div>
@@ -1168,12 +1168,12 @@ function MerchantGrowthPoster() {
         {/* CTA SLOGAN ROW */}
         <div className="cta-slogan-row" style={{ padding: "8px 14px", marginBottom: "8px" }}>
           <div className="cta-top" style={{ marginBottom: "3px" }}>
-            <div className="cta-register-pill" style={{ fontSize: "12px" }}>
+            <div className="cta-register-pill" style={{ fontSize: "14px" }}>
               <span>📲</span> Register Your Business Today — <span>Offer Ends Dec 10, 2026!</span>
             </div>
-            <div className="tagline-badge" style={{ fontSize: "10px" }}>Your Business. Your Visibility. Your Growth.</div>
+            <div className="tagline-badge" style={{ fontSize: "11.5px" }}>Your Business. Your Visibility. Your Growth.</div>
           </div>
-          <div className="cta-bottom" style={{ fontSize: "10px", paddingTop: "4px" }}>
+          <div className="cta-bottom" style={{ fontSize: "11.5px", paddingTop: "4px" }}>
             <span>🤝 Let&apos;s connect local customers directly with your business.</span>
             <span className="grow-together">🌱 Let&apos;s Grow Together!</span>
           </div>
@@ -1183,21 +1183,21 @@ function MerchantGrowthPoster() {
       {/* FOOTER STRIP */}
       <footer className="poster-footer">
         <div className="footer-brand-strip" style={{ padding: "8px 16px", marginBottom: "5px" }}>
-          <div className="footer-team" style={{ fontSize: "11.5px" }}>By Team Bizearch</div>
+          <div className="footer-team" style={{ fontSize: "13px" }}>By Team Bizearch</div>
 
           <div className="footer-powered-box" style={{ padding: "3px 10px" }}>
-            <span className="powered-text" style={{ fontSize: "8.5px" }}>Powered by</span>
+            <span className="powered-text" style={{ fontSize: "9.5px" }}>Powered by</span>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/jishnu-infotech-logo.jpg" alt="Jishnu Infotech" style={{ height: "24px" }} />
           </div>
 
-          <div className="footer-care" style={{ fontSize: "11px" }}>
+          <div className="footer-care" style={{ fontSize: "13px" }}>
             <span>📞 Merchant Care:</span>
-            <span className="phone-num">+91 95668 23219</span>
+            <span className="phone-num" style={{ fontSize: "14.5px" }}>+91 95668 23219</span>
           </div>
         </div>
 
-        <div className="hashtag-bar" style={{ fontSize: "8.5px" }}>
+        <div className="hashtag-bar" style={{ fontSize: "9.5px" }}>
           <span>#RegisterBeforeDec10</span>
           <span>•</span>
           <span>#FreeUntilMarch2027</span>
