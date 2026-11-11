@@ -899,8 +899,8 @@ function MerchantGrowthPoster() {
 
         <div className="header-graphic-wrap">
           <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-            <div style={{ background: "linear-gradient(135deg, #b91c1c 0%, #dc2626 100%)", color: "#fff", padding: "6px 14px", borderRadius: "20px", fontSize: "11.5px", fontWeight: 800, boxShadow: "0 2px 8px rgba(220,38,38,0.25)" }}>
-              ⏰ REGISTER BEFORE DEC 10, 2026: FREE 1 YEAR!
+            <div style={{ background: "linear-gradient(135deg, #b91c1c 0%, #dc2626 100%)", color: "#fff", padding: "6px 14px", borderRadius: "20px", fontSize: "11px", fontWeight: 800, boxShadow: "0 2px 8px rgba(220,38,38,0.25)" }}>
+              ⏰ REGISTER BEFORE DEC 10, 2026: FREE UNTIL MARCH 31ST, 2027!
             </div>
             <div className="store-3d-card">
               <span className="store-icon-3d">🏪</span>
@@ -931,7 +931,7 @@ function MerchantGrowthPoster() {
             <span style={{ fontSize: "22px" }}>🔥</span>
             <div>
               <div style={{ fontSize: "12.5px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.4px" }}>LIMITED-TIME FOUNDING PARTNER WINDOW</div>
-              <div style={{ fontSize: "11.5px", fontWeight: 600, opacity: 0.95 }}>Register before Dec 10th, 2026 to unlock a <strong>FREE Business Listing for 1 Full Year</strong>!</div>
+              <div style={{ fontSize: "11.5px", fontWeight: 600, opacity: 0.95 }}>Register before Dec 10th, 2026 to unlock a <strong>FREE Business Listing until March 31st, 2027</strong>!</div>
             </div>
           </div>
           <div style={{ background: "#ffffff", color: "#b91c1c", fontSize: "11px", fontWeight: 900, padding: "5px 12px", borderRadius: "16px", whiteSpace: "nowrap" }}>
@@ -987,7 +987,7 @@ function MerchantGrowthPoster() {
         <div style={{ marginBottom: "10px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
             <h3 style={{ fontSize: "13.5px", fontWeight: 900, color: "#004b87", display: "flex", alignItems: "center", gap: "6px" }}>
-              ✨ Complete Business Toolkit — Included with Your 1-Year Free Listing
+              ✨ Complete Business Toolkit — Free Business Listing Until March 31, 2027
             </h3>
             <span style={{ fontSize: "11px", fontWeight: 800, color: "#ea580c" }}>Why Local Stores Choose Bizearch.in →</span>
           </div>
@@ -1101,9 +1101,9 @@ function MerchantGrowthPoster() {
           {/* Left: Benefits */}
           <div className="benefits-col">
             <h4 style={{ fontSize: "13px" }}>⭐ Register Before Dec 10, 2026!</h4>
-            <div className="benefits-subtitle" style={{ fontSize: "10.5px", marginBottom: "6px" }}>Free 1-Year access includes:</div>
+            <div className="benefits-subtitle" style={{ fontSize: "10.5px", marginBottom: "6px" }}>Free listing until March 31st, 2027 includes:</div>
             <ul className="benefits-list" style={{ gap: "4px" }}>
-              <li style={{ fontSize: "11px" }}><span className="check-icon">✓</span> FREE 1-Year Full Business Listing</li>
+              <li style={{ fontSize: "11px" }}><span className="check-icon">✓</span> FREE Full Business Listing until March 31, 2027</li>
               <li style={{ fontSize: "11px" }}><span className="check-icon">✓</span> Real-Time Customer Lead Inbox on Phone</li>
               <li style={{ fontSize: "11px" }}><span className="check-icon">✓</span> Direct Customer Callback &amp; WhatsApp</li>
               <li style={{ fontSize: "11px" }}><span className="check-icon">✓</span> 0% Commission — Keep 100% Profits</li>
@@ -1161,7 +1161,7 @@ function MerchantGrowthPoster() {
             </div>
           </div>
           <div style={{ background: "#fde047", color: "#854d0e", fontSize: "10px", fontWeight: 900, padding: "3px 10px", borderRadius: "12px", whiteSpace: "nowrap" }}>
-            FREE 1 YEAR LISTING
+            FREE UNTIL MARCH 31, 2027
           </div>
         </div>
 
@@ -1200,7 +1200,7 @@ function MerchantGrowthPoster() {
         <div className="hashtag-bar" style={{ fontSize: "8.5px" }}>
           <span>#RegisterBeforeDec10</span>
           <span>•</span>
-          <span>#Free1YearListing</span>
+          <span>#FreeUntilMarch2027</span>
           <span>•</span>
           <span>#0PercentCommission</span>
           <span>•</span>
