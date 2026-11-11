@@ -56,11 +56,13 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/bizearch-square.png", sizes: "256x256", type: "image/png" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+      { url: "/bizearch-square.png", sizes: "512x512", type: "image/png" },
       { url: "/bizearch-mark.svg", type: "image/svg+xml" },
     ],
-    shortcut: "/bizearch-square.png",
-    apple: "/bizearch-square.png",
+    shortcut: "/icon-192.png",
+    apple: "/apple-touch-icon.png",
   },
   manifest: "/manifest.webmanifest",
 };
