@@ -206,18 +206,6 @@ export default function PosterPage() {
           pointer-events: none;
         }
 
-        .poster-bg-dots {
-          position: absolute;
-          top: 20px;
-          left: 20px;
-          width: 120px;
-          height: 120px;
-          background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
-          background-size: 12px 12px;
-          opacity: 0.5;
-          pointer-events: none;
-        }
-
         /* HEADER */
         .poster-header {
           display: flex;
@@ -901,7 +889,6 @@ function MerchantGrowthPoster() {
   return (
     <div className="poster-canvas">
       <div className="poster-bg-glow" />
-      <div className="poster-bg-dots" />
 
       {/* TOP HEADER */}
       <div className="poster-header">
@@ -935,7 +922,7 @@ function MerchantGrowthPoster() {
           Big or Small, Every Business Deserves to <span className="highlight-grow">Grow!</span>
         </h1>
         <p className="hero-subtitle">
-          Growth is what matters — not the size of your store. Connect directly with thousands of nearby shoppers across Hosur.
+          Growth is what matters — not the size of your store. Connect directly with thousands of nearby shoppers in your neighborhood.
         </p>
 
         {/* DEC 10 LIMITED TIME EARLY BIRD RIBBON */}
@@ -992,7 +979,7 @@ function MerchantGrowthPoster() {
           </div>
           <div style={{ background: "#fffbeb", border: "1px dashed #f59e0b", borderRadius: "8px", padding: "6px 10px", fontSize: "11px", fontWeight: 600, color: "#92400e", display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ fontSize: "18px" }}>💡</span>
-            <div><strong>What if they could find you right now?</strong> Put your store on Hosur&apos;s neighborhood search engine!</div>
+            <div><strong>What if they could find you right now?</strong> Put your store on India&apos;s fastest growing neighborhood search engine!</div>
           </div>
         </div>
 
@@ -1219,7 +1206,7 @@ function MerchantGrowthPoster() {
           <span>•</span>
           <span>#DirectWhatsAppLeads</span>
           <span>•</span>
-          <span>#HosurBusiness</span>
+          <span>#LocalBusiness</span>
           <span>•</span>
           <span>#VocalForLocal</span>
         </div>
@@ -1235,7 +1222,6 @@ function AllFeaturesPoster() {
   return (
     <div className="poster-canvas">
       <div className="poster-bg-glow" />
-      <div className="poster-bg-dots" />
 
       {/* TOP HEADER */}
       <div className="poster-header">
@@ -1336,7 +1322,7 @@ function AllFeaturesPoster() {
               🚀 Are You a Local Business Owner?
             </h4>
             <div className="benefits-subtitle" style={{ marginBottom: "10px" }}>
-              Join hundreds of Hosur businesses reaching thousands of local customers daily:
+              Join hundreds of local businesses reaching thousands of customers daily:
             </div>
             <ul className="benefits-list">
               <li><span className="check-icon">✓</span> Zero Commission — 100% of sales stay with you</li>
@@ -1378,7 +1364,7 @@ function AllFeaturesPoster() {
         </div>
 
         <div className="hashtag-bar">
-          <span>#HosurMarketplace</span>
+          <span>#LocalMarketplace</span>
           <span>•</span>
           <span>#VocalForLocal</span>
           <span>•</span>
