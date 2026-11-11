@@ -895,7 +895,7 @@ export default function PosterPage() {
 }
 
 /* =========================================================================
-   POSTER 1: MERCHANT GROWTH POSTER (Matching user's reference image)
+   POSTER 1: MERCHANT GROWTH POSTER (Expanded with Killer Attraction Features)
    ========================================================================= */
 function MerchantGrowthPoster() {
   return (
@@ -911,11 +911,16 @@ function MerchantGrowthPoster() {
         </div>
 
         <div className="header-graphic-wrap">
-          <div className="store-3d-card">
-            <span className="store-icon-3d">🏪</span>
-            <div className="store-badge-text">
-              <span className="store-badge-title">YOUR LOCAL STORE</span>
-              <span className="store-badge-sub">OPEN FOR BUSINESS</span>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <div style={{ background: "#15803d", color: "#fff", padding: "6px 14px", borderRadius: "20px", fontSize: "12px", fontWeight: 800, boxShadow: "0 2px 8px rgba(21,128,61,0.25)" }}>
+              ✓ 0% COMMISSION · 100% PROFIT IS YOURS
+            </div>
+            <div className="store-3d-card">
+              <span className="store-icon-3d">🏪</span>
+              <div className="store-badge-text">
+                <span className="store-badge-title">LOCAL STORES</span>
+                <span className="store-badge-sub">VERIFIED PLATFORM</span>
+              </div>
             </div>
           </div>
         </div>
@@ -924,41 +929,127 @@ function MerchantGrowthPoster() {
       {/* MAIN HEADLINE */}
       <div>
         <div className="attention-pill">
-          <span>📢</span> ATTENTION BUSINESS OWNERS!
+          <span>📢</span> ATTENTION RETAILERS, STORES &amp; SERVICE PROVIDERS!
         </div>
         <h1 className="hero-title">
-          Big or Small, Every Business Deserves to <span className="highlight-grow">Grow!</span>
+          Big or Small, Every Business Deserves to <span className="highlight-grow">Grow 10X!</span>
         </h1>
         <p className="hero-subtitle">
-          Growth is what matters — not the size of your business.
+          Growth is what matters — not the size of your store. Connect directly with thousands of nearby shoppers across Hosur.
         </p>
 
-        {/* CONTRAST GRID */}
-        <div className="contrast-grid">
-          <div className="contrast-left">
-            <div className="contrast-item">
-              <span className="icon">🔍</span>
-              <span>On one side, customers are actively searching for products and services.</span>
-            </div>
-            <div className="contrast-item">
-              <span className="icon">🏪</span>
-              <span>On the other side, businesses are ready and waiting to serve them.</span>
+        {/* 4 KILLER PILLARS */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "10px", marginBottom: "14px" }}>
+          <div style={{ background: "#fffbeb", border: "1.5px solid #fde68a", borderRadius: "12px", padding: "10px", display: "flex", gap: "8px", alignItems: "center" }}>
+            <span style={{ fontSize: "24px" }}>💰</span>
+            <div>
+              <div style={{ fontSize: "11.5px", fontWeight: 900, color: "#92400e" }}>0% Commission</div>
+              <div style={{ fontSize: "10px", color: "#78350f" }}>Zero cuts on your sales. Keep 100% profit.</div>
             </div>
           </div>
-
-          <div className="contrast-right">
-            <div className="contrast-right-header">
-              <span className="icon">💡</span>
-              <span>What if the right customers could find your business right when they need you?</span>
+          <div style={{ background: "#f0fdf4", border: "1.5px solid #bbf7d0", borderRadius: "12px", padding: "10px", display: "flex", gap: "8px", alignItems: "center" }}>
+            <span style={{ fontSize: "24px" }}>💬</span>
+            <div>
+              <div style={{ fontSize: "11.5px", fontWeight: 900, color: "#166534" }}>WhatsApp Leads</div>
+              <div style={{ fontSize: "10px", color: "#14532d" }}>Customer inquiries straight to your phone.</div>
             </div>
-            <p>Imagine people in your neighbourhood discovering your business, reaching you easily, and buying from you!</p>
+          </div>
+          <div style={{ background: "#eff6ff", border: "1.5px solid #bfdbfe", borderRadius: "12px", padding: "10px", display: "flex", gap: "8px", alignItems: "center" }}>
+            <span style={{ fontSize: "24px" }}>📍</span>
+            <div>
+              <div style={{ fontSize: "11.5px", fontWeight: 900, color: "#1e40af" }}>Hyperlocal GPS</div>
+              <div style={{ fontSize: "10px", color: "#1e3a8a" }}>Nearby shoppers walk into your store.</div>
+            </div>
+          </div>
+          <div style={{ background: "#faf5ff", border: "1.5px solid #e9d5ff", borderRadius: "12px", padding: "10px", display: "flex", gap: "8px", alignItems: "center" }}>
+            <span style={{ fontSize: "24px" }}>🛡️</span>
+            <div>
+              <div style={{ fontSize: "11.5px", fontWeight: 900, color: "#6b21a8" }}>JIT Verified</div>
+              <div style={{ fontSize: "10px", color: "#581c87" }}>On-ground physical verification badge.</div>
+            </div>
           </div>
         </div>
 
         {/* BLUE BANNER */}
         <div className="blue-promo-strip">
-          <h3>🚀 Give Your Business a Stronger Digital Presence!</h3>
+          <h3>🚀 Give Your Business a Dominant Digital Presence in Your Area!</h3>
           <p>We are introducing a new Business Search Engine to help customers discover local businesses, products, and services.</p>
+        </div>
+
+        {/* 8 COMPLETE FEATURES GRID */}
+        <div style={{ marginBottom: "14px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+            <h3 style={{ fontSize: "14px", fontWeight: 900, color: "#004b87", display: "flex", alignItems: "center", gap: "6px" }}>
+              ✨ Complete Business Toolkit — Included for Every Merchant
+            </h3>
+            <span style={{ fontSize: "11.5px", fontWeight: 800, color: "#ea580c" }}>Why Local Stores Choose Bizearch.in →</span>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px" }}>
+            <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "10px", padding: "10px", display: "flex", flexDirection: "column", gap: "4px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <span style={{ fontSize: "18px" }}>🏪</span>
+                <strong style={{ fontSize: "11.5px", color: "#0f172a" }}>Digital Storefront</strong>
+              </div>
+              <p style={{ fontSize: "10px", color: "#64748b", margin: 0 }}>Photos, timings, phone, address, and Google Map directions.</p>
+            </div>
+
+            <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "10px", padding: "10px", display: "flex", flexDirection: "column", gap: "4px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <span style={{ fontSize: "18px" }}>🛍️</span>
+                <strong style={{ fontSize: "11.5px", color: "#0f172a" }}>Product Catalog</strong>
+              </div>
+              <p style={{ fontSize: "10px", color: "#64748b", margin: 0 }}>Publish items, prices, offers, and receive direct customer orders.</p>
+            </div>
+
+            <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "10px", padding: "10px", display: "flex", flexDirection: "column", gap: "4px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <span style={{ fontSize: "18px" }}>📄</span>
+                <strong style={{ fontSize: "11.5px", color: "#0f172a" }}>Custom Quote Inbox</strong>
+              </div>
+              <p style={{ fontSize: "10px", color: "#64748b", margin: 0 }}>Receive real-time quotation leads with customer phone numbers.</p>
+            </div>
+
+            <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "10px", padding: "10px", display: "flex", flexDirection: "column", gap: "4px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <span style={{ fontSize: "18px" }}>📞</span>
+                <strong style={{ fontSize: "11.5px", color: "#0f172a" }}>Direct WhatsApp &amp; Call</strong>
+              </div>
+              <p style={{ fontSize: "10px", color: "#64748b", margin: 0 }}>Zero call center middleman. Customers ring your phone directly.</p>
+            </div>
+
+            <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "10px", padding: "10px", display: "flex", flexDirection: "column", gap: "4px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <span style={{ fontSize: "18px" }}>📲</span>
+                <strong style={{ fontSize: "11.5px", color: "#0f172a" }}>Shareable Store QR</strong>
+              </div>
+              <p style={{ fontSize: "10px", color: "#64748b", margin: 0 }}>Custom QR code for your cash counter to let customers bookmark.</p>
+            </div>
+
+            <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "10px", padding: "10px", display: "flex", flexDirection: "column", gap: "4px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <span style={{ fontSize: "18px" }}>🗣️</span>
+                <strong style={{ fontSize: "11.5px", color: "#0f172a" }}>4 Languages</strong>
+              </div>
+              <p style={{ fontSize: "10px", color: "#64748b", margin: 0 }}>Reach customers in English, தமிழ், ಕನ್ನಡ, and తెలుగు.</p>
+            </div>
+
+            <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "10px", padding: "10px", display: "flex", flexDirection: "column", gap: "4px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <span style={{ fontSize: "18px" }}>📢</span>
+                <strong style={{ fontSize: "11.5px", color: "#0f172a" }}>Local Ad Boost</strong>
+              </div>
+              <p style={{ fontSize: "10px", color: "#64748b", margin: 0 }}>Promote festive offers and banner ads to neighborhood shoppers.</p>
+            </div>
+
+            <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "10px", padding: "10px", display: "flex", flexDirection: "column", gap: "4px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <span style={{ fontSize: "18px" }}>🤝</span>
+                <strong style={{ fontSize: "11.5px", color: "#0f172a" }}>Free Agent Help</strong>
+              </div>
+              <p style={{ fontSize: "10px", color: "#64748b", margin: 0 }}>JIT agents visit your shop to verify and set up your catalog free.</p>
+            </div>
+          </div>
         </div>
 
         {/* 3-COLUMN BENEFIT + MOCKUP + QR SECTION */}
@@ -968,40 +1059,34 @@ function MerchantGrowthPoster() {
             <h4>⭐ Register Your Business — It&apos;s FREE!</h4>
             <div className="benefits-subtitle">Enjoy these benefits:</div>
             <ul className="benefits-list">
-              <li><span className="check-icon">✓</span> FREE Business Registration</li>
-              <li><span className="check-icon">✓</span> Dedicated Business Profile</li>
-              <li><span className="check-icon">✓</span> Get Discovered by Local Customers</li>
-              <li><span className="check-icon">✓</span> Direct Call &amp; WhatsApp Enquiries</li>
+              <li><span className="check-icon">✓</span> 100% Free Lifetime Business Listing</li>
+              <li><span className="check-icon">✓</span> Real-Time Customer Lead Inbox on Phone</li>
+              <li><span className="check-icon">✓</span> Direct Customer Callback &amp; WhatsApp</li>
+              <li><span className="check-icon">✓</span> Zero Commission — Zero Hidden Fees</li>
               <li><span className="check-icon">✓</span> Showcase Your Products &amp; Services</li>
               <li><span className="check-icon">✓</span> Share Your Business Profile Easily</li>
             </ul>
           </div>
 
-          {/* Center: Mobile mockup */}
+          {/* Center: Mobile mockup with live incoming lead */}
           <div className="mockup-col">
-            <div className="phone-mockup">
-              <div className="phone-screen">
-                <div className="mockup-brand">bizearch.in</div>
-                <div className="mockup-search-bar">
-                  <span>⌕</span> Search Hosur stores...
+            <div className="phone-mockup" style={{ width: "155px", height: "215px" }}>
+              <div className="phone-screen" style={{ padding: "6px", gap: "5px" }}>
+                <div style={{ background: "#004b87", color: "#fff", borderRadius: "4px", padding: "3px 5px", fontSize: "7.5px", fontWeight: 800, display: "flex", justifyContent: "space-between" }}>
+                  <span>bizearch.in Merchant</span>
+                  <span>● LIVE</span>
                 </div>
-                <div className="mockup-categories">
-                  <div className="mockup-cat-item">
-                    <span>🛍️</span> Retail
-                  </div>
-                  <div className="mockup-cat-item">
-                    <span>🚗</span> Auto
-                  </div>
-                  <div className="mockup-cat-item">
-                    <span>💻</span> Tech
-                  </div>
-                  <div className="mockup-cat-item">
-                    <span>🍽️</span> Food
+                <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "6px", padding: "5px", display: "flex", flexDirection: "column", gap: "2px" }}>
+                  <span style={{ fontSize: "6.5px", fontWeight: 900, color: "#1d4ed8" }}>🔥 NEW INCOMING LEAD</span>
+                  <span style={{ fontSize: "7.5px", fontWeight: 800, color: "#0f172a" }}>Quote Request from Resident</span>
+                  <span style={{ fontSize: "6.5px", color: "#475569" }}>&quot;Need price estimate for custom order&quot;</span>
+                  <div style={{ display: "flex", gap: "3px", marginTop: "2px" }}>
+                    <span style={{ flex: 1, background: "#2563eb", color: "#fff", borderRadius: "3px", fontSize: "6.5px", fontWeight: 800, textAlign: "center", padding: "2px" }}>📞 Call</span>
+                    <span style={{ flex: 1, background: "#16a34a", color: "#fff", borderRadius: "3px", fontSize: "6.5px", fontWeight: 800, textAlign: "center", padding: "2px" }}>💬 WhatsApp</span>
                   </div>
                 </div>
-                <div className="mockup-store-card">
-                  <div>Verified Store</div>
-                  <div style={{ fontSize: "6.5px", color: "#0284c7" }}>Near you · 0.5 km</div>
+                <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "4px", padding: "4px", fontSize: "6.5px", color: "#16a34a", fontWeight: 800 }}>
+                  ✓ JIT Verified Store
                 </div>
               </div>
             </div>
@@ -1014,7 +1099,7 @@ function MerchantGrowthPoster() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/bizearch-qr.png" alt="Scan QR Code to Register" />
               </div>
-              <div className="scan-text">Scan me!</div>
+              <div className="scan-text">Scan &amp; Register</div>
               <a href="https://bizearch.in" className="url-pill" target="_blank" rel="noreferrer">
                 🔗 https://bizearch.in
               </a>
@@ -1025,10 +1110,10 @@ function MerchantGrowthPoster() {
         {/* FOUNDING PARTNERS OFFER */}
         <div className="special-offer-banner">
           <div className="offer-title">
-            <span>👑</span> SPECIAL OFFER FOR FOUNDING BUSINESS PARTNERS
+            <span>👑</span> EXCLUSIVE PRIVILEGES FOR FOUNDING BUSINESS PARTNERS
           </div>
           <div className="offer-desc">
-            Be among the first businesses to join our growing network and take your business one step closer to more customers.
+            Register now to unlock Lifetime Priority Placement, Free On-Ground Store Verification, and Guaranteed Zero Middleman Fees!
           </div>
         </div>
 
@@ -1041,7 +1126,7 @@ function MerchantGrowthPoster() {
             <div className="tagline-badge">Your Business. Your Visibility. Your Growth.</div>
           </div>
           <div className="cta-bottom">
-            <span>🤝 Let&apos;s connect local customers with local businesses.</span>
+            <span>🤝 Let&apos;s connect local customers directly with your business.</span>
             <span className="grow-together">🌱 Let&apos;s Grow Together!</span>
           </div>
         </div>
@@ -1059,21 +1144,21 @@ function MerchantGrowthPoster() {
           </div>
 
           <div className="footer-care">
-            <span>📞 Customer Care:</span>
+            <span>📞 Merchant Helpline:</span>
             <span className="phone-num">+91 95668 23219</span>
           </div>
         </div>
 
         <div className="hashtag-bar">
-          <span>#BusinessGrowth</span>
+          <span>#0PercentCommission</span>
           <span>•</span>
-          <span>#LocalBusiness</span>
+          <span>#DirectWhatsAppLeads</span>
+          <span>•</span>
+          <span>#LocalBusinessGrowth</span>
           <span>•</span>
           <span>#FreeBusinessListing</span>
           <span>•</span>
-          <span>#DigitalPresence</span>
-          <span>•</span>
-          <span>#GrowTogether</span>
+          <span>#VocalForLocal</span>
         </div>
       </footer>
     </div>
