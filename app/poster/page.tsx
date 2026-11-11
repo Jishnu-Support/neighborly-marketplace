@@ -1072,6 +1072,43 @@ function MerchantGrowthPoster() {
           </div>
         </div>
 
+        {/* ONBOARDING CATEGORIES STRIP */}
+        <div style={{ background: "#f1f5f9", border: "1px solid #cbd5e1", borderRadius: "8px", padding: "6px 12px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", marginBottom: "8px" }}>
+          <span style={{ fontSize: "10px", fontWeight: 900, color: "#004b87", textTransform: "uppercase", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>Categories We Welcome:</span>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", alignItems: "center" }}>
+            {["🛒 Supermarkets & Groceries", "👗 Fashion & Boutiques", "📱 Electronics & Mobiles", "🚗 Automobiles & Service", "🍽️ Restaurants & Bakeries", "🩺 Clinics & Pharmacies", "🔧 Hardware & Repairs"].map((cat) => (
+              <span key={cat} style={{ background: "#ffffff", border: "1px solid #cbd5e1", padding: "2px 7px", borderRadius: "12px", fontSize: "9.5px", fontWeight: 700, color: "#334155" }}>
+                {cat}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* HOW IT WORKS 3-STEP BAR */}
+        <div style={{ background: "#f0fdf4", border: "1.5px solid #86efac", borderRadius: "8px", padding: "6px 14px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px", marginBottom: "8px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
+            <div style={{ width: "20px", height: "20px", background: "#16a34a", color: "#fff", borderRadius: "50%", fontSize: "10px", fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>1</div>
+            <div>
+              <div style={{ fontSize: "10.5px", fontWeight: 900, color: "#14532d" }}>Scan QR or Visit Bizearch.in</div>
+              <div style={{ fontSize: "9px", color: "#166534" }}>Takes only 60 seconds to register your store.</div>
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
+            <div style={{ width: "20px", height: "20px", background: "#16a34a", color: "#fff", borderRadius: "50%", fontSize: "10px", fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>2</div>
+            <div>
+              <div style={{ fontSize: "10.5px", fontWeight: 900, color: "#14532d" }}>Add Your Store &amp; Products</div>
+              <div style={{ fontSize: "9px", color: "#166534" }}>Upload photos, prices, hours and phone numbers.</div>
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
+            <div style={{ width: "20px", height: "20px", background: "#16a34a", color: "#fff", borderRadius: "50%", fontSize: "10px", fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>3</div>
+            <div>
+              <div style={{ fontSize: "10.5px", fontWeight: 900, color: "#14532d" }}>Get JIT Verified &amp; Grow</div>
+              <div style={{ fontSize: "9px", color: "#166534" }}>Receive direct WhatsApp orders &amp; quote leads.</div>
+            </div>
+          </div>
+        </div>
+
         {/* 3-COLUMN BENEFIT + MOCKUP + QR SECTION */}
         <div className="value-section" style={{ padding: "10px 14px", gap: "12px", marginBottom: "10px" }}>
           {/* Left: Benefits */}
