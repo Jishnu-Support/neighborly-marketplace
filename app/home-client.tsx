@@ -31,6 +31,12 @@ import {
   STATE_SUGGESTIONS,
   PINCODE_SUGGESTIONS,
 } from "./lib/address-suggestions";
+import { CompanyRegistrationVideoManager } from "./components/CompanyRegistrationVideoManager";
+import { RegistrationVideoPlayerModal } from "./components/RegistrationVideoPlayerModal";
+import {
+  formatYouTubeWatchUrl,
+  type RegistrationVideoConfig,
+} from "./lib/registration-video.shared";
 import type { QuoteEnquiry } from "./lib/quotes.shared";
 
 const subcategoriesSummary: Record<string, string> = {
@@ -22238,7 +22244,10 @@ function CompanyRegistrationFormManager() {
   function addField() { const id = `custom${Date.now().toString(36)}`; updateForm({ fields: [...form.fields, { id, label: "New field", type: "text", placeholder: "", required: false, enabled: true, options: [] }] }); }
   async function save(event: React.FormEvent<HTMLFormElement>) { event.preventDefault(); setSaving(true); setError(""); setSaved(false); try { const response = await fetch("/api/company/registration-forms", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ config }) }); const result = await response.json() as { config?: RegistrationFormConfig; error?: string }; if (!response.ok || !result.config) throw new Error(result.error || "Could not save registration forms."); setConfig(result.config); setSaved(true); window.dispatchEvent(new CustomEvent("neighborly-registration-forms-updated", { detail: result.config })); } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not save registration forms."); } finally { setSaving(false); } }
   if (loading) return <section className="panel tab-panel"><p>Loading registration forms…</p></section>;
-  return <form className="panel tab-panel category-manager-form registration-form-manager" onSubmit={save}><div className="category-manager-heading"><div><div className="eyebrow">SUPER ADMIN CONFIGURATION</div><h2>Manage registration forms</h2><p>Choose a portal form, edit its title and fields, and manage which options registrants can select. Disabled fields and options are hidden from new registrations.</p></div><button className="outline-button" type="button" disabled={config.forms.length >= 12} onClick={() => { const id = `customForm${Date.now().toString(36)}`; const next = { id, title: "New registration form", enabled: false, fields: [] }; setConfig((current) => ({ ...current, forms: [...current.forms, next] })); setSelectedForm(id); setSaved(false); }}>Add form</button></div>
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+      <CompanyRegistrationVideoManager />
+      <form className="panel tab-panel category-manager-form registration-form-manager" onSubmit={save}><div className="category-manager-heading"><div><div className="eyebrow">SUPER ADMIN CONFIGURATION</div><h2>Manage registration forms</h2><p>Choose a portal form, edit its title and fields, and manage which options registrants can select. Disabled fields and options are hidden from new registrations.</p></div><button className="outline-button" type="button" disabled={config.forms.length >= 12} onClick={() => { const id = `customForm${Date.now().toString(36)}`; const next = { id, title: "New registration form", enabled: false, fields: [] }; setConfig((current) => ({ ...current, forms: [...current.forms, next] })); setSelectedForm(id); setSaved(false); }}>Add form</button></div>
     <label>Registration form<select value={selectedForm} onChange={(event) => setSelectedForm(event.target.value)}>{config.forms.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label>
     <div className="category-manager-fields"><label>Form title<input value={form.title} maxLength={80} onChange={(event) => updateForm({ title: event.target.value })} required /></label><label className="consent-check"><input type="checkbox" checked={form.enabled} onChange={(event) => updateForm({ enabled: event.target.checked })} /><span>Registration form is enabled</span></label></div>
     {!(["customer", "business", "agent", "companyAdmin"].includes(form.id)) && <button className="outline-button" type="button" onClick={() => { const remaining = config.forms.filter((item) => item.id !== form.id); setConfig((current) => ({ ...current, forms: remaining })); setSelectedForm(remaining[0].id); setSaved(false); }}>Remove form</button>}
@@ -22248,7 +22257,9 @@ function CompanyRegistrationFormManager() {
       {(item.type === "choices" || item.type === "checkbox") && <><h4>Choices</h4>{item.options.map((option, optionIndex) => <div className="category-path-row" key={option.id}><label>Choice label<input value={option.label} maxLength={100} onChange={(event) => updateField(index, { options: item.options.map((choice, i) => i === optionIndex ? { ...choice, label: event.target.value } : choice) })} required /></label><label className="consent-check"><input type="checkbox" checked={option.enabled} onChange={(event) => updateField(index, { options: item.options.map((choice, i) => i === optionIndex ? { ...choice, enabled: event.target.checked } : choice) })} /><span>Enabled</span></label><button className="outline-button" type="button" onClick={() => updateField(index, { options: item.options.filter((_, i) => i !== optionIndex) })}>Remove</button></div>)}<button className="outline-button" type="button" disabled={item.options.length >= 100} onClick={() => updateField(index, { options: [...item.options, { id: `choice${Date.now().toString(36)}`, label: "New choice", enabled: true }] })}>Add choice</button></>}
     </section>)}
     {error && <p className="form-error" role="alert">{error}</p>}{saved && <p className="status-pill verified" role="status">Registration forms saved.</p>}<button className="primary-button" type="submit" disabled={saving}>{saving ? "Saving…" : "Save registration forms"}</button>
-  </form>;
+  </form>
+    </div>
+  );
 }
 
 async function inspectVideoAd(file: File): Promise<{ durationSeconds: number; posterFile: File | null }> {
@@ -22499,6 +22510,29 @@ function Dialog({
   const [dialogTermsModalTab, setDialogTermsModalTab] = useState<"terms" | "privacy">("terms");
   const [dialogCustomerTermsAccepted, setDialogCustomerTermsAccepted] = useState(false);
   const [dialogBusinessTermsAccepted, setDialogBusinessTermsAccepted] = useState(false);
+
+  // Business registration guidance video states
+  const [dialogVideoConfig, setDialogVideoConfig] = useState<RegistrationVideoConfig | null>(null);
+  const [showDialogVideoModal, setShowDialogVideoModal] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/registration/video", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled && data?.config) setDialogVideoConfig(data.config);
+      })
+      .catch(() => undefined);
+
+    const handleVideoUpdate = (e: any) => {
+      if (e.detail) setDialogVideoConfig(e.detail);
+    };
+    window.addEventListener("neighborly-registration-video-updated", handleVideoUpdate);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("neighborly-registration-video-updated", handleVideoUpdate);
+    };
+  }, []);
 
   // Customer forgot password states
   const [isCustomerForgotPw, setIsCustomerForgotPw] = useState(false);
@@ -23494,6 +23528,41 @@ function Dialog({
           setBusinessDetails(details);
           setStep(2);
         }}>
+          {(dialogVideoConfig?.enabled ?? true) && (
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "6px", marginTop: "-2px" }}>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (dialogVideoConfig?.type === "youtube" && dialogVideoConfig.youtubeUrl) {
+                    window.open(formatYouTubeWatchUrl(dialogVideoConfig.youtubeUrl), "_blank", "noopener,noreferrer");
+                  } else {
+                    setShowDialogVideoModal(true);
+                  }
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  padding: "2px 0",
+                  color: "#dc2626",
+                  textDecoration: "underline",
+                  fontWeight: 600,
+                  fontSize: "13px",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  lineHeight: 1.4,
+                }}
+                title="Watch tutorial on How to Register"
+                aria-label="How to Register ? tutorial video"
+              >
+                <span style={{ fontSize: "11px", color: "#dc2626" }}>▶</span>
+                <span>{dialogVideoConfig?.buttonText || "How to Register ?"}</span>
+              </button>
+            </div>
+          )}
           {regEnabled(businessForm, "businessName") && <label>{regLabel(businessForm, "businessName", "Business name")}<input name="businessName" placeholder="e.g. Sree Velan TVS" defaultValue={businessDetails.businessName} required={regField(businessForm, "businessName")?.required ?? true} /></label>}
           <fieldset className="registration-taxonomy address-fields"><legend>Business address</legend><div className="registration-address-grid">
           {[{ key: "doorNumber", label: "Door No." }, { key: "street", label: "Street" }, { key: "area", label: "Area" }, { key: "cityTown", label: "City / town" }, { key: "taluka", label: "Taluka" }, { key: "district", label: "District" }, { key: "state", label: "State" }, { key: "pincode", label: "Pincode" }].map(({ key, label }) => <label className="registration-address-field" key={key}>{label}<input name={key} value={businessAddress[key as keyof BusinessAddress]} onChange={(event) => setBusinessAddress((current) => ({ ...current, [key]: event.target.value }))} required maxLength={key === "pincode" ? 10 : 100} inputMode={key === "pincode" ? "numeric" : undefined} pattern={key === "pincode" ? "[0-9]{6}" : undefined} title={key === "pincode" ? "Enter a 6-digit pincode" : undefined} /></label>)}
@@ -24561,6 +24630,12 @@ function Dialog({
         }}
         role={dialogTermsModalRole}
         initialTab={dialogTermsModalTab}
+      />
+
+      <RegistrationVideoPlayerModal
+        config={dialogVideoConfig}
+        isOpen={showDialogVideoModal}
+        onClose={() => setShowDialogVideoModal(false)}
       />
     </section>
   </div>;

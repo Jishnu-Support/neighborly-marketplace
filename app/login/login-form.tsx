@@ -12,6 +12,11 @@ import {
   STATE_SUGGESTIONS,
   PINCODE_SUGGESTIONS,
 } from "@/app/lib/address-suggestions";
+import { RegistrationVideoPlayerModal } from "@/app/components/RegistrationVideoPlayerModal";
+import {
+  formatYouTubeWatchUrl,
+  type RegistrationVideoConfig,
+} from "@/app/lib/registration-video.shared";
 
 export type PortalRole = "Account" | "Business" | "Agent";
 
@@ -72,6 +77,44 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [termsModalOpen, setTermsModalOpen] = useState(false);
   const [termsModalTab, setTermsModalTab] = useState<"terms" | "privacy">("terms");
+
+  // Registration video guidance tutorial states
+  const [regVideoConfig, setRegVideoConfig] = useState<RegistrationVideoConfig | null>(null);
+  const [showRegVideoModal, setShowRegVideoModal] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/registration/video", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (active && data?.config) {
+          setRegVideoConfig(data.config);
+        }
+      })
+      .catch(() => {});
+
+    const handleVideoUpdate = (e: any) => {
+      if (e.detail) {
+        setRegVideoConfig(e.detail);
+      }
+    };
+    window.addEventListener("neighborly-registration-video-updated", handleVideoUpdate);
+    return () => {
+      active = false;
+      window.removeEventListener("neighborly-registration-video-updated", handleVideoUpdate);
+    };
+  }, []);
+
+  const handleHowToRegisterClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (regVideoConfig?.type === "youtube" && regVideoConfig.youtubeUrl) {
+      const targetUrl = formatYouTubeWatchUrl(regVideoConfig.youtubeUrl);
+      window.open(targetUrl, "_blank", "noopener,noreferrer");
+    } else {
+      setShowRegVideoModal(true);
+    }
+  };
 
   // Controlled form inputs to prevent input leakage between Login and Registration
   const [loginIdentity, setLoginIdentity] = useState("");
@@ -753,6 +796,41 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
       <form key={registering ? `register-form-${portal}` : `signin-form-${portal}`} className="stacked-form" onSubmit={handleSubmit}>
         {registering ? (
           <>
+            {portal === "Business" && (regVideoConfig?.enabled ?? true) && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                  marginBottom: "6px",
+                  marginTop: "-2px",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={handleHowToRegisterClick}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    padding: "2px 0",
+                    color: "#dc2626",
+                    textDecoration: "underline",
+                    fontWeight: 600,
+                    fontSize: "14px",
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    lineHeight: 1.4,
+                  }}
+                  title="Watch tutorial on How to Register"
+                  aria-label="How to Register ? tutorial video"
+                >
+                  <span style={{ fontSize: "11px", color: "#dc2626" }}>▶</span>
+                  <span>{regVideoConfig?.buttonText || "How to Register ?"}</span>
+                </button>
+              </div>
+            )}
             <label>
               {portal === "Business" ? "Business Name *" : "Your full name *"}
               <input
@@ -1452,6 +1530,12 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
         onAccept={() => setTermsAccepted(true)}
         role={portal}
         initialTab={termsModalTab}
+      />
+
+      <RegistrationVideoPlayerModal
+        config={regVideoConfig}
+        isOpen={showRegVideoModal}
+        onClose={() => setShowRegVideoModal(false)}
       />
     </section>
   </main>;
