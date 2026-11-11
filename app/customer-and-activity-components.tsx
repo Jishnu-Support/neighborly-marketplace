@@ -794,12 +794,26 @@ export function CompanyActivityLogsPanel({
             >
               ● Live Server Audit
             </span>
+            <span
+              style={{
+                fontSize: "10px",
+                fontWeight: 700,
+                padding: "2px 7px",
+                borderRadius: "10px",
+                background: "#eff6ff",
+                color: "#1e40af",
+                border: "1px solid #bfdbfe",
+              }}
+              title="Activity logs are safely preserved on disk for six months (180 days) until an authorized administrator clears them."
+            >
+              🕒 6-Month Retention Active (180 Days)
+            </span>
           </div>
           <h2 style={{ margin: "4px 0", fontSize: "20px" }}>
             Customer & Platform Activity Logs
           </h2>
           <p style={{ fontSize: "12px", color: "#66786c", margin: "4px 0 0", maxWidth: "680px" }}>
-            Real-time server activity log recorded on disk. Captures customer registrations, logins, business searches,
+            Real-time server activity log recorded on disk with 6-month retention (180 days) until manually cleared. Captures customer registrations, logins, business searches,
             WhatsApp leads, phone calls, store profile views, and SOS emergency alerts.
           </p>
         </div>

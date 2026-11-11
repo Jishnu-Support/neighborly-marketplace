@@ -174,6 +174,7 @@ export async function POST(request: Request) {
 
     // Record persistent activity log for business registration
     try {
+      const formattedAddress = [doorNo.trim(), street.trim(), locality.trim(), city.trim(), state.trim(), pincode.trim()].filter(Boolean).join(", ");
       await saveActivityLog({
         action: `Business registered: ${business.name} (${business.category})`,
         category: "Registration",
@@ -181,7 +182,7 @@ export async function POST(request: Request) {
         actorPhone: business.phone,
         actorRole: "Business",
         locality: locality.trim(),
-        details: `New business "${business.name}" registered. Category: ${business.category}. Address: ${business.address || locality}. Status: ${business.verificationStatus || "Pending Verification"}. Assigned Agent: ${resolvedReferralCode || "JIT (Default)"}.${creatorName ? ` Registered by ${creatorRole} (${creatorName}).` : ""}`,
+        details: `New business "${business.name}" registered. Category: ${business.category}. Address: ${formattedAddress}. Status: ${business.verificationStatus || "Pending Verification"}. Assigned Agent: ${resolvedReferralCode || "JIT (Default)"}.${creatorName ? ` Registered by ${creatorRole} (${creatorName}).` : ""}`,
       });
     } catch {
       // Non-blocking log

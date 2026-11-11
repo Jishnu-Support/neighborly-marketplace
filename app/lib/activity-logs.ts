@@ -46,7 +46,9 @@ export type NewActivityLog = Omit<ActivityLogRecord, "id" | "timestamp"> & {
 
 const activityLogsStorePath = resolveStorePath("NEIGHBORLY_ACTIVITY_LOGS_STORE", ".neighborly-activity-logs.json");
 
-export const ONE_YEAR_RETENTION_MS = 365 * 24 * 60 * 60 * 1000; // 365 days retention
+// Activity logs are stored on disk for 6 months (180 days) until an administrator manually clears them
+export const SIX_MONTHS_RETENTION_MS = 180 * 24 * 60 * 60 * 1000; // 180 days retention (6 calendar months)
+export const ONE_YEAR_RETENTION_MS = SIX_MONTHS_RETENTION_MS; // Backwards-compatible alias
 
 export function getDefaultSeedActivityLogs(): ActivityLogRecord[] {
   // All demo activity records removed per real-world production clean state.
@@ -58,14 +60,14 @@ export function sanitizeActivityLogs(records: ActivityLogRecord[]): { logs: Acti
     return { logs: [], changed: false };
   }
 
-  const cutoff = Date.now() - ONE_YEAR_RETENTION_MS;
+  const cutoff = Date.now() - SIX_MONTHS_RETENTION_MS;
 
-  // Retain all genuine activity logs within the 1-year retention window
+  // Retain all genuine activity logs within the 6-month retention window
   const valid = records.filter((r) => {
     if (!r || !r.action) return false;
     // Strip artificial seed IDs
     if (r.id && r.id.startsWith("act-seed-")) return false;
-    // Check 1-year retention
+    // Check 6-month retention
     const timeMs = new Date(r.timestamp).getTime();
     if (isNaN(timeMs) || timeMs < cutoff) return false;
     return true;
@@ -76,6 +78,11 @@ export function sanitizeActivityLogs(records: ActivityLogRecord[]): { logs: Acti
   const seenSeconds = new Set<string>();
 
   for (const r of valid) {
+    // Sanitize any legacy [object Object] address strings if present
+    if (r.details && r.details.includes("[object Object]")) {
+      r.details = r.details.replace("[object Object]", r.locality || "Registered Storefront");
+    }
+
     const timeMs = new Date(r.timestamp).getTime();
     // 10-second deduplication bucket per action and actor
     const bucket = Math.floor(timeMs / 10000);
@@ -89,7 +96,7 @@ export function sanitizeActivityLogs(records: ActivityLogRecord[]): { logs: Acti
     deduped.push(r);
   }
 
-  // Keep full 1-year history (up to 100,000 events)
+  // Keep full 6-month history (up to 100,000 events)
   return { logs: deduped.slice(0, 100000), changed: deduped.length !== records.length };
 }
 
@@ -122,6 +129,17 @@ export async function resetAndSeedActivityLogs(): Promise<ActivityLogRecord[]> {
 export async function clearAllActivityLogs(): Promise<ActivityLogRecord[]> {
   await writeActivityLogs([]);
   return [];
+}
+
+export async function clearOlderActivityLogs(days = 180): Promise<{ removed: number; remaining: number }> {
+  const records = await readActivityLogs();
+  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+  const kept = records.filter((r) => {
+    const t = new Date(r.timestamp).getTime();
+    return !isNaN(t) && t >= cutoff;
+  });
+  await writeActivityLogs(kept);
+  return { removed: records.length - kept.length, remaining: kept.length };
 }
 
 async function writeActivityLogs(records: ActivityLogRecord[]): Promise<void> {
@@ -164,8 +182,8 @@ export async function saveActivityLog(input: NewActivityLog): Promise<ActivityLo
     timestamp: input.timestamp || new Date().toISOString(),
   };
 
-  // Keep full 1-year history (records within 365 days, up to 100,000 items)
-  const cutoff = nowMs - ONE_YEAR_RETENTION_MS;
+  // Keep full 6-month history (records within 180 days, up to 100,000 items)
+  const cutoff = nowMs - SIX_MONTHS_RETENTION_MS;
   const retainedRecords = records.filter((r) => {
     const t = new Date(r.timestamp).getTime();
     return !isNaN(t) && t >= cutoff;

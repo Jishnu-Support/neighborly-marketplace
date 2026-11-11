@@ -34,7 +34,8 @@ export type NewAdActivityLog = Omit<AdActivityLogRecord, "id" | "timestamp"> & {
   timestamp?: string;
 };
 
-export const AD_LOG_ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000; // 365 days retention
+export const AD_LOG_SIX_MONTHS_MS = 180 * 24 * 60 * 60 * 1000; // 180 days (6 months) retention
+export const AD_LOG_ONE_YEAR_MS = AD_LOG_SIX_MONTHS_MS;
 
 const adActivityLogsStorePath = resolveStorePath(
   "NEIGHBORLY_AD_ACTIVITY_LOGS_STORE",
@@ -46,8 +47,8 @@ export async function readAdActivityLogs(): Promise<AdActivityLogRecord[]> {
     const raw = await readFile(adActivityLogsStorePath, "utf8");
     const parsed = JSON.parse(raw) as unknown;
     if (Array.isArray(parsed)) {
-      const cutoff = Date.now() - AD_LOG_ONE_YEAR_MS;
-      // Retain 1-year of records
+      const cutoff = Date.now() - AD_LOG_SIX_MONTHS_MS;
+      // Retain 6 months of records
       const valid = (parsed as AdActivityLogRecord[]).filter((r) => {
         if (!r || !r.action) return false;
         const t = new Date(r.timestamp).getTime();
@@ -110,7 +111,7 @@ export async function saveAdActivityLog(input: NewAdActivityLog): Promise<AdActi
     timestamp: input.timestamp || new Date().toISOString(),
   };
 
-  const cutoff = nowMs - AD_LOG_ONE_YEAR_MS;
+  const cutoff = nowMs - AD_LOG_SIX_MONTHS_MS;
   const retained = records.filter((r) => {
     const t = new Date(r.timestamp).getTime();
     return !isNaN(t) && t >= cutoff;
