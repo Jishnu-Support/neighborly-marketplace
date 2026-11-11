@@ -35,7 +35,7 @@
       background: #ffffff;
       position: relative;
       overflow: hidden;
-      padding: 22px 32px 16px;
+      padding: 20px 32px 14px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -74,7 +74,7 @@
     }
 
     .poster-logo-wrap img {
-      height: 66px;
+      height: 64px;
       width: auto;
       object-fit: contain;
       display: block;
@@ -106,13 +106,13 @@
       background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
       border: 1.5px solid #93c5fd;
       border-radius: 12px;
-      padding: 6px 16px;
-      gap: 10px;
+      padding: 5px 14px;
+      gap: 8px;
       box-shadow: 0 3px 10px rgba(37, 99, 235, 0.12);
     }
 
     .store-3d-card .icon {
-      font-size: 26px;
+      font-size: 24px;
       line-height: 1;
     }
 
@@ -145,23 +145,23 @@
       gap: 8px;
       background: #059669;
       color: #ffffff;
-      padding: 6px 18px;
+      padding: 5px 16px;
       border-radius: 20px;
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 800;
       letter-spacing: 0.6px;
       text-transform: uppercase;
       box-shadow: 0 3px 10px rgba(5, 150, 105, 0.25);
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
     .hero-title {
-      font-size: 38px;
+      font-size: 36px;
       font-weight: 900;
       color: #0b2545;
       line-height: 1.15;
-      letter-spacing: -0.6px;
-      margin-bottom: 4px;
+      letter-spacing: -0.5px;
+      margin-bottom: 3px;
     }
 
     .hero-title .highlight-grow {
@@ -172,46 +172,44 @@
     }
 
     .hero-subtitle {
-      font-size: 15.5px;
+      font-size: 15px;
       font-weight: 700;
       color: #475569;
-      line-height: 1.35;
-      margin-bottom: 10px;
+      line-height: 1.3;
     }
 
     /* 3. EARLY BIRD DEC 10 / MARCH 31 2027 RIBBON */
     .dec10-ribbon {
       background: linear-gradient(90deg, #b91c1c 0%, #ea580c 50%, #d97706 100%);
       color: #ffffff;
-      border-radius: 12px;
-      padding: 9px 18px;
+      border-radius: 10px;
+      padding: 8px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 4px 14px rgba(234, 88, 12, 0.25);
-      margin-bottom: 10px;
+      box-shadow: 0 3px 12px rgba(234, 88, 12, 0.25);
     }
 
     .dec10-left {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
     .dec10-icon {
-      font-size: 26px;
+      font-size: 24px;
       line-height: 1;
     }
 
     .dec10-title {
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 900;
       letter-spacing: 0.5px;
       text-transform: uppercase;
     }
 
     .dec10-sub {
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 600;
       opacity: 0.95;
     }
@@ -219,24 +217,74 @@
     .dec10-pill {
       background: #ffffff;
       color: #b91c1c;
-      font-size: 12.5px;
+      font-size: 12px;
       font-weight: 900;
-      padding: 6px 16px;
-      border-radius: 18px;
+      padding: 5px 14px;
+      border-radius: 16px;
       white-space: nowrap;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     }
 
-    /* 4. 6 CORE PLATFORM FEATURES GRID */
+    /* 4. 4 PILLARS FOR RESIDENTS & MERCHANTS */
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .pillar-card {
+      border-radius: 10px;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pillar-card.amber { background: #fffbeb; border: 1.5px solid #fde68a; }
+    .pillar-card.emerald { background: #f0fdf4; border: 1.5px solid #bbf7d0; }
+    .pillar-card.blue { background: #eff6ff; border: 1.5px solid #bfdbfe; }
+    .pillar-card.purple { background: #faf5ff; border: 1.5px solid #e9d5ff; }
+
+    .pillar-icon {
+      font-size: 22px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .pillar-text h5 {
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 1.2;
+      margin: 0 0 2px;
+    }
+
+    .pillar-card.amber h5 { color: #92400e; }
+    .pillar-card.emerald h5 { color: #166534; }
+    .pillar-card.blue h5 { color: #1e40af; }
+    .pillar-card.purple h5 { color: #6b21a8; }
+
+    .pillar-text p {
+      font-size: 10px;
+      font-weight: 600;
+      line-height: 1.25;
+      margin: 0;
+    }
+
+    .pillar-card.amber p { color: #78350f; }
+    .pillar-card.emerald p { color: #14532d; }
+    .pillar-card.blue p { color: #1e3a8a; }
+    .pillar-card.purple p { color: #581c87; }
+
+    /* 5. 8 COMPLETE PLATFORM FEATURES GRID */
     .features-section-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
     .features-section-header h3 {
-      font-size: 15.5px;
+      font-size: 15px;
       font-weight: 900;
       color: #004b87;
       display: flex;
@@ -245,91 +293,59 @@
     }
 
     .features-section-header span {
-      font-size: 12.5px;
+      font-size: 12px;
       font-weight: 800;
       color: #059669;
     }
 
     .features-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 9px;
-      margin-bottom: 10px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
     }
 
     .feature-card {
       background: #ffffff;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 10px 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px;
       display: flex;
-      gap: 12px;
-      align-items: flex-start;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-      position: relative;
+      flex-direction: column;
+      gap: 2px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
     }
 
-    .feature-icon-bubble {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
+    .feature-card-top {
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      flex-shrink: 0;
-    }
-
-    .feature-icon-bubble.blue {
-      background: #eff6ff;
-      border: 1.5px solid #bfdbfe;
-    }
-
-    .feature-icon-bubble.green {
-      background: #ecfdf5;
-      border: 1.5px solid #a7f3d0;
-    }
-
-    .feature-icon-bubble.orange {
-      background: #fff7ed;
-      border: 1.5px solid #fed7aa;
-    }
-
-    .feature-icon-bubble.purple {
-      background: #faf5ff;
-      border: 1.5px solid #e9d5ff;
-    }
-
-    .feature-icon-bubble.red {
-      background: #fef2f2;
-      border: 1.5px solid #fecaca;
-    }
-
-    .feature-icon-bubble.emerald {
-      background: #f0fdf4;
-      border: 1.5px solid #bbf7d0;
-    }
-
-    .feature-content {
-      flex: 1;
-    }
-
-    .feature-content-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      gap: 6px;
       margin-bottom: 2px;
     }
 
-    .feature-content h4 {
-      font-size: 13.5px;
+    .feature-card-top .f-icon {
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .feature-card-top strong {
+      font-size: 12px;
       font-weight: 900;
       color: #0f172a;
-      line-height: 1.25;
+      line-height: 1.2;
+    }
+
+    .feature-card p {
+      font-size: 10px;
+      font-weight: 500;
+      color: #475569;
+      line-height: 1.35;
+      margin: 0;
     }
 
     .feature-tag {
-      font-size: 9.5px;
+      align-self: flex-start;
+      margin-top: 3px;
+      font-size: 9px;
       font-weight: 800;
       padding: 1.5px 6px;
       border-radius: 4px;
@@ -344,28 +360,20 @@
     .feature-tag.red { background: #fee2e2; color: #991b1b; }
     .feature-tag.emerald { background: #d1fae5; color: #065f46; }
 
-    .feature-content p {
-      font-size: 11px;
-      font-weight: 500;
-      color: #475569;
-      line-height: 1.35;
-    }
-
-    /* 5. CATEGORIES STRIP */
+    /* 6. CATEGORIES STRIP */
     .cat-strip {
       background: #f1f5f9;
       border: 1px solid #cbd5e1;
-      border-radius: 10px;
-      padding: 6px 14px;
+      border-radius: 8px;
+      padding: 6px 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      margin-bottom: 9px;
     }
 
     .cat-strip-label {
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 900;
       color: #004b87;
       text-transform: uppercase;
@@ -383,9 +391,9 @@
     .cat-pill {
       background: #ffffff;
       border: 1px solid #cbd5e1;
-      padding: 3px 9px;
+      padding: 2.5px 8px;
       border-radius: 14px;
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 700;
       color: #334155;
       display: inline-flex;
@@ -393,122 +401,262 @@
       gap: 4px;
     }
 
-    /* 6. 4 LANGUAGES BANNER */
+    /* 7. 3-STEP SHOPPER GUIDE STRIP */
+    .steps-strip {
+      background: #f0fdf4;
+      border: 1.5px solid #86efac;
+      border-radius: 8px;
+      padding: 6px 14px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .step-num {
+      width: 24px;
+      height: 24px;
+      background: #16a34a;
+      color: #ffffff;
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-text h6 {
+      font-size: 12px;
+      font-weight: 900;
+      color: #14532d;
+      margin: 0;
+    }
+
+    .step-text p {
+      font-size: 10px;
+      font-weight: 600;
+      color: #166534;
+      margin: 0;
+    }
+
+    /* 8. 4 LANGUAGES BANNER */
     .lang-banner {
       background: #f8fafc;
-      border: 2px dashed #004b87;
-      border-radius: 10px;
-      padding: 8px 16px;
+      border: 1.5px dashed #004b87;
+      border-radius: 8px;
+      padding: 6px 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 10px;
     }
 
     .lang-label {
-      font-size: 13.5px;
+      font-size: 13px;
       font-weight: 900;
       color: #004b87;
     }
 
     .lang-tags {
       display: flex;
-      gap: 8px;
+      gap: 6px;
     }
 
     .lang-tag {
       background: #ffffff;
       border: 1px solid #cbd5e1;
-      padding: 3px 12px;
-      border-radius: 14px;
-      font-size: 12px;
+      padding: 2.5px 10px;
+      border-radius: 12px;
+      font-size: 11.5px;
       font-weight: 800;
       color: #1e293b;
     }
 
-    /* 7. VALUE & QR SECTION */
+    /* 9. 3-COLUMN BENEFIT + MOCKUP + QR SECTION */
     .value-section {
       background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #eff6ff 100%);
-      border: 2px solid #86efac;
-      border-radius: 14px;
-      padding: 12px 18px;
+      border: 1.5px solid #86efac;
+      border-radius: 12px;
+      padding: 10px 14px;
       display: grid;
-      grid-template-columns: 1.45fr 1fr;
-      gap: 16px;
+      grid-template-columns: 1.35fr 0.85fr 0.8fr;
+      gap: 12px;
       align-items: center;
-      margin-bottom: 10px;
-      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.08);
+      box-shadow: 0 3px 12px rgba(16, 185, 129, 0.08);
     }
 
     .value-left h4 {
-      font-size: 16px;
+      font-size: 15.5px;
       font-weight: 900;
       color: #004b87;
       margin-bottom: 2px;
     }
 
     .value-left .benefits-subtitle {
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 700;
       color: #475569;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
     }
 
     .benefits-list {
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 4.5px;
+      gap: 4px;
     }
 
     .benefits-list li {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 800;
       color: #0f172a;
     }
 
     .benefits-list li .check-icon {
       color: #16a34a;
-      font-size: 15px;
+      font-size: 14.5px;
       font-weight: 900;
     }
+
+    /* CENTER PHONE MOCKUP */
+    .mockup-col {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .phone-mockup {
+      width: 140px;
+      height: 185px;
+      background: #0f172a;
+      border-radius: 14px;
+      padding: 4px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+      border: 2px solid #334155;
+    }
+
+    .phone-screen {
+      background: #ffffff;
+      height: 100%;
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 5px;
+      gap: 3px;
+    }
+
+    .phone-screen-header {
+      background: #004b87;
+      color: #ffffff;
+      border-radius: 4px;
+      padding: 2.5px 5px;
+      font-size: 8px;
+      font-weight: 800;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .phone-search-box {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      padding: 2.5px 5px;
+      font-size: 7px;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .phone-store-card {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 5px;
+      padding: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .phone-store-card .s-tag {
+      font-size: 6.5px;
+      font-weight: 900;
+      color: #1d4ed8;
+      text-transform: uppercase;
+    }
+
+    .phone-store-card .s-name {
+      font-size: 8px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .phone-store-card .s-sub {
+      font-size: 6.5px;
+      color: #475569;
+    }
+
+    .phone-actions {
+      display: flex;
+      gap: 3px;
+      margin-top: 2px;
+    }
+
+    .phone-btn {
+      flex: 1;
+      padding: 2px;
+      border-radius: 3px;
+      font-size: 6.5px;
+      font-weight: 800;
+      text-align: center;
+      color: #ffffff;
+    }
+
+    .phone-btn.call { background: #2563eb; }
+    .phone-btn.wa { background: #16a34a; }
 
     /* QR CARD */
     .qr-card {
       background: #002b49;
       color: #ffffff;
-      border-radius: 14px;
-      padding: 10px 14px;
+      border-radius: 12px;
+      padding: 8px 10px;
       text-align: center;
-      box-shadow: 0 6px 18px rgba(0, 43, 73, 0.25);
+      box-shadow: 0 4px 14px rgba(0, 43, 73, 0.25);
       width: 100%;
-      max-width: 200px;
-      margin: 0 auto;
     }
 
     .qr-code-box {
       background: #ffffff;
       border-radius: 8px;
-      padding: 5px;
-      margin-bottom: 5px;
+      padding: 4px;
+      margin-bottom: 4px;
       display: flex;
       justify-content: center;
       align-items: center;
     }
 
     .qr-code-box img {
-      width: 100px;
-      height: 100px;
+      width: 90px;
+      height: 90px;
       display: block;
     }
 
     .qr-card .scan-text {
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 800;
-      margin-bottom: 3px;
+      margin-bottom: 2px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -516,24 +664,23 @@
     .qr-card .url-pill {
       background: #ffffff;
       color: #002b49;
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 800;
-      padding: 3px 9px;
-      border-radius: 10px;
+      padding: 2.5px 7px;
+      border-radius: 8px;
       display: inline-block;
       text-decoration: none;
     }
 
-    /* 8. CTA SLOGAN BAR */
+    /* 10. CTA SLOGAN BAR */
     .cta-slogan-row {
       background: #f8fafc;
       border: 1.5px solid #cbd5e1;
-      border-radius: 12px;
-      padding: 8px 16px;
+      border-radius: 10px;
+      padding: 8px 14px;
       display: flex;
       flex-direction: column;
       gap: 3px;
-      margin-bottom: 10px;
     }
 
     .cta-top {
@@ -543,7 +690,7 @@
     }
 
     .cta-register-pill {
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 900;
       color: #004b87;
       display: flex;
@@ -559,9 +706,9 @@
       background: #e0f2fe;
       color: #0369a1;
       border: 1px solid #bae6fd;
-      padding: 3px 12px;
+      padding: 2.5px 11px;
       border-radius: 12px;
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 800;
       font-style: italic;
     }
@@ -570,7 +717,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 700;
       color: #475569;
       border-top: 1px solid #edf2f7;
@@ -582,20 +729,20 @@
       font-weight: 900;
     }
 
-    /* 9. FOOTER BRAND BAR */
+    /* 11. FOOTER STRIP */
     .poster-footer {
-      margin-top: auto;
+      margin-top: 0;
     }
 
     .footer-brand-strip {
       background: linear-gradient(90deg, #002b49 0%, #004b87 100%);
-      border-radius: 12px;
-      padding: 8px 18px;
+      border-radius: 10px;
+      padding: 8px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       color: #ffffff;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
     }
 
     .footer-team {
@@ -606,7 +753,7 @@
 
     .footer-powered-box {
       background: #ffffff;
-      padding: 3px 12px;
+      padding: 3px 10px;
       border-radius: 6px;
       display: flex;
       align-items: center;
@@ -614,14 +761,14 @@
     }
 
     .footer-powered-box .powered-text {
-      font-size: 9.5px;
+      font-size: 9px;
       font-weight: 700;
       color: #64748b;
       text-transform: uppercase;
     }
 
     .footer-powered-box img {
-      height: 25px;
+      height: 24px;
       width: auto;
       display: block;
     }
@@ -706,83 +853,121 @@
       </div>
     </div>
 
-    <!-- 4. 6 CORE PLATFORM FEATURES GRID -->
+    <!-- 4. 4 PLATFORM PILLARS -->
+    <div class="pillars-grid">
+      <div class="pillar-card amber">
+        <span class="pillar-icon">⚡</span>
+        <div class="pillar-text">
+          <h5>Instant Search</h5>
+          <p>Find stores &amp; items in 3 seconds flat.</p>
+        </div>
+      </div>
+      <div class="pillar-card emerald">
+        <span class="pillar-icon">💬</span>
+        <div class="pillar-text">
+          <h5>Direct WhatsApp</h5>
+          <p>1-tap chat with shop owners directly.</p>
+        </div>
+      </div>
+      <div class="pillar-card blue">
+        <span class="pillar-icon">📍</span>
+        <div class="pillar-text">
+          <h5>Hyperlocal GPS</h5>
+          <p>Exact km distance &amp; 1-tap route map.</p>
+        </div>
+      </div>
+      <div class="pillar-card purple">
+        <span class="pillar-icon">🛡️</span>
+        <div class="pillar-text">
+          <h5>JIT Verified</h5>
+          <p>100% on-ground visited stores.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. 8 COMPLETE PLATFORM FEATURES GRID -->
     <div>
       <div class="features-section-header">
-        <h3>✨ Explore Complete Neighborhood Platform Features</h3>
+        <h3>✨ Complete Neighborhood Platform Features</h3>
         <span>Built for Local Residents &amp; Businesses</span>
       </div>
 
       <div class="features-grid">
         <div class="feature-card">
-          <div class="feature-icon-bubble blue">📍</div>
-          <div class="feature-content">
-            <div class="feature-content-top">
-              <h4>Real-Time Proximity &amp; Navigation</h4>
-              <span class="feature-tag blue">GPS Accurate</span>
-            </div>
-            <p>Instant GPS distance (in km) and 1-tap Google Maps directions straight to any store, clinic, or service in your neighborhood.</p>
+          <div class="feature-card-top">
+            <span class="f-icon">📍</span>
+            <strong>Proximity &amp; GPS</strong>
           </div>
+          <p>Instant km distance and 1-tap Google Maps directions to stores.</p>
+          <span class="feature-tag blue">GPS Accurate</span>
         </div>
 
         <div class="feature-card">
-          <div class="feature-icon-bubble green">💬</div>
-          <div class="feature-content">
-            <div class="feature-content-top">
-              <h4>Direct Call &amp; WhatsApp Connect</h4>
-              <span class="feature-tag green">Zero Middleman</span>
-            </div>
-            <p>Connect directly with shop owners in 1 tap. Ring their direct mobile or WhatsApp with 0% commissions or broker fees.</p>
+          <div class="feature-card-top">
+            <span class="f-icon">💬</span>
+            <strong>Direct Call &amp; WA</strong>
           </div>
+          <p>Connect with shop owners in 1 tap with 0% broker commissions.</p>
+          <span class="feature-tag green">Zero Middleman</span>
         </div>
 
         <div class="feature-card">
-          <div class="feature-icon-bubble orange">📄</div>
-          <div class="feature-content">
-            <div class="feature-content-top">
-              <h4>Custom Quotes &amp; Estimates</h4>
-              <span class="feature-tag orange">Real Leads</span>
-            </div>
-            <p>Send customer quote inquiries directly to local merchants with verified callback numbers and automated WhatsApp handoff.</p>
+          <div class="feature-card-top">
+            <span class="f-icon">📄</span>
+            <strong>Quote Manager</strong>
           </div>
+          <p>Send quote requests directly to merchants with WA handoff.</p>
+          <span class="feature-tag orange">Real Leads</span>
         </div>
 
         <div class="feature-card">
-          <div class="feature-icon-bubble purple">🛍️</div>
-          <div class="feature-content">
-            <div class="feature-content-top">
-              <h4>Live Menus &amp; Store Catalogs</h4>
-              <span class="feature-tag purple">Live Catalog</span>
-            </div>
-            <p>Browse real-time product catalogs, pricing, daily discounts, and order easily for doorstep delivery or quick store pickup.</p>
+          <div class="feature-card-top">
+            <span class="f-icon">🛍️</span>
+            <strong>Live Menus &amp; Catalogs</strong>
           </div>
+          <p>Browse products, pricing, discounts &amp; order for delivery or pickup.</p>
+          <span class="feature-tag purple">Live Catalog</span>
         </div>
 
         <div class="feature-card">
-          <div class="feature-icon-bubble emerald">🛡️</div>
-          <div class="feature-content">
-            <div class="feature-content-top">
-              <h4>100% Agent-Verified Listings</h4>
-              <span class="feature-tag emerald">5X Trust Seal</span>
-            </div>
-            <p>Every store is physically visited and certified on-ground by JIT field verification agents with geotagged physical proof.</p>
+          <div class="feature-card-top">
+            <span class="f-icon">🛡️</span>
+            <strong>100% Field Verified</strong>
           </div>
+          <p>Stores certified on-ground by JIT field verification agents.</p>
+          <span class="feature-tag emerald">5X Trust Seal</span>
         </div>
 
         <div class="feature-card">
-          <div class="feature-icon-bubble red">🚨</div>
-          <div class="feature-content">
-            <div class="feature-content-top">
-              <h4>Emergency SOS &amp; Quick Help</h4>
-              <span class="feature-tag red">Safety First</span>
-            </div>
-            <p>1-tap community emergency SOS alert with live GPS coordinates sent immediately to nearby verified emergency services.</p>
+          <div class="feature-card-top">
+            <span class="f-icon">🚨</span>
+            <strong>Emergency SOS</strong>
           </div>
+          <p>1-tap community alert with GPS sent to nearby emergency services.</p>
+          <span class="feature-tag red">Safety First</span>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-card-top">
+            <span class="f-icon">🏷️</span>
+            <strong>Daily Deals &amp; Sales</strong>
+          </div>
+          <p>Discover neighborhood festival offers, flash sales &amp; discounts.</p>
+          <span class="feature-tag orange">Save Big</span>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-card-top">
+            <span class="f-icon">📲</span>
+            <strong>Countertop QR Code</strong>
+          </div>
+          <p>Scan cash-desk QR to bookmark store &amp; re-order anytime.</p>
+          <span class="feature-tag blue">Quick Bookmark</span>
         </div>
       </div>
     </div>
 
-    <!-- 5. CATEGORIES STRIP -->
+    <!-- 6. CATEGORIES STRIP -->
     <div class="cat-strip">
       <span class="cat-strip-label">Categories Across Town:</span>
       <div class="cat-pills-row">
@@ -796,7 +981,32 @@
       </div>
     </div>
 
-    <!-- 6. 4 REGIONAL LANGUAGES BANNER -->
+    <!-- 7. 3-STEP SHOPPER GUIDE STRIP -->
+    <div class="steps-strip">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <h6>Search Anything Local</h6>
+          <p>Find items, shops, doctors &amp; services in seconds.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          <h6>Compare &amp; Navigate</h6>
+          <p>See real photos, prices, reviews &amp; live GPS distance.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          <h6>Call, Chat or Visit</h6>
+          <p>Order on WhatsApp, call direct or walk straight in.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. 4 REGIONAL LANGUAGES BANNER -->
     <div class="lang-banner">
       <span class="lang-label">🗣️ Available in 4 Regional Languages:</span>
       <div class="lang-tags">
@@ -807,7 +1017,7 @@
       </div>
     </div>
 
-    <!-- 7. VALUE & QR SECTION (MERCHANTS + CUSTOMERS) -->
+    <!-- 9. 3-COLUMN BENEFIT + MOCKUP + QR SECTION (MERCHANTS + RESIDENTS) -->
     <div class="value-section">
       <div class="value-left">
         <h4>🚀 Are You a Local Business Owner?</h4>
@@ -823,6 +1033,34 @@
         </ul>
       </div>
 
+      <!-- CENTER PHONE MOCKUP -->
+      <div class="mockup-col">
+        <div class="phone-mockup">
+          <div class="phone-screen">
+            <div class="phone-screen-header">
+              <span>bizearch.in</span>
+              <span>● LIVE</span>
+            </div>
+            <div class="phone-search-box">
+              <span>🔍</span> Nearby stores, items...
+            </div>
+            <div class="phone-store-card">
+              <span class="s-tag">🔥 Verified Store · 0.4 km</span>
+              <span class="s-name">Sri Lakshmi Supermarket</span>
+              <span class="s-sub">Open Now · Groceries &amp; Daily Needs</span>
+              <div class="phone-actions">
+                <span class="phone-btn call">📞 Call</span>
+                <span class="phone-btn wa">💬 WhatsApp</span>
+              </div>
+            </div>
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 2.5px; font-size: 6.5px; color: #16a34a; font-weight: 800; text-align: center;">
+              ✓ JIT Verified Store
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT QR CARD -->
       <div style="display: flex; justify-content: center;">
         <div class="qr-card">
           <div class="qr-code-box">
@@ -836,7 +1074,7 @@
       </div>
     </div>
 
-    <!-- 8. CTA SLOGAN BAR -->
+    <!-- 10. CTA SLOGAN BAR -->
     <div class="cta-slogan-row">
       <div class="cta-top">
         <div class="cta-register-pill">
@@ -850,7 +1088,7 @@
       </div>
     </div>
 
-    <!-- 9. FOOTER STRIP -->
+    <!-- 11. FOOTER STRIP -->
     <footer class="poster-footer">
       <div class="footer-brand-strip">
         <div class="footer-team">By Team Bizearch</div>

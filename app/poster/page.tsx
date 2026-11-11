@@ -1235,8 +1235,8 @@ function AllFeaturesPoster() {
             <div style={{ background: "linear-gradient(135deg, #b91c1c 0%, #dc2626 100%)", color: "#fff", padding: "6px 18px", borderRadius: "20px", fontSize: "13px", fontWeight: 800, boxShadow: "0 3px 10px rgba(220,38,38,0.25)" }}>
               ⏰ REGISTER BEFORE DEC 10, 2026: FREE UNTIL MARCH 31ST, 2027!
             </div>
-            <div className="store-3d-card" style={{ background: "#eff6ff", borderColor: "#93c5fd", padding: "6px 16px", gap: "10px" }}>
-              <span className="store-icon-3d" style={{ fontSize: "26px" }}>🗺️</span>
+            <div className="store-3d-card" style={{ background: "#eff6ff", borderColor: "#93c5fd", padding: "5px 14px", gap: "8px" }}>
+              <span className="store-icon-3d" style={{ fontSize: "24px" }}>🗺️</span>
               <div className="store-badge-text">
                 <span className="store-badge-title" style={{ color: "#1d4ed8", fontSize: "11px" }}>HYPERLOCAL NETWORK</span>
                 <span className="store-badge-sub" style={{ color: "#1e40af", fontSize: "13.5px" }}>SEE YOUR NEIGHBORHOOD</span>
@@ -1248,157 +1248,248 @@ function AllFeaturesPoster() {
 
       {/* HEADLINE */}
       <div>
-        <div className="attention-pill" style={{ background: "#059669", padding: "6px 18px", fontSize: "13px" }}>
+        <div className="attention-pill" style={{ background: "#059669", padding: "5px 16px", fontSize: "12.5px" }}>
           <span>🌟</span> ALL-IN-ONE NEIGHBORHOOD PLATFORM
         </div>
-        <h1 className="hero-title" style={{ fontSize: "38px" }}>
+        <h1 className="hero-title" style={{ fontSize: "36px" }}>
           Everything in Your City, <span className="highlight-grow">Right Around Your Corner!</span>
         </h1>
-        <p className="hero-subtitle" style={{ fontSize: "15.5px" }}>
+        <p className="hero-subtitle" style={{ fontSize: "15px" }}>
           Discover verified stores, request instant quotes, contact owners directly, and shop local with zero middleman commissions.
         </p>
 
         {/* DEC 10 LIMITED TIME EARLY BIRD RIBBON */}
-        <div style={{ background: "linear-gradient(90deg, #b91c1c 0%, #ea580c 50%, #d97706 100%)", color: "#ffffff", borderRadius: "12px", padding: "9px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px", boxShadow: "0 4px 14px rgba(234,88,12,0.25)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <span style={{ fontSize: "26px" }}>🔥</span>
+        <div style={{ background: "linear-gradient(90deg, #b91c1c 0%, #ea580c 50%, #d97706 100%)", color: "#ffffff", borderRadius: "10px", padding: "8px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px", boxShadow: "0 3px 12px rgba(234,88,12,0.25)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <span style={{ fontSize: "24px" }}>🔥</span>
             <div>
-              <div style={{ fontSize: "14px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.5px" }}>LIMITED-TIME FOUNDING PARTNER WINDOW</div>
-              <div style={{ fontSize: "13px", fontWeight: 600, opacity: 0.95 }}>Register before Dec 10th, 2026 to unlock a <strong>FREE Business Listing until March 31st, 2027</strong>!</div>
+              <div style={{ fontSize: "13.5px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.5px" }}>LIMITED-TIME FOUNDING PARTNER WINDOW</div>
+              <div style={{ fontSize: "12.5px", fontWeight: 600, opacity: 0.95 }}>Register before Dec 10th, 2026 to unlock a <strong>FREE Business Listing until March 31st, 2027</strong>!</div>
             </div>
           </div>
-          <div style={{ background: "#ffffff", color: "#b91c1c", fontSize: "12.5px", fontWeight: 900, padding: "6px 16px", borderRadius: "18px", whiteSpace: "nowrap", boxShadow: "0 2px 6px rgba(0,0,0,0.15)" }}>
+          <div style={{ background: "#ffffff", color: "#b91c1c", fontSize: "12px", fontWeight: 900, padding: "5px 14px", borderRadius: "16px", whiteSpace: "nowrap", boxShadow: "0 2px 6px rgba(0,0,0,0.15)" }}>
             Valid Until Dec 10, 2026
           </div>
         </div>
 
-        {/* 6 CORE FEATURES GRID */}
-        <div style={{ marginBottom: "10px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-            <h3 style={{ fontSize: "15.5px", fontWeight: 900, color: "#004b87", display: "flex", alignItems: "center", gap: "6px" }}>
-              ✨ Explore Complete Neighborhood Platform Features
+        {/* 4 PLATFORM PILLARS */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px", marginBottom: "8px" }}>
+          <div style={{ background: "#fffbeb", border: "1.5px solid #fde68a", borderRadius: "10px", padding: "8px 10px", display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "22px" }}>⚡</span>
+            <div>
+              <div style={{ fontSize: "13px", fontWeight: 900, color: "#92400e" }}>Instant Search</div>
+              <div style={{ fontSize: "10px", fontWeight: 600, color: "#78350f" }}>Find stores &amp; items in 3 seconds flat.</div>
+            </div>
+          </div>
+          <div style={{ background: "#f0fdf4", border: "1.5px solid #bbf7d0", borderRadius: "10px", padding: "8px 10px", display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "22px" }}>💬</span>
+            <div>
+              <div style={{ fontSize: "13px", fontWeight: 900, color: "#166534" }}>Direct WhatsApp</div>
+              <div style={{ fontSize: "10px", fontWeight: 600, color: "#14532d" }}>1-tap chat with shop owners directly.</div>
+            </div>
+          </div>
+          <div style={{ background: "#eff6ff", border: "1.5px solid #bfdbfe", borderRadius: "10px", padding: "8px 10px", display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "22px" }}>📍</span>
+            <div>
+              <div style={{ fontSize: "13px", fontWeight: 900, color: "#1e40af" }}>Hyperlocal GPS</div>
+              <div style={{ fontSize: "10px", fontWeight: 600, color: "#1e3a8a" }}>Exact km distance &amp; 1-tap route map.</div>
+            </div>
+          </div>
+          <div style={{ background: "#faf5ff", border: "1.5px solid #e9d5ff", borderRadius: "10px", padding: "8px 10px", display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "22px" }}>🛡️</span>
+            <div>
+              <div style={{ fontSize: "13px", fontWeight: 900, color: "#6b21a8" }}>JIT Verified</div>
+              <div style={{ fontSize: "10px", fontWeight: 600, color: "#581c87" }}>100% on-ground visited stores.</div>
+            </div>
+          </div>
+        </div>
+
+        {/* 8 COMPLETE PLATFORM FEATURES GRID */}
+        <div style={{ marginBottom: "8px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+            <h3 style={{ fontSize: "15px", fontWeight: 900, color: "#004b87", display: "flex", alignItems: "center", gap: "6px" }}>
+              ✨ Complete Neighborhood Platform Features
             </h3>
-            <span style={{ fontSize: "12.5px", fontWeight: 800, color: "#059669" }}>Built for Local Residents &amp; Businesses</span>
+            <span style={{ fontSize: "12px", fontWeight: 800, color: "#059669" }}>Built for Local Residents &amp; Businesses</span>
           </div>
 
-          <div className="features-grid" style={{ gap: "9px", marginBottom: "10px" }}>
-            <div className="feature-card" style={{ padding: "10px 14px", gap: "12px" }}>
-              <div className="feature-icon-bubble blue" style={{ width: "44px", height: "44px", fontSize: "22px" }}>📍</div>
-              <div className="feature-content">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2px" }}>
-                  <h4 style={{ fontSize: "13.5px", fontWeight: 900, color: "#0f172a", margin: 0 }}>Real-Time Proximity &amp; Navigation</h4>
-                  <span style={{ fontSize: "9.5px", fontWeight: 800, padding: "1.5px 6px", borderRadius: "4px", background: "#dbeafe", color: "#1e40af", textTransform: "uppercase" }}>GPS Accurate</span>
-                </div>
-                <p style={{ fontSize: "11px", color: "#475569", margin: 0, lineHeight: 1.35 }}>Instant GPS distance (in km) and 1-tap Google Maps directions straight to any store, clinic, or service in your neighborhood.</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "7px" }}>
+            <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px", display: "flex", flexDirection: "column", gap: "2px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "2px" }}>
+                <span style={{ fontSize: "16px" }}>📍</span>
+                <strong style={{ fontSize: "12px", color: "#0f172a" }}>Proximity &amp; GPS</strong>
               </div>
+              <p style={{ fontSize: "10px", color: "#475569", margin: 0, lineHeight: 1.35 }}>Instant km distance and 1-tap Google Maps directions to stores.</p>
+              <span style={{ alignSelf: "flex-start", marginTop: "3px", fontSize: "9px", fontWeight: 800, padding: "1.5px 6px", borderRadius: "4px", background: "#dbeafe", color: "#1e40af", textTransform: "uppercase" }}>GPS Accurate</span>
             </div>
 
-            <div className="feature-card" style={{ padding: "10px 14px", gap: "12px" }}>
-              <div className="feature-icon-bubble green" style={{ width: "44px", height: "44px", fontSize: "22px" }}>💬</div>
-              <div className="feature-content">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2px" }}>
-                  <h4 style={{ fontSize: "13.5px", fontWeight: 900, color: "#0f172a", margin: 0 }}>Direct Call &amp; WhatsApp Connect</h4>
-                  <span style={{ fontSize: "9.5px", fontWeight: 800, padding: "1.5px 6px", borderRadius: "4px", background: "#dcfce7", color: "#166534", textTransform: "uppercase" }}>Zero Middleman</span>
-                </div>
-                <p style={{ fontSize: "11px", color: "#475569", margin: 0, lineHeight: 1.35 }}>Connect directly with shop owners in 1 tap. Ring their direct mobile or WhatsApp with 0% commissions or broker fees.</p>
+            <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px", display: "flex", flexDirection: "column", gap: "2px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "2px" }}>
+                <span style={{ fontSize: "16px" }}>💬</span>
+                <strong style={{ fontSize: "12px", color: "#0f172a" }}>Direct Call &amp; WA</strong>
               </div>
+              <p style={{ fontSize: "10px", color: "#475569", margin: 0, lineHeight: 1.35 }}>Connect with shop owners in 1 tap with 0% broker commissions.</p>
+              <span style={{ alignSelf: "flex-start", marginTop: "3px", fontSize: "9px", fontWeight: 800, padding: "1.5px 6px", borderRadius: "4px", background: "#dcfce7", color: "#166534", textTransform: "uppercase" }}>Zero Middleman</span>
             </div>
 
-            <div className="feature-card" style={{ padding: "10px 14px", gap: "12px" }}>
-              <div className="feature-icon-bubble orange" style={{ width: "44px", height: "44px", fontSize: "22px" }}>📄</div>
-              <div className="feature-content">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2px" }}>
-                  <h4 style={{ fontSize: "13.5px", fontWeight: 900, color: "#0f172a", margin: 0 }}>Custom Quotes &amp; Estimates</h4>
-                  <span style={{ fontSize: "9.5px", fontWeight: 800, padding: "1.5px 6px", borderRadius: "4px", background: "#ffedd5", color: "#9a3412", textTransform: "uppercase" }}>Real Leads</span>
-                </div>
-                <p style={{ fontSize: "11px", color: "#475569", margin: 0, lineHeight: 1.35 }}>Send customer quote inquiries directly to local merchants with verified callback numbers and automated WhatsApp handoff.</p>
+            <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px", display: "flex", flexDirection: "column", gap: "2px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "2px" }}>
+                <span style={{ fontSize: "16px" }}>📄</span>
+                <strong style={{ fontSize: "12px", color: "#0f172a" }}>Quote Manager</strong>
               </div>
+              <p style={{ fontSize: "10px", color: "#475569", margin: 0, lineHeight: 1.35 }}>Send quote requests directly to merchants with WA handoff.</p>
+              <span style={{ alignSelf: "flex-start", marginTop: "3px", fontSize: "9px", fontWeight: 800, padding: "1.5px 6px", borderRadius: "4px", background: "#ffedd5", color: "#9a3412", textTransform: "uppercase" }}>Real Leads</span>
             </div>
 
-            <div className="feature-card" style={{ padding: "10px 14px", gap: "12px" }}>
-              <div className="feature-icon-bubble purple" style={{ width: "44px", height: "44px", fontSize: "22px" }}>🛍️</div>
-              <div className="feature-content">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2px" }}>
-                  <h4 style={{ fontSize: "13.5px", fontWeight: 900, color: "#0f172a", margin: 0 }}>Live Menus &amp; Store Catalogs</h4>
-                  <span style={{ fontSize: "9.5px", fontWeight: 800, padding: "1.5px 6px", borderRadius: "4px", background: "#f3e8ff", color: "#6b21a8", textTransform: "uppercase" }}>Live Catalog</span>
-                </div>
-                <p style={{ fontSize: "11px", color: "#475569", margin: 0, lineHeight: 1.35 }}>Browse real-time product catalogs, pricing, daily discounts, and order easily for doorstep delivery or quick store pickup.</p>
+            <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px", display: "flex", flexDirection: "column", gap: "2px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "2px" }}>
+                <span style={{ fontSize: "16px" }}>🛍️</span>
+                <strong style={{ fontSize: "12px", color: "#0f172a" }}>Live Catalogs</strong>
               </div>
+              <p style={{ fontSize: "10px", color: "#475569", margin: 0, lineHeight: 1.35 }}>Browse products, pricing, discounts &amp; order for delivery/pickup.</p>
+              <span style={{ alignSelf: "flex-start", marginTop: "3px", fontSize: "9px", fontWeight: 800, padding: "1.5px 6px", borderRadius: "4px", background: "#f3e8ff", color: "#6b21a8", textTransform: "uppercase" }}>Live Catalog</span>
             </div>
 
-            <div className="feature-card" style={{ padding: "10px 14px", gap: "12px" }}>
-              <div className="feature-icon-bubble green" style={{ width: "44px", height: "44px", fontSize: "22px" }}>🛡️</div>
-              <div className="feature-content">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2px" }}>
-                  <h4 style={{ fontSize: "13.5px", fontWeight: 900, color: "#0f172a", margin: 0 }}>100% Agent-Verified Listings</h4>
-                  <span style={{ fontSize: "9.5px", fontWeight: 800, padding: "1.5px 6px", borderRadius: "4px", background: "#d1fae5", color: "#065f46", textTransform: "uppercase" }}>5X Trust Seal</span>
-                </div>
-                <p style={{ fontSize: "11px", color: "#475569", margin: 0, lineHeight: 1.35 }}>Every store is physically visited and certified on-ground by JIT field verification agents with geotagged physical proof.</p>
+            <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px", display: "flex", flexDirection: "column", gap: "2px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "2px" }}>
+                <span style={{ fontSize: "16px" }}>🛡️</span>
+                <strong style={{ fontSize: "12px", color: "#0f172a" }}>Field Verified</strong>
               </div>
+              <p style={{ fontSize: "10px", color: "#475569", margin: 0, lineHeight: 1.35 }}>Stores certified on-ground by JIT field verification agents.</p>
+              <span style={{ alignSelf: "flex-start", marginTop: "3px", fontSize: "9px", fontWeight: 800, padding: "1.5px 6px", borderRadius: "4px", background: "#d1fae5", color: "#065f46", textTransform: "uppercase" }}>5X Trust Seal</span>
             </div>
 
-            <div className="feature-card" style={{ padding: "10px 14px", gap: "12px" }}>
-              <div className="feature-icon-bubble red" style={{ width: "44px", height: "44px", fontSize: "22px" }}>🚨</div>
-              <div className="feature-content">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2px" }}>
-                  <h4 style={{ fontSize: "13.5px", fontWeight: 900, color: "#0f172a", margin: 0 }}>Emergency SOS &amp; Quick Help</h4>
-                  <span style={{ fontSize: "9.5px", fontWeight: 800, padding: "1.5px 6px", borderRadius: "4px", background: "#fee2e2", color: "#991b1b", textTransform: "uppercase" }}>Safety First</span>
-                </div>
-                <p style={{ fontSize: "11px", color: "#475569", margin: 0, lineHeight: 1.35 }}>1-tap community emergency SOS alert with live GPS coordinates sent immediately to nearby verified emergency services.</p>
+            <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px", display: "flex", flexDirection: "column", gap: "2px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "2px" }}>
+                <span style={{ fontSize: "16px" }}>🚨</span>
+                <strong style={{ fontSize: "12px", color: "#0f172a" }}>Emergency SOS</strong>
               </div>
+              <p style={{ fontSize: "10px", color: "#475569", margin: 0, lineHeight: 1.35 }}>1-tap community alert with GPS sent to emergency services.</p>
+              <span style={{ alignSelf: "flex-start", marginTop: "3px", fontSize: "9px", fontWeight: 800, padding: "1.5px 6px", borderRadius: "4px", background: "#fee2e2", color: "#991b1b", textTransform: "uppercase" }}>Safety First</span>
+            </div>
+
+            <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px", display: "flex", flexDirection: "column", gap: "2px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "2px" }}>
+                <span style={{ fontSize: "16px" }}>🏷️</span>
+                <strong style={{ fontSize: "12px", color: "#0f172a" }}>Deals &amp; Offers</strong>
+              </div>
+              <p style={{ fontSize: "10px", color: "#475569", margin: 0, lineHeight: 1.35 }}>Discover neighborhood festival offers, flash sales &amp; discounts.</p>
+              <span style={{ alignSelf: "flex-start", marginTop: "3px", fontSize: "9px", fontWeight: 800, padding: "1.5px 6px", borderRadius: "4px", background: "#ffedd5", color: "#9a3412", textTransform: "uppercase" }}>Save Big</span>
+            </div>
+
+            <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px", display: "flex", flexDirection: "column", gap: "2px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "2px" }}>
+                <span style={{ fontSize: "16px" }}>📲</span>
+                <strong style={{ fontSize: "12px", color: "#0f172a" }}>Countertop QR</strong>
+              </div>
+              <p style={{ fontSize: "10px", color: "#475569", margin: 0, lineHeight: 1.35 }}>Scan cash-desk QR to bookmark store &amp; re-order anytime.</p>
+              <span style={{ alignSelf: "flex-start", marginTop: "3px", fontSize: "9px", fontWeight: 800, padding: "1.5px 6px", borderRadius: "4px", background: "#dbeafe", color: "#1e40af", textTransform: "uppercase" }}>Quick Bookmark</span>
             </div>
           </div>
         </div>
 
         {/* CATEGORIES STRIP */}
-        <div style={{ background: "#f1f5f9", border: "1px solid #cbd5e1", borderRadius: "10px", padding: "6px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", marginBottom: "9px" }}>
-          <span style={{ fontSize: "12px", fontWeight: 900, color: "#004b87", textTransform: "uppercase", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>Categories Across Town:</span>
+        <div style={{ background: "#f1f5f9", border: "1px solid #cbd5e1", borderRadius: "8px", padding: "6px 12px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", marginBottom: "8px" }}>
+          <span style={{ fontSize: "11.5px", fontWeight: 900, color: "#004b87", textTransform: "uppercase", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>Categories Across Town:</span>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", alignItems: "center" }}>
             {["🛒 Supermarkets & Groceries", "👗 Fashion & Boutiques", "📱 Electronics & Mobiles", "🚗 Automobiles & Service", "🍽️ Restaurants & Bakeries", "🩺 Clinics & Pharmacies", "🔧 Hardware & Repairs"].map((cat) => (
-              <span key={cat} style={{ background: "#ffffff", border: "1px solid #cbd5e1", padding: "3px 9px", borderRadius: "14px", fontSize: "11px", fontWeight: 700, color: "#334155" }}>
+              <span key={cat} style={{ background: "#ffffff", border: "1px solid #cbd5e1", padding: "2.5px 8px", borderRadius: "14px", fontSize: "10.5px", fontWeight: 700, color: "#334155" }}>
                 {cat}
               </span>
             ))}
           </div>
         </div>
 
-        {/* 4 LANGUAGES BANNER */}
-        <div className="lang-banner" style={{ padding: "8px 16px", marginBottom: "10px" }}>
-          <span className="lang-label" style={{ fontSize: "13.5px" }}>🗣️ Available in 4 Regional Languages:</span>
-          <div className="lang-tags" style={{ gap: "8px" }}>
-            <span className="lang-tag" style={{ padding: "3px 12px", fontSize: "12px" }}>English</span>
-            <span className="lang-tag" style={{ padding: "3px 12px", fontSize: "12px" }}>தமிழ் (Tamil)</span>
-            <span className="lang-tag" style={{ padding: "3px 12px", fontSize: "12px" }}>ಕನ್ನಡ (Kannada)</span>
-            <span className="lang-tag" style={{ padding: "3px 12px", fontSize: "12px" }}>తెలుగు (Telugu)</span>
+        {/* 3-STEP SHOPPER GUIDE STRIP */}
+        <div style={{ background: "#f0fdf4", border: "1.5px solid #86efac", borderRadius: "8px", padding: "6px 14px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px", marginBottom: "8px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
+            <div style={{ width: "24px", height: "24px", background: "#16a34a", color: "#fff", borderRadius: "50%", fontSize: "12px", fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>1</div>
+            <div>
+              <div style={{ fontSize: "12px", fontWeight: 900, color: "#14532d" }}>Search Anything Local</div>
+              <div style={{ fontSize: "10px", fontWeight: 600, color: "#166534" }}>Find items, shops, doctors &amp; services in seconds.</div>
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
+            <div style={{ width: "24px", height: "24px", background: "#16a34a", color: "#fff", borderRadius: "50%", fontSize: "12px", fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>2</div>
+            <div>
+              <div style={{ fontSize: "12px", fontWeight: 900, color: "#14532d" }}>Compare &amp; Navigate</div>
+              <div style={{ fontSize: "10px", fontWeight: 600, color: "#166534" }}>See real photos, prices, reviews &amp; live GPS distance.</div>
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
+            <div style={{ width: "24px", height: "24px", background: "#16a34a", color: "#fff", borderRadius: "50%", fontSize: "12px", fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>3</div>
+            <div>
+              <div style={{ fontSize: "12px", fontWeight: 900, color: "#14532d" }}>Call, Chat or Visit</div>
+              <div style={{ fontSize: "10px", fontWeight: 600, color: "#166534" }}>Order on WhatsApp, call direct or walk straight in.</div>
+            </div>
           </div>
         </div>
 
-        {/* VALUE SECTION */}
-        <div className="value-section" style={{ background: "linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #eff6ff 100%)", border: "2px solid #86efac", borderRadius: "14px", padding: "12px 18px", gridTemplateColumns: "1.45fr 1fr", gap: "16px", marginBottom: "10px" }}>
+        {/* 4 LANGUAGES BANNER */}
+        <div className="lang-banner" style={{ padding: "6px 14px", marginBottom: "8px" }}>
+          <span className="lang-label" style={{ fontSize: "13px" }}>🗣️ Available in 4 Regional Languages:</span>
+          <div className="lang-tags" style={{ gap: "6px" }}>
+            <span className="lang-tag" style={{ padding: "2.5px 10px", fontSize: "11.5px" }}>English</span>
+            <span className="lang-tag" style={{ padding: "2.5px 10px", fontSize: "11.5px" }}>தமிழ் (Tamil)</span>
+            <span className="lang-tag" style={{ padding: "2.5px 10px", fontSize: "11.5px" }}>ಕನ್ನಡ (Kannada)</span>
+            <span className="lang-tag" style={{ padding: "2.5px 10px", fontSize: "11.5px" }}>తెలుగు (Telugu)</span>
+          </div>
+        </div>
+
+        {/* 3-COLUMN BENEFIT + MOCKUP + QR SECTION */}
+        <div className="value-section" style={{ background: "linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #eff6ff 100%)", border: "1.5px solid #86efac", borderRadius: "12px", padding: "10px 14px", gridTemplateColumns: "1.35fr 0.85fr 0.8fr", gap: "12px", marginBottom: "8px" }}>
           <div>
-            <h4 style={{ fontSize: "16px", fontWeight: 900, color: "#004b87", marginBottom: "2px" }}>
+            <h4 style={{ fontSize: "15.5px", fontWeight: 900, color: "#004b87", marginBottom: "2px" }}>
               🚀 Are You a Local Business Owner?
             </h4>
-            <div className="benefits-subtitle" style={{ fontSize: "12px", marginBottom: "6px" }}>
+            <div className="benefits-subtitle" style={{ fontSize: "11.5px", marginBottom: "5px" }}>
               Register before Dec 10, 2026 to unlock exclusive privileges:
             </div>
-            <ul className="benefits-list" style={{ gap: "4.5px" }}>
-              <li style={{ fontSize: "12px", fontWeight: 800 }}><span className="check-icon" style={{ fontSize: "15px" }}>✓</span> FREE Full Business Listing until March 31, 2027</li>
-              <li style={{ fontSize: "12px", fontWeight: 800 }}><span className="check-icon" style={{ fontSize: "15px" }}>✓</span> 0% Commission — 100% of customer sales stay with you</li>
-              <li style={{ fontSize: "12px", fontWeight: 800 }}><span className="check-icon" style={{ fontSize: "15px" }}>✓</span> Real-Time Customer Lead Inbox straight to your phone</li>
-              <li style={{ fontSize: "12px", fontWeight: 800 }}><span className="check-icon" style={{ fontSize: "15px" }}>✓</span> Direct WhatsApp orders &amp; customer call connection</li>
-              <li style={{ fontSize: "12px", fontWeight: 800 }}><span className="check-icon" style={{ fontSize: "15px" }}>✓</span> Free Doorstep JIT Field Verification badge</li>
+            <ul className="benefits-list" style={{ gap: "4px" }}>
+              <li style={{ fontSize: "11.5px", fontWeight: 800 }}><span className="check-icon" style={{ fontSize: "14.5px" }}>✓</span> FREE Full Business Listing until March 31, 2027</li>
+              <li style={{ fontSize: "11.5px", fontWeight: 800 }}><span className="check-icon" style={{ fontSize: "14.5px" }}>✓</span> 0% Commission — 100% of customer sales stay with you</li>
+              <li style={{ fontSize: "11.5px", fontWeight: 800 }}><span className="check-icon" style={{ fontSize: "14.5px" }}>✓</span> Real-Time Customer Lead Inbox straight to your phone</li>
+              <li style={{ fontSize: "11.5px", fontWeight: 800 }}><span className="check-icon" style={{ fontSize: "14.5px" }}>✓</span> Direct WhatsApp orders &amp; customer call connection</li>
+              <li style={{ fontSize: "11.5px", fontWeight: 800 }}><span className="check-icon" style={{ fontSize: "14.5px" }}>✓</span> Free Doorstep JIT Field Verification badge</li>
             </ul>
           </div>
 
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <div className="qr-card" style={{ maxWidth: "200px", padding: "10px 14px", borderRadius: "14px" }}>
-              <div className="qr-code-box" style={{ padding: "5px", marginBottom: "5px" }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/bizearch-qr.png" alt="Scan QR Code to Explore" style={{ width: "100px", height: "100px" }} />
+          {/* CENTER PHONE MOCKUP */}
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+            <div style={{ width: "140px", height: "185px", background: "#0f172a", borderRadius: "14px", padding: "4px", boxShadow: "0 6px 18px rgba(0,0,0,0.22)", border: "2px solid #334155" }}>
+              <div style={{ background: "#ffffff", height: "100%", borderRadius: "10px", overflow: "hidden", display: "flex", flexDirection: "column", padding: "5px", gap: "3px" }}>
+                <div style={{ background: "#004b87", color: "#ffffff", borderRadius: "4px", padding: "2.5px 5px", fontSize: "8px", fontWeight: 800, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span>bizearch.in</span>
+                  <span>● LIVE</span>
+                </div>
+                <div style={{ background: "#f1f5f9", border: "1px solid #cbd5e1", borderRadius: "4px", padding: "2.5px 5px", fontSize: "7px", color: "#64748b", display: "flex", alignItems: "center", gap: "3px" }}>
+                  <span>🔍</span> Nearby stores, items...
+                </div>
+                <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "5px", padding: "4px", display: "flex", flexDirection: "column", gap: "2px" }}>
+                  <span style={{ fontSize: "6.5px", fontWeight: 900, color: "#1d4ed8", textTransform: "uppercase" }}>🔥 Verified Store · 0.4 km</span>
+                  <span style={{ fontSize: "8px", fontWeight: 800, color: "#0f172a" }}>Sri Lakshmi Supermarket</span>
+                  <span style={{ fontSize: "6.5px", color: "#475569" }}>Open Now · Groceries &amp; Daily Needs</span>
+                  <div style={{ display: "flex", gap: "3px", marginTop: "2px" }}>
+                    <span style={{ flex: 1, padding: "2px", borderRadius: "3px", fontSize: "6.5px", fontWeight: 800, textAlign: "center", color: "#fff", background: "#2563eb" }}>📞 Call</span>
+                    <span style={{ flex: 1, padding: "2px", borderRadius: "3px", fontSize: "6.5px", fontWeight: 800, textAlign: "center", color: "#fff", background: "#16a34a" }}>💬 WhatsApp</span>
+                  </div>
+                </div>
+                <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "4px", padding: "2.5px", fontSize: "6.5px", color: "#16a34a", fontWeight: 800, textAlign: "center" }}>
+                  ✓ JIT Verified Store
+                </div>
               </div>
-              <div className="scan-text" style={{ fontSize: "12px", marginBottom: "3px" }}>Scan &amp; Explore</div>
-              <a href="https://bizearch.in" className="url-pill" target="_blank" rel="noreferrer" style={{ fontSize: "10px", padding: "3px 9px" }}>
+            </div>
+          </div>
+
+          {/* RIGHT QR CARD */}
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <div className="qr-card" style={{ maxWidth: "200px", padding: "8px 10px", borderRadius: "12px" }}>
+              <div className="qr-code-box" style={{ padding: "4px", marginBottom: "4px" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/bizearch-qr.png" alt="Scan QR Code to Explore" style={{ width: "90px", height: "90px" }} />
+              </div>
+              <div className="scan-text" style={{ fontSize: "11.5px", marginBottom: "2px" }}>Scan &amp; Explore</div>
+              <a href="https://bizearch.in" className="url-pill" target="_blank" rel="noreferrer" style={{ fontSize: "9.5px", padding: "2.5px 7px" }}>
                 🔗 https://bizearch.in
               </a>
             </div>
@@ -1406,14 +1497,14 @@ function AllFeaturesPoster() {
         </div>
 
         {/* CTA SLOGAN ROW */}
-        <div className="cta-slogan-row" style={{ padding: "8px 16px", marginBottom: "10px" }}>
+        <div className="cta-slogan-row" style={{ padding: "8px 14px", marginBottom: "8px" }}>
           <div className="cta-top" style={{ marginBottom: "3px" }}>
-            <div className="cta-register-pill" style={{ fontSize: "14px" }}>
+            <div className="cta-register-pill" style={{ fontSize: "13.5px" }}>
               <span>📲</span> Register Your Business Today — <span>Offer Ends Dec 10, 2026!</span>
             </div>
-            <div className="tagline-badge" style={{ fontSize: "11.5px" }}>Your Business. Your Visibility. Your Growth.</div>
+            <div className="tagline-badge" style={{ fontSize: "11px" }}>Your Business. Your Visibility. Your Growth.</div>
           </div>
-          <div className="cta-bottom" style={{ fontSize: "11.5px", paddingTop: "4px" }}>
+          <div className="cta-bottom" style={{ fontSize: "11px", paddingTop: "4px" }}>
             <span>🤝 Let&apos;s connect local customers directly with your business.</span>
             <span className="grow-together">🌱 Let&apos;s Grow Together!</span>
           </div>
@@ -1422,13 +1513,13 @@ function AllFeaturesPoster() {
 
       {/* FOOTER STRIP */}
       <footer className="poster-footer">
-        <div className="footer-brand-strip" style={{ padding: "8px 18px", marginBottom: "6px" }}>
+        <div className="footer-brand-strip" style={{ padding: "8px 16px", marginBottom: "5px" }}>
           <div className="footer-team" style={{ fontSize: "13px" }}>By Team Bizearch</div>
 
-          <div className="footer-powered-box" style={{ padding: "3px 12px" }}>
-            <span className="powered-text" style={{ fontSize: "9.5px" }}>Powered by</span>
+          <div className="footer-powered-box" style={{ padding: "3px 10px" }}>
+            <span className="powered-text" style={{ fontSize: "9px" }}>Powered by</span>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/jishnu-infotech-logo.jpg" alt="Jishnu Infotech" style={{ height: "25px" }} />
+            <img src="/jishnu-infotech-logo.jpg" alt="Jishnu Infotech" style={{ height: "24px" }} />
           </div>
 
           <div className="footer-care" style={{ fontSize: "13px" }}>
