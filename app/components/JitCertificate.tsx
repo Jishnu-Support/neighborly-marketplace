@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 export interface JitCertificateData {
   businessName: string;
@@ -40,20 +40,13 @@ export function cleanDisplayLocality(address?: string, locality?: string): strin
 }
 
 /**
- * High-res image download helper using canvas capture
+ * High-res image download helper using canvas capture or window.print()
  */
 export async function downloadMasterCertificate(data: JitCertificateData, filename?: string) {
-  const businessName = (data.businessName || "JISHNU INFOTECH PRIVATE LIMITED").trim();
   try {
-    const certElem = document.getElementById("bizearch-official-certificate-node");
-    if (!certElem) {
-      window.print();
-      return;
-    }
-
-    // Trigger print/save PDF as primary high-fidelity export
     window.print();
   } catch {
+    // Fallback
     window.print();
   }
 }
@@ -73,8 +66,7 @@ export function JitCertificate({
   const validThrough = data.validThrough || "31 March 2027";
   const agentName = (data.assignedAgentName || "JIT").trim();
 
-  const isFlagship =
-    businessName.includes("JISHNU INFOTECH");
+  const isFlagship = businessName.includes("JISHNU INFOTECH");
 
   const num = Math.abs(
     businessName.split("").reduce((acc, c) => ((acc << 5) - acc + c.charCodeAt(0)) | 0, 17)
@@ -89,136 +81,186 @@ export function JitCertificate({
   const nameLen = businessName.length;
   const nameSize = nameLen > 38 ? "24px" : nameLen > 28 ? "28px" : "34px";
 
+  // Responsive dynamic scaling for all devices (phones, tablets, laptops, desktops)
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    function computeScale() {
+      if (!wrapperRef.current) return;
+      const parentWidth = wrapperRef.current.parentElement?.clientWidth || wrapperRef.current.clientWidth || window.innerWidth;
+      // Allow padding of 16px on mobile
+      const availableWidth = Math.min(parentWidth - 16, 1123);
+      if (availableWidth > 0 && availableWidth < 1123) {
+        setScale(Math.max(0.25, availableWidth / 1123));
+      } else {
+        setScale(1);
+      }
+    }
+
+    computeScale();
+    window.addEventListener("resize", computeScale);
+
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined" && wrapperRef.current) {
+      ro = new ResizeObserver(() => computeScale());
+      ro.observe(wrapperRef.current);
+    }
+
+    return () => {
+      window.removeEventListener("resize", computeScale);
+      if (ro) ro.disconnect();
+    };
+  }, []);
+
+  const scaledWidth = Math.round(1123 * scale);
+  const scaledHeight = Math.round(794 * scale);
+
   return (
-    <div className={`certificate-viewport-wrapper ${className}`}>
-      {/* Exact Certificate Canvas Layout as Provided */}
-      <div className="certificate" id="bizearch-official-certificate-node">
-        <div className="inner-border">
-          {/* Header */}
-          <div className="header">
-            <div className="header-brand">
-              <img
-                src="/bizearch-cert-logo.png"
-                alt="Bizearch.in"
-                className="brand-logo-img"
-              />
-            </div>
-
-            <div className="registry">
-              <div className="badge">✓ BIZEARCH VERIFIED BUSINESS</div>
-              <div className="reg-text">
-                OFFICIAL REGISTRY OF VERIFIED BUSINESSES<br />
-                CERTIFICATE NO: {certId}
+    <div ref={wrapperRef} className={`certificate-viewport-wrapper ${className}`}>
+      {/* Responsive Scaling Container */}
+      <div
+        className="certificate-scale-container"
+        style={{
+          width: `${scaledWidth}px`,
+          height: `${scaledHeight}px`,
+        }}
+      >
+        <div
+          className="certificate"
+          id="bizearch-official-certificate-node"
+          style={{
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+          }}
+        >
+          <div className="inner-border">
+            {/* Header */}
+            <div className="header">
+              <div className="header-brand">
+                <img
+                  src="/bizearch-cert-logo.png"
+                  alt="Bizearch.in"
+                  className="brand-logo-img"
+                />
               </div>
-            </div>
-          </div>
 
-          {/* Heading */}
-          <div className="heading">
-            <div className="subtitle">BIZEARCH BUSINESS ACCREDITATION</div>
-            <h1>CERTIFICATE OF VERIFICATION</h1>
-            <p>This is to officially certify that</p>
-          </div>
-
-          {/* Business */}
-          <div className="business">
-            <h2 style={{ fontSize: nameSize }}>{businessName}</h2>
-
-            <div className="business-info">
-              {category}
-              &nbsp; | &nbsp;
-              {locality}
-              &nbsp; | &nbsp;
-              {phone}
-            </div>
-          </div>
-
-          {/* Description */}
-          <div className="description">
-            Has successfully completed the Bizearch.in business
-            verification process, including on-ground physical verification,
-            business identity validation, and service assessment.
-            This organization is hereby recognized as a
-          </div>
-
-          {/* Verified Badge */}
-          <div className="verified">
-            ✓ BIZEARCH VERIFIED BUSINESS
-          </div>
-
-          {/* Listing */}
-          <div className="listing">
-            and is listed on the <b>Bizearch.in</b> directory platform.
-          </div>
-
-          {/* Details 4-Column Grid */}
-          <div className="details">
-            <div className="detail">
-              <small>VERIFICATION TYPE</small>
-              <strong>On-Ground Physical Audit</strong>
-            </div>
-
-            <div className="detail">
-              <small>DATE OF VERIFICATION</small>
-              <strong>{issueDate}</strong>
-            </div>
-
-            <div className="detail">
-              <small>VALID THROUGH</small>
-              <strong>{validThrough}</strong>
-            </div>
-
-            <div className="detail">
-              <small>JURISDICTION</small>
-              <strong>Hosur Division, Tamil Nadu</strong>
-            </div>
-          </div>
-
-          {/* Footer Grid */}
-          <div className="footer">
-            <div className="qr">
-              <img
-                src="/bizearch-cert-qr.jpg"
-                alt="Verification QR Code"
-              />
-              <div className="qr-text">
-                <b>SCAN TO VERIFY</b><br />
-                Scan to view business profile<br />
-                and verification details at<br />
-                <b>bizearch.in</b>
+              <div className="registry">
+                <div className="badge">✓ BIZEARCH VERIFIED BUSINESS</div>
+                <div className="reg-text">
+                  OFFICIAL REGISTRY OF VERIFIED BUSINESSES<br />
+                  CERTIFICATE NO: {certId}
+                </div>
               </div>
             </div>
 
-            <div className="seal">
-              ★ BIZEARCH ★
-              <br />
-              VERIFIED
-              <br />
-              BUSINESS
-              <br />
-              ★ ★ ★
+            {/* Heading */}
+            <div className="heading">
+              <div className="subtitle">BIZEARCH BUSINESS ACCREDITATION</div>
+              <h1>CERTIFICATE OF VERIFICATION</h1>
+              <p>This is to officially certify that</p>
             </div>
 
-            <div className="signature">
-              <div className="sign">{agentName}</div>
-              <strong>{agentName}</strong>
-              Agent<br />
-              Bizearch.in
+            {/* Business */}
+            <div className="business">
+              <h2 style={{ fontSize: nameSize }}>{businessName}</h2>
+
+              <div className="business-info">
+                {category}
+                &nbsp; | &nbsp;
+                {locality}
+                &nbsp; | &nbsp;
+                {phone}
+              </div>
             </div>
 
-            <div className="signature">
-              <div className="sign">G. Venkatesan</div>
-              <strong>G. Venkatesan</strong>
-              Director - Trust &amp; Verification<br />
-              Bizearch.in
+            {/* Description */}
+            <div className="description">
+              Has successfully completed the Bizearch.in business
+              verification process, including on-ground physical verification,
+              business identity validation, and service assessment.
+              This organization is hereby recognized as a
             </div>
-          </div>
 
-          {/* Bottom citation */}
-          <div className="bottom">
-            ISSUED BY JISHNU INFOTECH PRIVATE LIMITED
-            &nbsp; | &nbsp;
-            BIZEARCH.IN BUSINESS VERIFICATION PROGRAM
+            {/* Verified Badge */}
+            <div className="verified">
+              ✓ BIZEARCH VERIFIED BUSINESS
+            </div>
+
+            {/* Listing */}
+            <div className="listing">
+              and is listed on the <b>Bizearch.in</b> directory platform.
+            </div>
+
+            {/* Details 4-Column Grid */}
+            <div className="details">
+              <div className="detail">
+                <small>VERIFICATION TYPE</small>
+                <strong>On-Ground Physical Audit</strong>
+              </div>
+
+              <div className="detail">
+                <small>DATE OF VERIFICATION</small>
+                <strong>{issueDate}</strong>
+              </div>
+
+              <div className="detail">
+                <small>VALID THROUGH</small>
+                <strong>{validThrough}</strong>
+              </div>
+
+              <div className="detail">
+                <small>JURISDICTION</small>
+                <strong>Hosur Division, Tamil Nadu</strong>
+              </div>
+            </div>
+
+            {/* Footer Grid */}
+            <div className="footer">
+              <div className="qr">
+                <img
+                  src="/bizearch-cert-qr.jpg"
+                  alt="Verification QR Code"
+                />
+                <div className="qr-text">
+                  <b>SCAN TO VERIFY</b><br />
+                  Scan to view business profile<br />
+                  and verification details at<br />
+                  <b>bizearch.in</b>
+                </div>
+              </div>
+
+              <div className="seal">
+                ★ BIZEARCH ★
+                <br />
+                VERIFIED
+                <br />
+                BUSINESS
+                <br />
+                ★ ★ ★
+              </div>
+
+              <div className="signature">
+                <div className="sign">{agentName}</div>
+                <strong>{agentName}</strong>
+                Agent<br />
+                Bizearch.in
+              </div>
+
+              <div className="signature">
+                <div className="sign">G. Venkatesan</div>
+                <strong>G. Venkatesan</strong>
+                Director - Trust &amp; Verification<br />
+                Bizearch.in
+              </div>
+            </div>
+
+            {/* Bottom citation */}
+            <div className="bottom">
+              ISSUED BY JISHNU INFOTECH PRIVATE LIMITED
+              &nbsp; | &nbsp;
+              BIZEARCH.IN BUSINESS VERIFICATION PROGRAM
+            </div>
           </div>
         </div>
       </div>
@@ -229,26 +271,33 @@ export function JitCertificate({
           display: flex;
           justify-content: center;
           align-items: center;
-          padding: 10px;
-          overflow-x: auto;
+          padding: 8px 0;
+          overflow: visible;
           background: transparent;
+        }
+
+        .certificate-scale-container {
+          position: relative;
+          margin: 0 auto;
+          overflow: visible;
+          transition: width 0.2s ease, height 0.2s ease;
         }
 
         .certificate {
           width: 1123px;
           height: 794px;
-          margin: auto;
+          position: absolute;
+          top: 0;
+          left: 0;
           padding: 35px 48px;
-          position: relative;
           overflow: hidden;
           background: #fffdf8;
           border: 8px double #c99b37;
           outline: 2px solid #102c55;
           outline-offset: -15px;
-          box-shadow: 0 5px 25px rgba(0, 0, 0, 0.25);
+          box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
           font-family: Georgia, 'Times New Roman', serif;
           color: #102c55;
-          flex-shrink: 0;
           box-sizing: border-box;
         }
 
@@ -540,10 +589,21 @@ export function JitCertificate({
             justify-content: center !important;
           }
 
-          .certificate {
+          .certificate-scale-container {
+            width: 1123px !important;
+            height: 794px !important;
+            transform: none !important;
             margin: 0 !important;
+          }
+
+          .certificate {
+            position: static !important;
+            margin: 0 !important;
+            width: 1123px !important;
+            height: 794px !important;
             box-shadow: none !important;
             border-radius: 0 !important;
+            transform: none !important;
             print-color-adjust: exact !important;
             -webkit-print-color-adjust: exact !important;
             page-break-inside: avoid !important;

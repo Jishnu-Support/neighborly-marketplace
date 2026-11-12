@@ -403,6 +403,45 @@ function CertificatePageInner() {
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        @media (max-width: 860px) {
+          .cert-control-bar {
+            padding: 10px 14px;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+          }
+          .control-left {
+            justify-content: space-between;
+            width: 100%;
+          }
+          .control-center {
+            width: 100%;
+          }
+          .business-selector-wrap {
+            width: 100%;
+          }
+          .cert-select {
+            flex: 1;
+            max-width: 100%;
+          }
+          .control-right {
+            width: 100%;
+            justify-content: stretch;
+            flex-wrap: wrap;
+            gap: 8px;
+          }
+          .action-btn {
+            flex: 1 1 calc(50% - 4px);
+            padding: 8px 10px;
+            font-size: 11.5px;
+            text-align: center;
+            justify-content: center;
+          }
+          .cert-main-viewport {
+            padding: 12px 6px;
+          }
+        }
+
         @page {
           size: A4 landscape;
           margin: 0;
