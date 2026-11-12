@@ -2785,13 +2785,30 @@ export default function Home() {
         reviews: Array.isArray(currentBusinessRecord.customerReviews) ? currentBusinessRecord.customerReviews.length : 0,
         customerReviews: Array.isArray(currentBusinessRecord.customerReviews) ? currentBusinessRecord.customerReviews : [],
         subscribed: Boolean(currentBusinessRecord.subscribed),
-        products: (currentBusinessRecord.products || []).map((p: any, idx: number) => ({
-          id: p.id || `prod-${idx}`,
-          name: p.name,
-          price: typeof p.price === "number" ? p.price : Number(p.price) || 0,
-          description: p.description || "",
-          unit: "unit",
-        })),
+        products: (() => {
+          let prods = currentBusinessRecord.products || [];
+          try {
+            const raw = typeof window !== "undefined" ? window.localStorage.getItem("bizearch_local_product_overrides") : null;
+            if (raw) {
+              const map = JSON.parse(raw);
+              const override = map[currentBusinessRecord.name?.toLowerCase()];
+              if (Array.isArray(override) && override.length > 0) {
+                prods = override;
+              }
+            }
+          } catch {}
+          return prods.map((p: any, idx: number) => ({
+            id: p.id || `prod-${idx}`,
+            name: p.name,
+            price: typeof p.price === "number" ? p.price : Number(p.price) || 0,
+            description: p.description || "",
+            unit: p.unit || "unit",
+            image: p.image || undefined,
+            badge: p.badge || undefined,
+            inStock: p.inStock !== false,
+            catalogueSelections: p.catalogueSelections || undefined,
+          }));
+        })(),
         images: currentBusinessRecord.images || currentBusinessRecord.photos || [],
         businessModes: currentBusinessRecord.businessModes || ["In-store Sales", "Customer Service"],
         address: currentBusinessRecord.address,
@@ -3978,6 +3995,11 @@ export default function Home() {
           ...prev,
           businesses: registered,
         }));
+        setCurrentBusinessRecord((curr: any) => {
+          if (!curr) return curr;
+          const match = registered.find((r) => r.name?.toLowerCase() === curr.name?.toLowerCase());
+          return match ? { ...curr, ...match } : curr;
+        });
       })
       .catch(() => {});
   }, []);
@@ -4953,33 +4975,45 @@ export default function Home() {
   }
 
   function addProduct(businessName: string, product: Omit<Product, "id">) {
+    const bizLower = businessName.toLowerCase();
     const newProduct: Product = {
       ...product,
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       inStock: product.inStock !== false,
     };
-    let updatedProducts: Product[] = [];
-    if (currentBusinessRecord && (currentBusinessRecord.name?.toLowerCase() === businessName.toLowerCase())) {
-      updatedProducts = [...(currentBusinessRecord.products || []), newProduct];
-      setCurrentBusinessRecord((prev: any) => prev ? {
-        ...prev,
-        products: updatedProducts,
-      } : prev);
+    let existingProducts: Product[] = [];
+    if (currentBusinessRecord && currentBusinessRecord.name?.toLowerCase() === bizLower && Array.isArray(currentBusinessRecord.products) && currentBusinessRecord.products.length > 0) {
+      existingProducts = currentBusinessRecord.products;
+    } else {
+      const biz = demoData.businesses.find((b) => b.name?.toLowerCase() === bizLower);
+      if (biz && Array.isArray(biz.products) && biz.products.length > 0) {
+        existingProducts = biz.products;
+      }
     }
-    const currentBiz = demoData.businesses.find((b) => b.name?.toLowerCase() === businessName.toLowerCase());
-    if (updatedProducts.length === 0) {
-      updatedProducts = currentBiz ? [...(currentBiz.products || []), newProduct] : [newProduct];
+    if (existingProducts.length === 0) {
+      try {
+        const raw = window.localStorage.getItem("bizearch_local_product_overrides");
+        if (raw) {
+          const map = JSON.parse(raw);
+          if (Array.isArray(map[bizLower])) existingProducts = map[bizLower];
+        }
+      } catch {}
+    }
+    const updatedProducts: Product[] = [...existingProducts, newProduct];
+
+    if (currentBusinessRecord && currentBusinessRecord.name?.toLowerCase() === bizLower) {
+      setCurrentBusinessRecord((prev: any) => (prev ? { ...prev, products: updatedProducts } : prev));
     }
     setDemoData((current) => ({
       ...current,
       businesses: current.businesses.map((business) =>
-        business.name?.toLowerCase() === businessName.toLowerCase() ? { ...business, products: updatedProducts } : business,
+        business.name?.toLowerCase() === bizLower ? { ...business, products: updatedProducts } : business
       ),
     }));
     try {
       const raw = window.localStorage.getItem("bizearch_local_product_overrides");
       const map = raw ? JSON.parse(raw) : {};
-      map[businessName.toLowerCase()] = updatedProducts;
+      map[bizLower] = updatedProducts;
       window.localStorage.setItem("bizearch_local_product_overrides", JSON.stringify(map));
     } catch {}
     fetch("/api/businesses", {
@@ -4997,73 +5031,94 @@ export default function Home() {
   }
 
   function updateProduct(businessName: string, productId: string, updated: Partial<Product>) {
-    let updatedProducts: Product[] = [];
-    if (currentBusinessRecord && (currentBusinessRecord.name?.toLowerCase() === businessName.toLowerCase())) {
-      setCurrentBusinessRecord((prev: any) => {
-        if (!prev) return prev;
-        updatedProducts = (prev.products || []).map((p: any) => p.id === productId ? { ...p, ...updated } : p);
-        return { ...prev, products: updatedProducts };
-      });
-    }
-    setDemoData((current) => {
-      const biz = current.businesses.find((b) => b.name?.toLowerCase() === businessName.toLowerCase());
-      if (biz) {
-        updatedProducts = biz.products.map((p) => p.id === productId ? { ...p, ...updated } : p);
+    const bizLower = businessName.toLowerCase();
+    let existingProducts: Product[] = [];
+    if (currentBusinessRecord && currentBusinessRecord.name?.toLowerCase() === bizLower && Array.isArray(currentBusinessRecord.products) && currentBusinessRecord.products.length > 0) {
+      existingProducts = currentBusinessRecord.products;
+    } else {
+      const biz = demoData.businesses.find((b) => b.name?.toLowerCase() === bizLower);
+      if (biz && Array.isArray(biz.products) && biz.products.length > 0) {
+        existingProducts = biz.products;
       }
-      return {
-        ...current,
-        businesses: current.businesses.map((business) =>
-          business.name?.toLowerCase() === businessName.toLowerCase() ? { ...business, products: updatedProducts } : business
-        ),
-      };
-    });
-    if (updatedProducts.length > 0) {
+    }
+    if (existingProducts.length === 0) {
       try {
         const raw = window.localStorage.getItem("bizearch_local_product_overrides");
-        const map = raw ? JSON.parse(raw) : {};
-        map[businessName.toLowerCase()] = updatedProducts;
-        window.localStorage.setItem("bizearch_local_product_overrides", JSON.stringify(map));
+        if (raw) {
+          const map = JSON.parse(raw);
+          if (Array.isArray(map[bizLower])) existingProducts = map[bizLower];
+        }
       } catch {}
-      fetch("/api/businesses", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ name: businessName, products: updatedProducts }),
-      })
-        .then(() => {
-          window.dispatchEvent(new Event("neighborly-businesses-refresh"));
-        })
-        .catch(() => {});
     }
+
+    const updatedProducts: Product[] = existingProducts.map((p: any) =>
+      p.id === productId ? { ...p, ...updated } : p
+    );
+
+    if (currentBusinessRecord && currentBusinessRecord.name?.toLowerCase() === bizLower) {
+      setCurrentBusinessRecord((prev: any) => (prev ? { ...prev, products: updatedProducts } : prev));
+    }
+    setDemoData((current) => ({
+      ...current,
+      businesses: current.businesses.map((business) =>
+        business.name?.toLowerCase() === bizLower ? { ...business, products: updatedProducts } : business
+      ),
+    }));
+    try {
+      const raw = window.localStorage.getItem("bizearch_local_product_overrides");
+      const map = raw ? JSON.parse(raw) : {};
+      map[bizLower] = updatedProducts;
+      window.localStorage.setItem("bizearch_local_product_overrides", JSON.stringify(map));
+    } catch {}
+    fetch("/api/businesses", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ name: businessName, products: updatedProducts }),
+    })
+      .then(() => {
+        window.dispatchEvent(new Event("neighborly-businesses-refresh"));
+      })
+      .catch(() => {});
     recordEvent("Business catalogue item updated");
     showNotice("Catalogue item updated.");
   }
 
   function deleteProduct(businessName: string, productId: string) {
-    let updatedProducts: Product[] = [];
-    if (currentBusinessRecord && (currentBusinessRecord.name?.toLowerCase() === businessName.toLowerCase())) {
-      setCurrentBusinessRecord((prev: any) => {
-        if (!prev) return prev;
-        updatedProducts = (prev.products || []).filter((p: any) => p.id !== productId);
-        return { ...prev, products: updatedProducts };
-      });
-    }
-    setDemoData((current) => {
-      const biz = current.businesses.find((b) => b.name?.toLowerCase() === businessName.toLowerCase());
-      if (biz) {
-        updatedProducts = biz.products.filter((p) => p.id !== productId);
+    const bizLower = businessName.toLowerCase();
+    let existingProducts: Product[] = [];
+    if (currentBusinessRecord && currentBusinessRecord.name?.toLowerCase() === bizLower && Array.isArray(currentBusinessRecord.products) && currentBusinessRecord.products.length > 0) {
+      existingProducts = currentBusinessRecord.products;
+    } else {
+      const biz = demoData.businesses.find((b) => b.name?.toLowerCase() === bizLower);
+      if (biz && Array.isArray(biz.products) && biz.products.length > 0) {
+        existingProducts = biz.products;
       }
-      return {
-        ...current,
-        businesses: current.businesses.map((business) =>
-          business.name?.toLowerCase() === businessName.toLowerCase() ? { ...business, products: updatedProducts } : business
-        ),
-      };
-    });
+    }
+    if (existingProducts.length === 0) {
+      try {
+        const raw = window.localStorage.getItem("bizearch_local_product_overrides");
+        if (raw) {
+          const map = JSON.parse(raw);
+          if (Array.isArray(map[bizLower])) existingProducts = map[bizLower];
+        }
+      } catch {}
+    }
+    const updatedProducts: Product[] = existingProducts.filter((p: any) => p.id !== productId);
+
+    if (currentBusinessRecord && currentBusinessRecord.name?.toLowerCase() === bizLower) {
+      setCurrentBusinessRecord((prev: any) => (prev ? { ...prev, products: updatedProducts } : prev));
+    }
+    setDemoData((current) => ({
+      ...current,
+      businesses: current.businesses.map((business) =>
+        business.name?.toLowerCase() === bizLower ? { ...business, products: updatedProducts } : business
+      ),
+    }));
     try {
       const raw = window.localStorage.getItem("bizearch_local_product_overrides");
       const map = raw ? JSON.parse(raw) : {};
-      map[businessName.toLowerCase()] = updatedProducts;
+      map[bizLower] = updatedProducts;
       window.localStorage.setItem("bizearch_local_product_overrides", JSON.stringify(map));
     } catch {}
     fetch("/api/businesses", {
