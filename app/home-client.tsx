@@ -254,6 +254,7 @@ type Business = {
   icon: string;
   color: string;
   subscribed: boolean;
+  plan?: string;
   active?: boolean;
   disabledReason?: string;
   taxonomyTags?: string[];
@@ -3980,6 +3981,7 @@ export default function Home() {
             reviews: realCustomerReviews.length,
             customerReviews: realCustomerReviews,
             subscribed: b.subscribed ?? true,
+            plan: b.plan || undefined,
             active: b.active ?? true,
             disabledReason: b.disabledReason || "",
             products: (() => {
@@ -4179,8 +4181,20 @@ export default function Home() {
     const autocompleteData = computeAutocomplete();
 
     if (!q || rawWords.length === 0) {
+      const getPlanWeight = (b: Business) => {
+        const p = (b.plan || "").toLowerCase();
+        if (p.includes("spotlight")) return 3;
+        if (p.includes("growth")) return 2;
+        if (p.includes("starter")) return 1;
+        return 0;
+      };
+      const sortedEligible = [...eligible].sort((a, b) => {
+        const diff = getPlanWeight(b) - getPlanWeight(a);
+        if (diff !== 0) return diff;
+        return (b.rating || 0) - (a.rating || 0);
+      });
       return {
-        results: eligible,
+        results: sortedEligible,
         relatedProducts: [],
         relatedSearches: [],
         correctedQuery: null,
@@ -4272,9 +4286,15 @@ export default function Home() {
       else if (dist <= 5) score += 2;
 
       if (directHitCount > 0 || synonymHit || score > 15) {
+        const pName = (b.plan || "").toLowerCase();
+        let planBoost = 0;
+        if (pName.includes("spotlight")) planBoost = 300;
+        else if (pName.includes("growth")) planBoost = 200;
+        else if (pName.includes("starter")) planBoost = 100;
+
         scoredList.push({
           business: b,
-          score,
+          score: score + planBoost,
           direct: directHitCount >= Math.min(2, tokenArray.length)
         });
       }
@@ -5289,7 +5309,7 @@ export default function Home() {
       checkouts: [subRecord, ...current.checkouts.filter((c) => c.businessName !== data.businessName || c.status !== "Active")],
       businesses: current.businesses.map((b) =>
         b.name.toLowerCase() === data.businessName.toLowerCase()
-          ? { ...b, subscribed: true }
+          ? { ...b, subscribed: true, plan: data.plan }
           : b
       ),
     }));
@@ -8959,6 +8979,35 @@ export default function Home() {
                           >
                             {!business.image && !business.images?.[0] && <span className="business-emoji">{business.icon}</span>}
                             {business.tag && <span className="business-tag">{business.tag}</span>}
+                            {(() => {
+                              const bPlan = business.plan || demoData.checkouts.find((c) => (c.status === "Active" || c.status === "Paid") && c.businessName?.toLowerCase() === business.name?.toLowerCase())?.plan;
+                              if (!bPlan) return null;
+                              const isSpotlight = bPlan.toLowerCase().includes("spotlight");
+                              const isGrowth = bPlan.toLowerCase().includes("growth");
+                              return (
+                                <span
+                                  className="business-plan-badge"
+                                  style={{
+                                    position: "absolute",
+                                    top: "10px",
+                                    left: "10px",
+                                    zIndex: 2,
+                                    fontSize: "9.5px",
+                                    fontWeight: 800,
+                                    padding: "3px 8px",
+                                    borderRadius: "12px",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "4px",
+                                    boxShadow: "0 2px 6px rgba(0,0,0,0.18)",
+                                    background: isSpotlight ? "linear-gradient(135deg, #d97706 0%, #b45309 100%)" : isGrowth ? "linear-gradient(135deg, #059669 0%, #047857 100%)" : "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+                                    color: "#ffffff",
+                                  }}
+                                >
+                                  {isSpotlight ? "🌟 Spotlight Vendor" : isGrowth ? "🚀 Growth Partner" : "✓ Verified"}
+                                </span>
+                              );
+                            })()}
                             <button className="save-button" aria-label={`${demoData.favorites.includes(business.name) ? "Remove saved" : "Save"} ${business.name}`} aria-pressed={demoData.favorites.includes(business.name)} onClick={() => toggleFavorite(business.name)}>{demoData.favorites.includes(business.name) ? "♥" : "♡"}</button>
                           </div>
                           <div className="business-info">
@@ -13402,30 +13451,39 @@ function PlanCheckoutDialog({
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStage, setProcessingStage] = useState("Connecting to Payment Gateway...");
 
-  // Plan pricing
-  const planPrices: Record<string, { monthly: number; yearly: number; desc: string; perks: string[] }> = {
-    Starter: {
-      monthly: 499,
-      yearly: 4790,
-      desc: "Essential local presence for emerging neighborhood vendors.",
-      perks: ["Verified Listing Badge", "Up to 15 Catalogue Items", "Customer Enquiries Inbox", "Basic Profile Analytics"],
-    },
-    Growth: {
-      monthly: 999,
-      yearly: 9590,
-      desc: "Top choice for established local stores & service providers.",
-      perks: ["Priority Search Ranking", "Unlimited Catalogue & Direct Ordering", "Direct WhatsApp & Call Customer Buttons", "Merchant Order Prep Dashboard", "Monthly Business Performance Insights"],
-    },
-    Spotlight: {
-      monthly: 1999,
-      yearly: 19190,
-      desc: "Maximum reach with prime homepage spotlight & multi-language promotion.",
-      perks: ["Top-of-Search Spotlight Banner Placement", "0% Commission Direct Online Orders", "Hosur Featured Partner Verified Crown", "Dedicated Account & Verification Manager", "Multi-language Catalogue Promotion (EN, TA, KN, TE)"],
-    },
-  };
+  const [plansList, setPlansList] = useState<SubscriptionPlan[]>(DEFAULT_SUBSCRIPTION_PLANS);
 
-  const currentPlanMeta = planPrices[selectedPlan] || planPrices.Growth;
-  const baseAmount = billingCycle === "yearly" ? currentPlanMeta.yearly : currentPlanMeta.monthly;
+  useEffect(() => {
+    fetch("/api/company/plans", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.plans && Array.isArray(data.plans) && data.plans.length > 0) {
+          setPlansList(data.plans.filter((p: SubscriptionPlan) => p.enabled !== false));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const planPrices: Record<string, { monthly: number; yearly: number; desc: string; perks: string[]; discount?: number; badge?: string }> = useMemo(() => {
+    const map: Record<string, { monthly: number; yearly: number; desc: string; perks: string[]; discount?: number; badge?: string }> = {};
+    for (const p of plansList) {
+      map[p.name] = {
+        monthly: p.monthlyPrice,
+        yearly: p.yearlyPrice,
+        desc: p.tagline || p.desc,
+        perks: p.perks || [],
+        discount: p.discount || 0,
+        badge: p.badge,
+      };
+    }
+    return map;
+  }, [plansList]);
+
+  const currentPlanMeta = planPrices[selectedPlan] || Object.values(planPrices)[0] || { monthly: 999, yearly: 9590, desc: "", perks: [], discount: 0 };
+  const undiscountedBase = billingCycle === "yearly" ? currentPlanMeta.yearly : currentPlanMeta.monthly;
+  const discountPercent = currentPlanMeta.discount || 0;
+  const discountSavings = discountPercent > 0 ? Math.round(undiscountedBase * (discountPercent / 100)) : 0;
+  const baseAmount = undiscountedBase - discountSavings;
   const taxes = Math.round(baseAmount * 0.18); // 18% GST (9% CGST + 9% SGST)
   const totalAmount = baseAmount + taxes;
 
@@ -13572,7 +13630,19 @@ function PlanCheckoutDialog({
                         )}
                         <div className="plan-name">{pName}</div>
                         <div className="plan-price">
-                          ₹{price.toLocaleString("en-IN")}
+                          {pMeta.discount && pMeta.discount > 0 ? (
+                            <>
+                              <span style={{ fontSize: "11px", color: "#94a3b8", textDecoration: "line-through", marginRight: "3px" }}>
+                                ₹{price.toLocaleString("en-IN")}
+                              </span>
+                              <span>₹{Math.max(1, Math.round(price * (1 - pMeta.discount / 100))).toLocaleString("en-IN")}</span>
+                              <span style={{ fontSize: "9px", background: "#fef3c7", color: "#92400e", padding: "1px 5px", borderRadius: "4px", marginLeft: "4px", fontWeight: 800 }}>
+                                {pMeta.discount}% OFF
+                              </span>
+                            </>
+                          ) : (
+                            <>₹{price.toLocaleString("en-IN")}</>
+                          )}
                           <small>/{billingCycle === "yearly" ? "yr" : "mo"}</small>
                         </div>
                         <div style={{ fontSize: "11px", color: "#64748b", margin: "4px 0 8px", minHeight: "30px" }}>
@@ -13795,8 +13865,20 @@ function PlanCheckoutDialog({
               <div className="bill-breakdown" style={{ background: "#f8fafc", borderColor: "#cbd5e1" }}>
                 <div className="bill-breakdown-row">
                   <span>{selectedPlan} Plan Membership ({billingCycle === "yearly" ? "12 Months" : "1 Month"})</span>
-                  <span>₹{baseAmount.toLocaleString("en-IN")}</span>
+                  <span>₹{undiscountedBase.toLocaleString("en-IN")}</span>
                 </div>
+                {discountSavings > 0 && (
+                  <div className="bill-breakdown-row" style={{ color: "#16a34a", fontWeight: 700 }}>
+                    <span>Special Promotional Discount ({discountPercent}% OFF)</span>
+                    <span>-₹{discountSavings.toLocaleString("en-IN")}</span>
+                  </div>
+                )}
+                {discountSavings > 0 && (
+                  <div className="bill-breakdown-row">
+                    <span>Net Taxable Base Amount</span>
+                    <span>₹{baseAmount.toLocaleString("en-IN")}</span>
+                  </div>
+                )}
                 <div className="bill-breakdown-row">
                   <span>Goods &amp; Services Tax (18% GST: CGST 9% + SGST 9%)</span>
                   <span>₹{taxes.toLocaleString("en-IN")}</span>
@@ -24317,7 +24399,19 @@ function PlansSection({
               {isFeatured && <span className="popular-ribbon">{plan.badge || "MOST POPULAR"}</span>}
               <h3>{plan.name}</h3>
               <div className="plan-price">
-                ₹{plan.monthlyPrice.toLocaleString("en-IN")}
+                {plan.discount && plan.discount > 0 ? (
+                  <>
+                    <span style={{ fontSize: "16px", color: "#94a3b8", textDecoration: "line-through", marginRight: "6px" }}>
+                      ₹{plan.monthlyPrice.toLocaleString("en-IN")}
+                    </span>
+                    <span>₹{Math.max(1, Math.round(plan.monthlyPrice * (1 - plan.discount / 100))).toLocaleString("en-IN")}</span>
+                    <span style={{ fontSize: "11px", background: "#fef3c7", color: "#92400e", padding: "2px 6px", borderRadius: "6px", marginLeft: "6px", fontWeight: 800 }}>
+                      {plan.discount}% OFF
+                    </span>
+                  </>
+                ) : (
+                  <>₹{plan.monthlyPrice.toLocaleString("en-IN")}</>
+                )}
                 <small> / month</small>
               </div>
               <p>{plan.tagline || plan.desc}</p>

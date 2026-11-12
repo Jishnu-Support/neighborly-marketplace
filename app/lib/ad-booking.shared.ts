@@ -78,6 +78,7 @@ export interface AdFormatPricing {
   badge: string;
   description: string;
   baseDailyRate: number; // in INR
+  discount?: number; // percentage discount (e.g. 20 for 20% off)
 }
 
 export const AD_FORMAT_PRICING: Record<AdFormat, AdFormatPricing> = {
@@ -88,6 +89,7 @@ export const AD_FORMAT_PRICING: Record<AdFormat, AdFormatPricing> = {
     badge: "Announcement Ticker",
     description: "High-visibility scrolling message bar at the top of the platform header",
     baseDailyRate: 10,
+    discount: 0,
   },
   poster: {
     format: "poster",
@@ -96,6 +98,7 @@ export const AD_FORMAT_PRICING: Record<AdFormat, AdFormatPricing> = {
     badge: "Image Billboard",
     description: "Prominent photo billboard banner rotating in both mobile & desktop ad positions",
     baseDailyRate: 25,
+    discount: 0,
   },
   video: {
     format: "video",
@@ -104,6 +107,7 @@ export const AD_FORMAT_PRICING: Record<AdFormat, AdFormatPricing> = {
     badge: "Spotlight Video",
     description: "Local video player spotlight with headline, description, and direct call to action",
     baseDailyRate: 50,
+    discount: 10,
   },
   combo: {
     format: "combo",
@@ -112,6 +116,7 @@ export const AD_FORMAT_PRICING: Record<AdFormat, AdFormatPricing> = {
     badge: "Best Value Bundle",
     description: "Maximum neighborhood reach across Poster Billboard, Marquee Ticker & Video Spotlight",
     baseDailyRate: 75,
+    discount: 20,
   },
 };
 
@@ -157,6 +162,8 @@ export interface AdBookingRequest {
 
   // Pricing calculations
   baseRate: number;
+  discount?: number;
+  discountSavings?: number;
   subtotal: number;
   gstAmount: number;
   totalAmount: number;
@@ -218,12 +225,15 @@ export function calculateAdPricing(
   format: AdFormat,
   slotTiming: AdSlotTiming,
   durationDays: number,
-  customPricing?: Record<string, { baseDailyRate: number } | any>
+  customPricing?: Record<string, { baseDailyRate: number; discount?: number } | any>
 ): {
   baseDailyRate: number;
+  discount: number;
+  discountedDailyRate: number;
   multiplier: number;
   effectiveDailyRate: number;
   subtotal: number;
+  discountSavings: number;
   gstAmount: number;
   totalAmount: number;
 } {
@@ -232,17 +242,25 @@ export function calculateAdPricing(
   const days = Math.max(1, durationDays || 1);
 
   const baseDailyRate = Number(formatInfo?.baseDailyRate) || 10;
+  const discount = Math.max(0, Math.min(100, Number(formatInfo?.discount) || 0));
+  const discountedDailyRate = discount > 0 ? Math.max(1, Math.round(baseDailyRate * (1 - discount / 100))) : baseDailyRate;
+
   const multiplier = slotInfo.multiplier;
-  const effectiveDailyRate = Math.round(baseDailyRate * multiplier);
+  const effectiveDailyRate = Math.round(discountedDailyRate * multiplier);
+  const undiscountedEffectiveDailyRate = Math.round(baseDailyRate * multiplier);
   const subtotal = effectiveDailyRate * days;
+  const discountSavings = Math.max(0, (undiscountedEffectiveDailyRate * days) - subtotal);
   const gstAmount = Math.round(subtotal * 0.18);
   const totalAmount = subtotal + gstAmount;
 
   return {
     baseDailyRate,
+    discount,
+    discountedDailyRate,
     multiplier,
     effectiveDailyRate,
     subtotal,
+    discountSavings,
     gstAmount,
     totalAmount,
   };

@@ -76,6 +76,8 @@ export async function createAdBooking(
     ...request,
     id,
     baseRate: pricing.baseDailyRate,
+    discount: pricing.discount,
+    discountSavings: pricing.discountSavings,
     subtotal: pricing.subtotal,
     gstAmount: pricing.gstAmount,
     totalAmount: pricing.totalAmount,
@@ -133,6 +135,8 @@ export async function updateAdBooking(
       livePricing
     );
     updated.baseRate = pricing.baseDailyRate;
+    updated.discount = pricing.discount;
+    updated.discountSavings = pricing.discountSavings;
     updated.subtotal = pricing.subtotal;
     updated.gstAmount = pricing.gstAmount;
     updated.totalAmount = pricing.totalAmount;

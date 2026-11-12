@@ -510,12 +510,27 @@ export function AdBookingDialog({
                             fontSize: "16px",
                             fontWeight: 800,
                             color: "#1e5333",
+                            textAlign: "right",
                           }}
                         >
-                          ₹{f.baseDailyRate}
-                          <small style={{ fontSize: "11px", fontWeight: 500, color: "#5a7061" }}>
+                          {f.discount && f.discount > 0 ? (
+                            <>
+                              <span style={{ fontSize: "12px", color: "#8ca092", textDecoration: "line-through", marginRight: "4px" }}>
+                                ₹{f.baseDailyRate}
+                              </span>
+                              <span>₹{Math.max(1, Math.round(f.baseDailyRate * (1 - f.discount / 100)))}</span>
+                            </>
+                          ) : (
+                            <>₹{f.baseDailyRate}</>
+                          )}
+                          <small style={{ fontSize: "11px", fontWeight: 500, color: "#5a7061", marginLeft: "2px" }}>
                             /day
                           </small>
+                          {f.discount && f.discount > 0 ? (
+                            <span style={{ display: "block", fontSize: "10px", color: "#15803d", fontWeight: 700 }}>
+                              {f.discount}% OFF
+                            </span>
+                          ) : null}
                         </span>
                       </div>
                       <p
@@ -1530,6 +1545,12 @@ export function AdBookingDialog({
                     </span>
                     <span>₹{pricing.subtotal.toLocaleString("en-IN")}</span>
                   </div>
+                  {pricing.discount > 0 && (
+                    <div style={{ display: "flex", justifyContent: "space-between", color: "#166534", fontWeight: 700 }}>
+                      <span>Promotional Discount ({pricing.discount}% OFF)</span>
+                      <span>-₹{pricing.discountSavings.toLocaleString("en-IN")}</span>
+                    </div>
+                  )}
                   <div style={{ display: "flex", justifyContent: "space-between", color: "#546e5c" }}>
                     <span>Applicable GST (18%)</span>
                     <span>₹{pricing.gstAmount.toLocaleString("en-IN")}</span>
@@ -3175,8 +3196,20 @@ export function AdCampaignsManager({
                 {f.shortName}
               </h4>
               <div style={{ fontSize: "18px", fontWeight: 800, color: "#1b482b" }}>
-                ₹{f.baseDailyRate}
-                <small style={{ fontSize: "11px", fontWeight: 500, color: "#617d68" }}>
+                {f.discount && f.discount > 0 ? (
+                  <>
+                    <span style={{ fontSize: "13px", color: "#8ca092", textDecoration: "line-through", marginRight: "4px" }}>
+                      ₹{f.baseDailyRate}
+                    </span>
+                    <span>₹{Math.max(1, Math.round(f.baseDailyRate * (1 - f.discount / 100)))}</span>
+                    <span style={{ fontSize: "10px", background: "#dcfce7", color: "#166534", padding: "1px 5px", borderRadius: "4px", marginLeft: "6px", fontWeight: 700 }}>
+                      {f.discount}% OFF
+                    </span>
+                  </>
+                ) : (
+                  <>₹{f.baseDailyRate}</>
+                )}
+                <small style={{ fontSize: "11px", fontWeight: 500, color: "#617d68", marginLeft: "3px" }}>
                   /day base
                 </small>
               </div>

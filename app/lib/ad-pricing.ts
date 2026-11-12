@@ -36,7 +36,8 @@ export async function saveAdPricingOption(
     shortName: (option.shortName || option.name).trim(),
     badge: (option.badge || "Ad Format").trim(),
     description: option.description.trim(),
-    baseDailyRate: Math.max(1, Number(option.baseDailyRate) || 299),
+    baseDailyRate: Math.max(1, Number(option.baseDailyRate) || 10),
+    discount: Math.max(0, Math.min(100, Number(option.discount) || 0)),
   };
 
   await writeAdPricingRecords(records);

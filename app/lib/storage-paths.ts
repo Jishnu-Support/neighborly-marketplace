@@ -137,6 +137,7 @@ export function ensureStoresInitialized(): void {
             badge: "Announcement Ticker",
             description: "High-visibility scrolling message bar at the top of the platform header",
             baseDailyRate: 10,
+            discount: 0,
           },
           poster: {
             format: "poster",
@@ -145,6 +146,7 @@ export function ensureStoresInitialized(): void {
             badge: "Image Billboard",
             description: "Prominent photo billboard banner rotating in both mobile & desktop ad positions",
             baseDailyRate: 25,
+            discount: 0,
           },
           video: {
             format: "video",
@@ -153,6 +155,7 @@ export function ensureStoresInitialized(): void {
             badge: "Spotlight Video",
             description: "Local video player spotlight with headline, description, and direct call to action",
             baseDailyRate: 50,
+            discount: 10,
           },
           combo: {
             format: "combo",
@@ -161,6 +164,7 @@ export function ensureStoresInitialized(): void {
             badge: "Best Value Bundle",
             description: "Maximum neighborhood reach across Poster Billboard, Marquee Ticker & Video Spotlight",
             baseDailyRate: 75,
+            discount: 20,
           },
         },
         null,

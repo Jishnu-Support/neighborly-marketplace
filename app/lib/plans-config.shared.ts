@@ -9,6 +9,7 @@ export interface SubscriptionPlan {
   isPopular?: boolean;
   badge?: string; // "MOST POPULAR"
   enabled: boolean;
+  discount?: number; // percentage discount (e.g. 10 for 10% off, 0 for none)
 }
 
 export const DEFAULT_SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
@@ -19,6 +20,7 @@ export const DEFAULT_SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     yearlyPrice: 4790,
     tagline: "A great place to start.",
     desc: "Essential local presence for emerging neighborhood vendors.",
+    discount: 0,
     perks: [
       "✓ Local search priority",
       "✓ Verified Business profile",
@@ -36,6 +38,7 @@ export const DEFAULT_SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     desc: "Top choice for established local stores & service providers.",
     isPopular: true,
     badge: "MOST POPULAR",
+    discount: 10,
     perks: [
       "✓ Local search priority",
       "✓ Verified Business profile",
@@ -51,6 +54,7 @@ export const DEFAULT_SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     yearlyPrice: 19190,
     tagline: "Stand out across your neighborhood.",
     desc: "Maximum reach with prime homepage spotlight & multi-language promotion.",
+    discount: 15,
     perks: [
       "✓ Local search priority",
       "✓ Verified Business profile",

@@ -5,6 +5,7 @@ export interface AdFormatPricing {
   badge: string;
   description: string;
   baseDailyRate: number; // in INR
+  discount?: number; // percentage discount (e.g. 20 for 20% off, 0 for none)
 }
 
 export const DEFAULT_AD_FORMAT_PRICING: Record<string, AdFormatPricing> = {
@@ -15,6 +16,7 @@ export const DEFAULT_AD_FORMAT_PRICING: Record<string, AdFormatPricing> = {
     badge: "Announcement Ticker",
     description: "High-visibility scrolling message bar at the top of the platform header",
     baseDailyRate: 10,
+    discount: 0,
   },
   poster: {
     format: "poster",
@@ -23,6 +25,7 @@ export const DEFAULT_AD_FORMAT_PRICING: Record<string, AdFormatPricing> = {
     badge: "Image Billboard",
     description: "Prominent photo billboard banner rotating in both mobile & desktop ad positions",
     baseDailyRate: 25,
+    discount: 0,
   },
   video: {
     format: "video",
@@ -31,6 +34,7 @@ export const DEFAULT_AD_FORMAT_PRICING: Record<string, AdFormatPricing> = {
     badge: "Spotlight Video",
     description: "Local video player spotlight with headline, description, and direct call to action",
     baseDailyRate: 50,
+    discount: 10,
   },
   combo: {
     format: "combo",
@@ -39,5 +43,6 @@ export const DEFAULT_AD_FORMAT_PRICING: Record<string, AdFormatPricing> = {
     badge: "Best Value Bundle",
     description: "Maximum neighborhood reach across Poster Billboard, Marquee Ticker & Video Spotlight",
     baseDailyRate: 75,
+    discount: 20,
   },
 };

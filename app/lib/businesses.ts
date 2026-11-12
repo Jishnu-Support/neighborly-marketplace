@@ -103,6 +103,7 @@ export type StoredBusiness = {
   operatingHours?: WeeklyOperatingSchedule;
   products: BusinessProduct[];
   subscribed: boolean;
+  plan?: string;
   active: boolean;
   verificationStatus?: VerificationStatus;
   assignedAgentId?: string;

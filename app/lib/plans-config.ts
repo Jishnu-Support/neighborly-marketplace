@@ -42,6 +42,7 @@ export async function saveSubscriptionPlan(
     isPopular: Boolean(plan.isPopular),
     badge: plan.badge?.trim() || (plan.isPopular ? "MOST POPULAR" : undefined),
     enabled: plan.enabled !== false,
+    discount: Math.max(0, Math.min(100, Number(plan.discount) || 0)),
   };
 
   if (isUpdate) {

@@ -135,7 +135,8 @@ export function CompanyAdPricingManager({
               shortName: "",
               badge: "Special Format",
               description: "",
-              baseDailyRate: 499,
+              baseDailyRate: 10,
+              discount: 0,
             });
           }}
           className="primary-button"
@@ -206,7 +207,19 @@ export function CompanyAdPricingManager({
                 </h3>
 
                 <div style={{ fontSize: "22px", fontWeight: 800, color: "#166534", margin: "6px 0 10px" }}>
-                  ₹{f.baseDailyRate.toLocaleString("en-IN")}
+                  {f.discount && f.discount > 0 ? (
+                    <>
+                      <span style={{ fontSize: "14px", color: "#94a3b8", textDecoration: "line-through", marginRight: "6px", fontWeight: 600 }}>
+                        ₹{f.baseDailyRate}
+                      </span>
+                      <span>₹{Math.max(1, Math.round(f.baseDailyRate * (1 - f.discount / 100)))}</span>
+                      <span style={{ fontSize: "11px", background: "#dcfce7", color: "#166534", padding: "2px 6px", borderRadius: "4px", marginLeft: "8px", fontWeight: 700 }}>
+                        {f.discount}% OFF
+                      </span>
+                    </>
+                  ) : (
+                    <>₹{f.baseDailyRate.toLocaleString("en-IN")}</>
+                  )}
                   <span style={{ fontSize: "12px", fontWeight: 500, color: "#64748b" }}>/day base</span>
                 </div>
 
@@ -308,7 +321,38 @@ export function CompanyAdPricingManager({
                     required
                     min={1}
                     style={{ padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "13px" }}
-                    placeholder="e.g. 699"
+                    placeholder="e.g. 25"
+                  />
+                </label>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <label style={{ display: "flex", flexDirection: "column", gap: "4px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
+                  <span>Discount (%)</span>
+                  <input
+                    type="number"
+                    value={editingFormat.discount ?? 0}
+                    onChange={(e) => setEditingFormat({ ...editingFormat, discount: Math.max(0, Math.min(100, Number(e.target.value) || 0)) })}
+                    min={0}
+                    max={100}
+                    style={{ padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+                    placeholder="e.g. 20 for 20% OFF"
+                  />
+                  <small style={{ color: "#64748b", fontSize: "10.5px" }}>
+                    {editingFormat.discount && editingFormat.discount > 0
+                      ? `Effective: ₹${Math.max(1, Math.round(editingFormat.baseDailyRate * (1 - editingFormat.discount / 100)))}/day (${editingFormat.discount}% OFF)`
+                      : "0% for standard rate"}
+                  </small>
+                </label>
+
+                <label style={{ display: "flex", flexDirection: "column", gap: "4px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
+                  <span>Badge / Tag</span>
+                  <input
+                    type="text"
+                    value={editingFormat.badge}
+                    onChange={(e) => setEditingFormat({ ...editingFormat, badge: e.target.value })}
+                    style={{ padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+                    placeholder="e.g. Image Billboard, Best Value Bundle"
                   />
                 </label>
               </div>
@@ -339,16 +383,6 @@ export function CompanyAdPricingManager({
                 </label>
               </div>
 
-              <label style={{ display: "flex", flexDirection: "column", gap: "4px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
-                <span>Badge / Tag</span>
-                <input
-                  type="text"
-                  value={editingFormat.badge}
-                  onChange={(e) => setEditingFormat({ ...editingFormat, badge: e.target.value })}
-                  style={{ padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "13px" }}
-                  placeholder="e.g. Image Billboard, Best Value Bundle"
-                />
-              </label>
 
               <label style={{ display: "flex", flexDirection: "column", gap: "4px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
                 <span>Description &amp; Placement</span>
@@ -651,11 +685,30 @@ export function CompanyPlansManager({
               </h3>
 
               <div style={{ fontSize: "32px", fontWeight: 800, color: "#0f172a", margin: "6px 0 2px" }}>
-                ₹{p.monthlyPrice.toLocaleString("en-IN")}
+                {p.discount && p.discount > 0 ? (
+                  <>
+                    <span style={{ fontSize: "18px", color: "#94a3b8", textDecoration: "line-through", marginRight: "6px", fontWeight: 600 }}>
+                      ₹{p.monthlyPrice.toLocaleString("en-IN")}
+                    </span>
+                    <span>₹{Math.max(1, Math.round(p.monthlyPrice * (1 - p.discount / 100))).toLocaleString("en-IN")}</span>
+                    <span style={{ fontSize: "12px", background: "#fef3c7", color: "#92400e", padding: "3px 8px", borderRadius: "6px", marginLeft: "8px", fontWeight: 800 }}>
+                      {p.discount}% OFF
+                    </span>
+                  </>
+                ) : (
+                  <>₹{p.monthlyPrice.toLocaleString("en-IN")}</>
+                )}
                 <span style={{ fontSize: "13px", fontWeight: 500, color: "#64748b" }}> / month</span>
               </div>
               <div style={{ fontSize: "11px", color: "#059669", fontWeight: 700, marginBottom: "10px" }}>
-                Yearly: ₹{p.yearlyPrice.toLocaleString("en-IN")} / year
+                {p.discount && p.discount > 0 ? (
+                  <>
+                    Yearly: <span style={{ textDecoration: "line-through", color: "#94a3b8" }}>₹{p.yearlyPrice.toLocaleString("en-IN")}</span>{" "}
+                    <strong style={{ color: "#059669" }}>₹{Math.max(1, Math.round(p.yearlyPrice * (1 - p.discount / 100))).toLocaleString("en-IN")}</strong> / year ({p.discount}% OFF)
+                  </>
+                ) : (
+                  <>Yearly: ₹{p.yearlyPrice.toLocaleString("en-IN")} / year</>
+                )}
               </div>
 
               <p style={{ fontSize: "12.5px", color: "#475569", margin: "0 0 16px", fontStyle: "italic" }}>
@@ -804,6 +857,37 @@ export function CompanyPlansManager({
                     min={0}
                     style={{ padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "13px" }}
                     placeholder="4790"
+                  />
+                </label>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <label style={{ display: "flex", flexDirection: "column", gap: "4px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
+                  <span>Discount (%)</span>
+                  <input
+                    type="number"
+                    value={editingPlan.discount ?? 0}
+                    onChange={(e) => setEditingPlan({ ...editingPlan, discount: Math.max(0, Math.min(100, Number(e.target.value) || 0)) })}
+                    min={0}
+                    max={100}
+                    style={{ padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+                    placeholder="e.g. 15 for 15% OFF"
+                  />
+                  <small style={{ color: "#64748b", fontSize: "10.5px" }}>
+                    {editingPlan.discount && editingPlan.discount > 0
+                      ? `Effective: ₹${Math.max(1, Math.round(editingPlan.monthlyPrice * (1 - editingPlan.discount / 100)))}/mo · ₹${Math.max(1, Math.round(editingPlan.yearlyPrice * (1 - editingPlan.discount / 100)))}/yr (${editingPlan.discount}% OFF)`
+                      : "0% for standard pricing"}
+                  </small>
+                </label>
+
+                <label style={{ display: "flex", flexDirection: "column", gap: "4px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
+                  <span>Badge Ribbon</span>
+                  <input
+                    type="text"
+                    value={editingPlan.badge || ""}
+                    onChange={(e) => setEditingPlan({ ...editingPlan, badge: e.target.value })}
+                    style={{ padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+                    placeholder="e.g. MOST POPULAR, BEST VALUE"
                   />
                 </label>
               </div>
