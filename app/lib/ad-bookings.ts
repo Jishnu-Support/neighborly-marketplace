@@ -170,6 +170,27 @@ export async function updateAdBooking(
   return updated;
 }
 
+export async function deleteAdBooking(id: string): Promise<boolean> {
+  const bookings = await readAdBookings();
+  const index = bookings.findIndex((b) => b.id === id);
+  if (index === -1) return false;
+  const deleted = bookings.splice(index, 1)[0];
+  await saveAdBookings(bookings);
+  try {
+    await saveActivityLog({
+      action: `Ad Campaign Deleted: ${deleted.businessName}`,
+      category: "Advertisement",
+      actorRole: "Admin",
+      actorName: "Ad Manager",
+      details: `Ad booking ${deleted.id} deleted. Format: ${deleted.format}, Amount: ₹${deleted.totalAmount}`,
+      metadata: { id, businessName: deleted.businessName, totalAmount: deleted.totalAmount },
+    });
+  } catch (e) {
+    console.warn("Failed to log ad deletion activity:", e);
+  }
+  return true;
+}
+
 export async function markAdBookingPaid(
   id: string,
   paymentDetails: {

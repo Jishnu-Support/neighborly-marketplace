@@ -16,6 +16,14 @@ import {
   CompanyActivityLogsPanel,
 } from "./customer-and-activity-components";
 import { CompanyAdsActivityLogsPanel } from "./ads-activity-components";
+import {
+  CompanyAdPricingManager,
+  CompanyPlansManager,
+} from "./ad-pricing-and-plans-components";
+import {
+  type SubscriptionPlan,
+  DEFAULT_SUBSCRIPTION_PLANS,
+} from "./lib/plans-config.shared";
 import { defaultCategoryConfig, legacyDefaultCategoryConfig, type CategoryConfig, type CategorySector } from "./lib/category-config.shared";
 import { defaultRegistrationFormConfig, type RegistrationFormConfig, type RegistrationForm, type RegistrationField } from "./lib/registration-form-config.shared";
 import { buildAutomobileTaxonomyPaths as buildSharedAutomobileTaxonomyPaths, commercialVehicleSubcategories, getVehicleModelsForType as getSharedVehicleModelsForType } from "./lib/vehicle-taxonomy.shared";
@@ -9216,6 +9224,7 @@ export default function Home() {
             onLanguageChange={(l) => setLang(l)}
             showNotice={showNotice}
             onUpdateBusinessProfile={handleUpdateFullBusinessProfile}
+            onRefreshAdBookings={refreshAdBookings}
           />
         )}
         {role === "Agent" && (
@@ -15318,6 +15327,7 @@ function BusinessPortal({
   showNotice,
   onUpdateBusinessProfile,
   onUpdateQuoteStatus,
+  onRefreshAdBookings,
 }: {
   businesses: Business[];
   categoryConfig: CategoryConfig;
@@ -15330,6 +15340,7 @@ function BusinessPortal({
   onSimulateHour?: (hour: number | null) => void;
   onOpenAdBookingWizard?: () => void;
   onPayBooking?: (booking: AdBookingRequest) => void;
+  onRefreshAdBookings?: () => void;
   onUpdateOrderStatus?: (orderId: string, status: OrderStatus) => void;
   onUpdateQuoteStatus?: (id: string, status: string, replyNote?: string) => void;
   openBusinessProfile: () => void;
@@ -15660,6 +15671,7 @@ function BusinessPortal({
           onSimulateHour={onSimulateHour || (() => {})}
           onOpenBookingWizard={onOpenAdBookingWizard || (() => {})}
           onPayBooking={onPayBooking || (() => {})}
+          onRefresh={onRefreshAdBookings}
         />
       </section>
     )}
@@ -20523,7 +20535,7 @@ function CompanyPortal({
   onRefreshBusinesses?: () => void;
 }) {
   const [activeTab, setActiveTab] = useState(initialTab || "Overview");
-  const [companyAdSubTab, setCompanyAdSubTab] = useState<"bookings" | "default">("bookings");
+  const [companyAdSubTab, setCompanyAdSubTab] = useState<"bookings" | "default" | "pricing">("bookings");
   useEffect(() => {
     if (initialTab && initialTab !== "Overview") setActiveTab(initialTab);
   }, [initialTab]);
@@ -20905,7 +20917,7 @@ function CompanyPortal({
   const pendingApprovalsCount = approvals.filter((b) => b.verificationStatus === "Pending Admin Approval" || b.verificationStatus === "Pending Agent Assignment").length;
 
   const tabNames = accessLevel === "Super Admin"
-    ? ["Overview", "Businesses", `Approvals${pendingApprovalsCount > 0 ? ` (${pendingApprovalsCount})` : ""}`, "Agents", "Transactions", "Advertisements", "Ads Activity log", "Categories", "Registration forms", "Customer registrations", "Admins", "Activity log", "Safety", "Profile details", "Settings"]
+    ? ["Overview", "Businesses", `Approvals${pendingApprovalsCount > 0 ? ` (${pendingApprovalsCount})` : ""}`, "Agents", "Transactions", "Advertisements", "Ads Activity log", "Plans & Pricing", "Categories", "Registration forms", "Customer registrations", "Admins", "Activity log", "Safety", "Profile details", "Settings"]
     : ["Overview", "Businesses", `Approvals${pendingApprovalsCount > 0 ? ` (${pendingApprovalsCount})` : ""}`, "Agents", "Transactions", "Advertisements", "Ads Activity log", "Categories", "Customer registrations", "Activity log", "Safety", "Profile details", "Settings"];
 
   const loadCustomerRegistrations = useCallback(() => {
@@ -21108,8 +21120,20 @@ function CompanyPortal({
           >
             ⚙️ Default Platform Ad Creatives
           </button>
+          {accessLevel === "Super Admin" && (
+            <button
+              type="button"
+              className={companyAdSubTab === "pricing" ? "primary-button" : "outline-button"}
+              onClick={() => setCompanyAdSubTab("pricing")}
+              style={{ fontSize: "12px", padding: "8px 16px" }}
+            >
+              💳 Ads Pricing &amp; Formats (Super Admin)
+            </button>
+          )}
         </div>
-        {companyAdSubTab === "bookings" ? (
+        {companyAdSubTab === "pricing" && accessLevel === "Super Admin" ? (
+          <CompanyAdPricingManager showNotice={showNotice} />
+        ) : companyAdSubTab === "bookings" ? (
           <CompanyAdBookingsManager
             bookings={adBookings}
             onRefresh={onRefreshAdBookings}
@@ -21118,6 +21142,11 @@ function CompanyPortal({
         ) : (
           <CompanyAdManager />
         )}
+      </section>
+    )}
+    {activeTab === "Plans & Pricing" && accessLevel === "Super Admin" && (
+      <section className="panel tab-panel">
+        <CompanyPlansManager showNotice={showNotice} />
       </section>
     )}
     {activeTab === "Overview" && <><div className="metric-grid"><Metric label="Registered businesses" value={String(businesses.length)} delta="Verified business directory" icon="▧" /><Metric label="Active subscriptions" value={String(businesses.filter((business) => business.subscribed).length)} delta="Active subscriptions" icon="◉" /><Metric label="Customer enquiries" value={String(enquiries.length)} delta="Customer enquiries" icon="⌕" /><Metric label="Agent partners" value={String(agents.length)} delta={agents.length === 0 ? "No agents registered yet" : `${agents.length} active partner${agents.length > 1 ? "s" : ""}`} icon="♧" /></div>
@@ -22959,41 +22988,67 @@ function PlansSection({
   openPlans?: () => void;
   onSelectPlan?: (plan: string) => void;
 }) {
+  const [plans, setPlans] = useState<SubscriptionPlan[]>(DEFAULT_SUBSCRIPTION_PLANS);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/company/plans")
+      .then((r) => r.json())
+      .then((data) => {
+        if (active && Array.isArray(data.plans) && data.plans.length > 0) {
+          setPlans(data.plans.filter((p: SubscriptionPlan) => p.enabled !== false));
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <section className="plans-area">
       <div className="eyebrow">SIMPLE PLANS. LOCAL GROWTH.</div>
       <h2>Be found by your next customer.</h2>
       <p>Choose the visibility that fits your business. Transparent pricing with instant online activation via UPI, Card, or Net Banking.</p>
       <div className="plans-grid">
-        {planNames.map((plan, index) => (
-          <div className={`plan-card ${index === 1 ? "featured" : ""}`} key={plan}>
-            {index === 1 && <span className="popular-ribbon">MOST POPULAR</span>}
-            <h3>{plan}</h3>
-            <div className="plan-price">
-              {["₹499", "₹999", "₹1,999"][index]}
-              <small> / month</small>
+        {plans.map((plan, index) => {
+          const isFeatured = Boolean(plan.isPopular || plan.badge || index === 1);
+          return (
+            <div className={`plan-card ${isFeatured ? "featured" : ""}`} key={plan.id || plan.name}>
+              {isFeatured && <span className="popular-ribbon">{plan.badge || "MOST POPULAR"}</span>}
+              <h3>{plan.name}</h3>
+              <div className="plan-price">
+                ₹{plan.monthlyPrice.toLocaleString("en-IN")}
+                <small> / month</small>
+              </div>
+              <p>{plan.tagline || plan.desc}</p>
+              <ul>
+                {plan.perks && plan.perks.length > 0 ? (
+                  plan.perks.map((perk, pIdx) => <li key={pIdx}>{perk}</li>)
+                ) : (
+                  <>
+                    <li>✓ Local search priority</li>
+                    <li>✓ Verified Business profile</li>
+                    <li>{index > 0 ? "✓ Customer enquiry & order alerts" : "— Basic profile views"}</li>
+                    <li>{index > 1 ? "✓ Featured top placement & SEO badge" : index > 0 ? "✓ Category spotlight" : "— Standard placement"}</li>
+                  </>
+                )}
+              </ul>
+              <button
+                className={isFeatured ? "primary-button" : "outline-button"}
+                onClick={() => {
+                  if (onSelectPlan) {
+                    onSelectPlan(plan.name);
+                  } else if (openPlans) {
+                    openPlans();
+                  }
+                }}
+              >
+                Choose {plan.name} 💳
+              </button>
             </div>
-            <p>{["A great place to start.", "More visibility where it matters.", "Stand out across your neighborhood."][index]}</p>
-            <ul>
-              <li>✓ Local search priority</li>
-              <li>✓ Verified Business profile</li>
-              <li>{index > 0 ? "✓ Customer enquiry & order alerts" : "— Basic profile views"}</li>
-              <li>{index > 1 ? "✓ Featured top placement & SEO badge" : index > 0 ? "✓ Category spotlight" : "— Standard placement"}</li>
-            </ul>
-            <button
-              className={index === 1 ? "primary-button" : "outline-button"}
-              onClick={() => {
-                if (onSelectPlan) {
-                  onSelectPlan(plan);
-                } else if (openPlans) {
-                  openPlans();
-                }
-              }}
-            >
-              Choose {plan} 💳
-            </button>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );
@@ -23100,6 +23155,24 @@ function Dialog({
       window.removeEventListener("neighborly-registration-video-updated", handleVideoUpdate);
     };
   }, []);
+
+  const [dialogPlans, setDialogPlans] = useState<SubscriptionPlan[]>(DEFAULT_SUBSCRIPTION_PLANS);
+
+  useEffect(() => {
+    if (kind !== "plans") return;
+    let active = true;
+    fetch("/api/company/plans")
+      .then((r) => r.json())
+      .then((data) => {
+        if (active && Array.isArray(data.plans) && data.plans.length > 0) {
+          setDialogPlans(data.plans.filter((p: SubscriptionPlan) => p.enabled !== false));
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [kind]);
 
   // Customer forgot password states
   const [isCustomerForgotPw, setIsCustomerForgotPw] = useState(false);
@@ -24530,15 +24603,15 @@ function Dialog({
         <div className="fine-print">Registration is saved in this demo only. Document verification and listing activation require a secure backend.</div></>}</>}
       {kind === "plans" && <><div className="modal-mark">💳</div><div className="eyebrow">MEMBERSHIP &amp; PAYMENTS</div><h2>Choose a subscription plan to get discovered.</h2><p>Select any tier to proceed to secure payment authorization via UPI, Card, or Net Banking.</p>
         <div className="compact-plans">
-          {planNames.map((plan, index) => (
+          {dialogPlans.map((plan) => (
             <button
-              key={plan}
+              key={plan.id || plan.name}
               onClick={() => {
                 close();
-                onCheckout(checkoutBusiness || businesses[0]?.name || "Bloom & Bean Café", plan, "UPI");
+                onCheckout(checkoutBusiness || businesses[0]?.name || "Bloom & Bean Café", plan.name, "UPI");
               }}
             >
-              <span>{plan} · {["₹499", "₹999", "₹1,999"][index]} / month</span>
+              <span>{plan.name} · ₹{plan.monthlyPrice.toLocaleString("en-IN")} / month</span>
               <span>Proceed to Pay →</span>
             </button>
           ))}

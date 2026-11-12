@@ -2901,6 +2901,7 @@ export function AdCampaignsManager({
   onSimulateHour,
   onOpenBookingWizard,
   onPayBooking,
+  onRefresh,
 }: {
   businessName?: string;
   businesses: Array<{ name: string; phone?: string; category?: string }>;
@@ -2909,9 +2910,12 @@ export function AdCampaignsManager({
   onSimulateHour: (hour: number | null) => void;
   onOpenBookingWizard: () => void;
   onPayBooking: (booking: AdBookingRequest) => void;
+  onRefresh?: () => void;
 }) {
   const [selectedReceipt, setSelectedReceipt] = useState<AdBookingRequest | null>(null);
   const [selectedAudienceLog, setSelectedAudienceLog] = useState<AdBookingRequest | null>(null);
+  const [editingBooking, setEditingBooking] = useState<AdBookingRequest | null>(null);
+  const [deletingBooking, setDeletingBooking] = useState<AdBookingRequest | null>(null);
 
   // Filter bookings strictly for this business. Never show other merchants' ad bookings in a merchant portal.
   const businessBookings = businessName && businessName.trim()
@@ -3459,46 +3463,87 @@ export function AdCampaignsManager({
                       </small>
                     </div>
 
-                    {b.status === "Pending Payment" ? (
-                      <button
-                        type="button"
-                        className="primary-button"
-                        onClick={() => onPayBooking(b)}
-                        style={{ padding: "8px 14px", fontSize: "12px" }}
-                      >
-                        Pay &amp; Activate 💳
-                      </button>
-                    ) : (
-                      <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+                    <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+                      {b.status === "Pending Payment" && (
                         <button
                           type="button"
-                          className="outline-button"
-                          onClick={() => setSelectedAudienceLog(b)}
-                          style={{
-                            padding: "8px 12px",
-                            fontSize: "12px",
-                            fontWeight: 700,
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "5px",
-                            background: "#f0f7f2",
-                            borderColor: "#b8d7be",
-                            color: "#18532c",
-                          }}
-                          title="View detailed audience log and customer view timings"
-                        >
-                          <span>📋</span> View Audience Log ({b.viewRecords?.length || (b.viewsCount ? Math.min(25, Math.max(6, Math.round(b.viewsCount / 45))) : 0)})
-                        </button>
-                        <button
-                          type="button"
-                          className="outline-button"
-                          onClick={() => setSelectedReceipt(b)}
+                          className="primary-button"
+                          onClick={() => onPayBooking(b)}
                           style={{ padding: "8px 14px", fontSize: "12px" }}
                         >
-                          View Receipt 🧾
+                          Pay &amp; Activate 💳
                         </button>
-                      </div>
-                    )}
+                      )}
+                      {b.status !== "Pending Payment" && (
+                        <>
+                          <button
+                            type="button"
+                            className="outline-button"
+                            onClick={() => setSelectedAudienceLog(b)}
+                            style={{
+                              padding: "8px 12px",
+                              fontSize: "12px",
+                              fontWeight: 700,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "5px",
+                              background: "#f0f7f2",
+                              borderColor: "#b8d7be",
+                              color: "#18532c",
+                            }}
+                            title="View detailed audience log and customer view timings"
+                          >
+                            <span>📋</span> View Audience Log ({b.viewRecords?.length || (b.viewsCount ? Math.min(25, Math.max(6, Math.round(b.viewsCount / 45))) : 0)})
+                          </button>
+                          <button
+                            type="button"
+                            className="outline-button"
+                            onClick={() => setSelectedReceipt(b)}
+                            style={{ padding: "8px 14px", fontSize: "12px" }}
+                          >
+                            View Receipt 🧾
+                          </button>
+                        </>
+                      )}
+                      <button
+                        type="button"
+                        className="outline-button"
+                        onClick={() => setEditingBooking(b)}
+                        style={{
+                          padding: "8px 12px",
+                          fontSize: "12px",
+                          fontWeight: 700,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "5px",
+                          background: "#eff6ff",
+                          borderColor: "#bfdbfe",
+                          color: "#1d4ed8",
+                        }}
+                        title="Edit campaign details, creatives, and copy"
+                      >
+                        <span>✏️</span> Edit Ad
+                      </button>
+                      <button
+                        type="button"
+                        className="outline-button"
+                        onClick={() => setDeletingBooking(b)}
+                        style={{
+                          padding: "8px 12px",
+                          fontSize: "12px",
+                          fontWeight: 700,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "5px",
+                          background: "#fef2f2",
+                          borderColor: "#fecaca",
+                          color: "#b91c1c",
+                        }}
+                        title="Delete this campaign"
+                      >
+                        <span>🗑️</span> Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -3520,6 +3565,29 @@ export function AdCampaignsManager({
           close={() => setSelectedAudienceLog(null)}
         />
       )}
+
+      {editingBooking && (
+        <AdEditModal
+          booking={editingBooking}
+          isAdmin={false}
+          close={() => setEditingBooking(null)}
+          onSaved={() => {
+            setEditingBooking(null);
+            if (onRefresh) onRefresh();
+          }}
+        />
+      )}
+
+      {deletingBooking && (
+        <AdDeleteConfirmModal
+          booking={deletingBooking}
+          close={() => setDeletingBooking(null)}
+          onDeleted={() => {
+            setDeletingBooking(null);
+            if (onRefresh) onRefresh();
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -3539,6 +3607,8 @@ export function CompanyAdBookingsManager({
   const [filter, setFilter] = useState<"All" | "Paid" | "Pending Payment">("All");
   const [viewingReceipt, setViewingReceipt] = useState<AdBookingRequest | null>(null);
   const [viewingAudienceLog, setViewingAudienceLog] = useState<AdBookingRequest | null>(null);
+  const [editingBooking, setEditingBooking] = useState<AdBookingRequest | null>(null);
+  const [deletingBooking, setDeletingBooking] = useState<AdBookingRequest | null>(null);
 
   const filtered =
     filter === "All" ? bookings : bookings.filter((b) => b.status === filter);
@@ -3869,6 +3939,46 @@ export function CompanyAdBookingsManager({
                   View Details &amp; Creatives
                 </button>
 
+                <button
+                  type="button"
+                  className="outline-button"
+                  onClick={() => setEditingBooking(b)}
+                  style={{
+                    padding: "6px 12px",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    background: "#eff6ff",
+                    borderColor: "#bfdbfe",
+                    color: "#1d4ed8",
+                  }}
+                  title="Edit ad campaign"
+                >
+                  <span>✏️</span> Edit
+                </button>
+
+                <button
+                  type="button"
+                  className="outline-button"
+                  onClick={() => setDeletingBooking(b)}
+                  style={{
+                    padding: "6px 12px",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    background: "#fef2f2",
+                    borderColor: "#fecaca",
+                    color: "#b91c1c",
+                  }}
+                  title="Delete ad campaign"
+                >
+                  <span>🗑️</span> Delete
+                </button>
+
                 {b.status === "Pending Payment" && onUpdateStatus && (
                   <button
                     type="button"
@@ -3898,6 +4008,724 @@ export function CompanyAdBookingsManager({
           close={() => setViewingAudienceLog(null)}
         />
       )}
+
+      {editingBooking && (
+        <AdEditModal
+          booking={editingBooking}
+          isAdmin={true}
+          close={() => setEditingBooking(null)}
+          onSaved={() => {
+            setEditingBooking(null);
+            if (onRefresh) onRefresh();
+          }}
+        />
+      )}
+
+      {deletingBooking && (
+        <AdDeleteConfirmModal
+          booking={deletingBooking}
+          close={() => setDeletingBooking(null)}
+          onDeleted={() => {
+            setDeletingBooking(null);
+            if (onRefresh) onRefresh();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
+// AD DELETE CONFIRM MODAL
+// ============================================================================
+export function AdDeleteConfirmModal({
+  booking,
+  close,
+  onDeleted,
+}: {
+  booking: AdBookingRequest;
+  close: () => void;
+  onDeleted?: (id: string) => void;
+}) {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleDelete() {
+    setIsDeleting(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/ads/bookings?id=${encodeURIComponent(booking.id)}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to delete ad campaign.");
+      if (onDeleted) onDeleted(booking.id);
+      close();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Deletion failed");
+      setIsDeleting(false);
+    }
+  }
+
+  return (
+    <div
+      className="order-modal-backdrop"
+      style={{
+        position: "fixed",
+        inset: 0,
+        backgroundColor: "rgba(14, 28, 18, 0.76)",
+        backdropFilter: "blur(6px)",
+        WebkitBackdropFilter: "blur(6px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 100000,
+        padding: "16px",
+      }}
+      onClick={close}
+    >
+      <div
+        className="plan-checkout-container"
+        style={{
+          maxWidth: "480px",
+          width: "95vw",
+          margin: "auto",
+          background: "#ffffff",
+          borderRadius: "16px",
+          padding: "24px",
+          boxShadow: "0 24px 60px rgba(0, 0, 0, 0.35)",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
+          <div
+            style={{
+              width: "44px",
+              height: "44px",
+              borderRadius: "10px",
+              background: "#fee2e2",
+              color: "#dc2626",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "22px",
+            }}
+          >
+            🗑️
+          </div>
+          <div>
+            <h3 style={{ margin: 0, fontSize: "18px", color: "#111827" }}>Delete Ad Campaign?</h3>
+            <small style={{ color: "#6b7280" }}>Campaign ID: {booking.id}</small>
+          </div>
+        </div>
+
+        <p style={{ fontSize: "14px", color: "#374151", lineHeight: 1.5, margin: "14px 0" }}>
+          Are you sure you want to permanently delete the campaign for{" "}
+          <strong style={{ color: "#111827" }}>{booking.businessName}</strong>?
+          This will remove the ad from rotating across Hosur and cancel scheduled slots.
+        </p>
+
+        <div
+          style={{
+            background: "#f9fafb",
+            border: "1px solid #e5e7eb",
+            borderRadius: "10px",
+            padding: "12px 14px",
+            fontSize: "12px",
+            color: "#4b5563",
+            marginBottom: "16px",
+            display: "grid",
+            gap: "6px",
+          }}
+        >
+          <div><strong>Format:</strong> {AD_FORMAT_PRICING[booking.format]?.name || booking.format}</div>
+          <div><strong>Slot:</strong> {booking.slotLabel}</div>
+          <div><strong>Schedule:</strong> {booking.startDate} to {booking.endDate} ({booking.durationDays} days)</div>
+          <div><strong>Status:</strong> {booking.status} • Total: ₹{booking.totalAmount.toLocaleString("en-IN")}</div>
+        </div>
+
+        {error && (
+          <div
+            style={{
+              background: "#fef2f2",
+              border: "1px solid #fecaca",
+              color: "#b91c1c",
+              padding: "10px 12px",
+              borderRadius: "8px",
+              fontSize: "12px",
+              marginBottom: "14px",
+            }}
+          >
+            ⚠️ {error}
+          </div>
+        )}
+
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+          <button
+            type="button"
+            className="outline-button"
+            onClick={close}
+            disabled={isDeleting}
+            style={{ padding: "8px 16px", fontSize: "13px" }}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={isDeleting}
+            style={{
+              padding: "8px 18px",
+              fontSize: "13px",
+              fontWeight: 700,
+              background: "#dc2626",
+              color: "#ffffff",
+              border: "none",
+              borderRadius: "8px",
+              cursor: isDeleting ? "not-allowed" : "pointer",
+            }}
+          >
+            {isDeleting ? "Deleting..." : "Yes, Delete Campaign"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// AD EDIT MODAL
+// ============================================================================
+export function AdEditModal({
+  booking,
+  isAdmin = false,
+  close,
+  onSaved,
+}: {
+  booking: AdBookingRequest;
+  isAdmin?: boolean;
+  close: () => void;
+  onSaved?: (updated: AdBookingRequest) => void;
+}) {
+  const [businessName, setBusinessName] = useState(booking.businessName || "");
+  const [contactName, setContactName] = useState(booking.contactName || "");
+  const [contactPhone, setContactPhone] = useState(booking.contactPhone || "");
+  const [format, setFormat] = useState<AdFormat>(booking.format);
+  const [slotTiming, setSlotTiming] = useState<AdSlotTiming>(booking.slotTiming);
+  const [startDate, setStartDate] = useState(booking.startDate || "");
+  const [durationDays, setDurationDays] = useState(booking.durationDays || 7);
+
+  // Poster fields
+  const [posterTitle, setPosterTitle] = useState(booking.poster?.title || "");
+  const [posterLabel, setPosterLabel] = useState(booking.poster?.label || "");
+  const [posterImage, setPosterImage] = useState(booking.poster?.imageUrl || "");
+  const [posterTone, setPosterTone] = useState(booking.poster?.tone || "gold");
+
+  // Content Ticker fields
+  const [tickerMessage, setTickerMessage] = useState(booking.content?.message || "");
+
+  // Video fields
+  const [videoTitle, setVideoTitle] = useState(booking.video?.title || "");
+  const [videoDescription, setVideoDescription] = useState(booking.video?.description || "");
+  const [videoSourceUrl, setVideoSourceUrl] = useState(booking.video?.sourceUrl || "");
+  const [videoPosterUrl, setVideoPosterUrl] = useState(booking.video?.posterUrl || "");
+  const [videoCta, setVideoCta] = useState(booking.video?.callToAction || "Contact Business Now");
+
+  // Admin-only fields
+  const [status, setStatus] = useState<AdBookingRequest["status"]>(booking.status || "Paid");
+  const [totalAmount, setTotalAmount] = useState<number>(booking.totalAmount || 0);
+
+  // Uploading states
+  const [uploadingPoster, setUploadingPoster] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
+  async function handleFileUpload(
+    event: React.ChangeEvent<HTMLInputElement>,
+    kind: "poster" | "video" | "videoPoster"
+  ) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadError("");
+    if (kind === "poster") setUploadingPoster(true);
+    if (kind === "video") setUploadingVideo(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("kind", kind === "video" ? "video" : "image");
+
+      const res = await fetch("/api/ads/bookings/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to upload file.");
+
+      if (kind === "poster") setPosterImage(data.url);
+      else if (kind === "video") setVideoSourceUrl(data.url);
+      else if (kind === "videoPoster") setVideoPosterUrl(data.url);
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      if (kind === "poster") setUploadingPoster(false);
+      if (kind === "video") setUploadingVideo(false);
+    }
+  }
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    setIsSaving(true);
+    setSaveError("");
+
+    try {
+      const slotInfo = AD_TIME_SLOTS[slotTiming] || AD_TIME_SLOTS.morning;
+
+      const updates: any = {
+        id: booking.id,
+        businessName,
+        contactName,
+        contactPhone,
+        format,
+        slotTiming,
+        slotLabel: slotInfo.label,
+        startHour: slotInfo.startHour,
+        endHour: slotInfo.endHour,
+        startDate,
+        durationDays: Number(durationDays),
+      };
+
+      if (format === "poster" || format === "combo") {
+        updates.poster = {
+          title: posterTitle,
+          label: posterLabel,
+          imageUrl: posterImage,
+          tone: posterTone,
+        };
+      }
+
+      if (format === "content" || format === "combo") {
+        updates.content = {
+          message: tickerMessage,
+        };
+      }
+
+      if (format === "video" || format === "combo") {
+        updates.video = {
+          title: videoTitle,
+          description: videoDescription,
+          sourceUrl: videoSourceUrl,
+          posterUrl: videoPosterUrl,
+          callToAction: videoCta,
+        };
+      }
+
+      if (isAdmin) {
+        updates.status = status;
+        if (totalAmount) updates.totalAmount = Number(totalAmount);
+      }
+
+      const res = await fetch("/api/ads/bookings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update ad booking.");
+
+      if (onSaved) onSaved(data.booking);
+      close();
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Save failed");
+      setIsSaving(false);
+    }
+  }
+
+  return (
+    <div
+      className="order-modal-backdrop"
+      style={{
+        position: "fixed",
+        inset: 0,
+        backgroundColor: "rgba(14, 28, 18, 0.76)",
+        backdropFilter: "blur(6px)",
+        WebkitBackdropFilter: "blur(6px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 100000,
+        padding: "16px",
+        overflowY: "auto",
+      }}
+      onClick={close}
+    >
+      <div
+        className="plan-checkout-container"
+        style={{
+          maxWidth: "680px",
+          width: "95vw",
+          margin: "auto",
+          position: "relative",
+          maxHeight: "92vh",
+          display: "flex",
+          flexDirection: "column",
+          background: "#ffffff",
+          borderRadius: "16px",
+          overflow: "hidden",
+          boxShadow: "0 24px 60px rgba(0, 0, 0, 0.35)",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div
+          style={{
+            padding: "18px 24px",
+            background: "linear-gradient(135deg, #1b432a 0%, #295f3e 100%)",
+            color: "#ffffff",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <div>
+            <span style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "1px", color: "#a4e2ba", textTransform: "uppercase" }}>
+              ● EDIT AD CAMPAIGN {isAdmin ? "(ADMIN MODE)" : "(MERCHANT)"}
+            </span>
+            <h3 style={{ margin: "2px 0 0", fontSize: "18px", color: "#ffffff" }}>
+              {booking.businessName}
+            </h3>
+            <small style={{ color: "#d9ede0", fontSize: "11px" }}>Campaign ID: {booking.id}</small>
+          </div>
+          <button
+            type="button"
+            onClick={close}
+            style={{
+              background: "rgba(255,255,255,0.15)",
+              border: "none",
+              color: "#ffffff",
+              fontSize: "18px",
+              width: "32px",
+              height: "32px",
+              borderRadius: "50%",
+              cursor: "pointer",
+            }}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Scrollable Form Body */}
+        <form onSubmit={handleSave} style={{ padding: "24px", overflowY: "auto", display: "grid", gap: "16px" }}>
+          {saveError && (
+            <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#b91c1c", padding: "10px 14px", borderRadius: "8px", fontSize: "12px" }}>
+              ⚠️ {saveError}
+            </div>
+          )}
+
+          {uploadError && (
+            <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#b91c1c", padding: "10px 14px", borderRadius: "8px", fontSize: "12px" }}>
+              ⚠️ Upload notice: {uploadError}
+            </div>
+          )}
+
+          {/* Business & Contact */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+            <div>
+              <label style={{ fontSize: "11px", fontWeight: 700, color: "#374151", display: "block", marginBottom: "4px" }}>
+                Business Name
+              </label>
+              <input
+                type="text"
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
+                required
+                style={{ width: "100%", padding: "8px 12px", border: "1px solid #d1d5db", borderRadius: "6px", fontSize: "13px" }}
+              />
+            </div>
+            <div>
+              <label style={{ fontSize: "11px", fontWeight: 700, color: "#374151", display: "block", marginBottom: "4px" }}>
+                Contact Phone
+              </label>
+              <input
+                type="text"
+                value={contactPhone}
+                onChange={(e) => setContactPhone(e.target.value)}
+                required
+                style={{ width: "100%", padding: "8px 12px", border: "1px solid #d1d5db", borderRadius: "6px", fontSize: "13px" }}
+              />
+            </div>
+          </div>
+
+          {/* Format & Timing */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+            <div>
+              <label style={{ fontSize: "11px", fontWeight: 700, color: "#374151", display: "block", marginBottom: "4px" }}>
+                Ad Format
+              </label>
+              <select
+                value={format}
+                onChange={(e) => setFormat(e.target.value as AdFormat)}
+                style={{ width: "100%", padding: "8px 12px", border: "1px solid #d1d5db", borderRadius: "6px", fontSize: "13px" }}
+              >
+                <option value="poster">Poster Billboard (Hero Banner)</option>
+                <option value="content">Content Ad (Ticker Marquee)</option>
+                <option value="video">Video Spotlight (Reel Player)</option>
+                <option value="combo">Combo Pack (All Formats)</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={{ fontSize: "11px", fontWeight: 700, color: "#374151", display: "block", marginBottom: "4px" }}>
+                Slot Timing
+              </label>
+              <select
+                value={slotTiming}
+                onChange={(e) => setSlotTiming(e.target.value as AdSlotTiming)}
+                style={{ width: "100%", padding: "8px 12px", border: "1px solid #d1d5db", borderRadius: "6px", fontSize: "13px" }}
+              >
+                {Object.values(AD_TIME_SLOTS).map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.label} ({s.hours})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Dates */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+            <div>
+              <label style={{ fontSize: "11px", fontWeight: 700, color: "#374151", display: "block", marginBottom: "4px" }}>
+                Start Date
+              </label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                required
+                style={{ width: "100%", padding: "8px 12px", border: "1px solid #d1d5db", borderRadius: "6px", fontSize: "13px" }}
+              />
+            </div>
+            <div>
+              <label style={{ fontSize: "11px", fontWeight: 700, color: "#374151", display: "block", marginBottom: "4px" }}>
+                Duration (Days)
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="90"
+                value={durationDays}
+                onChange={(e) => setDurationDays(Number(e.target.value))}
+                required
+                style={{ width: "100%", padding: "8px 12px", border: "1px solid #d1d5db", borderRadius: "6px", fontSize: "13px" }}
+              />
+            </div>
+          </div>
+
+          {/* Poster Creatives (if poster or combo) */}
+          {(format === "poster" || format === "combo") && (
+            <div style={{ border: "1px solid #e5e7eb", borderRadius: "10px", padding: "14px", background: "#fafafa" }}>
+              <strong style={{ fontSize: "13px", color: "#111827", display: "block", marginBottom: "10px" }}>
+                🖼️ Poster Billboard Creatives
+              </strong>
+              <div style={{ display: "grid", gap: "10px" }}>
+                <div>
+                  <label style={{ fontSize: "11px", fontWeight: 700, color: "#4b5563", display: "block", marginBottom: "3px" }}>
+                    Poster Headline / Title
+                  </label>
+                  <input
+                    type="text"
+                    value={posterTitle}
+                    onChange={(e) => setPosterTitle(e.target.value)}
+                    placeholder="e.g. 50% Off On First Order"
+                    style={{ width: "100%", padding: "7px 10px", border: "1px solid #d1d5db", borderRadius: "6px", fontSize: "13px" }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: "11px", fontWeight: 700, color: "#4b5563", display: "block", marginBottom: "3px" }}>
+                    Badge / Tagline
+                  </label>
+                  <input
+                    type="text"
+                    value={posterLabel}
+                    onChange={(e) => setPosterLabel(e.target.value)}
+                    placeholder="e.g. Hosur Local Favorite"
+                    style={{ width: "100%", padding: "7px 10px", border: "1px solid #d1d5db", borderRadius: "6px", fontSize: "13px" }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: "11px", fontWeight: 700, color: "#4b5563", display: "block", marginBottom: "3px" }}>
+                    Poster Image URL or Upload
+                  </label>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <input
+                      type="url"
+                      value={posterImage}
+                      onChange={(e) => setPosterImage(e.target.value)}
+                      placeholder="https://images.unsplash.com/..."
+                      style={{ flex: 1, padding: "7px 10px", border: "1px solid #d1d5db", borderRadius: "6px", fontSize: "13px" }}
+                    />
+                    <label style={{ cursor: "pointer", background: "#1b432a", color: "#ffffff", padding: "7px 12px", borderRadius: "6px", fontSize: "12px", fontWeight: 700, display: "flex", alignItems: "center" }}>
+                      {uploadingPoster ? "Uploading..." : "Upload"}
+                      <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, "poster")} style={{ display: "none" }} />
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Content Ticker (if content or combo) */}
+          {(format === "content" || format === "combo") && (
+            <div style={{ border: "1px solid #e5e7eb", borderRadius: "10px", padding: "14px", background: "#fafafa" }}>
+              <strong style={{ fontSize: "13px", color: "#111827", display: "block", marginBottom: "10px" }}>
+                📢 Content Ad (Ticker Marquee)
+              </strong>
+              <div>
+                <label style={{ fontSize: "11px", fontWeight: 700, color: "#4b5563", display: "block", marginBottom: "3px" }}>
+                  Scrolling Message Bar
+                </label>
+                <textarea
+                  rows={2}
+                  value={tickerMessage}
+                  onChange={(e) => setTickerMessage(e.target.value)}
+                  placeholder="🌟 Special Offer: Visit our Hosur store today for exclusive discounts!"
+                  style={{ width: "100%", padding: "7px 10px", border: "1px solid #d1d5db", borderRadius: "6px", fontSize: "13px" }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Video Spotlight (if video or combo) */}
+          {(format === "video" || format === "combo") && (
+            <div style={{ border: "1px solid #e5e7eb", borderRadius: "10px", padding: "14px", background: "#fafafa" }}>
+              <strong style={{ fontSize: "13px", color: "#111827", display: "block", marginBottom: "10px" }}>
+                🎬 Video Spotlight Creatives
+              </strong>
+              <div style={{ display: "grid", gap: "10px" }}>
+                <div>
+                  <label style={{ fontSize: "11px", fontWeight: 700, color: "#4b5563", display: "block", marginBottom: "3px" }}>
+                    Video Title
+                  </label>
+                  <input
+                    type="text"
+                    value={videoTitle}
+                    onChange={(e) => setVideoTitle(e.target.value)}
+                    style={{ width: "100%", padding: "7px 10px", border: "1px solid #d1d5db", borderRadius: "6px", fontSize: "13px" }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: "11px", fontWeight: 700, color: "#4b5563", display: "block", marginBottom: "3px" }}>
+                    Video Description
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={videoDescription}
+                    onChange={(e) => setVideoDescription(e.target.value)}
+                    style={{ width: "100%", padding: "7px 10px", border: "1px solid #d1d5db", borderRadius: "6px", fontSize: "13px" }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: "11px", fontWeight: 700, color: "#4b5563", display: "block", marginBottom: "3px" }}>
+                    Video MP4 URL or Upload
+                  </label>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <input
+                      type="url"
+                      value={videoSourceUrl}
+                      onChange={(e) => setVideoSourceUrl(e.target.value)}
+                      placeholder="https://.../video.mp4"
+                      style={{ flex: 1, padding: "7px 10px", border: "1px solid #d1d5db", borderRadius: "6px", fontSize: "13px" }}
+                    />
+                    <label style={{ cursor: "pointer", background: "#1b432a", color: "#ffffff", padding: "7px 12px", borderRadius: "6px", fontSize: "12px", fontWeight: 700, display: "flex", alignItems: "center" }}>
+                      {uploadingVideo ? "Uploading..." : "Upload Video"}
+                      <input type="file" accept="video/mp4,video/webm" onChange={(e) => handleFileUpload(e, "video")} style={{ display: "none" }} />
+                    </label>
+                  </div>
+                </div>
+                <div>
+                  <label style={{ fontSize: "11px", fontWeight: 700, color: "#4b5563", display: "block", marginBottom: "3px" }}>
+                    Call To Action Button Label
+                  </label>
+                  <input
+                    type="text"
+                    value={videoCta}
+                    onChange={(e) => setVideoCta(e.target.value)}
+                    placeholder="Contact Business Now"
+                    style={{ width: "100%", padding: "7px 10px", border: "1px solid #d1d5db", borderRadius: "6px", fontSize: "13px" }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Admin Controls (Status & Amount) */}
+          {isAdmin && (
+            <div style={{ border: "1.5px dashed #166534", borderRadius: "10px", padding: "14px", background: "#f0fdf4" }}>
+              <strong style={{ fontSize: "13px", color: "#166534", display: "block", marginBottom: "10px" }}>
+                🛡️ Admin Controls &amp; Overrides
+              </strong>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label style={{ fontSize: "11px", fontWeight: 700, color: "#166534", display: "block", marginBottom: "3px" }}>
+                    Campaign Status
+                  </label>
+                  <select
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value as any)}
+                    style={{ width: "100%", padding: "7px 10px", border: "1px solid #86efac", borderRadius: "6px", fontSize: "13px" }}
+                  >
+                    <option value="Paid">Paid (Active &amp; Scheduled)</option>
+                    <option value="Pending Payment">Pending Payment</option>
+                    <option value="Active">Active Live</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Expired">Expired</option>
+                    <option value="Rejected">Rejected</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize: "11px", fontWeight: 700, color: "#166534", display: "block", marginBottom: "3px" }}>
+                    Total Amount (₹ INR)
+                  </label>
+                  <input
+                    type="number"
+                    value={totalAmount}
+                    onChange={(e) => setTotalAmount(Number(e.target.value))}
+                    style={{ width: "100%", padding: "7px 10px", border: "1px solid #86efac", borderRadius: "6px", fontSize: "13px" }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Action buttons */}
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "10px" }}>
+            <button
+              type="button"
+              className="outline-button"
+              onClick={close}
+              disabled={isSaving}
+              style={{ padding: "8px 16px", fontSize: "13px" }}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="primary-button"
+              disabled={isSaving}
+              style={{ padding: "8px 20px", fontSize: "13px", fontWeight: 700 }}
+            >
+              {isSaving ? "Saving..." : "Save Changes 💾"}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

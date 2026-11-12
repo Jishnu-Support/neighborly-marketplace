@@ -3,6 +3,7 @@ import {
   createAdBooking,
   readAdBookings,
   updateAdBooking,
+  deleteAdBooking,
 } from "@/app/lib/ad-bookings";
 import { type AdFormat, type AdSlotTiming, AD_TIME_SLOTS } from "@/app/lib/ad-booking.shared";
 import { recordPlatformTransaction } from "@/app/lib/transactions";
@@ -170,6 +171,30 @@ export async function PATCH(request: Request) {
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Failed to update ad booking" },
+      { status: 500 }
+    );
+  }
+}
+
+export const PUT = PATCH;
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+    if (!id) {
+      return NextResponse.json({ error: "Booking ID is required." }, { status: 400 });
+    }
+
+    const success = await deleteAdBooking(id);
+    if (!success) {
+      return NextResponse.json({ error: "Booking not found or could not be deleted." }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, message: `Ad booking ${id} deleted successfully.` });
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to delete ad booking" },
       { status: 500 }
     );
   }
