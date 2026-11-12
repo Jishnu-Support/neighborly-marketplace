@@ -18,13 +18,13 @@ export interface JitCertificateData {
 }
 
 export const DEFAULT_SAMPLE_CERTIFICATE: JitCertificateData = {
-  businessName: "SRI BALAJI SUPERMARKET",
-  category: "Retail & Grocery Store",
-  locality: "Hosur, Tamil Nadu",
-  address: "Hosur, Tamil Nadu",
-  phone: "+91 99440 12345",
+  businessName: "JISHNU INFOTECH PRIVATE LIMITED",
+  category: "IT & Software Solutions",
+  locality: "NGGO's Colony, Hosur",
+  address: "NGGO's Colony, Hosur",
+  phone: "+91 90430 22219",
   gstin: "33AABCT8921M1Z4",
-  certificateId: "BZR-JIT-2026-00483",
+  certificateId: "BZR-JIT-2026-00001",
   issueDate: "12 November 2026",
   validThrough: "31 March 2027",
   assignedAgentName: "JIT",
@@ -39,9 +39,9 @@ export function JitCertificate({
   data?: JitCertificateData;
   className?: string;
 }) {
-  const businessName = data.businessName || "Registered Business";
-  const category = data.category || "Verified Local Store";
-  const address = data.address || data.locality || "Hosur, Tamil Nadu";
+  const businessName = data.businessName || "JISHNU INFOTECH PRIVATE LIMITED";
+  const category = data.category || "IT & Software Solutions";
+  const address = data.address || data.locality || "NGGO's Colony, Hosur";
   const phone = data.phone || "+91 90430 22219";
   const issueDate = data.issueDate || "12 November 2026";
   const validThrough = data.validThrough || "31 March 2027";
@@ -52,9 +52,27 @@ export function JitCertificate({
   );
   const certId =
     data.certificateId ||
-    `BZR-JIT-2026-${String(100 + (num % 9000)).padStart(5, "0")}`;
+    `BZR-JIT-2026-${String(1 + (num % 9999)).padStart(5, "0")}`;
 
   const agentName = data.assignedAgentName || "JIT";
+
+  const sectorLower = (category || "").toLowerCase();
+  const sectorIcon =
+    sectorLower.includes("software") ||
+    sectorLower.includes("it ") ||
+    sectorLower.includes("tech") ||
+    sectorLower.includes("computer")
+      ? "💻"
+      : sectorLower.includes("clinic") ||
+        sectorLower.includes("hospital") ||
+        sectorLower.includes("ayurvedic") ||
+        sectorLower.includes("health")
+      ? "🏥"
+      : sectorLower.includes("lab") ||
+        sectorLower.includes("education") ||
+        sectorLower.includes("coaching")
+      ? "🎓"
+      : "🏪";
 
   return (
     <div className={`jit-cert-root ${className}`}>
@@ -151,7 +169,7 @@ export function JitCertificate({
                 {/* Details Pill (Store | Location | Phone) */}
                 <div className="business-details-pill">
                   <span className="pill-item">
-                    <span className="pill-icon">🏪</span>
+                    <span className="pill-icon">{sectorIcon}</span>
                     <span>{category}</span>
                   </span>
                   <span className="pill-divider">|</span>
@@ -187,7 +205,7 @@ export function JitCertificate({
             {/* 4. ATTESTATION CLAUSE & CENTER RIBBON */}
             <div className="attestation-statement-section">
               <p className="attest-text-p1">
-                Has successfully completed the <strong>Bizearch.in</strong> business verification process, including on-ground physical verification, business identity validation, and product/service assessment. This establishment is hereby recognized as a
+                Has successfully completed the <strong>Bizearch.in</strong> business verification process, including on-ground physical verification, business identity validation, and service assessment. This organization is hereby recognized as a
               </p>
 
               {/* Center Ribbon Banner */}

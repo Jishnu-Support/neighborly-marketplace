@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { JitCertificate, type JitCertificateData } from "../components/JitCertificate";
+import { JitCertificate, type JitCertificateData, DEFAULT_SAMPLE_CERTIFICATE } from "../components/JitCertificate";
 
 type BusinessRecord = {
   name: string;
@@ -100,6 +100,15 @@ function CertificatePageInner() {
           found = list[0];
         } else if (!found && list.length > 0) {
           found = list[0];
+        } else if (!found) {
+          // Default flagship verified business
+          found = {
+            name: DEFAULT_SAMPLE_CERTIFICATE.businessName,
+            category: DEFAULT_SAMPLE_CERTIFICATE.category,
+            address: DEFAULT_SAMPLE_CERTIFICATE.address,
+            phone: DEFAULT_SAMPLE_CERTIFICATE.phone,
+            assignedAgentName: DEFAULT_SAMPLE_CERTIFICATE.assignedAgentName,
+          };
         }
 
         setSelectedBusiness(found);
