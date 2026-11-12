@@ -9631,15 +9631,15 @@ export default function Home() {
 
             <button
               type="button"
-              className={`mobile-bottom-tab ${portalActiveTab === "Referral codes" ? "active" : ""}`}
+              className={`mobile-bottom-tab ${portalActiveTab === "Referrals" || portalActiveTab === "Referral codes" ? "active" : ""}`}
               onClick={() => {
-                setPortalActiveTab("Referral codes");
-                window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Referral codes" } }));
+                setPortalActiveTab("Referrals");
+                window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Referrals" } }));
               }}
             >
               <span className="tab-icon">🤝</span>
               <span>Referrals</span>
-              {portalActiveTab === "Referral codes" && <span className="mobile-bottom-tab-dot" />}
+              {(portalActiveTab === "Referrals" || portalActiveTab === "Referral codes") && <span className="mobile-bottom-tab-dot" />}
             </button>
 
             <button
@@ -10234,7 +10234,12 @@ function CustomerPortal({
   useEffect(() => {
     const openProfile = (e: Event) => {
       const customEvent = e as CustomEvent<{ tab?: string }>;
-      setTab(customEvent.detail?.tab || "Profile details");
+      const targetTab = customEvent.detail?.tab || "Profile details";
+      if (targetTab === "Referral codes" || targetTab === "Referrals") {
+        setTab("Referrals");
+      } else {
+        setTab(targetTab);
+      }
     };
     window.addEventListener("neighborly-open-profile", openProfile);
     return () => window.removeEventListener("neighborly-open-profile", openProfile);
@@ -16273,13 +16278,14 @@ function AgentPortal({
         <div className="agent-avatar">✳</div>
       </div>
       <div className="portal-tabs">
-        {["Overview", `Business verifications${pendingCount > 0 ? ` (${pendingCount})` : ""}`, "Profile details", "Settings"].map((item) => {
+        {["Overview", `Referrals${referrals.length > 0 ? ` (${referrals.length})` : ""}`, `Business verifications${pendingCount > 0 ? ` (${pendingCount})` : ""}`, "Profile details", "Settings"].map((item) => {
+          const isRef = item.startsWith("Referrals") && (tab === "Referrals" || tab === "Referral codes");
           const isVerif = item.startsWith("Business verifications") && tab.startsWith("Business verifications");
           return (
             <button
               key={item}
-              className={tab === item || isVerif || (item === "Profile details" && tab === "Profile") ? "current" : ""}
-              onClick={() => setTab(item.startsWith("Business verifications") ? "Business verifications" : item)}
+              className={tab === item || isRef || isVerif || (item === "Profile details" && tab === "Profile") ? "current" : ""}
+              onClick={() => setTab(item.startsWith("Referrals") ? "Referrals" : item.startsWith("Business verifications") ? "Business verifications" : item)}
             >
               {item}
             </button>
@@ -16323,12 +16329,14 @@ function AgentPortal({
               delta={pendingCount > 0 ? "Requires field visit & photos" : "All visits up to date"}
               icon="📍"
             />
-            <Metric
-              label="Businesses referred"
-              value={String(referrals.length)}
-              delta={referrals.length === 0 ? "No businesses linked yet" : `${referrals.length} active business partner${referrals.length > 1 ? "s" : ""}`}
-              icon="♧"
-            />
+            <div style={{ cursor: "pointer" }} onClick={() => setTab("Referrals")} title="Click to view all referred businesses">
+              <Metric
+                label="Businesses referred"
+                value={String(referrals.length)}
+                delta={referrals.length === 0 ? "No businesses linked yet" : `${referrals.length} active business partner${referrals.length > 1 ? "s" : ""}`}
+                icon="♧"
+              />
+            </div>
             <Metric label="This month's reward" value="₹0" delta="Real-time commission" icon="↗" />
           </div>
 
@@ -16399,6 +16407,130 @@ function AgentPortal({
           <div className="form-note">
             <strong>Agent Network</strong>
             <span>Live partner tracking. Businesses onboarding with your verified referral code are credited to your agent account.</span>
+          </div>
+        </>
+      )}
+
+      {(tab === "Referrals" || tab === "Referral codes") && (
+        <>
+          <section className="referral-card">
+            <div className="referral-copy">
+              <div className="eyebrow">YOUR REFERRAL CODE</div>
+              <h2>Share the local love.</h2>
+              <p>Businesses that use your code will be linked to your agent account when they register.</p>
+            </div>
+            <div className="code-box">
+              <code>{agentReferralCode}</code>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard?.writeText(agentReferralCode);
+                  setCopied(true);
+                  showNotice("Referral code copied.");
+                }}
+              >
+                {copied ? "Copied ✓" : "Copy code ↗"}
+              </button>
+              <button
+                type="button"
+                className="primary-button"
+                style={{ fontSize: "12px", padding: "8px 14px" }}
+                onClick={() => setShowAgentOnboardModal(true)}
+              >
+                + Onboard Business
+              </button>
+            </div>
+          </section>
+
+          <div className="metric-grid">
+            <Metric
+              label="Businesses referred"
+              value={String(referrals.length)}
+              delta={referrals.length === 0 ? "No businesses linked yet" : `${referrals.length} active business partner${referrals.length > 1 ? "s" : ""}`}
+              icon="♧"
+            />
+            <Metric
+              label="Active Partners"
+              value={String(referrals.length)}
+              delta="Linked to your agent account"
+              icon="📍"
+            />
+            <Metric label="Commission earned" value="₹0" delta="Real-time commission" icon="↗" />
+          </div>
+
+          <section className="panel agent-table">
+            <div className="panel-heading">
+              <div>
+                <div className="eyebrow">YOUR NETWORK</div>
+                <h2>Referred Businesses ({referrals.length})</h2>
+                <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#66786c" }}>
+                  All registered business partners onboarded through agent referral code <strong>{agentReferralCode}</strong>.
+                </p>
+              </div>
+              <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  className="primary-button"
+                  style={{ fontSize: "12px", padding: "8px 14px" }}
+                  onClick={() => setShowAgentOnboardModal(true)}
+                >
+                  + Onboard Business
+                </button>
+                <button className="text-link" onClick={downloadReferralReport}>
+                  Download report ↗
+                </button>
+              </div>
+            </div>
+            <div className="table-head">
+              <span>BUSINESS</span>
+              <span>CATEGORY</span>
+              <span>JOINED</span>
+              <span>STATUS</span>
+            </div>
+            {referrals.length === 0 ? (
+              <div style={{ padding: "32px 16px", textAlign: "center", color: "#6e8273", fontSize: "12px" }}>
+                No businesses referred yet. Share your referral code <strong>{agentReferralCode}</strong> with local businesses to onboard them.
+              </div>
+            ) : (
+              referrals.map((row) => (
+                <div className="table-row" key={row.businessName}>
+                  <div>
+                    <strong style={{ color: "#1c2e22" }}>{row.businessName}</strong>
+                    <div style={{ fontSize: "11.5px", color: "#64748b" }}>Code: {agentReferralCode} · Commission: {row.commission || "₹500"}</div>
+                  </div>
+                  <span>{row.category}</span>
+                  <span>{row.joined}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                    <span className={`status-pill ${row.status.toLowerCase().includes("verified") || row.status === "Subscribed" || row.status === "Approved" ? "verified" : "pending"}`}>
+                      <i>● </i>{row.status}
+                    </span>
+                    <button
+                      type="button"
+                      className="text-link"
+                      style={{ fontSize: "11px", color: "#b45309", cursor: "pointer", border: 0, background: "none" }}
+                      onClick={() => {
+                        const foundBiz = verifications.find((v) => v.name.toLowerCase() === row.businessName.toLowerCase());
+                        setRemovalTargetBusiness({
+                          id: foundBiz?.id || row.businessName,
+                          name: row.businessName,
+                          category: row.category,
+                          phone: foundBiz?.phone,
+                        });
+                        setRemovalRequestType("Disable");
+                        setRemovalRemarks("");
+                      }}
+                      title="Request Admin to disable or delete this business"
+                    >
+                      ⚠️ Request Removal
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </section>
+          <div className="form-note">
+            <strong>Agent Referral Program</strong>
+            <span>Active partner tracking. Businesses onboarding with referral code {agentReferralCode} are linked directly to your agent account.</span>
           </div>
         </>
       )}
