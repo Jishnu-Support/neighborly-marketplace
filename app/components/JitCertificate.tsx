@@ -18,17 +18,17 @@ export interface JitCertificateData {
   profileUrl?: string;
 }
 
+// No hardcoded sample data — certificate always uses real business data from the platform
 export const DEFAULT_SAMPLE_CERTIFICATE: JitCertificateData = {
-  businessName: "Tarun Motors Hero – Mathigiri, Hosur",
-  category: "Automobiles & Two-Wheeler Sales / Service",
-  locality: "Mathigiri, Hosur",
-  address: "Denkanikottai Main Road, Near RC Church, Mathigiri, Hosur - 635109",
-  phone: "+91 98420 28389",
-  gstin: "33AABCT8921M1Z4",
-  certificateId: "BZR-JIT-TN-2026-8842",
-  issueDate: "12 November 2026",
+  businessName: "",
+  category: "",
+  address: "",
+  phone: "",
+  gstin: "",
+  certificateId: "",
+  issueDate: "",
   validThrough: "31 March 2027",
-  assignedAgentName: "JIT Field Operations Wing",
+  assignedAgentName: "JIT Operations Wing",
   verifiedBy: "JIT On-Ground Verification Unit",
   profileUrl: "https://bizearch.in",
 };

@@ -15371,18 +15371,28 @@ function BusinessPortal({
   );
   const pendingPrepCount = accountOrders.filter((o) => o.status === "placed" || o.status === "accepted" || o.status === "preparing").length;
   const [showCertModal, setShowCertModal] = useState(false);
-  const certData: JitCertificateData = {
-    businessName: accountBusinessName || "My Business",
-    category: businesses[0]?.category || "Local Merchant",
-    address: businesses[0]?.address ? Object.values(businesses[0].address).filter(Boolean).join(", ") : undefined,
-    phone: businessPhoneFor(businesses[0]),
-    gstin: (businesses[0] as any)?.gstin,
-    assignedAgentName:
-      businesses[0]?.assignedAgentName ||
-      (businesses[0] as any)?.agentVerification?.agentName ||
-      "JIT Field Operations Wing",
-    profileUrl: "https://bizearch.in",
-  };
+  const certData: JitCertificateData = (() => {
+    const biz: any = businesses[0];
+    if (!biz) return { businessName: "", profileUrl: "https://bizearch.in" };
+    const addr = biz.address
+      ? (typeof biz.address === "string" ? biz.address : Object.values(biz.address).filter(Boolean).join(", "))
+      : undefined;
+    const issueDate = biz.createdAt
+      ? new Date(biz.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })
+      : undefined;
+    return {
+      businessName: biz.name || "",
+      category: biz.category || "",
+      address: addr,
+      phone: businessPhoneFor(biz),
+      gstin: biz.gstin || "",
+      assignedAgentName: biz.assignedAgentName || biz.agentVerification?.agentName || "JIT Operations Wing",
+      certificateId: undefined,
+      issueDate,
+      validThrough: "31 March 2027",
+      profileUrl: "https://bizearch.in",
+    };
+  })();
 
 
   useEffect(() => {
@@ -21667,18 +21677,26 @@ function CompanyPortal({
                       gap: "4px",
                     }}
                     onClick={() => {
-                      setSelectedCertBusiness({
-                        businessName: business.name,
-                        category: business.category,
-                        address: business.address ? Object.values(business.address).filter(Boolean).join(", ") : undefined,
-                        phone: businessPhoneFor(business),
-                        gstin: (business as any).gstin,
-                        assignedAgentName:
-                          business.assignedAgentName ||
-                          (business as any)?.agentVerification?.agentName ||
-                          "JIT Field Operations Wing",
-                        profileUrl: "https://bizearch.in",
-                      });
+                      {
+                        const biz: any = business;
+                        const addr = biz.address
+                          ? (typeof biz.address === "string" ? biz.address : Object.values(biz.address).filter(Boolean).join(", "))
+                          : undefined;
+                        const issueDate = biz.createdAt
+                          ? new Date(biz.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })
+                          : undefined;
+                        setSelectedCertBusiness({
+                          businessName: biz.name || "",
+                          category: biz.category || "",
+                          address: addr,
+                          phone: businessPhoneFor(biz),
+                          gstin: biz.gstin || "",
+                          assignedAgentName: biz.assignedAgentName || biz.agentVerification?.agentName || "JIT Operations Wing",
+                          issueDate,
+                          validThrough: "31 March 2027",
+                          profileUrl: "https://bizearch.in",
+                        });
+                      }
                     }}
                     title="View and print official JIT Verified Certificate"
                   >
