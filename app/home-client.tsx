@@ -32,7 +32,12 @@ import { defaultRegistrationFormConfig, type RegistrationFormConfig, type Regist
 import { buildAutomobileTaxonomyPaths as buildSharedAutomobileTaxonomyPaths, commercialVehicleSubcategories, getVehicleModelsForType as getSharedVehicleModelsForType } from "./lib/vehicle-taxonomy.shared";
 import AtoZDirectory from "./atoz-directory";
 import { atozCatalog, type AtoZItem } from "./lib/atoz-catalog";
-import { defaultSupportConfig, type SupportConfig } from "./lib/support-config.shared";
+import {
+  defaultSupportConfig,
+  type SupportConfig,
+  type EmergencyNumberItem,
+  defaultEmergencyNumbers,
+} from "./lib/support-config.shared";
 import { MapPinModal } from "./map-pin-modal";
 import { TermsModal } from "./terms-modal";
 import { TypeaheadAddressInput } from "./lib/TypeaheadAddressInput";
@@ -17562,6 +17567,28 @@ function ProfileAndSettingsPanel({
   const [passcodeNew, setPasscodeNew] = useState("");
   const [passcodeConfirm, setPasscodeConfirm] = useState("");
   const [passcodeStatus, setPasscodeStatus] = useState("");
+  const [supportConfig, setSupportConfig] = useState<SupportConfig>(defaultSupportConfig);
+  const [showEditEmergencyModal, setShowEditEmergencyModal] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/support-config", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data?.config) setSupportConfig(data.config);
+      })
+      .catch(() => {});
+
+    const handleSupportUpdate = (e: Event) => {
+      const custom = e as CustomEvent<SupportConfig>;
+      if (custom.detail) setSupportConfig(custom.detail);
+    };
+    window.addEventListener("neighborly-support-config-updated", handleSupportUpdate);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("neighborly-support-config-updated", handleSupportUpdate);
+    };
+  }, []);
 
   // Sync sub-tab if prop changes
   useEffect(() => {
@@ -18986,41 +19013,96 @@ function ProfileAndSettingsPanel({
           </div>
 
           {/* Hosur Emergency & Support Lines */}
-          <div className="settings-card-header" style={{ marginTop: "14px" }}>
-            <h3><span>📞</span> Hosur City Emergency &amp; Support Directory</h3>
-            <p>Immediate phone numbers for emergency response and Bizearch Hosur help desk.</p>
+          <div className="settings-card-header" style={{ marginTop: "14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+            <div>
+              <h3><span>📞</span> Hosur City Emergency &amp; Support Directory</h3>
+              <p>Immediate phone numbers for emergency response and Bizearch Hosur help desk.</p>
+            </div>
+            {role === "Company" && label === "Super Admin" && (
+              <button
+                type="button"
+                onClick={() => setShowEditEmergencyModal(true)}
+                style={{
+                  background: "#fef2f2",
+                  border: "1px solid #fca5a5",
+                  color: "#991b1b",
+                  padding: "6px 12px",
+                  borderRadius: "7px",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+                }}
+              >
+                <span>⚙️</span> Edit Emergency Numbers
+              </button>
+            )}
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "10px" }}>
-            <a
-              href="tel:100"
-              style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "8px", padding: "10px 14px", textDecoration: "none", color: "#991b1b" }}
-            >
-              <strong style={{ display: "block", fontSize: "12px" }}>🚔 Police Emergency</strong>
-              <span style={{ fontSize: "14px", fontWeight: 800 }}>Dial 100 / 112</span>
-            </a>
-            <a
-              href="tel:108"
-              style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "8px", padding: "10px 14px", textDecoration: "none", color: "#991b1b" }}
-            >
-              <strong style={{ display: "block", fontSize: "12px" }}>🚑 Medical Ambulance</strong>
-              <span style={{ fontSize: "14px", fontWeight: 800 }}>Dial 108</span>
-            </a>
-            <a
-              href="tel:101"
-              style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: "8px", padding: "10px 14px", textDecoration: "none", color: "#92400e" }}
-            >
-              <strong style={{ display: "block", fontSize: "12px" }}>🚒 Fire &amp; Rescue</strong>
-              <span style={{ fontSize: "14px", fontWeight: 800 }}>Dial 101</span>
-            </a>
-            <a
-              href="tel:9489521482"
-              style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "8px", padding: "10px 14px", textDecoration: "none", color: "#166534" }}
-            >
-              <strong style={{ display: "block", fontSize: "12px" }}>💬 Bizearch Hosur Help Desk</strong>
-              <span style={{ fontSize: "14px", fontWeight: 800 }}>+91 94895 21482</span>
-            </a>
+            {(supportConfig.emergencyNumbers || defaultEmergencyNumbers)
+              .filter((item) => item.active !== false)
+              .map((item) => {
+                const isHelpDesk = item.id === "helpdesk" || item.category === "helpdesk";
+                const isFire = item.id === "fire" || item.category === "fire";
+                const isDisaster = item.id === "disaster" || item.category === "general";
+                const bg = isHelpDesk ? "#f0fdf4" : isFire ? "#fffbeb" : isDisaster ? "#eff6ff" : "#fef2f2";
+                const border = isHelpDesk ? "#bbf7d0" : isFire ? "#fde68a" : isDisaster ? "#bfdbfe" : "#fecaca";
+                const color = isHelpDesk ? "#166534" : isFire ? "#92400e" : isDisaster ? "#1e40af" : "#991b1b";
+
+                return (
+                  <a
+                    key={item.id}
+                    href={`tel:${item.dialNumber}`}
+                    style={{ background: bg, border: `1px solid ${border}`, borderRadius: "8px", padding: "10px 14px", textDecoration: "none", color }}
+                  >
+                    <strong style={{ display: "block", fontSize: "12px" }}>{item.icon} {item.title}</strong>
+                    <span style={{ fontSize: "14px", fontWeight: 800 }}>{item.displayNumber}</span>
+                  </a>
+                );
+              })}
           </div>
+
+          {/* Super Admin Emergency Numbers Edit Overlay Modal */}
+          {showEditEmergencyModal && (
+            <div
+              style={{
+                position: "fixed",
+                inset: 0,
+                background: "rgba(0, 0, 0, 0.6)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 10000,
+                padding: "20px",
+              }}
+              onClick={() => setShowEditEmergencyModal(false)}
+            >
+              <div
+                style={{
+                  background: "#ffffff",
+                  borderRadius: "14px",
+                  maxWidth: "920px",
+                  width: "100%",
+                  maxHeight: "90vh",
+                  overflowY: "auto",
+                  boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+                  position: "relative",
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <CompanyEmergencyNumbersManager
+                  accessLevel="Super Admin"
+                  showNotice={showNotice || (() => {})}
+                  onConfigUpdated={(cfg) => setSupportConfig(cfg)}
+                  onClose={() => setShowEditEmergencyModal(false)}
+                />
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -22582,7 +22664,15 @@ function CompanyPortal({
         showNotice={showNotice}
       />
     )}
-    {activeTab === "Safety" && <section className="panel tab-panel"><div className="eyebrow">SAFETY & ESCALATION</div><h2>Emergency response setup</h2>{accessLevel === "Super Admin" ? <><p>Recent SOS alerts are recorded on this server and restricted to Super Admins. Alert details include personal contacts and precise coordinates; handle them as sensitive information. Bizearch does not place calls or send messages.</p><button className="outline-button" type="button" disabled={sosLoading} onClick={() => { setSosLoading(true); setSosError(""); fetch("/api/company/sos", { cache: "no-store" }).then(async (response) => { const result = await response.json() as { alerts?: SosAlert[]; error?: string }; if (!response.ok) throw new Error(result.error || "Could not load SOS alerts."); setSosAlerts(result.alerts || []); }).catch((reason) => setSosError(reason instanceof Error ? reason.message : "Could not load SOS alerts.")).finally(() => setSosLoading(false)); }}>Refresh alerts</button>{sosLoading && <p role="status">Loading SOS alerts...</p>}{sosError && <p className="form-error" role="alert">{sosError}</p>}{!sosLoading && !sosError && sosAlerts.length === 0 && <EmptyState title="No SOS alerts" text="Customer SOS alerts will appear here when submitted." />}{sosAlerts.map((alert) => <article className="sos-alert-card" key={alert.id}><div className="sos-alert-heading"><div><strong>{alert.customerName} · {alert.profileRole === "Account" ? "Customer" : alert.profileRole}</strong><small>{emergencyTypes.find((item) => item.id === alert.emergencyType)?.title ?? alert.emergencyType} · dial {alert.serviceNumber} · {new Date(alert.createdAt).toLocaleString()}</small><small>Account: {alert.identity || "Identity not available on this legacy alert"}</small><small>Mobile: {alert.customerPhone || `ending ${alert.customerPhoneLast4}`}</small></div><span className={`status-pill ${alert.locationStatus === "shared" ? "verified" : "pending"}`}>{alert.locationStatus === "shared" ? "Location shared" : "Location unavailable"}</span></div>{alert.latitude !== null && alert.longitude !== null ? <p><strong>Exact coordinates:</strong> {alert.latitude.toFixed(6)}, {alert.longitude.toFixed(6)}{alert.accuracyMeters !== null ? ` · accuracy ±${Math.round(alert.accuracyMeters)} m` : ""}</p> : <p>Customer location was unavailable when the SOS was submitted.</p>}<div className="sos-alert-contacts">{alert.emergencyPhones.map((phone, index) => <a key={`${alert.id}-${index}`} className="outline-button" href={`tel:${phone}`}>Call emergency contact {index + 1}</a>)}</div><small className="sos-alert-status">{alert.deliveryStatus}</small></article>)}</> : <p>SOS alert details and exact customer coordinates are available to Super Admins only. This demo does not dispatch emergency calls.</p>}</section>}
+    {activeTab === "Safety" && <section className="panel tab-panel"><div className="eyebrow">SAFETY & ESCALATION</div><h2>Emergency response setup</h2>
+        <CompanyEmergencyNumbersManager
+          accessLevel={accessLevel}
+          showNotice={showNotice}
+          onConfigUpdated={(cfg) => {
+            window.dispatchEvent(new CustomEvent("neighborly-support-config-updated", { detail: cfg }));
+          }}
+        />
+        {accessLevel === "Super Admin" ? <><p>Recent SOS alerts are recorded on this server and restricted to Super Admins. Alert details include personal contacts and precise coordinates; handle them as sensitive information. Bizearch does not place calls or send messages.</p><button className="outline-button" type="button" disabled={sosLoading} onClick={() => { setSosLoading(true); setSosError(""); fetch("/api/company/sos", { cache: "no-store" }).then(async (response) => { const result = await response.json() as { alerts?: SosAlert[]; error?: string }; if (!response.ok) throw new Error(result.error || "Could not load SOS alerts."); setSosAlerts(result.alerts || []); }).catch((reason) => setSosError(reason instanceof Error ? reason.message : "Could not load SOS alerts.")).finally(() => setSosLoading(false)); }}>Refresh alerts</button>{sosLoading && <p role="status">Loading SOS alerts...</p>}{sosError && <p className="form-error" role="alert">{sosError}</p>}{!sosLoading && !sosError && sosAlerts.length === 0 && <EmptyState title="No SOS alerts" text="Customer SOS alerts will appear here when submitted." />}{sosAlerts.map((alert) => <article className="sos-alert-card" key={alert.id}><div className="sos-alert-heading"><div><strong>{alert.customerName} · {alert.profileRole === "Account" ? "Customer" : alert.profileRole}</strong><small>{emergencyTypes.find((item) => item.id === alert.emergencyType)?.title ?? alert.emergencyType} · dial {alert.serviceNumber} · {new Date(alert.createdAt).toLocaleString()}</small><small>Account: {alert.identity || "Identity not available on this legacy alert"}</small><small>Mobile: {alert.customerPhone || `ending ${alert.customerPhoneLast4}`}</small></div><span className={`status-pill ${alert.locationStatus === "shared" ? "verified" : "pending"}`}>{alert.locationStatus === "shared" ? "Location shared" : "Location unavailable"}</span></div>{alert.latitude !== null && alert.longitude !== null ? <p><strong>Exact coordinates:</strong> {alert.latitude.toFixed(6)}, {alert.longitude.toFixed(6)}{alert.accuracyMeters !== null ? ` · accuracy ±${Math.round(alert.accuracyMeters)} m` : ""}</p> : <p>Customer location was unavailable when the SOS was submitted.</p>}<div className="sos-alert-contacts">{alert.emergencyPhones.map((phone, index) => <a key={`${alert.id}-${index}`} className="outline-button" href={`tel:${phone}`}>Call emergency contact {index + 1}</a>)}</div><small className="sos-alert-status">{alert.deliveryStatus}</small></article>)}</> : <p>SOS alert details and exact customer coordinates are available to Super Admins only. This demo does not dispatch emergency calls.</p>}</section>}
     {(activeTab === "Profile details" || activeTab === "Profile") && (
       <ProfileAndSettingsPanel
         role="Company"
@@ -22597,6 +22687,15 @@ function CompanyPortal({
     )}
     {activeTab === "Settings" && (
       <>
+        {accessLevel === "Super Admin" && (
+          <CompanyEmergencyNumbersManager
+            accessLevel={accessLevel}
+            showNotice={showNotice}
+            onConfigUpdated={(cfg) => {
+              window.dispatchEvent(new CustomEvent("neighborly-support-config-updated", { detail: cfg }));
+            }}
+          />
+        )}
         <CompanyCustomerCareManager
           accessLevel={accessLevel}
           showNotice={showNotice}
@@ -22885,6 +22984,569 @@ function CompanyPortal({
   </div>;
 }
 
+
+function CompanyEmergencyNumbersManager({
+  accessLevel,
+  showNotice,
+  onConfigUpdated,
+  onClose,
+}: {
+  accessLevel: CompanyAccessLevel;
+  showNotice: (msg: string) => void;
+  onConfigUpdated?: (config: SupportConfig) => void;
+  onClose?: () => void;
+}) {
+  const isSuperAdmin = accessLevel === "Super Admin";
+  const [support, setSupport] = useState<SupportConfig>(defaultSupportConfig);
+  const [emergencyList, setEmergencyList] = useState<EmergencyNumberItem[]>(defaultEmergencyNumbers);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [savedSuccess, setSavedSuccess] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  const [newItem, setNewItem] = useState<EmergencyNumberItem>({
+    id: "",
+    title: "",
+    displayNumber: "",
+    dialNumber: "",
+    icon: "🚨",
+    active: true,
+    category: "general",
+  });
+
+  const availableIcons = ["🚔", "🚑", "🚒", "💬", "🛡️", "⚠️", "🚨", "📞", "🏥", "👮", "⚡", "💧", "🆘", "👨‍⚕️"];
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/support-config", { cache: "no-store" })
+      .then(async (res) => {
+        if (!res.ok) throw new Error("Could not load support configuration.");
+        return (await res.json()) as { config?: SupportConfig };
+      })
+      .then((data) => {
+        if (!cancelled && data.config) {
+          setSupport(data.config);
+          setEmergencyList(
+            Array.isArray(data.config.emergencyNumbers) && data.config.emergencyNumbers.length > 0
+              ? data.config.emergencyNumbers
+              : defaultEmergencyNumbers
+          );
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err instanceof Error ? err.message : "Error loading emergency numbers");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleUpdateItem = (index: number, patch: Partial<EmergencyNumberItem>) => {
+    setEmergencyList((prev) => prev.map((item, i) => (i === index ? { ...item, ...patch } : item)));
+  };
+
+  const handleRemoveItem = (index: number) => {
+    const item = emergencyList[index];
+    if (window.confirm(`Remove "${item.title}" from the emergency directory?`)) {
+      setEmergencyList((prev) => prev.filter((_, i) => i !== index));
+    }
+  };
+
+  const handleAddNewItem = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newItem.title.trim() || !newItem.dialNumber.trim()) {
+      setError("Please specify both service title and phone number.");
+      return;
+    }
+    const created: EmergencyNumberItem = {
+      ...newItem,
+      id: `em-${Date.now()}`,
+      title: newItem.title.trim(),
+      displayNumber: newItem.displayNumber.trim() || `Dial ${newItem.dialNumber.trim()}`,
+      dialNumber: newItem.dialNumber.trim(),
+    };
+    setEmergencyList((prev) => [...prev, created]);
+    setShowAddModal(false);
+    setNewItem({
+      id: "",
+      title: "",
+      displayNumber: "",
+      dialNumber: "",
+      icon: "🚨",
+      active: true,
+      category: "general",
+    });
+  };
+
+  const handleResetDefaults = () => {
+    if (window.confirm("Reset all emergency contacts to official Hosur City emergency directory defaults?")) {
+      setEmergencyList([...defaultEmergencyNumbers]);
+    }
+  };
+
+  const handleSave = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!isSuperAdmin) {
+      setError("Super Admin access is required to modify emergency numbers.");
+      return;
+    }
+    setSaving(true);
+    setError("");
+    setSavedSuccess(false);
+
+    try {
+      const res = await fetch("/api/company/support-config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          ...support,
+          emergencyNumbers: emergencyList,
+        }),
+      });
+      const data = (await res.json()) as { config?: SupportConfig; error?: string };
+      if (!res.ok || !data.config) {
+        throw new Error(data.error || "Failed to update emergency numbers");
+      }
+      setSupport(data.config);
+      setEmergencyList(data.config.emergencyNumbers || emergencyList);
+      setSavedSuccess(true);
+      showNotice("✓ Emergency directory numbers saved & updated across Bizearch Hosur!");
+      onConfigUpdated?.(data.config);
+      window.dispatchEvent(new CustomEvent("neighborly-support-config-updated", { detail: data.config }));
+      window.setTimeout(() => setSavedSuccess(false), 4000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update emergency numbers");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="settings-section-card" style={{ marginBottom: "20px", border: "1.5px solid #fecaca", background: "#ffffff", borderRadius: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+      {/* Header */}
+      <div className="settings-card-header" style={{ padding: "16px 20px", borderBottom: "1px solid #fee2e2", background: "#fff5f5" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
+          <div>
+            <h3 style={{ color: "#991b1b", margin: "0 0 4px", display: "flex", alignItems: "center", gap: "8px", fontSize: "16px" }}>
+              <span>🚨</span> Hosur City Emergency &amp; Support Directory Management
+            </h3>
+            <p style={{ margin: 0, fontSize: "13px", color: "#7f1d1d" }}>
+              Configure public emergency numbers shown in the Hosur directory, direct dialers, and emergency response cards.
+            </p>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span
+              style={{
+                fontSize: "11px",
+                fontWeight: 700,
+                padding: "3px 8px",
+                borderRadius: "6px",
+                background: isSuperAdmin ? "#fef2f2" : "#f1f5f9",
+                color: isSuperAdmin ? "#b91c1c" : "#64748b",
+                border: `1px solid ${isSuperAdmin ? "#fca5a5" : "#cbd5e1"}`,
+              }}
+            >
+              {isSuperAdmin ? "SUPER ADMIN PRIVILEGE" : "ADMIN (VIEW ONLY)"}
+            </span>
+            {onClose && (
+              <button
+                type="button"
+                onClick={onClose}
+                style={{ background: "transparent", border: "none", fontSize: "18px", cursor: "pointer", color: "#64748b" }}
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {loading ? (
+        <p style={{ padding: "20px", color: "#64748b", margin: 0 }}>Loading emergency numbers...</p>
+      ) : (
+        <div style={{ padding: "16px 20px" }}>
+          {error && <p className="form-error" style={{ color: "#dc2626", marginBottom: "12px" }}>⚠️ {error}</p>}
+          {savedSuccess && (
+            <p style={{ color: "#16a34a", fontWeight: 700, marginBottom: "12px", background: "#f0fdf4", padding: "8px 12px", borderRadius: "6px", border: "1px solid #bbf7d0" }}>
+              ✓ Saved successfully! Activity log has recorded this change and all customer portals are refreshed in real time.
+            </p>
+          )}
+
+          {/* Action Toolbar */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px", marginBottom: "16px" }}>
+            <div style={{ fontSize: "12.5px", fontWeight: 700, color: "#334155" }}>
+              Configured Contacts ({emergencyList.filter((x) => x.active).length} Active · {emergencyList.length} Total)
+            </div>
+            {isSuperAdmin && (
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(true)}
+                  style={{
+                    background: "#ffffff",
+                    border: "1px solid #cbd5e1",
+                    borderRadius: "6px",
+                    padding: "6px 12px",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    color: "#0f766e",
+                    cursor: "pointer",
+                  }}
+                >
+                  + Add Emergency Number
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResetDefaults}
+                  style={{
+                    background: "#ffffff",
+                    border: "1px solid #cbd5e1",
+                    borderRadius: "6px",
+                    padding: "6px 12px",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    color: "#64748b",
+                    cursor: "pointer",
+                  }}
+                >
+                  ↺ Reset Defaults
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Emergency Cards Editor List */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "20px" }}>
+            {emergencyList.map((item, index) => (
+              <div
+                key={item.id || index}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "auto 1fr 1fr 1fr auto auto",
+                  gap: "10px",
+                  alignItems: "center",
+                  background: item.active ? "#ffffff" : "#f8fafc",
+                  border: `1px solid ${item.active ? "#e2e8f0" : "#cbd5e1"}`,
+                  borderRadius: "8px",
+                  padding: "10px 14px",
+                  opacity: item.active ? 1 : 0.6,
+                }}
+              >
+                {/* Icon Selector */}
+                {isSuperAdmin ? (
+                  <select
+                    value={item.icon}
+                    onChange={(e) => handleUpdateItem(index, { icon: e.target.value })}
+                    style={{ fontSize: "18px", padding: "4px", borderRadius: "6px", border: "1px solid #cbd5e1", background: "#fff", cursor: "pointer" }}
+                  >
+                    {availableIcons.map((ic) => (
+                      <option key={ic} value={ic}>{ic}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <span style={{ fontSize: "20px" }}>{item.icon}</span>
+                )}
+
+                {/* Title */}
+                <div>
+                  <small style={{ display: "block", fontSize: "10.5px", color: "#64748b", fontWeight: 700, marginBottom: "2px" }}>
+                    SERVICE NAME
+                  </small>
+                  {isSuperAdmin ? (
+                    <input
+                      type="text"
+                      value={item.title}
+                      onChange={(e) => handleUpdateItem(index, { title: e.target.value })}
+                      placeholder="e.g. Police Emergency"
+                      style={{ width: "100%", padding: "6px 8px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px", fontWeight: 700 }}
+                    />
+                  ) : (
+                    <strong style={{ fontSize: "13px", color: "#1e293b" }}>{item.title}</strong>
+                  )}
+                </div>
+
+                {/* Display Number */}
+                <div>
+                  <small style={{ display: "block", fontSize: "10.5px", color: "#64748b", fontWeight: 700, marginBottom: "2px" }}>
+                    DISPLAY TEXT
+                  </small>
+                  {isSuperAdmin ? (
+                    <input
+                      type="text"
+                      value={item.displayNumber}
+                      onChange={(e) => handleUpdateItem(index, { displayNumber: e.target.value })}
+                      placeholder="e.g. Dial 100 / 112"
+                      style={{ width: "100%", padding: "6px 8px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
+                    />
+                  ) : (
+                    <span style={{ fontSize: "13px", color: "#334155" }}>{item.displayNumber}</span>
+                  )}
+                </div>
+
+                {/* Dial Number */}
+                <div>
+                  <small style={{ display: "block", fontSize: "10.5px", color: "#64748b", fontWeight: 700, marginBottom: "2px" }}>
+                    DIRECT DIAL TARGET
+                  </small>
+                  {isSuperAdmin ? (
+                    <input
+                      type="text"
+                      value={item.dialNumber}
+                      onChange={(e) => handleUpdateItem(index, { dialNumber: e.target.value })}
+                      placeholder="e.g. 100"
+                      style={{ width: "100%", padding: "6px 8px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px", fontFamily: "monospace" }}
+                    />
+                  ) : (
+                    <span style={{ fontSize: "13px", fontFamily: "monospace", color: "#0f766e" }}>{item.dialNumber}</span>
+                  )}
+                </div>
+
+                {/* Active Toggle */}
+                <div style={{ textAlign: "center" }}>
+                  <small style={{ display: "block", fontSize: "10.5px", color: "#64748b", fontWeight: 700, marginBottom: "2px" }}>
+                    STATUS
+                  </small>
+                  {isSuperAdmin ? (
+                    <label style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "11px", cursor: "pointer", fontWeight: 600 }}>
+                      <input
+                        type="checkbox"
+                        checked={item.active !== false}
+                        onChange={(e) => handleUpdateItem(index, { active: e.target.checked })}
+                      />
+                      {item.active !== false ? "Visible" : "Hidden"}
+                    </label>
+                  ) : (
+                    <span style={{ fontSize: "11px", color: item.active !== false ? "#16a34a" : "#94a3b8", fontWeight: 700 }}>
+                      {item.active !== false ? "● Active" : "○ Hidden"}
+                    </span>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                  <a
+                    href={`tel:${item.dialNumber}`}
+                    title="Test Call"
+                    style={{
+                      background: "#f0fdf4",
+                      border: "1px solid #bbf7d0",
+                      color: "#166534",
+                      borderRadius: "6px",
+                      padding: "4px 8px",
+                      fontSize: "11px",
+                      textDecoration: "none",
+                      fontWeight: 700,
+                    }}
+                  >
+                    📞 Call
+                  </a>
+                  {isSuperAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveItem(index)}
+                      title="Remove Contact"
+                      style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626", borderRadius: "6px", padding: "4px 8px", fontSize: "11px", cursor: "pointer" }}
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Live Preview Box */}
+          <div style={{ background: "#f8fafc", border: "1px dashed #cbd5e1", borderRadius: "8px", padding: "14px 16px", marginBottom: "20px" }}>
+            <div style={{ fontSize: "11.5px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", marginBottom: "8px" }}>
+              👁️ Live Directory Preview (How Hosur Citizens See It):
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "10px" }}>
+              {emergencyList.filter((x) => x.active !== false).map((item) => {
+                const isHelpDesk = item.id === "helpdesk" || item.category === "helpdesk";
+                const isFire = item.id === "fire" || item.category === "fire";
+                const isDisaster = item.id === "disaster" || item.category === "general";
+                const bg = isHelpDesk ? "#f0fdf4" : isFire ? "#fffbeb" : isDisaster ? "#eff6ff" : "#fef2f2";
+                const border = isHelpDesk ? "#bbf7d0" : isFire ? "#fde68a" : isDisaster ? "#bfdbfe" : "#fecaca";
+                const color = isHelpDesk ? "#166534" : isFire ? "#92400e" : isDisaster ? "#1e40af" : "#991b1b";
+                return (
+                  <div key={item.id} style={{ background: bg, border: `1px solid ${border}`, borderRadius: "8px", padding: "10px 14px", color }}>
+                    <strong style={{ display: "block", fontSize: "12px" }}>{item.icon} {item.title}</strong>
+                    <span style={{ fontSize: "14px", fontWeight: 800 }}>{item.displayNumber}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Save Bar */}
+          {isSuperAdmin && (
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px", borderTop: "1px solid #fee2e2", paddingTop: "14px" }}>
+              <div style={{ fontSize: "11.5px", color: "#64748b" }}>
+                {support.updatedAt && (
+                  <span>Directory last updated by <strong>{support.updatedBy || "Super Admin"}</strong> on {new Date(support.updatedAt).toLocaleString()}</span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={saving}
+                style={{
+                  background: "#b91c1c",
+                  color: "#ffffff",
+                  border: "none",
+                  borderRadius: "7px",
+                  padding: "9px 20px",
+                  fontSize: "13px",
+                  fontWeight: 700,
+                  cursor: saving ? "not-allowed" : "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  boxShadow: "0 2px 4px rgba(185, 28, 28, 0.2)",
+                }}
+              >
+                <span>💾</span>
+                <span>{saving ? "Saving Changes..." : "Save Emergency Numbers"}</span>
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Add New Emergency Contact Modal */}
+      {showAddModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 10005,
+            padding: "16px",
+          }}
+          onClick={() => setShowAddModal(false)}
+        >
+          <div
+            style={{
+              background: "#ffffff",
+              borderRadius: "12px",
+              padding: "20px 24px",
+              maxWidth: "460px",
+              width: "100%",
+              boxShadow: "0 20px 25px -5px rgba(0,0,0,0.2)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <h3 style={{ margin: 0, fontSize: "16px", color: "#1e293b", display: "flex", alignItems: "center", gap: "8px" }}>
+                <span>🚨</span> Add Emergency Contact
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowAddModal(false)}
+                style={{ background: "transparent", border: "none", fontSize: "18px", cursor: "pointer", color: "#64748b" }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleAddNewItem} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#334155", marginBottom: "4px" }}>
+                  Icon
+                </label>
+                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                  {availableIcons.map((ic) => (
+                    <button
+                      key={ic}
+                      type="button"
+                      onClick={() => setNewItem({ ...newItem, icon: ic })}
+                      style={{
+                        fontSize: "18px",
+                        padding: "6px 8px",
+                        border: newItem.icon === ic ? "2px solid #b91c1c" : "1px solid #cbd5e1",
+                        borderRadius: "6px",
+                        background: newItem.icon === ic ? "#fef2f2" : "#ffffff",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {ic}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#334155", marginBottom: "4px" }}>
+                  Service Title
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newItem.title}
+                  onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
+                  placeholder="e.g. Traffic Police Helpline"
+                  style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#334155", marginBottom: "4px" }}>
+                  Display Text
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newItem.displayNumber}
+                  onChange={(e) => setNewItem({ ...newItem, displayNumber: e.target.value })}
+                  placeholder="e.g. Dial 103 / 04344 262100"
+                  style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#334155", marginBottom: "4px" }}>
+                  Direct Dial Target (tel: URL)
+                </label>
+                <input
+                  type="tel"
+                  required
+                  value={newItem.dialNumber}
+                  onChange={(e) => setNewItem({ ...newItem, dialNumber: e.target.value })}
+                  placeholder="e.g. 103 or 04344262100"
+                  style={{ width: "100%", padding: "8px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "13px", fontFamily: "monospace" }}
+                />
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "8px" }}>
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  style={{ background: "#f1f5f9", border: "1px solid #cbd5e1", borderRadius: "6px", padding: "8px 14px", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  style={{ background: "#b91c1c", color: "#fff", border: "none", borderRadius: "6px", padding: "8px 16px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}
+                >
+                  Add to Directory
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function CompanyCustomerCareManager({
   accessLevel,

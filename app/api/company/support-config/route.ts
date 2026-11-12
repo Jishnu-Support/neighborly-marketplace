@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentSession } from "@/app/lib/auth";
-import { readSupportConfig, updateSupportConfig } from "@/app/lib/support-config";
+import { readSupportConfig, updateSupportConfig, type EmergencyNumberItem } from "@/app/lib/support-config";
 
 export async function GET() {
   const session = await getCurrentSession();
@@ -37,23 +37,50 @@ export async function POST(request: Request) {
       hours?: string;
       label?: string;
       whatsapp?: string;
+      emergencyNumbers?: EmergencyNumberItem[];
     };
 
-    if (!body.phone || typeof body.phone !== "string" || body.phone.trim().length < 6) {
+    // If emergency numbers are being modified, require Super Admin access
+    if (body.emergencyNumbers !== undefined && session.accessLevel !== "Super Admin") {
       return NextResponse.json(
-        { error: "Enter a valid customer care phone number." },
-        { status: 400 }
+        { error: "Super Admin privileges are required to update emergency numbers." },
+        { status: 403 }
       );
     }
 
+    const current = await readSupportConfig();
+
+    const patch: Parameters<typeof updateSupportConfig>[0] = {};
+
+    if (body.phone && typeof body.phone === "string" && body.phone.trim().length >= 6) {
+      patch.phone = body.phone.trim();
+    }
+    if (body.email !== undefined) {
+      patch.email = body.email.trim();
+    }
+    if (body.hours !== undefined) {
+      patch.hours = body.hours.trim();
+    }
+    if (body.label !== undefined) {
+      patch.label = body.label.trim();
+    }
+    if (body.whatsapp !== undefined) {
+      patch.whatsapp = body.whatsapp.trim();
+    }
+    if (body.emergencyNumbers !== undefined && Array.isArray(body.emergencyNumbers)) {
+      patch.emergencyNumbers = body.emergencyNumbers.map((item, idx) => ({
+        id: item.id || `em-${idx}`,
+        title: item.title?.trim() || "Emergency Helpline",
+        displayNumber: item.displayNumber?.trim() || item.dialNumber?.trim() || "112",
+        dialNumber: item.dialNumber?.trim() || "112",
+        icon: item.icon?.trim() || "🚨",
+        active: item.active !== false,
+        category: item.category,
+      }));
+    }
+
     const updated = await updateSupportConfig(
-      {
-        phone: body.phone.trim(),
-        email: body.email?.trim() || "support@bizearch.in",
-        hours: body.hours?.trim() || "8:00 AM - 9:00 PM (All Days)",
-        label: body.label?.trim() || "Bizearch Customer Care (Hosur)",
-        whatsapp: body.whatsapp?.trim() || body.phone.trim(),
-      },
+      patch,
       session.identity,
       session.accessLevel
     );
