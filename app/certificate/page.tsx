@@ -81,17 +81,28 @@ function CertificatePageInner() {
             list.find((b) => b.name?.toLowerCase().includes(businessParam.toLowerCase())) ||
             null;
         }
-        // If only one business, default to it
+
+        // If not found in API list but businessParam was provided via URL query params, synthesize from params
+        if (!found && businessParam) {
+          found = {
+            name: businessParam,
+            category: searchParams.get("category") || "Retail & Business",
+            address: searchParams.get("address") || searchParams.get("locality") || "Hosur, Tamil Nadu",
+            phone: searchParams.get("phone") || "",
+            gstin: searchParams.get("gstin") || "",
+            assignedAgentName: agentParam || "JIT",
+            createdAt: searchParams.get("date") || undefined,
+          };
+        }
+
+        // If only one business in database, default to it
         if (!found && list.length === 1) {
+          found = list[0];
+        } else if (!found && list.length > 0) {
           found = list[0];
         }
 
-        if (found) {
-          setSelectedBusiness(found);
-        } else if (list.length > 0) {
-          // Default to first if no specific business selected
-          setSelectedBusiness(list[0]);
-        }
+        setSelectedBusiness(found);
       })
       .catch(() => {})
       .finally(() => setLoading(false));

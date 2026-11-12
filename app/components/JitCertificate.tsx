@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
-import Link from "next/link";
+import React from "react";
 
 export interface JitCertificateData {
   businessName: string;
@@ -18,17 +17,17 @@ export interface JitCertificateData {
   profileUrl?: string;
 }
 
-// No hardcoded sample data — certificate always uses real business data from the platform
 export const DEFAULT_SAMPLE_CERTIFICATE: JitCertificateData = {
-  businessName: "",
-  category: "",
-  address: "",
-  phone: "",
-  gstin: "",
-  certificateId: "",
-  issueDate: "",
+  businessName: "SRI BALAJI SUPERMARKET",
+  category: "Retail & Grocery Store",
+  locality: "Hosur, Tamil Nadu",
+  address: "Hosur, Tamil Nadu",
+  phone: "+91 99440 12345",
+  gstin: "33AABCT8921M1Z4",
+  certificateId: "BZR-JIT-2026-00483",
+  issueDate: "12 November 2026",
   validThrough: "31 March 2027",
-  assignedAgentName: "JIT Operations Wing",
+  assignedAgentName: "JIT",
   verifiedBy: "JIT On-Ground Verification Unit",
   profileUrl: "https://bizearch.in",
 };
@@ -40,716 +39,826 @@ export function JitCertificate({
   data?: JitCertificateData;
   className?: string;
 }) {
+  const businessName = data.businessName || "Registered Business";
+  const category = data.category || "Verified Local Store";
+  const address = data.address || data.locality || "Hosur, Tamil Nadu";
+  const phone = data.phone || "+91 90430 22219";
+  const issueDate = data.issueDate || "12 November 2026";
+  const validThrough = data.validThrough || "31 March 2027";
+
+  // Derive cert number if not provided
   const num = Math.abs(
-    (data.businessName || "").split("").reduce((acc, c) => ((acc << 5) - acc + c.charCodeAt(0)) | 0, 17)
+    businessName.split("").reduce((acc, c) => ((acc << 5) - acc + c.charCodeAt(0)) | 0, 17)
   );
   const certId =
     data.certificateId ||
-    `BZR-JIT-TN-2026-${1000 + (num % 9000)}`;
+    `BZR-JIT-2026-${String(100 + (num % 9000)).padStart(5, "0")}`;
+
+  const agentName = data.assignedAgentName || "JIT";
 
   return (
-    <div className={`jit-cert-outer-wrapper ${className}`}>
-      {/* A4 Landscape Document Container (297mm x 210mm ratio = 1.414) */}
-      <div className="jit-cert-frame">
-        {/* Guilloche Corner Ornaments (SVG) */}
-        <div className="cert-corner cert-corner-tl">
-          <svg viewBox="0 0 100 100" className="corner-svg">
-            <path d="M 0 0 L 100 0 C 45 0 0 45 0 100 Z" fill="#b48324" opacity="0.15" />
-            <path d="M 5 5 L 85 5 C 40 5 5 40 5 85 Z" fill="none" stroke="#b48324" strokeWidth="1.5" />
-            <circle cx="28" cy="28" r="8" fill="none" stroke="#d4af37" strokeWidth="1.5" />
-            <circle cx="28" cy="28" r="4" fill="#b48324" />
-            <path d="M 5 5 L 45 45" stroke="#b48324" strokeWidth="1" />
+    <div className={`jit-cert-root ${className}`}>
+      <div className="jit-cert-card">
+        {/* Subtle Guilloche Wave Flourishes (Left and Right) */}
+        <div className="wave-flourish wave-left" aria-hidden="true">
+          <svg viewBox="0 0 300 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M-50,50 Q120,200 40,350 T100,550" stroke="#d4af37" strokeWidth="0.8" opacity="0.35" />
+            <path d="M-40,80 Q130,220 50,370 T110,570" stroke="#d4af37" strokeWidth="0.8" opacity="0.3" />
+            <path d="M-30,110 Q140,240 60,390 T120,590" stroke="#d4af37" strokeWidth="0.6" opacity="0.25" />
+            <path d="M-20,140 Q150,260 70,410 T130,610" stroke="#d4af37" strokeWidth="0.5" opacity="0.2" />
+            <path d="M-10,170 Q160,280 80,430 T140,630" stroke="#d4af37" strokeWidth="0.4" opacity="0.15" />
           </svg>
         </div>
-        <div className="cert-corner cert-corner-tr">
-          <svg viewBox="0 0 100 100" className="corner-svg">
-            <path d="M 100 0 L 0 0 C 55 0 100 45 100 100 Z" fill="#b48324" opacity="0.15" />
-            <path d="M 95 5 L 15 5 C 60 5 95 40 95 85 Z" fill="none" stroke="#b48324" strokeWidth="1.5" />
-            <circle cx="72" cy="28" r="8" fill="none" stroke="#d4af37" strokeWidth="1.5" />
-            <circle cx="72" cy="28" r="4" fill="#b48324" />
-            <path d="M 95 5 L 55 45" stroke="#b48324" strokeWidth="1" />
-          </svg>
-        </div>
-        <div className="cert-corner cert-corner-bl">
-          <svg viewBox="0 0 100 100" className="corner-svg">
-            <path d="M 0 100 L 100 100 C 45 100 0 55 0 0 Z" fill="#b48324" opacity="0.15" />
-            <path d="M 5 95 L 85 95 C 40 95 5 60 5 15 Z" fill="none" stroke="#b48324" strokeWidth="1.5" />
-            <circle cx="28" cy="72" r="8" fill="none" stroke="#d4af37" strokeWidth="1.5" />
-            <circle cx="28" cy="72" r="4" fill="#b48324" />
-            <path d="M 5 95 L 45 55" stroke="#b48324" strokeWidth="1" />
-          </svg>
-        </div>
-        <div className="cert-corner cert-corner-br">
-          <svg viewBox="0 0 100 100" className="corner-svg">
-            <path d="M 100 100 L 0 100 C 55 100 100 55 100 0 Z" fill="#b48324" opacity="0.15" />
-            <path d="M 95 95 L 15 95 C 60 95 95 60 95 15 Z" fill="none" stroke="#b48324" strokeWidth="1.5" />
-            <circle cx="72" cy="72" r="8" fill="none" stroke="#d4af37" strokeWidth="1.5" />
-            <circle cx="72" cy="72" r="4" fill="#b48324" />
-            <path d="M 95 95 L 55 55" stroke="#b48324" strokeWidth="1" />
+        <div className="wave-flourish wave-right" aria-hidden="true">
+          <svg viewBox="0 0 300 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M350,50 Q180,200 260,350 T200,550" stroke="#d4af37" strokeWidth="0.8" opacity="0.35" />
+            <path d="M340,80 Q170,220 250,370 T190,570" stroke="#d4af37" strokeWidth="0.8" opacity="0.3" />
+            <path d="M330,110 Q160,240 240,390 T180,590" stroke="#d4af37" strokeWidth="0.6" opacity="0.25" />
+            <path d="M320,140 Q150,260 230,410 T170,610" stroke="#d4af37" strokeWidth="0.5" opacity="0.2" />
+            <path d="M310,170 Q140,280 220,430 T160,630" stroke="#d4af37" strokeWidth="0.4" opacity="0.15" />
           </svg>
         </div>
 
-        {/* Security Watermark Background Emblem */}
-        <div className="cert-watermark">
-          <svg viewBox="0 0 400 400" className="watermark-svg">
-            <circle cx="200" cy="200" r="175" fill="none" stroke="#b48324" strokeWidth="3" opacity="0.05" />
-            <circle cx="200" cy="200" r="155" fill="none" stroke="#b48324" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.07" />
-            <circle cx="200" cy="200" r="130" fill="none" stroke="#b48324" strokeWidth="2" opacity="0.05" />
-            <path d="M 200 80 L 230 170 L 320 170 L 250 225 L 275 315 L 200 260 L 125 315 L 150 225 L 80 170 L 170 170 Z" fill="#b48324" opacity="0.03" />
-            <text x="200" y="205" textAnchor="middle" fontSize="34" fontWeight="900" fill="#b48324" opacity="0.06" letterSpacing="4">
-              BIZEARCH
-            </text>
-            <text x="200" y="235" textAnchor="middle" fontSize="16" fontWeight="700" fill="#b48324" opacity="0.06" letterSpacing="2">
-              JIT VERIFIED
-            </text>
-          </svg>
-        </div>
-
-        {/* Inner Border System */}
-        <div className="jit-cert-inner-content">
-          {/* HEADER STRIP */}
-          <div className="cert-header-strip">
-            <div className="cert-brand-block">
-              <img
-                src="/bizearch-official-logo.png"
-                alt="Bizearch.in - Find • Connect • Grow"
-                style={{ height: "52px", width: "auto", objectFit: "contain", display: "block" }}
-              />
-            </div>
-
-            <div className="cert-crest-center">
-              <div className="cert-shield-crest">
-                <span>🛡️</span>
-              </div>
-              <span className="cert-registry-tag">OFFICIAL REGISTRATION REGISTRY</span>
-            </div>
-
-            <div className="cert-meta-right">
-              <div className="cert-badge-pill">
-                <span className="live-dot">●</span> JIT ON-GROUND VERIFIED
-              </div>
-              <div className="cert-id-tag">
-                Certificate No: <strong>{certId}</strong>
-              </div>
-            </div>
-          </div>
-
-          {/* MAIN TITLES */}
-          <div className="cert-title-section">
-            <div className="cert-eyebrow">
-              COMMERCIAL AUTHENTICITY &amp; NEIGHBORHOOD TRUST ACCREDITATION
-            </div>
-            <h1 className="cert-main-title">
-              Certificate of Verification
-            </h1>
-            <div className="cert-title-rule">
-              <span className="rule-diamond">◆</span>
-            </div>
-          </div>
-
-          {/* PRESENTATION PHRASE */}
-          <div className="cert-recipient-section">
-            <p className="cert-intro-phrase">
-              This is to officially certify and accredit that the local business establishment
-            </p>
-
-            <h2 className="cert-business-name">
-              {data.businessName}
-            </h2>
-
-            {/* Address & Category metadata */}
-            <div className="cert-business-meta">
-              {data.category && (
-                <span className="meta-item">
-                  <strong>Sector:</strong> {data.category}
-                </span>
-              )}
-              {data.address && (
-                <>
-                  <span className="meta-sep">•</span>
-                  <span className="meta-item">
-                    <strong>Premises:</strong> {data.address}
-                  </span>
-                </>
-              )}
-              {data.gstin && (
-                <>
-                  <span className="meta-sep">•</span>
-                  <span className="meta-item">
-                    <strong>GSTIN / Tax ID:</strong> {data.gstin}
-                  </span>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* LEGAL CITATION / DECLARATION */}
-          <div className="cert-statement-box">
-            <p className="cert-statement-text">
-              Has successfully undergone comprehensive on-ground physical inspection, doorstep identity authentication,
-              and catalog verification conducted by certified <strong>JIT Field Operations Personnel</strong>.
-              Having met all criteria for authentic neighborhood commerce, customer trust, and verified local operation,
-              the enterprise is officially designated as a <strong>JIT Verified Store</strong> on the Bizearch directory network.
-            </p>
-          </div>
-
-          {/* FOOTER: QR + 3D GOLD SEAL + SIGNATURES */}
-          <div className="cert-footer-row">
-            {/* Left: Scannable QR Code */}
-            <div className="cert-qr-block">
-              <div className="qr-wrapper">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+        {/* Outer and Inner Border Frame */}
+        <div className="cert-border-outer">
+          <div className="cert-border-inner">
+            {/* 1. TOP HEADER */}
+            <div className="cert-top-header">
+              <div className="brand-logo-area">
                 <img
-                  src="/bizearch-qr.png"
-                  alt="Scan to Verify Certificate"
-                  className="cert-qr-img"
+                  src="/bizearch-official-logo.png"
+                  alt="Bizearch.in - Find • Connect • Grow"
+                  className="brand-logo-img"
                 />
               </div>
-              <div className="qr-caption">
-                <span className="qr-scan-title">SCAN TO VERIFY LIVE</span>
-                <span className="qr-url">bizearch.in/verify</span>
+
+              <div className="registry-badge-area">
+                <div className="verified-pill-tag">
+                  <span className="check-icon">✔</span>
+                  <span className="pill-text">BIZEARCH VERIFIED BUSINESS</span>
+                </div>
+                <div className="registry-subtext">
+                  OFFICIAL REGISTRY OF VERIFIED BUSINESSES
+                </div>
+                <div className="cert-number-tag">
+                  CERTIFICATE NO: <strong>{certId}</strong>
+                </div>
               </div>
             </div>
 
-            {/* Center: Metallic Gold Medallion Ribbon Seal */}
-            <div className="cert-seal-block">
-              <div className="gold-seal-medallion">
-                <div className="seal-outer-ring">
-                  <div className="seal-inner-circle">
-                    <div className="seal-star">★ ★ ★</div>
-                    <div className="seal-core-text">JIT</div>
-                    <div className="seal-sub-text">VERIFIED</div>
-                    <div className="seal-year">2026 – 2027</div>
+            {/* 2. ACCREDITATION TITLE */}
+            <div className="accreditation-header-block">
+              <div className="super-header">
+                B I Z E A R C H &nbsp; B U S I N E S S &nbsp; A C C R E D I T A T I O N
+              </div>
+              <h1 className="main-cert-title">
+                CERTIFICATE OF VERIFICATION
+              </h1>
+              <div className="diamonds-row">
+                <span>◆</span>
+                <span>◆</span>
+                <span>◆</span>
+              </div>
+              <div className="certify-intro-phrase">
+                This is to officially certify that
+              </div>
+            </div>
+
+            {/* 3. RECIPIENT BUSINESS NAME WITH LAUREL WREATH */}
+            <div className="recipient-showcase-row">
+              {/* Left Laurel */}
+              <div className="laurel-branch laurel-left" aria-hidden="true">
+                <svg viewBox="0 0 60 120" fill="#d4af37">
+                  <path d="M50,110 C45,90 35,60 10,20 C18,30 25,45 28,60 C32,80 38,100 50,110 Z" opacity="0.8" />
+                  <ellipse cx="14" cy="24" rx="8" ry="4" transform="rotate(-35 14 24)" />
+                  <ellipse cx="20" cy="38" rx="9" ry="4.5" transform="rotate(-25 20 38)" />
+                  <ellipse cx="26" cy="54" rx="10" ry="5" transform="rotate(-15 26 54)" />
+                  <ellipse cx="32" cy="72" rx="10.5" ry="5.2" transform="rotate(-5 32 72)" />
+                  <ellipse cx="38" cy="92" rx="11" ry="5.5" transform="rotate(5 38 92)" />
+                  <ellipse cx="28" cy="30" rx="7" ry="3.8" transform="rotate(25 28 30)" />
+                  <ellipse cx="35" cy="46" rx="8" ry="4.2" transform="rotate(35 35 46)" />
+                  <ellipse cx="42" cy="64" rx="9" ry="4.5" transform="rotate(40 42 64)" />
+                  <ellipse cx="48" cy="84" rx="9.5" ry="4.8" transform="rotate(45 48 84)" />
+                </svg>
+              </div>
+
+              {/* Center Business Content */}
+              <div className="recipient-content-center">
+                <h2 className="business-title">
+                  {businessName}
+                </h2>
+
+                {/* Details Pill (Store | Location | Phone) */}
+                <div className="business-details-pill">
+                  <span className="pill-item">
+                    <span className="pill-icon">🏪</span>
+                    <span>{category}</span>
+                  </span>
+                  <span className="pill-divider">|</span>
+                  <span className="pill-item">
+                    <span className="pill-icon">📍</span>
+                    <span>{address}</span>
+                  </span>
+                  <span className="pill-divider">|</span>
+                  <span className="pill-item">
+                    <span className="pill-icon">📞</span>
+                    <span>{phone}</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Right Laurel */}
+              <div className="laurel-branch laurel-right" aria-hidden="true">
+                <svg viewBox="0 0 60 120" fill="#d4af37">
+                  <path d="M10,110 C15,90 25,60 50,20 C42,30 35,45 32,60 C28,80 22,100 10,110 Z" opacity="0.8" />
+                  <ellipse cx="46" cy="24" rx="8" ry="4" transform="rotate(35 46 24)" />
+                  <ellipse cx="40" cy="38" rx="9" ry="4.5" transform="rotate(25 40 38)" />
+                  <ellipse cx="34" cy="54" rx="10" ry="5" transform="rotate(15 34 54)" />
+                  <ellipse cx="28" cy="72" rx="10.5" ry="5.2" transform="rotate(5 28 72)" />
+                  <ellipse cx="22" cy="92" rx="11" ry="5.5" transform="rotate(-5 22 92)" />
+                  <ellipse cx="32" cy="30" rx="7" ry="3.8" transform="rotate(-25 32 30)" />
+                  <ellipse cx="25" cy="46" rx="8" ry="4.2" transform="rotate(-35 25 46)" />
+                  <ellipse cx="18" cy="64" rx="9" ry="4.5" transform="rotate(-40 18 64)" />
+                  <ellipse cx="12" cy="84" rx="9.5" ry="4.8" transform="rotate(-45 12 84)" />
+                </svg>
+              </div>
+            </div>
+
+            {/* 4. ATTESTATION CLAUSE & CENTER RIBBON */}
+            <div className="attestation-statement-section">
+              <p className="attest-text-p1">
+                Has successfully completed the <strong>Bizearch.in</strong> business verification process, including on-ground physical verification, business identity validation, and product/service assessment. This establishment is hereby recognized as a
+              </p>
+
+              {/* Center Ribbon Banner */}
+              <div className="ribbon-banner-wrap">
+                <div className="ribbon-banner">
+                  <span className="ribbon-check-badge">✔</span>
+                  <span className="ribbon-label">BIZEARCH VERIFIED BUSINESS</span>
+                </div>
+              </div>
+
+              <p className="attest-text-p2">
+                and is listed on the <strong>Bizearch.in</strong> directory platform.
+              </p>
+            </div>
+
+            {/* 5. 4-COLUMN AUDIT GRID */}
+            <div className="audit-specs-matrix">
+              <div className="matrix-col">
+                <div className="matrix-label">VERIFICATION TYPE</div>
+                <div className="matrix-val">On-Ground Physical Audit</div>
+              </div>
+              <div className="matrix-sep"></div>
+              <div className="matrix-col">
+                <div className="matrix-label">DATE OF VERIFICATION</div>
+                <div className="matrix-val">{issueDate}</div>
+              </div>
+              <div className="matrix-sep"></div>
+              <div className="matrix-col">
+                <div className="matrix-label">VALID THROUGH</div>
+                <div className="matrix-val">{validThrough}</div>
+              </div>
+              <div className="matrix-sep"></div>
+              <div className="matrix-col">
+                <div className="matrix-label">JURISDICTION</div>
+                <div className="matrix-val">Hosur Division, Tamil Nadu</div>
+              </div>
+            </div>
+
+            {/* 6. BOTTOM TRUST & SIGNATURE FOOTER */}
+            <div className="cert-bottom-footer">
+              {/* QR Code Left */}
+              <div className="footer-qr-container">
+                <div className="qr-image-frame">
+                  <img src="/bizearch-qr.png" alt="Scan QR Code" className="qr-image" />
+                </div>
+                <div className="qr-text-meta">
+                  <div className="qr-action-title">SCAN TO VERIFY</div>
+                  <div className="qr-action-desc">
+                    Scan this QR code to view the business profile and verification details on <strong>Bizearch.in</strong>
                   </div>
                 </div>
-                {/* Hanging Gold/Emerald Ribbons */}
-                <div className="seal-ribbon ribbon-left"></div>
-                <div className="seal-ribbon ribbon-right"></div>
               </div>
-            </div>
 
-            {/* Right: Dual Formal Signatures */}
-            <div className="cert-signatures-block">
-              <div className="sig-unit">
-                <div className="sig-line">
-                  <div className="sig-cursive-font">
-                    {data.assignedAgentName || "JIT Operations Wing"}
+              {/* Center Scalloped Gold Medallion Seal */}
+              <div className="footer-seal-container">
+                <div className="seal-laurel-wrap">
+                  {/* Left Seal Laurel */}
+                  <svg className="seal-laurel laurel-left-mini" viewBox="0 0 40 80" fill="#d4af37">
+                    <path d="M35,70 C30,55 20,40 5,15 C10,22 16,32 18,42 C20,55 25,65 35,70 Z" />
+                    <ellipse cx="8" cy="18" rx="6" ry="3" transform="rotate(-30 8 18)" />
+                    <ellipse cx="12" cy="30" rx="7" ry="3.5" transform="rotate(-20 12 30)" />
+                    <ellipse cx="17" cy="44" rx="7.5" ry="3.8" transform="rotate(-10 17 44)" />
+                    <ellipse cx="23" cy="58" rx="8" ry="4" transform="rotate(0 23 58)" />
+                  </svg>
+
+                  {/* Scalloped Gold Badge */}
+                  <div className="scalloped-seal">
+                    <div className="seal-pin-icon">📍</div>
+                    <div className="seal-text-title">BIZEARCH</div>
+                    <div className="seal-text-sub">VERIFIED</div>
+                    <div className="seal-text-desc">BUSINESS</div>
+                    <div className="seal-stars-row">★ ★ ★</div>
                   </div>
+
+                  {/* Right Seal Laurel */}
+                  <svg className="seal-laurel laurel-right-mini" viewBox="0 0 40 80" fill="#d4af37">
+                    <path d="M5,70 C10,55 20,40 35,15 C30,22 24,32 22,42 C20,55 15,65 5,70 Z" />
+                    <ellipse cx="32" cy="18" rx="6" ry="3" transform="rotate(30 32 18)" />
+                    <ellipse cx="28" cy="30" rx="7" ry="3.5" transform="rotate(20 28 30)" />
+                    <ellipse cx="23" cy="44" rx="7.5" ry="3.8" transform="rotate(10 23 44)" />
+                    <ellipse cx="17" cy="58" rx="8" ry="4" transform="rotate(0 17 58)" />
+                  </svg>
                 </div>
-                <div style={{ fontSize: "10.5px", fontWeight: 700, color: "#173824", letterSpacing: "0.3px", marginTop: "1px" }}>
-                  {data.assignedAgentName || "JIT Field Operations Officer"}
+                {/* Navy Ribbon Tails */}
+                <div className="seal-ribbon-tails">
+                  <div className="ribbon-tail tail-left"></div>
+                  <div className="ribbon-tail tail-right"></div>
                 </div>
-                <div className="sig-title">Head of Field Verification</div>
-                <div className="sig-org">JIT Operations Wing</div>
               </div>
 
-              <div className="sig-unit">
-                <div className="sig-line">
-                  <div className="sig-cursive-font">G. Venkatesan</div>
+              {/* Dual Signatures Right */}
+              <div className="footer-signatures-container">
+                {/* Agent Signature */}
+                <div className="signature-column">
+                  <div className="signature-cursive">
+                    {agentName}
+                  </div>
+                  <div className="signature-bar"></div>
+                  <div className="signer-name">{agentName}</div>
+                  <div className="signer-title">Agent</div>
+                  <div className="signer-org">Bizearch.in</div>
                 </div>
-                <div style={{ fontSize: "10.5px", fontWeight: 700, color: "#173824", letterSpacing: "0.3px", marginTop: "1px" }}>
-                  G. Venkatesan
+
+                {/* Director Signature */}
+                <div className="signature-column">
+                  <div className="signature-cursive">
+                    G. Venkatesan
+                  </div>
+                  <div className="signature-bar"></div>
+                  <div className="signer-name">G. Venkatesan</div>
+                  <div className="signer-title">Director – Trust &amp; Verification</div>
+                  <div className="signer-org">Bizearch.in</div>
                 </div>
-                <div className="sig-title">Director of Trust and Safety</div>
-                <div className="sig-org">Bizearch</div>
               </div>
             </div>
-          </div>
 
-          {/* BOTTOM AUDIT STRIP */}
-          <div className="cert-audit-strip">
-            <span>Issue Date: <strong>{data.issueDate || "November 2026"}</strong></span>
-            <span>•</span>
-            <span>Valid Through: <strong>{data.validThrough || "March 31, 2027"}</strong></span>
-            <span>•</span>
-            <span>Verification Authority: <strong>JIT Field Operations Unit (Hosur Division)</strong></span>
-            <span>•</span>
-            <span>Security Hash: <strong className="font-mono">{certId}</strong></span>
+            {/* 7. BOTTOM LINE CITATION */}
+            <div className="cert-bottom-citation-line">
+              <span className="line-text">
+                ISSUED BY JISHNU INFOTECH PRIVATE LIMITED &nbsp;|&nbsp; BIZEARCH.IN BUSINESS VERIFICATION PROGRAM
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* STYLES (Screen + Print) */}
       <style jsx>{`
-        .jit-cert-outer-wrapper {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          padding: 20px;
-          background: #2b332d;
-          min-height: 100%;
-          box-sizing: border-box;
-        }
-
-        .jit-cert-frame {
+        .jit-cert-root {
           width: 100%;
-          max-width: 1080px;
-          aspect-ratio: 1.414 / 1; /* Standard A4 Landscape */
-          min-height: 720px;
-          background: #fbf9f4;
-          background-image: 
-            radial-gradient(circle at 50% 50%, #ffffff 0%, #fbf9f4 80%, #f4eee1 100%);
-          border: 14px solid #1a3922;
-          box-shadow:
-            0 0 0 3px #d4af37,
-            0 0 0 6px #1a3922,
-            0 0 0 9px #e5c158,
-            0 24px 70px rgba(0, 0, 0, 0.55);
-          position: relative;
-          padding: 24px;
-          box-sizing: border-box;
-          color: #1a2f20;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-          overflow: hidden;
           display: flex;
-          flex-direction: column;
-        }
-
-        /* 4 Ornate Corners */
-        .cert-corner {
-          position: absolute;
-          width: 70px;
-          height: 70px;
-          z-index: 2;
-          pointer-events: none;
-        }
-        .cert-corner-tl { top: 8px; left: 8px; }
-        .cert-corner-tr { top: 8px; right: 8px; }
-        .cert-corner-bl { bottom: 8px; left: 8px; }
-        .cert-corner-br { bottom: 8px; right: 8px; }
-        .corner-svg { width: 100%; height: 100%; }
-
-        /* Security Watermark */
-        .cert-watermark {
-          position: absolute;
-          inset: 0;
-          display: flex;
-          align-items: center;
           justify-content: center;
+          align-items: center;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          background: transparent;
+        }
+
+        .jit-cert-card {
+          width: 1024px;
+          height: 712px;
+          background: #ffffff;
+          position: relative;
+          border-radius: 16px;
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+          overflow: hidden;
+          box-sizing: border-box;
+          padding: 10px;
+        }
+
+        /* Golden wave background accents */
+        .wave-flourish {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          width: 280px;
           pointer-events: none;
           z-index: 1;
         }
-        .watermark-svg {
-          width: 480px;
-          height: 480px;
+        .wave-left {
+          left: 0;
+        }
+        .wave-right {
+          right: 0;
         }
 
-        /* Inner Content Border */
-        .jit-cert-inner-content {
-          position: relative;
-          z-index: 3;
+        /* Concentric Borders */
+        .cert-border-outer {
+          width: 100%;
           height: 100%;
-          border: 2px solid #c9a44c;
-          padding: 22px 28px;
+          border: 3.5px solid #091a2b;
+          border-radius: 12px;
+          padding: 6px;
+          box-sizing: border-box;
+          position: relative;
+          z-index: 2;
+        }
+
+        .cert-border-inner {
+          width: 100%;
+          height: 100%;
+          border: 1.5px solid #d4af37;
+          border-radius: 8px;
+          padding: 16px 26px 14px;
           box-sizing: border-box;
           display: flex;
           flex-direction: column;
-          justifyContent: space-between;
-          background: rgba(255, 255, 255, 0.25);
-          backdrop-filter: blur(0.5px);
+          justify-content: space-between;
+          background: radial-gradient(circle at 50% 45%, #ffffff 0%, #fdfbf7 85%, #fcf9f2 100%);
         }
 
-        /* Header Strip */
-        .cert-header-strip {
+        /* 1. Header */
+        .cert-top-header {
           display: flex;
           justify-content: space-between;
-          align-items: center;
-          border-bottom: 1.5px solid #d8ba6d;
-          padding-bottom: 12px;
-        }
-        .cert-brand-block {
-          display: flex;
-          flex-direction: column;
-        }
-        .cert-logo-row {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        }
-        .cert-logo-icon {
-          color: #1a5632;
-          font-size: 22px;
-          font-weight: 900;
-        }
-        .cert-brand-text {
-          font-size: 21px;
-          font-weight: 900;
-          letter-spacing: 1.5px;
-          color: #133f24;
-        }
-        .dot-in {
-          color: #c9a44c;
-        }
-        .cert-brand-sub {
-          font-size: 9.5px;
-          color: #556b5b;
-          font-weight: 600;
-          letter-spacing: 0.5px;
-          text-transform: uppercase;
+          align-items: flex-start;
+          width: 100%;
         }
 
-        .cert-crest-center {
-          text-align: center;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 2px;
-        }
-        .cert-shield-crest {
-          font-size: 22px;
-        }
-        .cert-registry-tag {
-          font-size: 9px;
-          font-weight: 800;
-          letter-spacing: 1.5px;
-          color: #8c6a1e;
+        .brand-logo-img {
+          height: 52px;
+          width: auto;
+          object-fit: contain;
+          display: block;
         }
 
-        .cert-meta-right {
+        .registry-badge-area {
           text-align: right;
           display: flex;
           flex-direction: column;
           align-items: flex-end;
-          gap: 4px;
         }
-        .cert-badge-pill {
-          background: #ecfdf5;
-          border: 1px solid #6ee7b7;
-          color: #065f46;
-          padding: 3px 10px;
+
+        .verified-pill-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: #091a2b;
+          color: #ffffff;
+          padding: 4px 14px;
           border-radius: 999px;
-          font-size: 10px;
+          font-size: 11px;
           font-weight: 800;
+          letter-spacing: 0.6px;
+        }
+
+        .check-icon {
+          color: #10b981;
+          font-size: 11px;
+        }
+
+        .registry-subtext {
+          font-size: 9.5px;
+          font-weight: 700;
+          letter-spacing: 1.2px;
+          color: #475569;
+          margin-top: 4px;
+          text-transform: uppercase;
+        }
+
+        .cert-number-tag {
+          font-size: 10.5px;
+          font-weight: 700;
+          color: #091a2b;
           letter-spacing: 0.5px;
+          margin-top: 2px;
+          font-family: monospace;
+        }
+
+        /* 2. Accreditation Title */
+        .accreditation-header-block {
+          text-align: center;
+          margin-top: 2px;
+        }
+
+        .super-header {
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 3.5px;
+          color: #7c6020;
+          text-transform: uppercase;
+        }
+
+        .main-cert-title {
+          font-family: Georgia, "Times New Roman", serif;
+          font-size: 32px;
+          font-weight: 800;
+          color: #091a2b;
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          margin: 3px 0 2px;
+        }
+
+        .diamonds-row {
+          display: flex;
+          justify-content: center;
+          gap: 10px;
+          color: #d4af37;
+          font-size: 10px;
+          margin: 1px 0;
+        }
+
+        .certify-intro-phrase {
+          font-family: Georgia, "Times New Roman", serif;
+          font-style: italic;
+          font-size: 15px;
+          color: #334155;
+          margin-top: 2px;
+        }
+
+        /* 3. Recipient Showcase */
+        .recipient-showcase-row {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 16px;
+          margin: 4px 0 2px;
+        }
+
+        .laurel-branch {
+          width: 44px;
+          height: 80px;
+          flex-shrink: 0;
+        }
+
+        .recipient-content-center {
+          text-align: center;
+          max-width: 740px;
+        }
+
+        .business-title {
+          font-family: Georgia, "Times New Roman", serif;
+          font-size: 32px;
+          font-weight: 900;
+          color: #091a2b;
+          letter-spacing: 1.5px;
+          text-transform: uppercase;
+          margin: 0 0 6px;
+          line-height: 1.15;
+        }
+
+        .business-details-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 12px;
+          background: #fbf5ea;
+          border: 1px solid #ebd9bc;
+          border-radius: 999px;
+          padding: 4px 18px;
+          font-size: 12.5px;
+          font-weight: 600;
+          color: #1e293b;
+        }
+
+        .pill-item {
           display: inline-flex;
           align-items: center;
           gap: 5px;
         }
-        .live-dot {
-          color: #10b981;
-          font-size: 12px;
-        }
-        .cert-id-tag {
-          font-size: 10px;
-          color: #4b6352;
-          font-family: monospace;
+
+        .pill-icon {
+          font-size: 13px;
         }
 
-        /* Title Section */
-        .cert-title-section {
+        .pill-divider {
+          color: #c5a059;
+          font-size: 12px;
+        }
+
+        /* 4. Attestation Statement & Ribbon */
+        .attestation-statement-section {
           text-align: center;
-          margin-top: 10px;
-          margin-bottom: 4px;
+          max-width: 860px;
+          margin: 0 auto;
         }
-        .cert-eyebrow {
-          font-size: 9.5px;
-          font-weight: 800;
-          letter-spacing: 2px;
-          color: #926d1d;
-          text-transform: uppercase;
-          margin-bottom: 4px;
-        }
-        .cert-main-title {
-          font-size: 34px;
-          font-weight: 800;
-          font-family: "Georgia", "Times New Roman", serif;
-          color: #133a22;
-          letter-spacing: 2.5px;
-          text-transform: uppercase;
+
+        .attest-text-p1 {
+          font-size: 12.5px;
+          color: #334155;
+          line-height: 1.45;
           margin: 0;
-          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
-        }
-        .cert-title-rule {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-top: 6px;
-        }
-        .cert-title-rule::before,
-        .cert-title-rule::after {
-          content: "";
-          height: 1.5px;
-          width: 140px;
-          background: linear-gradient(90deg, transparent, #b88d2d, transparent);
-        }
-        .rule-diamond {
-          color: #b88d2d;
-          font-size: 11px;
-          margin: 0 10px;
         }
 
-        /* Recipient Box */
-        .cert-recipient-section {
-          text-align: center;
-          margin-top: 6px;
+        .attest-text-p2 {
+          font-size: 12.5px;
+          color: #334155;
+          margin: 2px 0 0;
         }
-        .cert-intro-phrase {
-          font-size: 12px;
-          font-style: italic;
-          color: #556c5c;
-          margin: 0 0 6px 0;
-          font-family: "Georgia", serif;
-        }
-        .cert-business-name {
-          font-size: 26px;
-          font-weight: 900;
-          font-family: "Georgia", serif;
-          color: #0b341c;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-          margin: 0 0 6px 0;
-          border-bottom: 2px solid #b88d2d;
-          display: inline-block;
-          padding-bottom: 3px;
-        }
-        .cert-business-meta {
-          font-size: 11px;
-          color: #3b5443;
+
+        .ribbon-banner-wrap {
           display: flex;
           justify-content: center;
+          margin: 5px 0 3px;
+        }
+
+        .ribbon-banner {
+          display: inline-flex;
           align-items: center;
           gap: 8px;
-          flex-wrap: wrap;
-          margin-top: 4px;
-        }
-        .meta-sep {
-          color: #b88d2d;
+          background: #091a2b;
+          color: #ffffff;
+          padding: 5px 28px;
+          position: relative;
           font-size: 12px;
+          font-weight: 800;
+          letter-spacing: 1px;
+          text-transform: uppercase;
+          box-shadow: 0 4px 12px rgba(9, 26, 43, 0.25);
         }
 
-        /* Statement Box */
-        .cert-statement-box {
-          background: rgba(255, 255, 255, 0.65);
-          border: 1px solid #d4ba75;
+        .ribbon-banner::before,
+        .ribbon-banner::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          width: 14px;
+          background: #c59b27;
+        }
+
+        .ribbon-banner::before {
+          left: -14px;
+          clip-path: polygon(100% 0, 0 50%, 100% 100%);
+        }
+
+        .ribbon-banner::after {
+          right: -14px;
+          clip-path: polygon(0 0, 100% 50%, 0 100%);
+        }
+
+        .ribbon-check-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 16px;
+          height: 16px;
+          background: #d4af37;
+          color: #091a2b;
+          border-radius: 50%;
+          font-size: 10px;
+          font-weight: 900;
+        }
+
+        /* 5. 4-Column Audit Grid */
+        .audit-specs-matrix {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: #fbfbf9;
+          border: 1px solid #e8e4d8;
           border-radius: 8px;
-          padding: 10px 18px;
-          margin: 8px 0;
+          padding: 7px 18px;
+          margin: 2px 8px;
+        }
+
+        .matrix-col {
+          flex: 1;
           text-align: center;
-          box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.02);
-        }
-        .cert-statement-text {
-          font-size: 11px;
-          line-height: 1.6;
-          color: #2b4534;
-          margin: 0;
-          font-family: "Georgia", serif;
         }
 
-        /* Footer Row */
-        .cert-footer-row {
-          display: grid;
-          grid-template-columns: 1fr 1fr 1fr;
+        .matrix-label {
+          font-size: 9px;
+          font-weight: 700;
+          letter-spacing: 0.8px;
+          color: #64748b;
+          text-transform: uppercase;
+          margin-bottom: 2px;
+        }
+
+        .matrix-val {
+          font-size: 12px;
+          font-weight: 800;
+          color: #091a2b;
+        }
+
+        .matrix-sep {
+          width: 1px;
+          height: 24px;
+          background: #cbd5e1;
+        }
+
+        /* 6. Bottom Trust & Signatures */
+        .cert-bottom-footer {
+          display: flex;
           align-items: flex-end;
-          gap: 16px;
-          margin-top: 8px;
-          padding-top: 4px;
+          justify-content: space-between;
+          padding: 4px 6px 0;
         }
 
-        /* QR block */
-        .cert-qr-block {
+        /* Left QR */
+        .footer-qr-container {
           display: flex;
           align-items: center;
           gap: 10px;
+          width: 250px;
         }
-        .qr-wrapper {
-          width: 76px;
-          height: 76px;
-          background: #ffffff;
-          border: 1.5px solid #d4ba75;
+
+        .qr-image-frame {
+          width: 66px;
+          height: 66px;
+          border: 1.5px solid #091a2b;
           border-radius: 6px;
-          padding: 4px;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          padding: 3px;
+          background: #ffffff;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.06);
           flex-shrink: 0;
         }
-        .cert-qr-img {
+
+        .qr-image {
           width: 100%;
           height: 100%;
           object-fit: contain;
-        }
-        .qr-caption {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
-        .qr-scan-title {
-          font-size: 9.5px;
-          font-weight: 800;
-          letter-spacing: 0.8px;
-          color: #174226;
-        }
-        .qr-url {
-          font-size: 9px;
-          color: #5c7463;
-          font-family: monospace;
+          display: block;
         }
 
-        /* Seal block */
-        .cert-seal-block {
+        .qr-action-title {
+          font-size: 10.5px;
+          font-weight: 800;
+          color: #091a2b;
+          letter-spacing: 0.5px;
+          margin-bottom: 2px;
+        }
+
+        .qr-action-desc {
+          font-size: 9.5px;
+          color: #475569;
+          line-height: 1.35;
+        }
+
+        /* Center Scalloped Seal */
+        .footer-seal-container {
           display: flex;
-          justify-content: center;
+          flex-direction: column;
+          align-items: center;
           position: relative;
         }
-        .gold-seal-medallion {
-          width: 100px;
-          height: 100px;
-          position: relative;
+
+        .seal-laurel-wrap {
           display: flex;
           align-items: center;
-          justify-content: center;
+          gap: 4px;
         }
-        .seal-outer-ring {
-          width: 90px;
-          height: 90px;
-          border-radius: 50%;
-          background: radial-gradient(circle at 35% 35%, #fff2a3 0%, #d4af37 40%, #996e13 100%);
-          box-shadow:
-            0 4px 14px rgba(153, 110, 19, 0.45),
-            inset 0 2px 4px rgba(255, 255, 255, 0.8);
-          border: 2px dashed #ffe685;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          position: relative;
-          z-index: 2;
+
+        .seal-laurel {
+          width: 26px;
+          height: 52px;
         }
-        .seal-inner-circle {
-          width: 74px;
-          height: 74px;
+
+        .scalloped-seal {
+          width: 82px;
+          height: 82px;
           border-radius: 50%;
-          border: 1.5px solid #fff5b8;
+          background: radial-gradient(circle at 35% 30%, #fff6cc 0%, #d4af37 40%, #b8860b 80%, #7c5a08 100%);
+          border: 3px dashed #fff9db;
+          box-shadow: 0 4px 12px rgba(124, 90, 8, 0.35);
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
           text-align: center;
-          color: #573c00;
+          color: #3b2802;
+          box-sizing: border-box;
+          padding: 4px;
         }
-        .seal-star {
-          font-size: 7px;
-          letter-spacing: 2px;
-          color: #704f05;
-        }
-        .seal-core-text {
-          font-size: 16px;
-          font-weight: 900;
-          letter-spacing: 1px;
-          color: #473200;
+
+        .seal-pin-icon {
+          font-size: 13px;
           line-height: 1;
         }
-        .seal-sub-text {
-          font-size: 8px;
-          font-weight: 800;
-          letter-spacing: 1px;
-          color: #473200;
-          margin-top: 1px;
-        }
-        .seal-year {
-          font-size: 6.5px;
-          font-weight: 700;
-          color: #634602;
-          margin-top: 1px;
-        }
 
-        .seal-ribbon {
-          position: absolute;
-          bottom: -14px;
-          width: 24px;
-          height: 40px;
-          background: linear-gradient(135deg, #1b432a 0%, #2f6943 100%);
-          z-index: 1;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
-          clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%);
-        }
-        .ribbon-left {
-          left: 26px;
-          transform: rotate(-12deg);
-        }
-        .ribbon-right {
-          right: 26px;
-          transform: rotate(12deg);
-        }
-
-        /* Signatures block */
-        .cert-signatures-block {
-          display: flex;
-          justify-content: space-between;
-          gap: 14px;
-        }
-        .sig-unit {
-          text-align: center;
-          flex: 1;
-        }
-        .sig-line {
-          border-bottom: 1.5px solid #94742a;
-          padding-bottom: 2px;
-          margin-bottom: 4px;
-        }
-        .sig-cursive-font {
-          font-family: "Brush Script MT", "Caveat", "Dancing Script", cursive, serif;
-          font-size: 19px;
-          color: #173824;
-          transform: rotate(-3deg);
-          letter-spacing: 0.5px;
-        }
-        .sig-title {
+        .seal-text-title {
+          font-family: Georgia, serif;
           font-size: 9.5px;
-          font-weight: 800;
-          color: #1b3d27;
+          font-weight: 900;
+          letter-spacing: 0.6px;
+          line-height: 1;
+          margin-top: 2px;
         }
-        .sig-org {
+
+        .seal-text-sub {
           font-size: 8px;
-          color: #556c5c;
+          font-weight: 800;
+          letter-spacing: 0.8px;
+          line-height: 1;
+          margin-top: 1px;
         }
 
-        /* Audit Strip */
-        .cert-audit-strip {
-          border-top: 1px solid #d8ba6d;
-          padding-top: 8px;
-          margin-top: 8px;
-          font-size: 9px;
-          color: #556c5c;
+        .seal-text-desc {
+          font-size: 7px;
+          font-weight: 700;
+          letter-spacing: 0.6px;
+          line-height: 1;
+        }
+
+        .seal-stars-row {
+          font-size: 7px;
+          color: #ffffff;
+          letter-spacing: 1px;
+          margin-top: 1px;
+        }
+
+        .seal-ribbon-tails {
+          position: absolute;
+          top: 60px;
           display: flex;
-          justify-content: center;
-          align-items: center;
           gap: 8px;
-          flex-wrap: wrap;
-        }
-        .font-mono {
-          font-family: monospace;
-          color: #1a4228;
+          z-index: -1;
         }
 
-        /* PRINT STYLES */
+        .ribbon-tail {
+          width: 18px;
+          height: 30px;
+          background: #091a2b;
+          border: 1px solid #c59b27;
+          clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 75%, 0 100%);
+        }
+
+        /* Right Signatures */
+        .footer-signatures-container {
+          display: flex;
+          gap: 28px;
+        }
+
+        .signature-column {
+          width: 140px;
+          text-align: center;
+        }
+
+        .signature-cursive {
+          font-family: "Brush Script MT", "Caveat", "Dancing Script", cursive, serif;
+          font-size: 24px;
+          color: #091a2b;
+          line-height: 1;
+          height: 28px;
+          display: flex;
+          align-items: flex-end;
+          justify-content: center;
+          transform: rotate(-2deg);
+        }
+
+        .signature-bar {
+          height: 1.5px;
+          background: #d4af37;
+          margin: 3px 0 4px;
+        }
+
+        .signer-name {
+          font-size: 11px;
+          font-weight: 800;
+          color: #091a2b;
+        }
+
+        .signer-title {
+          font-size: 9px;
+          color: #475569;
+          font-weight: 600;
+          margin-top: 1px;
+        }
+
+        .signer-org {
+          font-size: 8.5px;
+          color: #64748b;
+        }
+
+        /* 7. Bottom Citation Line */
+        .cert-bottom-citation-line {
+          text-align: center;
+          border-top: 1px solid #ebd9bc;
+          padding-top: 5px;
+          margin-top: 4px;
+        }
+
+        .line-text {
+          font-size: 9px;
+          font-weight: 700;
+          letter-spacing: 1.2px;
+          color: #64748b;
+          text-transform: uppercase;
+        }
+
         @media print {
-          @page {
-            size: A4 landscape;
-            margin: 0;
-          }
-          :global(body) {
+          .jit-cert-root {
+            width: 100% !important;
+            padding: 0 !important;
             margin: 0 !important;
-            padding: 0 !important;
-            background: #ffffff !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          .jit-cert-outer-wrapper {
-            padding: 0 !important;
             background: transparent !important;
-            min-height: 0 !important;
           }
-          .jit-cert-frame {
-            width: 297mm !important;
-            height: 210mm !important;
-            max-width: 297mm !important;
-            min-height: 210mm !important;
-            margin: 0 !important;
-            border: 10mm solid #1a3922 !important;
+          .jit-cert-card {
+            width: 100% !important;
+            height: 100vh !important;
             box-shadow: none !important;
-            page-break-after: avoid !important;
-            page-break-inside: avoid !important;
+            border-radius: 0 !important;
+            padding: 0 !important;
           }
         }
       `}</style>
