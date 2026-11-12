@@ -40,13 +40,12 @@ export function JitCertificate({
   data?: JitCertificateData;
   className?: string;
 }) {
+  const num = Math.abs(
+    (data.businessName || "").split("").reduce((acc, c) => ((acc << 5) - acc + c.charCodeAt(0)) | 0, 17)
+  );
   const certId =
     data.certificateId ||
-    `BZR-JIT-TN-2026-${Math.abs(
-      (data.businessName || "").split("").reduce((acc, c) => acc * 31 + c.charCodeAt(0), 7)
-    )
-      .toString()
-      .slice(0, 5)}`;
+    `BZR-JIT-TN-2026-${1000 + (num % 9000)}`;
 
   return (
     <div className={`jit-cert-outer-wrapper ${className}`}>

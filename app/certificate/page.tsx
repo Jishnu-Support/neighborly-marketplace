@@ -56,13 +56,12 @@ function CertificatePageInner() {
     const phone = (matched as any)?.phone || DEFAULT_SAMPLE_CERTIFICATE.phone;
     const gstin = gstinParam || (matched as any)?.gstin || DEFAULT_SAMPLE_CERTIFICATE.gstin;
 
+    const num = Math.abs(
+      name.split("").reduce((acc, c) => ((acc << 5) - acc + c.charCodeAt(0)) | 0, 17)
+    );
     const hashId =
       certIdParam ||
-      `BZR-JIT-TN-2026-${Math.abs(
-        name.split("").reduce((acc, c) => acc * 31 + c.charCodeAt(0), 11)
-      )
-        .toString()
-        .slice(0, 5)}`;
+      `BZR-JIT-TN-2026-${1000 + (num % 9000)}`;
 
     setCertData({
       businessName: name,
