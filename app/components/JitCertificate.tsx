@@ -110,11 +110,11 @@ export function JitCertificate({
           {/* HEADER STRIP */}
           <div className="cert-header-strip">
             <div className="cert-brand-block">
-              <div className="cert-logo-row">
-                <span className="cert-logo-icon">⌖</span>
-                <span className="cert-brand-text">BIZEARCH<span className="dot-in">.IN</span></span>
-              </div>
-              <span className="cert-brand-sub">India&apos;s Hyperlocal Neighborhood Discovery Engine</span>
+              <img
+                src="/bizearch-official-logo.png"
+                alt="Bizearch.in - Find • Connect • Grow"
+                style={{ height: "52px", width: "auto", objectFit: "contain", display: "block" }}
+              />
             </div>
 
             <div className="cert-crest-center">
@@ -232,18 +232,26 @@ export function JitCertificate({
             <div className="cert-signatures-block">
               <div className="sig-unit">
                 <div className="sig-line">
-                  <div className="sig-cursive-font">K. Soundararajan</div>
+                  <div className="sig-cursive-font">
+                    {data.assignedAgentName || "JIT Operations Wing"}
+                  </div>
+                </div>
+                <div style={{ fontSize: "10.5px", fontWeight: 700, color: "#173824", letterSpacing: "0.3px", marginTop: "1px" }}>
+                  {data.assignedAgentName || "JIT Field Operations Officer"}
                 </div>
                 <div className="sig-title">Head of Field Verification</div>
-                <div className="sig-org">JIT Operations Wing, Hosur</div>
+                <div className="sig-org">JIT Operations Wing</div>
               </div>
 
               <div className="sig-unit">
                 <div className="sig-line">
-                  <div className="sig-cursive-font">Dr. Arvind R. Iyer</div>
+                  <div className="sig-cursive-font">G. Venkatesan</div>
                 </div>
-                <div className="sig-title">Director of Trust &amp; Safety</div>
-                <div className="sig-org">Bizearch Technologies Ltd.</div>
+                <div style={{ fontSize: "10.5px", fontWeight: 700, color: "#173824", letterSpacing: "0.3px", marginTop: "1px" }}>
+                  G. Venkatesan
+                </div>
+                <div className="sig-title">Director of Trust and Safety</div>
+                <div className="sig-org">Bizearch</div>
               </div>
             </div>
           </div>

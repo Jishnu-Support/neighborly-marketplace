@@ -13,8 +13,9 @@ function CertificatePageInner() {
   const addressParam = searchParams.get("address") || searchParams.get("locality") || "";
   const gstinParam = searchParams.get("gstin") || "";
   const certIdParam = searchParams.get("certId") || "";
+  const agentParam = searchParams.get("agent") || "";
 
-  const [businesses, setBusinesses] = useState<Array<{ name: string; category?: string; locality?: string; phone?: string; gstin?: string; address?: string }>>([]);
+  const [businesses, setBusinesses] = useState<Array<{ name: string; category?: string; locality?: string; phone?: string; gstin?: string; address?: string; assignedAgentName?: string; agentVerification?: { agentName?: string } }>>([]);
   const [selectedBusinessName, setSelectedBusinessName] = useState<string>(businessParam || DEFAULT_SAMPLE_CERTIFICATE.businessName);
   const [certData, setCertData] = useState<JitCertificateData>(DEFAULT_SAMPLE_CERTIFICATE);
   const [copied, setCopied] = useState(false);
@@ -63,6 +64,13 @@ function CertificatePageInner() {
       certIdParam ||
       `BZR-JIT-TN-2026-${1000 + (num % 9000)}`;
 
+    const agentName =
+      agentParam ||
+      (matched as any)?.assignedAgentName ||
+      (matched as any)?.agentVerification?.agentName ||
+      DEFAULT_SAMPLE_CERTIFICATE.assignedAgentName ||
+      "JIT Field Operations Wing";
+
     setCertData({
       businessName: name,
       category,
@@ -72,11 +80,11 @@ function CertificatePageInner() {
       certificateId: hashId,
       issueDate: "12 November 2026",
       validThrough: "31 March 2027",
-      assignedAgentName: "JIT Field Operations Wing",
+      assignedAgentName: agentName,
       verifiedBy: "JIT On-Ground Verification Unit",
       profileUrl: `https://bizearch.in`,
     });
-  }, [selectedBusinessName, businesses, businessParam, categoryParam, addressParam, gstinParam, certIdParam]);
+  }, [selectedBusinessName, businesses, businessParam, categoryParam, addressParam, gstinParam, certIdParam, agentParam]);
 
   const handlePrint = () => {
     if (typeof window !== "undefined") {

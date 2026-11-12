@@ -15377,6 +15377,10 @@ function BusinessPortal({
     address: businesses[0]?.address ? Object.values(businesses[0].address).filter(Boolean).join(", ") : undefined,
     phone: businessPhoneFor(businesses[0]),
     gstin: (businesses[0] as any)?.gstin,
+    assignedAgentName:
+      businesses[0]?.assignedAgentName ||
+      (businesses[0] as any)?.agentVerification?.agentName ||
+      "JIT Field Operations Wing",
     profileUrl: "https://bizearch.in",
   };
 
@@ -21669,6 +21673,10 @@ function CompanyPortal({
                         address: business.address ? Object.values(business.address).filter(Boolean).join(", ") : undefined,
                         phone: businessPhoneFor(business),
                         gstin: (business as any).gstin,
+                        assignedAgentName:
+                          business.assignedAgentName ||
+                          (business as any)?.agentVerification?.agentName ||
+                          "JIT Field Operations Wing",
                         profileUrl: "https://bizearch.in",
                       });
                     }}
