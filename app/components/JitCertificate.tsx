@@ -46,33 +46,39 @@ export function JitCertificate({
   const validThrough = data.validThrough || "31 March 2027";
   const rawAgentName = (data.assignedAgentName || "JIT").trim();
 
-  // Dynamic certificate number if not provided
+  // Flagship exact match check
+  const isJishnuFlagship =
+    businessName.toLowerCase() === "jishnu infotech private limited" ||
+    businessName.toLowerCase() === "jishnu infotech";
+
+  // Dynamic certificate number (clean BZR-JIT-2026-XXXXX format)
   const num = Math.abs(
     businessName.split("").reduce((acc, c) => ((acc << 5) - acc + c.charCodeAt(0)) | 0, 17)
   );
   const certId =
     data.certificateId ||
-    `BZR-JIT-2026-${String(1 + (num % 9999)).padStart(5, "0")}`;
+    (isJishnuFlagship
+      ? "BZR-JIT-2026-00001"
+      : `BZR-JIT-2026-${String(1 + (num % 9999)).padStart(5, "0")}`);
 
-  // Smart Agent Title and Cursive Signature handling to avoid overlapping
+  // Signatory & Agent Designation handling
   const isJitWing =
     rawAgentName.toLowerCase().includes("wing") ||
     rawAgentName.toLowerCase().includes("operations");
+  const isDefaultJit = rawAgentName.toUpperCase() === "JIT" || isJishnuFlagship;
 
-  const isDefaultJit = rawAgentName.toUpperCase() === "JIT";
-
-  const scriptAgentText = isJitWing ? "JIT Operations" : rawAgentName;
-  const displayAgentName = rawAgentName || "JIT";
+  const scriptAgentText = isJitWing ? "JIT Operations" : rawAgentName || "JIT";
+  const displayAgentName = isDefaultJit ? "JIT" : rawAgentName;
   const agentDesignation = isJitWing
     ? "Head of Field Verification"
     : isDefaultJit
     ? "Agent"
-    : "Head of Field Verification";
+    : "Agent";
 
-  // Dynamic font sizing for business name to prevent awkward wrapping
+  // Dynamic font sizing for business name to maintain visual balance
   const nameLen = businessName.length;
   const businessFontSize =
-    nameLen > 38 ? "21px" : nameLen > 28 ? "25px" : nameLen > 20 ? "29px" : "33px";
+    nameLen > 40 ? "20px" : nameLen > 30 ? "24px" : nameLen > 22 ? "28px" : "33px";
 
   // Sector icon
   const sectorLower = category.toLowerCase();
@@ -89,14 +95,25 @@ export function JitCertificate({
       ? "🏥"
       : sectorLower.includes("lab") ||
         sectorLower.includes("education") ||
-        sectorLower.includes("coaching")
+        sectorLower.includes("learning") ||
+        sectorLower.includes("school") ||
+        sectorLower.includes("college")
       ? "🎓"
+      : sectorLower.includes("auto") || sectorLower.includes("motor")
+      ? "🚗"
+      : sectorLower.includes("food") || sectorLower.includes("restaurant")
+      ? "🍽️"
       : "🏪";
 
   return (
     <div className={`jit-cert-root ${className}`}>
+      {/* Google Fonts Import for Exact Typography */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Great+Vibes&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,400&family=Montserrat:wght@500;600;700;800&display=swap');
+      `}</style>
+
       <div className="jit-cert-card">
-        {/* Guilloche Wave Flourishes (Left and Right) */}
+        {/* Golden Guilloche Wave Flourishes (Left and Right) */}
         <div className="wave-flourish wave-left" aria-hidden="true">
           <svg viewBox="0 0 300 600" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M-50,50 Q120,200 40,350 T100,550" stroke="#d4af37" strokeWidth="0.8" opacity="0.32" />
@@ -116,10 +133,10 @@ export function JitCertificate({
           </svg>
         </div>
 
-        {/* Outer & Inner Frame */}
+        {/* Double Border Frame: Outer Navy + Inner Gold */}
         <div className="cert-border-outer">
           <div className="cert-border-inner">
-            {/* 4 Corner Ornaments */}
+            {/* 4 Ornate Corner Decorations */}
             <svg className="corner-ornament corner-tl" viewBox="0 0 50 50" fill="none">
               <path d="M4 24 V12 C4 7.578 7.578 4 12 4 H24" stroke="#d4af37" strokeWidth="2" />
               <path d="M10 18 V14 C10 11.79 11.79 10 14 10 H18" stroke="#d4af37" strokeWidth="1.2" />
@@ -141,7 +158,7 @@ export function JitCertificate({
               <circle cx="44" cy="44" r="2.5" fill="#d4af37" />
             </svg>
 
-            {/* 1. TOP HEADER */}
+            {/* 1. TOP HEADER: Official Logo + Verified Registry Tag */}
             <div className="cert-top-header">
               <div className="brand-logo-area">
                 <img
@@ -153,7 +170,7 @@ export function JitCertificate({
 
               <div className="registry-badge-area">
                 <div className="verified-pill-tag">
-                  <span className="check-icon">✔</span>
+                  <span className="pill-check-circle">✔</span>
                   <span className="pill-text">BIZEARCH VERIFIED BUSINESS</span>
                 </div>
                 <div className="registry-subtext">
@@ -210,7 +227,7 @@ export function JitCertificate({
                   {businessName}
                 </h2>
 
-                {/* Details Pill (Store | Location | Phone) */}
+                {/* Details Pill: Store | Location | Phone */}
                 <div className="business-details-pill">
                   <span className="pill-item pill-category">
                     <span className="pill-icon">{sectorIcon}</span>
@@ -252,12 +269,14 @@ export function JitCertificate({
                 Has successfully completed the <strong>Bizearch.in</strong> business verification process, including on-ground physical verification, business identity validation, and service assessment. This organization is hereby recognized as a
               </p>
 
-              {/* Center Ribbon Banner */}
+              {/* Center Ribbon Banner with Gold Swallowtail Ends */}
               <div className="ribbon-banner-wrap">
+                <div className="ribbon-end ribbon-end-left"></div>
                 <div className="ribbon-banner">
-                  <span className="ribbon-check-badge">✔</span>
+                  <span className="ribbon-gold-circle">✔</span>
                   <span className="ribbon-label">BIZEARCH VERIFIED BUSINESS</span>
                 </div>
+                <div className="ribbon-end ribbon-end-right"></div>
               </div>
 
               <p className="attest-text-p2">
@@ -315,7 +334,7 @@ export function JitCertificate({
                     <ellipse cx="23" cy="58" rx="8" ry="4" transform="rotate(0 23 58)" />
                   </svg>
 
-                  {/* Scalloped Gold Badge */}
+                  {/* Scalloped Gold Medallion Badge */}
                   <div className="scalloped-seal">
                     <div className="seal-pin-icon">📍</div>
                     <div className="seal-text-title">BIZEARCH</div>
@@ -366,7 +385,7 @@ export function JitCertificate({
               </div>
             </div>
 
-            {/* 7. BOTTOM LINE CITATION */}
+            {/* 7. BOTTOM CITATION LINE */}
             <div className="cert-bottom-citation-line">
               <span className="line-text">
                 ISSUED BY JISHNU INFOTECH PRIVATE LIMITED &nbsp;|&nbsp; BIZEARCH.IN BUSINESS VERIFICATION PROGRAM
@@ -500,9 +519,18 @@ export function JitCertificate({
           letter-spacing: 0.6px;
         }
 
-        .check-icon {
-          color: #10b981;
-          font-size: 11px;
+        .pill-check-circle {
+          background: #10b981;
+          color: #ffffff;
+          border-radius: 50%;
+          width: 15px;
+          height: 15px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 9px;
+          font-weight: 900;
+          line-height: 1;
         }
 
         .registry-subtext {
@@ -530,6 +558,7 @@ export function JitCertificate({
         }
 
         .super-header {
+          font-family: "Montserrat", -apple-system, sans-serif;
           font-size: 11px;
           font-weight: 700;
           letter-spacing: 3.5px;
@@ -538,7 +567,7 @@ export function JitCertificate({
         }
 
         .main-cert-title {
-          font-family: Georgia, "Times New Roman", serif;
+          font-family: "Cinzel", Georgia, "Times New Roman", serif;
           font-size: 32px;
           font-weight: 800;
           color: #091a2b;
@@ -557,7 +586,7 @@ export function JitCertificate({
         }
 
         .certify-intro-phrase {
-          font-family: Georgia, "Times New Roman", serif;
+          font-family: "Playfair Display", Georgia, serif;
           font-style: italic;
           font-size: 15px;
           color: #334155;
@@ -586,7 +615,7 @@ export function JitCertificate({
         }
 
         .business-title {
-          font-family: Georgia, "Times New Roman", serif;
+          font-family: "Cinzel", "Playfair Display", Georgia, serif;
           font-weight: 900;
           color: #091a2b;
           letter-spacing: 1.5px;
@@ -668,7 +697,26 @@ export function JitCertificate({
         .ribbon-banner-wrap {
           display: flex;
           justify-content: center;
+          align-items: center;
           margin: 5px 0 3px;
+          position: relative;
+        }
+
+        .ribbon-end {
+          width: 24px;
+          height: 28px;
+          background: linear-gradient(135deg, #c59b27 0%, #eab308 100%);
+          flex-shrink: 0;
+        }
+
+        .ribbon-end-left {
+          clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 40% 50%);
+          margin-right: -4px;
+        }
+
+        .ribbon-end-right {
+          clip-path: polygon(0 0, 100% 0, 60% 50%, 100% 100%, 0 100%);
+          margin-left: -4px;
         }
 
         .ribbon-banner {
@@ -676,64 +724,53 @@ export function JitCertificate({
           align-items: center;
           gap: 8px;
           background: #091a2b;
-          color: #ffffff;
-          padding: 5px 28px;
+          border: 1.5px solid #d4af37;
+          border-radius: 4px;
+          padding: 5px 20px;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
           position: relative;
-          font-size: 12px;
-          font-weight: 800;
-          letter-spacing: 1px;
-          text-transform: uppercase;
-          box-shadow: 0 4px 12px rgba(9, 26, 43, 0.25);
+          z-index: 2;
         }
 
-        .ribbon-banner::before,
-        .ribbon-banner::after {
-          content: "";
-          position: absolute;
-          top: 0;
-          bottom: 0;
-          width: 14px;
-          background: #c59b27;
-        }
-
-        .ribbon-banner::before {
-          left: -14px;
-          clip-path: polygon(100% 0, 0 50%, 100% 100%);
-        }
-
-        .ribbon-banner::after {
-          right: -14px;
-          clip-path: polygon(0 0, 100% 50%, 0 100%);
-        }
-
-        .ribbon-check-badge {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 16px;
-          height: 16px;
+        .ribbon-gold-circle {
           background: #d4af37;
           color: #091a2b;
           border-radius: 50%;
+          width: 16px;
+          height: 16px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
           font-size: 10px;
           font-weight: 900;
+          line-height: 1;
         }
 
-        /* 5. 4-Column Audit Grid */
+        .ribbon-label {
+          color: #ffffff;
+          font-size: 12.5px;
+          font-weight: 800;
+          letter-spacing: 1px;
+          text-transform: uppercase;
+        }
+
+        /* 5. Audit Matrix */
         .audit-specs-matrix {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          background: #fbfbf9;
-          border: 1px solid #e8e4d8;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
           border-radius: 8px;
-          padding: 7px 18px;
-          margin: 2px 8px;
+          padding: 8px 16px;
+          margin: 4px 0 2px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.03);
         }
 
         .matrix-col {
           flex: 1;
           text-align: center;
+          padding: 0 6px;
         }
 
         .matrix-label {
@@ -746,23 +783,26 @@ export function JitCertificate({
         }
 
         .matrix-val {
-          font-size: 12px;
+          font-size: 11.5px;
           font-weight: 800;
           color: #091a2b;
+          white-space: nowrap;
         }
 
         .matrix-sep {
           width: 1px;
           height: 24px;
-          background: #cbd5e1;
+          background: #e2e8f0;
+          flex-shrink: 0;
         }
 
-        /* 6. Bottom Trust & Signatures */
+        /* 6. Footer: QR + Seal + Signatures */
         .cert-bottom-footer {
           display: flex;
-          align-items: flex-end;
+          align-items: center;
           justify-content: space-between;
-          padding: 4px 6px 0;
+          margin-top: 4px;
+          padding: 0 6px;
         }
 
         /* Left QR */
@@ -770,13 +810,13 @@ export function JitCertificate({
           display: flex;
           align-items: center;
           gap: 10px;
-          width: 250px;
+          max-width: 280px;
         }
 
         .qr-image-frame {
-          width: 66px;
-          height: 66px;
-          border: 1.5px solid #091a2b;
+          width: 60px;
+          height: 60px;
+          border: 1px solid #cbd5e1;
           border-radius: 6px;
           padding: 3px;
           background: #ffffff;
@@ -911,8 +951,8 @@ export function JitCertificate({
         }
 
         .signature-cursive {
-          font-family: "Brush Script MT", "Caveat", "Dancing Script", cursive, serif;
-          font-size: 24px;
+          font-family: "Great Vibes", "Brush Script MT", "Dancing Script", cursive, serif;
+          font-size: 26px;
           color: #091a2b;
           line-height: 1;
           height: 30px;
@@ -921,7 +961,7 @@ export function JitCertificate({
           justify-content: center;
           white-space: nowrap;
           padding-bottom: 3px;
-          transform: rotate(-2deg);
+          letter-spacing: 1px;
         }
 
         .signature-bar {
@@ -970,19 +1010,43 @@ export function JitCertificate({
           text-transform: uppercase;
         }
 
+        @page {
+          size: A4 landscape;
+          margin: 0;
+        }
+
         @media print {
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          .no-print {
+            display: none !important;
+          }
           .jit-cert-root {
-            width: 100% !important;
+            width: 100vw !important;
+            height: 100vh !important;
             padding: 0 !important;
             margin: 0 !important;
-            background: transparent !important;
+            background: #ffffff !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
           }
           .jit-cert-card {
-            width: 100% !important;
-            height: 100vh !important;
+            width: 1024px !important;
+            height: 712px !important;
             box-shadow: none !important;
             border-radius: 0 !important;
-            padding: 0 !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
         }
       `}</style>

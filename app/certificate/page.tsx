@@ -28,10 +28,13 @@ function formatAddress(address: string | Record<string, unknown> | undefined): s
 
 function buildCertId(name: string, certIdParam: string): string {
   if (certIdParam) return certIdParam;
+  if (!name || name.toLowerCase().includes("jishnu infotech")) {
+    return "BZR-JIT-2026-00001";
+  }
   const num = Math.abs(
     name.split("").reduce((acc, c) => ((acc << 5) - acc + c.charCodeAt(0)) | 0, 17)
   );
-  return `BZR-JIT-TN-2026-${1000 + (num % 9000)}`;
+  return `BZR-JIT-2026-${String(1 + (num % 9999)).padStart(5, "0")}`;
 }
 
 function formatDate(isoString?: string): string {
@@ -60,25 +63,45 @@ function CertificatePageInner() {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
-  // Fetch real registered businesses from API
+  // Fetch registered businesses and establish dropdown
   useEffect(() => {
     setLoading(true);
     fetch("/api/businesses")
       .then((res) => res.json())
       .then((data) => {
-        const list: BusinessRecord[] = Array.isArray(data.businesses) ? data.businesses : [];
-        setBusinesses(list);
+        const rawList: BusinessRecord[] = Array.isArray(data.businesses) ? data.businesses : [];
+        
+        // Ensure flagship business is always available in the directory list
+        const flagshipRecord: BusinessRecord = {
+          name: DEFAULT_SAMPLE_CERTIFICATE.businessName,
+          category: DEFAULT_SAMPLE_CERTIFICATE.category,
+          address: DEFAULT_SAMPLE_CERTIFICATE.address,
+          phone: DEFAULT_SAMPLE_CERTIFICATE.phone,
+          assignedAgentName: DEFAULT_SAMPLE_CERTIFICATE.assignedAgentName,
+          createdAt: "2026-11-12T00:00:00Z",
+          verificationStatus: "Approved",
+          active: true,
+        };
 
-        // Find the right business to show
+        const existingFlagship = rawList.find(
+          (b) => b.name?.toLowerCase().includes("jishnu infotech")
+        );
+        const combinedList: BusinessRecord[] = existingFlagship
+          ? rawList
+          : [flagshipRecord, ...rawList];
+
+        setBusinesses(combinedList);
+
+        // Find the matching business to show
         let found: BusinessRecord | null = null;
 
         if (idParam) {
-          found = list.find((b) => b.id === idParam) || null;
+          found = combinedList.find((b) => b.id === idParam) || null;
         }
         if (!found && businessParam) {
           found =
-            list.find((b) => b.name?.toLowerCase() === businessParam.toLowerCase()) ||
-            list.find((b) => b.name?.toLowerCase().includes(businessParam.toLowerCase())) ||
+            combinedList.find((b) => b.name?.toLowerCase() === businessParam.toLowerCase()) ||
+            combinedList.find((b) => b.name?.toLowerCase().includes(businessParam.toLowerCase())) ||
             null;
         }
 
@@ -95,25 +118,22 @@ function CertificatePageInner() {
           };
         }
 
-        // If only one business in database, default to it
-        if (!found && list.length === 1) {
-          found = list[0];
-        } else if (!found && list.length > 0) {
-          found = list[0];
-        } else if (!found) {
-          // Default flagship verified business
-          found = {
-            name: DEFAULT_SAMPLE_CERTIFICATE.businessName,
-            category: DEFAULT_SAMPLE_CERTIFICATE.category,
-            address: DEFAULT_SAMPLE_CERTIFICATE.address,
-            phone: DEFAULT_SAMPLE_CERTIFICATE.phone,
-            assignedAgentName: DEFAULT_SAMPLE_CERTIFICATE.assignedAgentName,
-          };
+        // If no param, default to Jishnu Infotech Private Limited (matching exact reference certificate)
+        if (!found) {
+          found = flagshipRecord;
         }
 
         setSelectedBusiness(found);
       })
-      .catch(() => {})
+      .catch(() => {
+        setSelectedBusiness({
+          name: DEFAULT_SAMPLE_CERTIFICATE.businessName,
+          category: DEFAULT_SAMPLE_CERTIFICATE.category,
+          address: DEFAULT_SAMPLE_CERTIFICATE.address,
+          phone: DEFAULT_SAMPLE_CERTIFICATE.phone,
+          assignedAgentName: DEFAULT_SAMPLE_CERTIFICATE.assignedAgentName,
+        });
+      })
       .finally(() => setLoading(false));
   }, [businessParam, idParam]);
 
@@ -125,18 +145,19 @@ function CertificatePageInner() {
     }
 
     const name = selectedBusiness.name;
-    const category = selectedBusiness.category || "";
-    const address = formatAddress(selectedBusiness.address as string | Record<string, unknown>);
-    const phone = selectedBusiness.phone || "";
+    const isFlagship = name.toLowerCase().includes("jishnu infotech");
+    const category = selectedBusiness.category || (isFlagship ? "IT & Software Solutions" : "Retail & Business");
+    const address = formatAddress(selectedBusiness.address as string | Record<string, unknown>) || (isFlagship ? "NGGO's Colony, Hosur" : "Hosur, Tamil Nadu");
+    const phone = selectedBusiness.phone || (isFlagship ? "+91 90430 22219" : "");
     const gstin = selectedBusiness.gstin || "";
     const certId = buildCertId(name, certIdParam);
-    const issueDate = formatDate(selectedBusiness.createdAt);
+    const issueDate = isFlagship ? "12 November 2026" : formatDate(selectedBusiness.createdAt);
 
     const agentName =
       agentParam ||
       selectedBusiness.assignedAgentName ||
       selectedBusiness.agentVerification?.agentName ||
-      "JIT Operations Wing";
+      "JIT";
 
     setCertData({
       businessName: name,
@@ -166,6 +187,8 @@ function CertificatePageInner() {
     }
   };
 
+  const isFlagshipCert = certData?.businessName?.toLowerCase().includes("jishnu infotech");
+
   return (
     <div className="certificate-page-container">
       {/* Top Control Bar (hidden on print) */}
@@ -173,11 +196,11 @@ function CertificatePageInner() {
         <div className="control-left">
           <Link href="/" className="back-link">← Back to Bizearch</Link>
           <span className="control-divider">|</span>
-          <span className="control-title">JIT Verified Certificate Registry</span>
+          <span className="control-title">Official Bizearch Certificate of Verification</span>
         </div>
 
         <div className="control-center">
-          {businesses.length > 1 && (
+          {businesses.length > 0 && (
             <div className="business-selector-wrap">
               <label htmlFor="cert-biz-select" className="selector-label">Business:</label>
               <select
@@ -202,6 +225,16 @@ function CertificatePageInner() {
         <div className="control-right">
           {certData && (
             <>
+              {isFlagshipCert && (
+                <a
+                  href="/bizearch-verified-certificate-exact.jpg"
+                  download="bizearch-verified-certificate-jishnu-infotech.jpg"
+                  className="action-btn outline-btn"
+                  style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "5px" }}
+                >
+                  <span>⬇️</span> Download Master JPG
+                </a>
+              )}
               <button type="button" onClick={handleCopyLink} className="action-btn outline-btn">
                 {copied ? "✓ Link Copied!" : "🔗 Copy Link"}
               </button>
@@ -238,14 +271,14 @@ function CertificatePageInner() {
       <style jsx>{`
         .certificate-page-container {
           min-height: 100vh;
-          background: #1e2621;
+          background: #141c16;
           display: flex;
           flex-direction: column;
         }
 
         .cert-control-bar {
-          background: #141c16;
-          border-bottom: 1px solid #2d3f32;
+          background: #0d140f;
+          border-bottom: 1px solid #233527;
           padding: 12px 24px;
           display: flex;
           justify-content: space-between;
@@ -255,7 +288,7 @@ function CertificatePageInner() {
           position: sticky;
           top: 0;
           z-index: 1000;
-          box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+          box-shadow: 0 4px 16px rgba(0,0,0,0.4);
         }
 
         .control-left {
@@ -298,7 +331,7 @@ function CertificatePageInner() {
         }
 
         .cert-select {
-          background: #253328;
+          background: #1e2a21;
           color: #ffffff;
           border: 1px solid #3c5443;
           padding: 6px 12px;
@@ -371,6 +404,11 @@ function CertificatePageInner() {
           margin: 0 auto 16px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        @page {
+          size: A4 landscape;
+          margin: 0;
+        }
 
         @media print {
           .no-print { display: none !important; }

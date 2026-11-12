@@ -84,12 +84,34 @@ export function CertificateModal({
                 Official JIT Verified Certificate
               </h3>
               <small style={{ color: "#a3d9b4", fontSize: "11px" }}>
-                {data.businessName} • Certificate ID: {data.certificateId || "BZR-JIT-TN-2026"}
+                {data.businessName} • Certificate ID: {data.certificateId || "BZR-JIT-2026-00001"}
               </small>
             </div>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <a
+              href="/bizearch-verified-certificate-exact.jpg"
+              download="Bizearch-Verified-Certificate.jpg"
+              style={{
+                background: "linear-gradient(135deg, #d4af37, #b8860b)",
+                color: "#081a2e",
+                border: "none",
+                borderRadius: "8px",
+                padding: "8px 14px",
+                fontSize: "12px",
+                fontWeight: 800,
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+              }}
+              title="Download Master Resolution JPG"
+            >
+              <span>⬇️</span> Master JPG
+            </a>
+
             <button
               type="button"
               onClick={handlePrint}
