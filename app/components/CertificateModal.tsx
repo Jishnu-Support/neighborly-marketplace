@@ -67,7 +67,7 @@ export function CertificateModal({
         <div
           className="cert-modal-toolbar"
           style={{
-            padding: "12px 18px",
+            padding: "10px 16px",
             background: "linear-gradient(135deg, #132a1b 0%, #1e422b 100%)",
             color: "#ffffff",
             display: "flex",
@@ -78,7 +78,7 @@ export function CertificateModal({
             borderBottom: "1px solid #2d5a3b",
           }}
         >
-          <div className="cert-modal-brand" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: "1 1 auto", minWidth: "200px" }}>
             <span style={{ fontSize: "20px" }}>🏆</span>
             <div>
               <h3 style={{ margin: 0, fontSize: "15px", color: "#ffffff" }}>
@@ -90,12 +90,28 @@ export function CertificateModal({
             </div>
           </div>
 
-          <div className="cert-modal-actions" style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "6px" }}>
+          <div
+            className="cert-modal-actions"
+            style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}
+          >
             <button
               type="button"
               onClick={() => downloadMasterCertificate(data)}
-              className="cert-tool-btn cert-tool-gold"
-              title="Download Master Resolution Certificate"
+              style={{
+                background: "linear-gradient(135deg, #d4af37, #b8860b)",
+                color: "#081a2e",
+                border: "none",
+                borderRadius: "8px",
+                padding: "7px 12px",
+                fontSize: "11.5px",
+                fontWeight: 800,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+              }}
+              title="Download Master Resolution JPG"
             >
               <span>⬇️</span> Master JPG
             </button>
@@ -103,7 +119,20 @@ export function CertificateModal({
             <button
               type="button"
               onClick={handlePrint}
-              className="cert-tool-btn cert-tool-print"
+              style={{
+                background: "#ffffff",
+                color: "#143a22",
+                border: "none",
+                borderRadius: "8px",
+                padding: "7px 14px",
+                fontSize: "11.5px",
+                fontWeight: 800,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+              }}
             >
               <span>🖨️</span> Print / PDF
             </button>
@@ -111,7 +140,19 @@ export function CertificateModal({
             <button
               type="button"
               onClick={handleCopyLink}
-              className="cert-tool-btn cert-tool-outline"
+              style={{
+                background: "rgba(255,255,255,0.12)",
+                color: "#ffffff",
+                border: "1px solid rgba(255,255,255,0.25)",
+                borderRadius: "8px",
+                padding: "7px 12px",
+                fontSize: "11.5px",
+                fontWeight: 700,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+              }}
             >
               <span>🔗</span> Copy
             </button>
@@ -120,15 +161,40 @@ export function CertificateModal({
               href={shareableUrl}
               target="_blank"
               rel="noreferrer"
-              className="cert-tool-btn cert-tool-outline"
+              style={{
+                background: "rgba(255,255,255,0.12)",
+                color: "#ffffff",
+                border: "1px solid rgba(255,255,255,0.25)",
+                borderRadius: "8px",
+                padding: "7px 12px",
+                fontSize: "11.5px",
+                fontWeight: 700,
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+              }}
             >
-              <span>↗</span> Fullscreen
+              <span>↗</span> Open
             </a>
 
             <button
               type="button"
               onClick={close}
-              className="cert-tool-close"
+              style={{
+                background: "rgba(255,255,255,0.15)",
+                border: "none",
+                color: "#ffffff",
+                fontSize: "16px",
+                width: "30px",
+                height: "30px",
+                borderRadius: "50%",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginLeft: "4px",
+              }}
               title="Close"
             >
               ✕
@@ -137,81 +203,9 @@ export function CertificateModal({
         </div>
 
         {/* Modal Scrollable Certificate Viewer */}
-        <div className="cert-modal-body" style={{ overflowY: "auto", overflowX: "hidden", padding: "12px 8px", background: "#1a241c", flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <div style={{ overflowY: "auto", overflowX: "hidden", padding: "10px 4px", background: "#1a241c" }}>
           <JitCertificate data={data} />
         </div>
-
-        <style jsx>{`
-          .cert-tool-btn {
-            border: none;
-            border-radius: 8px;
-            padding: 7px 12px;
-            font-size: 11.5px;
-            font-weight: 700;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            text-decoration: none;
-            transition: all 0.15s ease;
-          }
-          .cert-tool-gold {
-            background: linear-gradient(135deg, #d4af37, #b8860b);
-            color: #081a2e;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-          }
-          .cert-tool-print {
-            background: #ffffff;
-            color: #143a22;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-          }
-          .cert-tool-outline {
-            background: rgba(255,255,255,0.12);
-            color: #ffffff;
-            border: 1px solid rgba(255,255,255,0.25);
-          }
-          .cert-tool-outline:hover {
-            background: rgba(255,255,255,0.2);
-          }
-          .cert-tool-close {
-            background: rgba(255,255,255,0.15);
-            border: none;
-            color: #ffffff;
-            font-size: 16px;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-left: 4px;
-          }
-          .cert-tool-close:hover {
-            background: rgba(255,255,255,0.25);
-          }
-
-          @media (max-width: 640px) {
-            .cert-modal-toolbar {
-              padding: 8px 12px !important;
-            }
-            .cert-modal-brand {
-              width: 100%;
-              margin-bottom: 4px;
-            }
-            .cert-modal-actions {
-              width: 100%;
-              justify-content: space-between;
-            }
-            .cert-tool-btn {
-              padding: 6px 8px;
-              font-size: 10.5px;
-            }
-            .cert-modal-body {
-              padding: 8px 4px !important;
-            }
-          }
-        `}</style>
       </div>
     </div>
   );

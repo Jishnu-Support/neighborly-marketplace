@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 
 export interface JitCertificateData {
   businessName: string;
@@ -40,13 +40,12 @@ export function cleanDisplayLocality(address?: string, locality?: string): strin
 }
 
 /**
- * High-res image download helper using canvas capture or window.print()
+ * High-res image download helper using print / canvas capture
  */
 export async function downloadMasterCertificate(data: JitCertificateData, filename?: string) {
   try {
     window.print();
   } catch {
-    // Fallback
     window.print();
   }
 }
@@ -58,6 +57,32 @@ export function JitCertificate({
   data?: JitCertificateData;
   className?: string;
 }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  const [mounted, setMounted] = useState(false);
+
+  // Responsive dynamic scaling for all devices (Mobile, Tablet, Desktop)
+  useEffect(() => {
+    setMounted(true);
+    const updateScale = () => {
+      if (containerRef.current) {
+        const availableW = containerRef.current.clientWidth;
+        if (availableW > 0 && availableW < 1123) {
+          // Leave a subtle 4px margin on mobile screens
+          const targetW = Math.max(280, availableW - 4);
+          const computedScale = targetW / 1123;
+          setScale(computedScale);
+        } else {
+          setScale(1);
+        }
+      }
+    };
+
+    updateScale();
+    window.addEventListener("resize", updateScale);
+    return () => window.removeEventListener("resize", updateScale);
+  }, []);
+
   const businessName = (data.businessName || "JISHNU INFOTECH PRIVATE LIMITED").trim().toUpperCase();
   const category = data.category || "IT & Software Solutions";
   const locality = cleanDisplayLocality(data.address, data.locality);
@@ -81,57 +106,29 @@ export function JitCertificate({
   const nameLen = businessName.length;
   const nameSize = nameLen > 38 ? "24px" : nameLen > 28 ? "28px" : "34px";
 
-  // Responsive dynamic scaling for all devices (phones, tablets, laptops, desktops)
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
-
-  useEffect(() => {
-    function computeScale() {
-      if (!wrapperRef.current) return;
-      const parentWidth = wrapperRef.current.parentElement?.clientWidth || wrapperRef.current.clientWidth || window.innerWidth;
-      // Allow padding of 16px on mobile
-      const availableWidth = Math.min(parentWidth - 16, 1123);
-      if (availableWidth > 0 && availableWidth < 1123) {
-        setScale(Math.max(0.25, availableWidth / 1123));
-      } else {
-        setScale(1);
-      }
-    }
-
-    computeScale();
-    window.addEventListener("resize", computeScale);
-
-    let ro: ResizeObserver | null = null;
-    if (typeof ResizeObserver !== "undefined" && wrapperRef.current) {
-      ro = new ResizeObserver(() => computeScale());
-      ro.observe(wrapperRef.current);
-    }
-
-    return () => {
-      window.removeEventListener("resize", computeScale);
-      if (ro) ro.disconnect();
-    };
-  }, []);
-
-  const scaledWidth = Math.round(1123 * scale);
-  const scaledHeight = Math.round(794 * scale);
-
   return (
-    <div ref={wrapperRef} className={`certificate-viewport-wrapper ${className}`}>
-      {/* Responsive Scaling Container */}
+    <div ref={containerRef} className={`certificate-viewport-wrapper ${className}`}>
+      {/* Scaler Box keeps outer document flow exactly matched to the scaled certificate size */}
       <div
-        className="certificate-scale-container"
+        className="certificate-scaler-box"
         style={{
-          width: `${scaledWidth}px`,
-          height: `${scaledHeight}px`,
+          width: mounted && scale < 1 ? `${Math.round(1123 * scale)}px` : "1123px",
+          height: mounted && scale < 1 ? `${Math.round(794 * scale)}px` : "794px",
+          position: "relative",
+          margin: "0 auto",
+          overflow: "visible",
+          maxWidth: "100%",
         }}
       >
         <div
           className="certificate"
           id="bizearch-official-certificate-node"
           style={{
-            transform: `scale(${scale})`,
+            transform: mounted && scale < 1 ? `scale(${scale})` : "none",
             transformOrigin: "top left",
+            position: mounted && scale < 1 ? "absolute" : "relative",
+            top: 0,
+            left: 0,
           }}
         >
           <div className="inner-border">
@@ -271,33 +268,27 @@ export function JitCertificate({
           display: flex;
           justify-content: center;
           align-items: center;
-          padding: 8px 0;
-          overflow: visible;
+          padding: 8px 4px;
+          overflow: hidden;
           background: transparent;
-        }
-
-        .certificate-scale-container {
-          position: relative;
-          margin: 0 auto;
-          overflow: visible;
-          transition: width 0.2s ease, height 0.2s ease;
+          box-sizing: border-box;
         }
 
         .certificate {
           width: 1123px;
           height: 794px;
-          position: absolute;
-          top: 0;
-          left: 0;
+          margin: 0;
           padding: 35px 48px;
+          position: relative;
           overflow: hidden;
           background: #fffdf8;
           border: 8px double #c99b37;
           outline: 2px solid #102c55;
           outline-offset: -15px;
-          box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+          box-shadow: 0 5px 25px rgba(0, 0, 0, 0.25);
           font-family: Georgia, 'Times New Roman', serif;
           color: #102c55;
+          flex-shrink: 0;
           box-sizing: border-box;
         }
 
@@ -589,21 +580,17 @@ export function JitCertificate({
             justify-content: center !important;
           }
 
-          .certificate-scale-container {
+          .certificate-scaler-box {
             width: 1123px !important;
             height: 794px !important;
-            transform: none !important;
-            margin: 0 !important;
           }
 
           .certificate {
-            position: static !important;
+            transform: none !important;
+            position: relative !important;
             margin: 0 !important;
-            width: 1123px !important;
-            height: 794px !important;
             box-shadow: none !important;
             border-radius: 0 !important;
-            transform: none !important;
             print-color-adjust: exact !important;
             -webkit-print-color-adjust: exact !important;
             page-break-inside: avoid !important;

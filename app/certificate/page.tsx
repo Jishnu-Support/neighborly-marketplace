@@ -403,7 +403,12 @@ function CertificatePageInner() {
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        @media (max-width: 860px) {
+        @page {
+          size: A4 landscape;
+          margin: 0;
+        }
+
+        @media (max-width: 820px) {
           .cert-control-bar {
             padding: 10px 14px;
             flex-direction: column;
@@ -419,32 +424,34 @@ function CertificatePageInner() {
           }
           .business-selector-wrap {
             width: 100%;
+            display: flex;
           }
           .cert-select {
             flex: 1;
-            max-width: 100%;
+            max-width: none;
+            width: 100%;
           }
           .control-right {
             width: 100%;
-            justify-content: stretch;
             flex-wrap: wrap;
             gap: 8px;
           }
           .action-btn {
-            flex: 1 1 calc(50% - 4px);
-            padding: 8px 10px;
-            font-size: 11.5px;
+            flex: 1 1 calc(50% - 6px);
             text-align: center;
             justify-content: center;
+            padding: 10px 12px;
+            font-size: 11.5px;
           }
           .cert-main-viewport {
-            padding: 12px 6px;
+            padding: 10px 4px;
           }
         }
 
-        @page {
-          size: A4 landscape;
-          margin: 0;
+        @media (max-width: 480px) {
+          .action-btn {
+            flex: 1 1 100%;
+          }
         }
 
         @media print {
