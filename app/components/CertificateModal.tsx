@@ -48,7 +48,7 @@ export function CertificateModal({
       <div
         className="certificate-modal-container"
         style={{
-          maxWidth: "1120px",
+          maxWidth: "1180px",
           width: "98vw",
           margin: "auto",
           position: "relative",

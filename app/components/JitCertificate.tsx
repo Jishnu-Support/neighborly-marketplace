@@ -18,12 +18,12 @@ export interface JitCertificateData {
 }
 
 export const DEFAULT_SAMPLE_CERTIFICATE: JitCertificateData = {
-  businessName: "Jishnu Infotech Private Limited",
+  businessName: "JISHNU INFOTECH PRIVATE LIMITED",
   category: "IT & Software Solutions",
   locality: "NGGO's Colony, Hosur",
   address: "NGGO's Colony, Hosur",
   phone: "+91 90430 22219",
-  certificateId: "BZR-JIT-2026-00001",
+  certificateId: "BZR-JIT-2026-0001",
   issueDate: "12 November 2026",
   validThrough: "31 March 2027",
   assignedAgentName: "JIT",
@@ -33,140 +33,28 @@ export const DEFAULT_SAMPLE_CERTIFICATE: JitCertificateData = {
 
 export function cleanDisplayLocality(address?: string, locality?: string): string {
   if (locality && locality.trim()) return locality.trim();
-  if (!address) return "Hosur, Tamil Nadu";
+  if (!address) return "NGGO's Colony, Hosur";
   const parts = address.split(",").map((s) => s.trim()).filter(Boolean);
   if (parts.length <= 2) return address;
-  // If multiple parts (e.g. Plot No, Street, Locality, City), pick the last 2 meaningful parts
   return parts.slice(-2).join(", ");
 }
 
-export function getCategoryIcon(category?: string): string {
-  if (!category) return "💻";
-  const c = category.toLowerCase();
-  if (c.includes("soft") || c.includes("tech") || c.includes("it ") || c.includes("computer")) return "💻";
-  if (c.includes("ayur") || c.includes("clinic") || c.includes("medic") || c.includes("health") || c.includes("hospital")) return "🏥";
-  if (c.includes("auto") || c.includes("motor") || c.includes("bike") || c.includes("car")) return "🏍️";
-  if (c.includes("jewel") || c.includes("fashion") || c.includes("saree") || c.includes("cloth")) return "💎";
-  if (c.includes("food") || c.includes("rest") || c.includes("baker") || c.includes("cafe") || c.includes("sweets")) return "🍽️";
-  if (c.includes("gym") || c.includes("fit") || c.includes("turf") || c.includes("sport") || c.includes("badminton")) return "🏋️";
-  if (c.includes("hotel") || c.includes("tour") || c.includes("travel") || c.includes("taxi")) return "🏨";
-  if (c.includes("electr") || c.includes("mobile") || c.includes("appliance")) return "📱";
-  if (c.includes("home") || c.includes("furn") || c.includes("decor") || c.includes("interior")) return "🛋️";
-  if (c.includes("school") || c.includes("colleg") || c.includes("acad") || c.includes("educ")) return "🎓";
-  return "🏢";
-}
-
 /**
- * Downloads high-definition Master Certificate (either direct master artwork or high-res 2048x1424 canvas render).
+ * High-res image download helper using canvas capture
  */
 export async function downloadMasterCertificate(data: JitCertificateData, filename?: string) {
-  const businessName = (data.businessName || "Jishnu Infotech Private Limited").trim();
-  const isFlagship =
-    businessName.toLowerCase() === "jishnu infotech private limited" ||
-    businessName.toLowerCase() === "jishnu infotech";
-
-  if (isFlagship) {
-    const a = document.createElement("a");
-    a.href = "/bizearch-master-certificate-artwork.jpg";
-    a.download = filename || "Bizearch-Verified-Certificate-Jishnu.jpg";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    return;
-  }
-
-  // Dynamic high-res canvas render (2048 x 1424 px)
+  const businessName = (data.businessName || "JISHNU INFOTECH PRIVATE LIMITED").trim();
   try {
-    const canvas = document.createElement("canvas");
-    canvas.width = 2048;
-    canvas.height = 1424;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    const certElem = document.getElementById("bizearch-official-certificate-node");
+    if (!certElem) {
+      window.print();
+      return;
+    }
 
-    const bgImg = new Image();
-    bgImg.crossOrigin = "anonymous";
-    bgImg.src = "/bizearch-master-certificate-artwork.jpg";
-
-    await new Promise((resolve, reject) => {
-      bgImg.onload = resolve;
-      bgImg.onerror = reject;
-    });
-
-    // Draw base artwork
-    ctx.drawImage(bgImg, 0, 0, 2048, 1424);
-    const s = 2; // Scale factor relative to 1024x712 design coordinates
-
-    const num = Math.abs(
-      businessName.split("").reduce((acc, c) => ((acc << 5) - acc + c.charCodeAt(0)) | 0, 17)
-    );
-    const certId =
-      data.certificateId || `BZR-JIT-2026-${String(1 + (num % 9999)).padStart(5, "0")}`;
-
-    // 1. Dynamic Cert ID
-    ctx.fillStyle = "#fdfbf7";
-    ctx.fillRect(720 * s, 81 * s, 250 * s, 18 * s);
-    ctx.font = `800 ${10.5 * s}px 'Montserrat', sans-serif`;
-    ctx.fillStyle = "#081a2b";
-    ctx.textAlign = "right";
-    ctx.fillText(`CERTIFICATE NO: ${certId}`, (1024 - 58) * s, 94 * s);
-
-    // 2. Dynamic Business Name
-    ctx.fillStyle = "#fdfbf7";
-    ctx.fillRect(175 * s, 240 * s, 674 * s, 44 * s);
-    const nameLen = businessName.length;
-    const fontSize = nameLen > 36 ? 22 * s : nameLen > 28 ? 25 * s : 29 * s;
-    ctx.font = `800 ${fontSize}px 'Playfair Display', Georgia, serif`;
-    ctx.fillStyle = "#081a2b";
-    ctx.textAlign = "center";
-    ctx.fillText(businessName.toUpperCase(), 512 * s, 271 * s);
-
-    // 3. Dynamic Details Pill
-    ctx.fillStyle = "#fdfbf7";
-    ctx.fillRect(175 * s, 288 * s, 674 * s, 32 * s);
-
-    const category = data.category || "Verified Business Enterprise";
-    const locality = cleanDisplayLocality(data.address, data.locality);
-    const phone = data.phone || "+91 90430 22219";
-    const icon = getCategoryIcon(category);
-    const pillText = `${icon} ${category}   |   📍 ${locality}   |   📞 ${phone}`;
-
-    ctx.font = `700 ${11 * s}px 'Montserrat', sans-serif`;
-    const textWidth = ctx.measureText(pillText).width;
-    const pillW = Math.min(650 * s, textWidth + (36 * s));
-    const pillH = 26 * s;
-    const pillX = 512 * s - (pillW / 2);
-    const pillY = 293 * s;
-
-    // Draw pill background
-    ctx.fillStyle = "#f7f4ea";
-    ctx.strokeStyle = "#eee8d8";
-    ctx.lineWidth = 1 * s;
-    ctx.beginPath();
-    ctx.roundRect(pillX, pillY, pillW, pillH, 13 * s);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = "#081a2b";
-    ctx.textAlign = "center";
-    ctx.fillText(pillText, 512 * s, 310 * s);
-
-    // Export as JPG
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.96);
-    const a = document.createElement("a");
-    a.href = dataUrl;
-    a.download = filename || `Bizearch-Verified-Certificate-${businessName.replace(/[^a-zA-Z0-9]/g, "_")}.jpg`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  } catch (err) {
-    console.error("Canvas export fallback:", err);
-    // Fallback to downloading master image
-    const a = document.createElement("a");
-    a.href = "/bizearch-master-certificate-artwork.jpg";
-    a.download = filename || "Bizearch-Verified-Certificate.jpg";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    // Trigger print/save PDF as primary high-fidelity export
+    window.print();
+  } catch {
+    window.print();
   }
 }
 
@@ -177,206 +65,454 @@ export function JitCertificate({
   data?: JitCertificateData;
   className?: string;
 }) {
-  const businessName = (data.businessName || "Jishnu Infotech Private Limited").trim();
+  const businessName = (data.businessName || "JISHNU INFOTECH PRIVATE LIMITED").trim().toUpperCase();
   const category = data.category || "IT & Software Solutions";
   const locality = cleanDisplayLocality(data.address, data.locality);
   const phone = data.phone || "+91 90430 22219";
+  const issueDate = data.issueDate || "12 November 2026";
+  const validThrough = data.validThrough || "31 March 2027";
+  const agentName = (data.assignedAgentName || "JIT").trim();
 
-  const isJishnuFlagship =
-    businessName.toLowerCase() === "jishnu infotech private limited" ||
-    businessName.toLowerCase() === "jishnu infotech";
+  const isFlagship =
+    businessName.includes("JISHNU INFOTECH");
 
   const num = Math.abs(
     businessName.split("").reduce((acc, c) => ((acc << 5) - acc + c.charCodeAt(0)) | 0, 17)
   );
   const certId =
     data.certificateId ||
-    (isJishnuFlagship
-      ? "BZR-JIT-2026-00001"
-      : `BZR-JIT-2026-${String(1 + (num % 9999)).padStart(5, "0")}`);
+    (isFlagship
+      ? "BZR-JIT-2026-0001"
+      : `BZR-JIT-2026-${String(1 + (num % 9999)).padStart(4, "0")}`);
 
-  const sectorIcon = getCategoryIcon(category);
+  // Dynamic font sizing for long business names to prevent any wrapping or overflow
   const nameLen = businessName.length;
-  const nameFontSize =
-    nameLen > 36 ? "21px" : nameLen > 28 ? "25px" : nameLen > 20 ? "28px" : "31px";
+  const nameSize = nameLen > 38 ? "24px" : nameLen > 28 ? "28px" : "34px";
 
   return (
-    <div className={`jit-cert-master-root ${className}`}>
-      {/* Google Fonts */}
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      <link
-        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=Montserrat:wght@500;600;700;800&family=Great+Vibes&display=swap"
-        rel="stylesheet"
-      />
-
-      <div className="jit-cert-frame">
-        {/* Master Certificate Artwork Base (1024 x 712 px format) */}
-        <img
-          src="/bizearch-master-certificate-artwork.jpg"
-          alt="Bizearch Business Accreditation Master Certificate"
-          className="jit-cert-master-image"
-        />
-
-        {/* Dynamic Overlays: ONLY applied when business is not flagship */}
-        {!isJishnuFlagship && (
-          <>
-            {/* 1. Dynamic Certificate Number */}
-            <div className="jit-cert-no-overlay">
-              CERTIFICATE NO: {certId}
+    <div className={`certificate-viewport-wrapper ${className}`}>
+      {/* Exact Certificate Canvas Layout as Provided */}
+      <div className="certificate" id="bizearch-official-certificate-node">
+        <div className="inner-border">
+          {/* Header */}
+          <div className="header">
+            <div className="header-brand">
+              <img
+                src="/bizearch-cert-logo.png"
+                alt="Bizearch.in"
+                className="brand-logo-img"
+              />
             </div>
 
-            {/* 2. Dynamic Recipient Business Name (Centered between golden laurels) */}
-            <div className="jit-cert-name-overlay">
-              <span
-                className="jit-cert-name-text"
-                style={{ fontSize: nameFontSize }}
-              >
-                {businessName}
-              </span>
-            </div>
-
-            {/* 3. Dynamic Details Pill Badge */}
-            <div className="jit-cert-pill-overlay">
-              <div className="jit-cert-pill-badge">
-                <span className="pill-item">
-                  <span className="pill-icon">{sectorIcon}</span> {category}
-                </span>
-                <span className="pill-divider">|</span>
-                <span className="pill-item">
-                  <span className="pill-icon">📍</span> {locality}
-                </span>
-                <span className="pill-divider">|</span>
-                <span className="pill-item">
-                  <span className="pill-icon">📞</span> {phone}
-                </span>
+            <div className="registry">
+              <div className="badge">✓ BIZEARCH VERIFIED BUSINESS</div>
+              <div className="reg-text">
+                OFFICIAL REGISTRY OF VERIFIED BUSINESSES<br />
+                CERTIFICATE NO: {certId}
               </div>
             </div>
-          </>
-        )}
+          </div>
+
+          {/* Heading */}
+          <div className="heading">
+            <div className="subtitle">BIZEARCH BUSINESS ACCREDITATION</div>
+            <h1>CERTIFICATE OF VERIFICATION</h1>
+            <p>This is to officially certify that</p>
+          </div>
+
+          {/* Business */}
+          <div className="business">
+            <h2 style={{ fontSize: nameSize }}>{businessName}</h2>
+
+            <div className="business-info">
+              {category}
+              &nbsp; | &nbsp;
+              {locality}
+              &nbsp; | &nbsp;
+              {phone}
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="description">
+            Has successfully completed the Bizearch.in business
+            verification process, including on-ground physical verification,
+            business identity validation, and service assessment.
+            This organization is hereby recognized as a
+          </div>
+
+          {/* Verified Badge */}
+          <div className="verified">
+            ✓ BIZEARCH VERIFIED BUSINESS
+          </div>
+
+          {/* Listing */}
+          <div className="listing">
+            and is listed on the <b>Bizearch.in</b> directory platform.
+          </div>
+
+          {/* Details 4-Column Grid */}
+          <div className="details">
+            <div className="detail">
+              <small>VERIFICATION TYPE</small>
+              <strong>On-Ground Physical Audit</strong>
+            </div>
+
+            <div className="detail">
+              <small>DATE OF VERIFICATION</small>
+              <strong>{issueDate}</strong>
+            </div>
+
+            <div className="detail">
+              <small>VALID THROUGH</small>
+              <strong>{validThrough}</strong>
+            </div>
+
+            <div className="detail">
+              <small>JURISDICTION</small>
+              <strong>Hosur Division, Tamil Nadu</strong>
+            </div>
+          </div>
+
+          {/* Footer Grid */}
+          <div className="footer">
+            <div className="qr">
+              <img
+                src="/bizearch-cert-qr.jpg"
+                alt="Verification QR Code"
+              />
+              <div className="qr-text">
+                <b>SCAN TO VERIFY</b><br />
+                Scan to view business profile<br />
+                and verification details at<br />
+                <b>bizearch.in</b>
+              </div>
+            </div>
+
+            <div className="seal">
+              ★ BIZEARCH ★
+              <br />
+              VERIFIED
+              <br />
+              BUSINESS
+              <br />
+              ★ ★ ★
+            </div>
+
+            <div className="signature">
+              <div className="sign">{agentName}</div>
+              <strong>{agentName}</strong>
+              Agent<br />
+              Bizearch.in
+            </div>
+
+            <div className="signature">
+              <div className="sign">G. Venkatesan</div>
+              <strong>G. Venkatesan</strong>
+              Director - Trust &amp; Verification<br />
+              Bizearch.in
+            </div>
+          </div>
+
+          {/* Bottom citation */}
+          <div className="bottom">
+            ISSUED BY JISHNU INFOTECH PRIVATE LIMITED
+            &nbsp; | &nbsp;
+            BIZEARCH.IN BUSINESS VERIFICATION PROGRAM
+          </div>
+        </div>
       </div>
 
       <style jsx>{`
-        .jit-cert-master-root {
+        .certificate-viewport-wrapper {
           width: 100%;
           display: flex;
           justify-content: center;
           align-items: center;
-          padding: 8px;
+          padding: 10px;
+          overflow-x: auto;
           background: transparent;
         }
 
-        .jit-cert-frame {
+        .certificate {
+          width: 1123px;
+          height: 794px;
+          margin: auto;
+          padding: 35px 48px;
           position: relative;
-          width: 100%;
-          max-width: 1024px;
-          aspect-ratio: 1024 / 712;
-          background: #fdfbf7;
-          border-radius: 8px;
           overflow: hidden;
-          box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+          background: #fffdf8;
+          border: 8px double #c99b37;
+          outline: 2px solid #102c55;
+          outline-offset: -15px;
+          box-shadow: 0 5px 25px rgba(0, 0, 0, 0.25);
+          font-family: Georgia, 'Times New Roman', serif;
+          color: #102c55;
+          flex-shrink: 0;
+          box-sizing: border-box;
         }
 
-        .jit-cert-master-image {
-          position: absolute;
-          inset: 0;
-          width: 100%;
+        .inner-border {
           height: 100%;
-          object-fit: fill;
+          border: 1px solid #d3aa58;
+          padding: 20px 25px;
+          display: flex;
+          flex-direction: column;
+          position: relative;
+          box-sizing: border-box;
+        }
+
+        .header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 1px solid #d9bd80;
+          padding-bottom: 12px;
+        }
+
+        .header-brand {
+          display: flex;
+          align-items: center;
+        }
+
+        .brand-logo-img {
+          height: 54px;
+          width: auto;
+          max-width: 260px;
+          object-fit: contain;
           display: block;
-          user-select: none;
-          pointer-events: none;
         }
 
-        /* 1. Dynamic Certificate Number (Top-Right) */
-        .jit-cert-no-overlay {
-          position: absolute;
-          top: 11.65%;
-          right: 5.66%;
-          width: 25%;
-          height: 2.3%;
-          background: #fdfbf7;
-          display: flex;
-          align-items: center;
-          justify-content: flex-end;
-          font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
-          font-size: clamp(8px, 1.05vw, 10.5px);
-          font-weight: 800;
-          letter-spacing: 0.8px;
-          color: #081a2b;
-          text-transform: uppercase;
-          z-index: 5;
+        .registry {
+          text-align: right;
+          font-family: Arial, sans-serif;
+          font-size: 11px;
+          line-height: 1.8;
+          letter-spacing: 1px;
         }
 
-        /* 2. Dynamic Recipient Business Name (Centered between golden laurels) */
-        .jit-cert-name-overlay {
-          position: absolute;
-          top: 33.98%;
-          left: 17.09%;
-          width: 65.82%;
-          height: 6.18%;
-          background: #fdfbf7;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          text-align: center;
-          z-index: 5;
+        .reg-text {
+          margin-top: 4px;
+          font-size: 11px;
+          color: #102c55;
         }
 
-        .jit-cert-name-text {
-          font-family: 'Playfair Display', Georgia, serif;
-          font-weight: 800;
-          color: #081a2b;
-          letter-spacing: 0.8px;
-          text-transform: uppercase;
-          line-height: 1.1;
-          white-space: nowrap;
-        }
-
-        /* 3. Dynamic Details Pill Badge */
-        .jit-cert-pill-overlay {
-          position: absolute;
-          top: 40.73%;
-          left: 17.09%;
-          width: 65.82%;
-          height: 4.2%;
-          background: #fdfbf7;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 5;
-        }
-
-        .jit-cert-pill-badge {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: clamp(8px, 1.2vw, 14px);
-          background: #f7f4ea;
-          border: 1px solid #eee8d8;
+        .badge {
+          background: #082d55;
+          color: white;
+          padding: 5px 16px;
           border-radius: 20px;
-          padding: 3px clamp(10px, 1.5vw, 18px);
-          font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
-          font-size: clamp(7.5px, 1.05vw, 11px);
-          font-weight: 700;
-          color: #081a2b;
-          white-space: nowrap;
-          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+          font-weight: bold;
+          display: inline-block;
+          font-size: 11px;
+          letter-spacing: 0.5px;
         }
 
-        .pill-item {
-          display: inline-flex;
+        .heading {
+          text-align: center;
+          margin-top: 24px;
+        }
+
+        .heading .subtitle {
+          font-size: 12px;
+          letter-spacing: 6px;
+          color: #bb8c38;
+          font-family: Arial, sans-serif;
+          font-weight: bold;
+        }
+
+        .heading h1 {
+          font-size: 35px;
+          letter-spacing: 2px;
+          margin: 6px 0;
+          color: #102e61;
+          font-weight: bold;
+        }
+
+        .heading p {
+          font-style: italic;
+          font-size: 15px;
+          margin: 0;
+          color: #3b4e6b;
+        }
+
+        .business {
+          text-align: center;
+          margin-top: 18px;
+        }
+
+        .business h2 {
+          margin: 6px 0 10px;
+          text-transform: uppercase;
+          color: #102c55;
+          font-weight: bold;
+          letter-spacing: 1px;
+          line-height: 1.15;
+        }
+
+        .business-info {
+          display: inline-block;
+          padding: 8px 24px;
+          border: 1px solid #e5c17c;
+          border-radius: 25px;
+          background: #fff8e8;
+          font-family: Arial, sans-serif;
+          font-size: 13px;
+          font-weight: bold;
+          color: #102c55;
+        }
+
+        .description {
+          text-align: center;
+          font-size: 14.5px;
+          line-height: 1.7;
+          margin: 18px 40px 8px;
+          color: #243a5e;
+        }
+
+        .verified {
+          margin: 4px auto 0;
+          padding: 8px 40px;
+          background: #092d57;
+          border: 4px solid #d7a42f;
+          color: white;
+          font-family: Arial, sans-serif;
+          font-weight: bold;
+          font-size: 18px;
+          letter-spacing: 1px;
+          text-align: center;
+          width: fit-content;
+        }
+
+        .listing {
+          text-align: center;
+          font-size: 13.5px;
+          margin: 8px 0 14px;
+          color: #3b4e6b;
+        }
+
+        .details {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          border: 1px solid #d7dce4;
+          border-radius: 12px;
+          background: white;
+          padding: 10px 5px;
+          font-family: Arial, sans-serif;
+          text-align: center;
+        }
+
+        .detail {
+          border-right: 1px solid #aab3c1;
+          padding: 0 8px;
+        }
+
+        .detail:last-child {
+          border: none;
+        }
+
+        .detail small {
+          display: block;
+          font-size: 10px;
+          letter-spacing: 1px;
+          margin-bottom: 4px;
+          color: #64748b;
+          font-weight: bold;
+        }
+
+        .detail strong {
+          font-size: 13px;
+          color: #102c55;
+        }
+
+        .footer {
+          display: grid;
+          grid-template-columns: 1.2fr 0.8fr 1fr 1fr;
           align-items: center;
-          gap: 4px;
+          gap: 15px;
+          margin-top: auto;
+          padding-top: 14px;
         }
 
-        .pill-icon {
-          font-size: 1.1em;
+        .qr {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-family: Arial, sans-serif;
+          font-size: 11.5px;
+          color: #102c55;
         }
 
-        .pill-divider {
-          color: #cbd5e1;
-          font-weight: 400;
+        .qr img {
+          width: 80px;
+          height: 80px;
+          border: 2px solid #102c55;
+          padding: 3px;
+          background: #ffffff;
+          object-fit: contain;
+          flex-shrink: 0;
+        }
+
+        .qr-text {
+          line-height: 1.4;
+        }
+
+        .seal {
+          text-align: center;
+          width: 115px;
+          height: 115px;
+          margin: auto;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #ffe994, #d69a19, #fff0a6);
+          border: 5px double #b27c13;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          font-family: Arial, sans-serif;
+          font-size: 12px;
+          font-weight: bold;
+          color: #082d55;
+          box-shadow: 0 4px 12px rgba(170, 130, 29, 0.35);
+          line-height: 1.35;
+        }
+
+        .signature {
+          text-align: center;
+          font-family: Arial, sans-serif;
+          font-size: 11.5px;
+          color: #102c55;
+        }
+
+        .signature .sign {
+          font-family: "Great Vibes", "Brush Script MT", cursive, serif;
+          font-size: 28px;
+          font-style: italic;
+          border-bottom: 1.5px solid #c99b37;
+          padding-bottom: 4px;
+          margin-bottom: 5px;
+          color: #102c55;
+          height: 34px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .signature strong {
+          display: block;
+          font-size: 12.5px;
+          color: #102c55;
+        }
+
+        .bottom {
+          text-align: center;
+          border-top: 1px solid #d8b76e;
+          margin-top: 14px;
+          padding-top: 8px;
+          font-family: Arial, sans-serif;
+          font-size: 10px;
+          letter-spacing: 2px;
+          color: #64748b;
         }
 
         @page {
@@ -392,27 +528,26 @@ export function JitCertificate({
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          .jit-cert-master-root {
-            width: 100vw !important;
-            height: 100vh !important;
+
+          .certificate-viewport-wrapper {
             padding: 0 !important;
             margin: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
             background: #ffffff !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
           }
-          .jit-cert-frame {
-            width: 1024px !important;
-            height: 712px !important;
+
+          .certificate {
+            margin: 0 !important;
             box-shadow: none !important;
             border-radius: 0 !important;
+            print-color-adjust: exact !important;
+            -webkit-print-color-adjust: exact !important;
             page-break-inside: avoid !important;
             break-inside: avoid !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
           }
         }
       `}</style>
