@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { JitCertificate, type JitCertificateData, DEFAULT_SAMPLE_CERTIFICATE } from "../components/JitCertificate";
+import { JitCertificate, type JitCertificateData, DEFAULT_SAMPLE_CERTIFICATE, downloadMasterCertificate } from "../components/JitCertificate";
 
 type BusinessRecord = {
   name: string;
@@ -225,16 +225,14 @@ function CertificatePageInner() {
         <div className="control-right">
           {certData && (
             <>
-              {isFlagshipCert && (
-                <a
-                  href="/bizearch-verified-certificate-exact.jpg"
-                  download="bizearch-verified-certificate-jishnu-infotech.jpg"
-                  className="action-btn outline-btn"
-                  style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "5px" }}
-                >
-                  <span>⬇️</span> Download Master JPG
-                </a>
-              )}
+              <button
+                type="button"
+                onClick={() => downloadMasterCertificate(certData)}
+                className="action-btn outline-btn"
+                style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}
+              >
+                <span>⬇️</span> Download Master JPG
+              </button>
               <button type="button" onClick={handleCopyLink} className="action-btn outline-btn">
                 {copied ? "✓ Link Copied!" : "🔗 Copy Link"}
               </button>

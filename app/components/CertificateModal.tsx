@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef } from "react";
-import { JitCertificate, type JitCertificateData } from "./JitCertificate";
+import { JitCertificate, type JitCertificateData, downloadMasterCertificate } from "./JitCertificate";
 
 export function CertificateModal({
   data,
@@ -90,9 +90,9 @@ export function CertificateModal({
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <a
-              href="/bizearch-verified-certificate-exact.jpg"
-              download="Bizearch-Verified-Certificate.jpg"
+            <button
+              type="button"
+              onClick={() => downloadMasterCertificate(data)}
               style={{
                 background: "linear-gradient(135deg, #d4af37, #b8860b)",
                 color: "#081a2e",
@@ -101,7 +101,7 @@ export function CertificateModal({
                 padding: "8px 14px",
                 fontSize: "12px",
                 fontWeight: 800,
-                textDecoration: "none",
+                cursor: "pointer",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "5px",
@@ -110,7 +110,7 @@ export function CertificateModal({
               title="Download Master Resolution JPG"
             >
               <span>⬇️</span> Master JPG
-            </a>
+            </button>
 
             <button
               type="button"
