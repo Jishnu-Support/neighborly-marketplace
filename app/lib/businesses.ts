@@ -117,6 +117,8 @@ export type StoredBusiness = {
   rating?: number;
   reviews?: number;
   customerReviews?: BusinessReview[];
+  profileViews?: number;
+  searchAppearances?: number;
 };
 
 export type PublicBusiness = Omit<StoredBusiness, "salt" | "passwordHash">;
@@ -869,4 +871,66 @@ export async function resetBusinessPassword(identity: string, newPassword: strin
   records[index].passwordHash = hashPassword(newPassword, salt);
   await writeBusinessRecords(records);
   return true;
+}
+
+export async function incrementBusinessViews(businessNameOrId: string): Promise<{ profileViews: number; searchAppearances: number }> {
+  const records = await readBusinessRecords();
+  const normalized = businessNameOrId.trim().toLowerCase();
+  const cleanDigits = businessNameOrId.replace(/\D/g, "");
+
+  const index = records.findIndex((b) => {
+    if (b.id === businessNameOrId) return true;
+    if (b.name && b.name.toLowerCase() === normalized) return true;
+    if (b.email && b.email.toLowerCase() === normalized) return true;
+    const bDigits = b.phone.replace(/\D/g, "");
+    if (cleanDigits.length >= 8 && (bDigits === cleanDigits || bDigits.endsWith(cleanDigits) || cleanDigits.endsWith(bDigits))) return true;
+    return false;
+  });
+
+  if (index >= 0) {
+    records[index].profileViews = (records[index].profileViews || 0) + 1;
+    await writeBusinessRecords(records);
+    return {
+      profileViews: records[index].profileViews || 1,
+      searchAppearances: records[index].searchAppearances || 0,
+    };
+  }
+  return { profileViews: 1, searchAppearances: 0 };
+}
+
+export async function incrementSearchAppearances(businessNames: string[]): Promise<void> {
+  if (!businessNames || !businessNames.length) return;
+  const records = await readBusinessRecords();
+  let changed = false;
+  const nameSet = new Set(businessNames.map((n) => n.trim().toLowerCase()));
+
+  for (const r of records) {
+    if (r.name && nameSet.has(r.name.trim().toLowerCase())) {
+      r.searchAppearances = (r.searchAppearances || 0) + 1;
+      changed = true;
+    }
+  }
+  if (changed) {
+    await writeBusinessRecords(records);
+  }
+}
+
+export async function getBusinessAnalytics(businessNameOrId: string): Promise<{ profileViews: number; searchAppearances: number }> {
+  const records = await readBusinessRecords();
+  const normalized = businessNameOrId.trim().toLowerCase();
+  const cleanDigits = businessNameOrId.replace(/\D/g, "");
+
+  const found = records.find((b) => {
+    if (b.id === businessNameOrId) return true;
+    if (b.name && b.name.toLowerCase() === normalized) return true;
+    if (b.email && b.email.toLowerCase() === normalized) return true;
+    const bDigits = b.phone.replace(/\D/g, "");
+    if (cleanDigits.length >= 8 && (bDigits === cleanDigits || bDigits.endsWith(cleanDigits) || cleanDigits.endsWith(bDigits))) return true;
+    return false;
+  });
+
+  return {
+    profileViews: found?.profileViews || 0,
+    searchAppearances: found?.searchAppearances || 0,
+  };
 }

@@ -2,6 +2,7 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { resolveStorePath } from "./storage-paths";
 import { saveActivityLog } from "./activity-logs";
+import { getBusinessByIdentity } from "./businesses";
 import { OrderStatus, PaymentMethod, PaymentStatus, OrderItem, OrderRecord } from "./orders.shared";
 
 export type { OrderStatus, PaymentMethod, PaymentStatus, OrderItem, OrderRecord };
@@ -82,21 +83,48 @@ export async function listOrdersForCustomer(customerQuery: string): Promise<Orde
     if (!cleanQuery) return true;
     if (o.customerPhone) {
       const oDigits = o.customerPhone.replace(/\D/g, "");
-      if (cleanDigits && (oDigits === cleanDigits || oDigits.endsWith(cleanDigits) || cleanDigits.endsWith(oDigits))) {
+      if (cleanDigits.length >= 8 && (oDigits === cleanDigits || oDigits.endsWith(cleanDigits) || cleanDigits.endsWith(oDigits))) {
         return true;
       }
     }
-    if (o.customerName && o.customerName.toLowerCase().includes(cleanQuery)) {
+    if (o.customerName && (o.customerName.toLowerCase() === cleanQuery || o.customerName.toLowerCase().includes(cleanQuery) || cleanQuery.includes(o.customerName.toLowerCase()))) {
       return true;
     }
     return false;
   });
 }
 
-export async function listOrdersForBusiness(businessName: string): Promise<OrderRecord[]> {
+export async function listOrdersForBusiness(businessIdentifier: string): Promise<OrderRecord[]> {
   const orders = await listAllOrders();
-  const cleanName = businessName.trim().toLowerCase();
-  return orders.filter((o) => o.businessName && o.businessName.trim().toLowerCase() === cleanName);
+  const normalized = businessIdentifier.trim().toLowerCase();
+  const cleanDigits = businessIdentifier.replace(/\D/g, "");
+
+  let registeredBizName = "";
+  let registeredBizPhone = "";
+  try {
+    const biz = await getBusinessByIdentity(businessIdentifier);
+    if (biz) {
+      registeredBizName = biz.name?.trim().toLowerCase() || "";
+      registeredBizPhone = biz.phone?.replace(/\D/g, "") || "";
+    }
+  } catch {}
+
+  return orders.filter((o) => {
+    if (!o.businessName) return false;
+    const oName = o.businessName.trim().toLowerCase();
+    if (oName === normalized) return true;
+    if (normalized.length >= 3 && (oName.includes(normalized) || normalized.includes(oName))) return true;
+    if (registeredBizName && (oName === registeredBizName || oName.includes(registeredBizName) || registeredBizName.includes(oName))) return true;
+    if (cleanDigits.length >= 8 && o.businessPhone) {
+      const bDigits = o.businessPhone.replace(/\D/g, "");
+      if (bDigits === cleanDigits || bDigits.endsWith(cleanDigits) || cleanDigits.endsWith(bDigits)) return true;
+    }
+    if (registeredBizPhone && o.businessPhone) {
+      const bDigits = o.businessPhone.replace(/\D/g, "");
+      if (bDigits === registeredBizPhone || bDigits.endsWith(registeredBizPhone) || registeredBizPhone.endsWith(bDigits)) return true;
+    }
+    return false;
+  });
 }
 
 export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<OrderRecord | null> {

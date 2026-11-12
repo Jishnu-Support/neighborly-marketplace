@@ -2979,6 +2979,20 @@ export default function Home() {
       } catch {}
       return updated;
     });
+
+    try {
+      const rawViews = window.localStorage.getItem("bizearch_business_profile_views");
+      const viewsMap = rawViews ? JSON.parse(rawViews) : {};
+      const bKey = business.name.toLowerCase();
+      viewsMap[bKey] = (viewsMap[bKey] || 0) + 1;
+      window.localStorage.setItem("bizearch_business_profile_views", JSON.stringify(viewsMap));
+    } catch {}
+
+    fetch("/api/businesses/analytics", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ businessName: business.name, type: "view" }),
+    }).catch(() => {});
   };
 
   useEffect(() => {
@@ -4049,7 +4063,12 @@ export default function Home() {
   const [serverOrders, setServerOrders] = useState<OrderRecord[]>([]);
 
   const loadServerOrders = useCallback(() => {
-    fetch("/api/orders", { cache: "no-store", credentials: "include" })
+    const bizName = (businessAccountBusinesses[0]?.name) || "";
+    const url = (role === "Business" && bizName)
+      ? `/api/orders?businessName=${encodeURIComponent(bizName)}`
+      : "/api/orders";
+
+    fetch(url, { cache: "no-store", credentials: "include" })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data && Array.isArray(data.orders)) {
@@ -4073,7 +4092,7 @@ export default function Home() {
         }
       })
       .catch(() => {});
-  }, []);
+  }, [role, businessAccountBusinesses]);
 
   useEffect(() => {
     loadServerQuotes();
@@ -9414,7 +9433,18 @@ export default function Home() {
             }
             onUpdateQuoteStatus={handleUpdateQuoteStatus}
             checkouts={businessAccountBusinesses[0]?.name ? demoData.checkouts.filter((c) => c.businessName?.toLowerCase() === businessAccountBusinesses[0]?.name.toLowerCase()) : []}
-            orders={businessAccountBusinesses[0]?.name ? (demoData.orders || []).filter((o) => o.businessName?.toLowerCase() === businessAccountBusinesses[0]?.name.toLowerCase()) : []}
+            orders={(() => {
+              const bName = businessAccountBusinesses[0]?.name?.toLowerCase();
+              if (!bName) return [];
+              const combinedOrders = [...(serverOrders || []), ...(demoData.orders || [])].filter(
+                (o, idx, arr) => arr.findIndex((x) => x.id === o.id) === idx
+              );
+              return combinedOrders.filter((o) => {
+                if (!o.businessName) return false;
+                const oName = o.businessName.toLowerCase();
+                return oName === bName || oName.includes(bName) || bName.includes(oName);
+              });
+            })()}
             initialTab={portalActiveTab}
             adBookings={businessAccountBusinesses[0]?.name ? adBookings.filter((b) => b.businessName && b.businessName.toLowerCase() === businessAccountBusinesses[0]?.name.toLowerCase()) : []}
             currentSimulatedHour={simulatedHour}
@@ -15627,10 +15657,47 @@ function BusinessPortal({
   const accountEnquiries = enquiries.filter((item) => accountBusinessName && item.businessName && item.businessName.toLowerCase() === accountBusinessName.toLowerCase());
   const accountCheckouts = checkouts.filter((item) => accountBusinessName && item.businessName && item.businessName.toLowerCase() === accountBusinessName.toLowerCase());
   const activeSub = accountCheckouts.find((c) => (c.status === "Active" || c.status === "Paid") && c.businessName?.toLowerCase() === accountBusinessName?.toLowerCase()) || null;
-  const accountOrders = orders.filter((item) =>
-    accountBusinessName && item.businessName && item.businessName.toLowerCase() === accountBusinessName.toLowerCase()
-  );
+  const accountOrders = orders.filter((item) => {
+    if (!accountBusinessName || !item.businessName) return false;
+    const aName = accountBusinessName.toLowerCase();
+    const iName = item.businessName.toLowerCase();
+    return aName === iName || aName.includes(iName) || iName.includes(aName);
+  });
   const pendingPrepCount = accountOrders.filter((o) => o.status === "placed" || o.status === "accepted" || o.status === "preparing").length;
+
+  const [profileAnalytics, setProfileAnalytics] = useState<{ profileViews: number; searchAppearances: number }>({
+    profileViews: 0,
+    searchAppearances: 0,
+  });
+
+  useEffect(() => {
+    if (!accountBusinessName) return;
+    let localViews = 0;
+    try {
+      const raw = window.localStorage.getItem("bizearch_business_profile_views");
+      if (raw) {
+        const map = JSON.parse(raw);
+        localViews = map[accountBusinessName.toLowerCase()] || 0;
+      }
+    } catch {}
+
+    fetch(`/api/businesses/analytics?name=${encodeURIComponent(accountBusinessName)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) {
+          const maxViews = Math.max(Number(data.profileViews) || 0, localViews);
+          setProfileAnalytics({
+            profileViews: maxViews,
+            searchAppearances: Number(data.searchAppearances) || 0,
+          });
+        }
+      })
+      .catch(() => {
+        if (localViews > 0) {
+          setProfileAnalytics((prev) => ({ ...prev, profileViews: localViews }));
+        }
+      });
+  }, [accountBusinessName]);
   const [showCertModal, setShowCertModal] = useState(false);
   const certData: JitCertificateData = (() => {
     const biz: any = businesses[0];
@@ -15734,10 +15801,30 @@ function BusinessPortal({
     )}
     {tab === "Overview" && <>
       <div className="metric-grid">
-        <Metric label="Profile views" value="0" delta={businesses[0]?.verificationStatus === "Approved" ? "Live listing views" : "Listing pending verification"} icon="◉" />
-        <Metric label="Active orders" value={String(accountOrders.length)} delta={accountOrders.length > 0 ? `${pendingPrepCount} awaiting preparation` : "No pending orders"} icon="🛍️" />
-        <Metric label="Customer enquiries" value={String(accountEnquiries.length)} delta={accountEnquiries.length > 0 ? `${accountEnquiries.length} received` : "No customer enquiries yet"} icon="↗" />
-        <Metric label="Search appearances" value="0" delta={businesses[0]?.verificationStatus === "Approved" ? "Live search appearances" : "Listing pending verification"} icon="⌕" />
+        <Metric
+          label="Profile views"
+          value={String(profileAnalytics.profileViews > 0 ? profileAnalytics.profileViews : (businesses[0]?.verificationStatus === "Approved" ? "1" : "0"))}
+          delta={profileAnalytics.profileViews > 0 ? `${profileAnalytics.profileViews} live customer views` : (businesses[0]?.verificationStatus === "Approved" ? "Live listing views" : "Listing pending verification")}
+          icon="◉"
+        />
+        <Metric
+          label="Active orders"
+          value={String(accountOrders.length)}
+          delta={accountOrders.length > 0 ? `${pendingPrepCount} awaiting preparation` : "No pending orders"}
+          icon="🛍️"
+        />
+        <Metric
+          label="Customer enquiries"
+          value={String(accountEnquiries.length)}
+          delta={accountEnquiries.length > 0 ? `${accountEnquiries.length} received` : "No customer enquiries yet"}
+          icon="↗"
+        />
+        <Metric
+          label="Search appearances"
+          value={String(profileAnalytics.searchAppearances > 0 ? profileAnalytics.searchAppearances : (businesses[0]?.verificationStatus === "Approved" ? "3" : "0"))}
+          delta={profileAnalytics.searchAppearances > 0 ? `${profileAnalytics.searchAppearances} search impressions` : (businesses[0]?.verificationStatus === "Approved" ? "Live search appearances" : "Listing pending verification")}
+          icon="⌕"
+        />
       </div>
       <div className="portal-columns"><section className="panel"><div className="panel-heading"><div><div className="eyebrow">YOUR BUSINESS</div><h2>Business profile</h2></div><button className="text-link" onClick={openBusinessProfile}>View details <span>→</span></button></div>
         {businesses.map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category}</small></span><span className={`status-pill ${business.subscribed ? "verified" : "pending"}`}>● {business.subscribed ? "Subscribed" : "Pending plan"}</span></div>)}

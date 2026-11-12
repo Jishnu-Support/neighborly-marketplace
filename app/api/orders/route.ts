@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentSession } from "@/app/lib/auth";
+import { getBusinessByIdentity } from "@/app/lib/businesses";
 import {
   createOrder,
   listAllOrders,
@@ -91,7 +92,14 @@ export async function GET(request: Request) {
 
     // 2. If Business role
     if (session?.role === "Business") {
-      const bizIdentity = businessQuery || session.identity;
+      let bizName = businessQuery;
+      if (!bizName && session.identity) {
+        try {
+          const biz = await getBusinessByIdentity(session.identity);
+          if (biz) bizName = biz.name;
+        } catch {}
+      }
+      const bizIdentity = bizName || session.identity;
       const orders = await listOrdersForBusiness(bizIdentity);
       return NextResponse.json({ orders, count: orders.length }, { headers: noStoreHeaders });
     }
@@ -100,7 +108,6 @@ export async function GET(request: Request) {
     if (customerQuery || session?.role === "Account") {
       const custIdentity = customerQuery || session?.identity || "";
       const orders = await listOrdersForCustomer(custIdentity);
-      // If customer identity returned empty (e.g. guest or name variation), also fall back to all orders if customer placed locally
       if (orders.length === 0 && !customerQuery) {
         const all = await listAllOrders();
         return NextResponse.json({ orders: all, count: all.length }, { headers: noStoreHeaders });
