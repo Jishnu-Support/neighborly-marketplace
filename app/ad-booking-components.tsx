@@ -15,6 +15,7 @@ import {
   isAdActiveAt,
 } from "./lib/ad-booking.shared";
 import { type AdConfig } from "./lib/ad-config.shared";
+import { useAdPricing } from "./lib/use-ad-pricing";
 
 // ============================================================================
 // AD BOOKING WIZARD & CHECKOUT DIALOG
@@ -104,8 +105,10 @@ export function AdBookingDialog({
   const [processingStage, setProcessingStage] = useState("Connecting to Payment Gateway...");
   const [errorMessage, setErrorMessage] = useState("");
 
+  const livePricing = useAdPricing();
+
   // Pricing calculation
-  const pricing = calculateAdPricing(format, slotTiming, durationDays);
+  const pricing = calculateAdPricing(format, slotTiming, durationDays, livePricing);
 
   const calculateEndDate = (start: string, days: number) => {
     try {
@@ -451,8 +454,9 @@ export function AdBookingDialog({
                   gap: "12px",
                 }}
               >
-                {(Object.keys(AD_FORMAT_PRICING) as AdFormat[]).map((fKey) => {
-                  const f = AD_FORMAT_PRICING[fKey];
+                {(Object.keys(livePricing) as AdFormat[]).map((fKey) => {
+                  const f = livePricing[fKey] || AD_FORMAT_PRICING[fKey];
+                  if (!f) return null;
                   const isSelected = format === fKey;
                   const isCombo = fKey === "combo";
 
@@ -1487,7 +1491,7 @@ export function AdBookingDialog({
                     <span style={{ color: "#617d68", display: "block", fontSize: "11px" }}>
                       Ad Format
                     </span>
-                    <strong>{AD_FORMAT_PRICING[format].name}</strong>
+                    <strong>{livePricing[format]?.name || AD_FORMAT_PRICING[format]?.name || format}</strong>
                   </div>
                   <div>
                     <span style={{ color: "#617d68", display: "block", fontSize: "11px" }}>
@@ -2916,6 +2920,7 @@ export function AdCampaignsManager({
   const [selectedAudienceLog, setSelectedAudienceLog] = useState<AdBookingRequest | null>(null);
   const [editingBooking, setEditingBooking] = useState<AdBookingRequest | null>(null);
   const [deletingBooking, setDeletingBooking] = useState<AdBookingRequest | null>(null);
+  const livePricing = useAdPricing();
 
   // Filter bookings strictly for this business. Never show other merchants' ad bookings in a merchant portal.
   const businessBookings = businessName && businessName.trim()
@@ -3141,8 +3146,9 @@ export function AdCampaignsManager({
           gap: "12px",
         }}
       >
-        {(Object.keys(AD_FORMAT_PRICING) as AdFormat[]).map((fKey) => {
-          const f = AD_FORMAT_PRICING[fKey];
+        {(Object.keys(livePricing) as AdFormat[]).map((fKey) => {
+          const f = livePricing[fKey] || AD_FORMAT_PRICING[fKey];
+          if (!f) return null;
           return (
             <div
               key={fKey}
@@ -3338,7 +3344,7 @@ export function AdCampaignsManager({
                         }}
                       >
                         <span>
-                          <strong>Format:</strong> {AD_FORMAT_PRICING[b.format]?.shortName || b.format}
+                          <strong>Format:</strong> {livePricing[b.format]?.shortName || AD_FORMAT_PRICING[b.format]?.shortName || b.format}
                         </span>
                         <span>•</span>
                         <span>
@@ -3609,6 +3615,7 @@ export function CompanyAdBookingsManager({
   const [viewingAudienceLog, setViewingAudienceLog] = useState<AdBookingRequest | null>(null);
   const [editingBooking, setEditingBooking] = useState<AdBookingRequest | null>(null);
   const [deletingBooking, setDeletingBooking] = useState<AdBookingRequest | null>(null);
+  const livePricing = useAdPricing();
 
   const filtered =
     filter === "All" ? bookings : bookings.filter((b) => b.status === filter);
@@ -3797,7 +3804,7 @@ export function CompanyAdBookingsManager({
                   </span>
                   <span>•</span>
                   <span>
-                    <strong>Format:</strong> {AD_FORMAT_PRICING[b.format]?.shortName || b.format}
+                    <strong>Format:</strong> {livePricing[b.format]?.shortName || AD_FORMAT_PRICING[b.format]?.shortName || b.format}
                   </span>
                   <span>•</span>
                   <span>

@@ -27,6 +27,9 @@ export function CompanyAdPricingManager({
       .then((data) => {
         if (data?.pricing && typeof data.pricing === "object") {
           setPricing(data.pricing);
+          try {
+            localStorage.setItem("bizearch_ad_pricing_cache", JSON.stringify(data.pricing));
+          } catch {}
         }
       })
       .catch(() => {})

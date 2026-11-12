@@ -87,7 +87,7 @@ export const AD_FORMAT_PRICING: Record<AdFormat, AdFormatPricing> = {
     shortName: "Content Ad",
     badge: "Announcement Ticker",
     description: "High-visibility scrolling message bar at the top of the platform header",
-    baseDailyRate: 299,
+    baseDailyRate: 10,
   },
   poster: {
     format: "poster",
@@ -95,7 +95,7 @@ export const AD_FORMAT_PRICING: Record<AdFormat, AdFormatPricing> = {
     shortName: "Poster Billboard",
     badge: "Image Billboard",
     description: "Prominent photo billboard banner rotating in both mobile & desktop ad positions",
-    baseDailyRate: 699,
+    baseDailyRate: 25,
   },
   video: {
     format: "video",
@@ -103,7 +103,7 @@ export const AD_FORMAT_PRICING: Record<AdFormat, AdFormatPricing> = {
     shortName: "Video Spotlight",
     badge: "Spotlight Video",
     description: "Local video player spotlight with headline, description, and direct call to action",
-    baseDailyRate: 1299,
+    baseDailyRate: 50,
   },
   combo: {
     format: "combo",
@@ -111,7 +111,7 @@ export const AD_FORMAT_PRICING: Record<AdFormat, AdFormatPricing> = {
     shortName: "All-In-One Combo",
     badge: "Best Value Bundle",
     description: "Maximum neighborhood reach across Poster Billboard, Marquee Ticker & Video Spotlight",
-    baseDailyRate: 1899,
+    baseDailyRate: 75,
   },
 };
 
@@ -217,7 +217,8 @@ export interface AdViewRecord {
 export function calculateAdPricing(
   format: AdFormat,
   slotTiming: AdSlotTiming,
-  durationDays: number
+  durationDays: number,
+  customPricing?: Record<string, { baseDailyRate: number } | any>
 ): {
   baseDailyRate: number;
   multiplier: number;
@@ -226,11 +227,11 @@ export function calculateAdPricing(
   gstAmount: number;
   totalAmount: number;
 } {
-  const formatInfo = AD_FORMAT_PRICING[format] || AD_FORMAT_PRICING.poster;
+  const formatInfo = customPricing?.[format] || AD_FORMAT_PRICING[format] || AD_FORMAT_PRICING.poster;
   const slotInfo = AD_TIME_SLOTS[slotTiming] || AD_TIME_SLOTS.morning;
   const days = Math.max(1, durationDays || 1);
 
-  const baseDailyRate = formatInfo.baseDailyRate;
+  const baseDailyRate = Number(formatInfo?.baseDailyRate) || 10;
   const multiplier = slotInfo.multiplier;
   const effectiveDailyRate = Math.round(baseDailyRate * multiplier);
   const subtotal = effectiveDailyRate * days;

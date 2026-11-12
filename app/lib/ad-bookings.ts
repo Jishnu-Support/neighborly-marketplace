@@ -15,6 +15,7 @@ import {
 } from "./ad-booking.shared";
 export { resolveScheduledAds, createSampleViewRecords, createSampleClickRecords };
 import { type AdConfig } from "./ad-config.shared";
+import { readAdPricingRecords } from "./ad-pricing";
 import { saveActivityLog } from "./activity-logs";
 import { saveAdActivityLog } from "./ad-activity-logs";
 
@@ -68,7 +69,8 @@ export async function createAdBooking(
   const bookings = await readAdBookings();
   const id = `AD-REQ-${Math.floor(1000 + Math.random() * 9000)}`;
 
-  const pricing = calculateAdPricing(request.format, request.slotTiming, request.durationDays);
+  const livePricing = await readAdPricingRecords().catch(() => undefined);
+  const pricing = calculateAdPricing(request.format, request.slotTiming, request.durationDays, livePricing);
 
   const newBooking: AdBookingRequest = {
     ...request,
@@ -123,10 +125,12 @@ export async function updateAdBooking(
     updates.slotTiming ||
     typeof updates.durationDays === "number"
   ) {
+    const livePricing = await readAdPricingRecords().catch(() => undefined);
     const pricing = calculateAdPricing(
       updated.format,
       updated.slotTiming,
-      updated.durationDays
+      updated.durationDays,
+      livePricing
     );
     updated.baseRate = pricing.baseDailyRate;
     updated.subtotal = pricing.subtotal;
