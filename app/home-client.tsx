@@ -1,5 +1,8 @@
 "use client";
 
+import { CertificateModal } from "./components/CertificateModal";
+import type { JitCertificateData } from "./components/JitCertificate";
+
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CompanyAccessLevel } from "./lib/auth";
 import { defaultAdConfig, type AdConfig } from "./lib/ad-config.shared";
@@ -15367,6 +15370,16 @@ function BusinessPortal({
     accountBusinessName && item.businessName && item.businessName.toLowerCase() === accountBusinessName.toLowerCase()
   );
   const pendingPrepCount = accountOrders.filter((o) => o.status === "placed" || o.status === "accepted" || o.status === "preparing").length;
+  const [showCertModal, setShowCertModal] = useState(false);
+  const certData: JitCertificateData = {
+    businessName: accountBusinessName || "My Business",
+    category: businesses[0]?.category || "Local Merchant",
+    address: businesses[0]?.address ? Object.values(businesses[0].address).filter(Boolean).join(", ") : undefined,
+    phone: businessPhoneFor(businesses[0]),
+    gstin: (businesses[0] as any)?.gstin,
+    profileUrl: "https://bizearch.in",
+  };
+
 
   useEffect(() => {
     if (initialTab && initialTab !== "Overview") {
@@ -15675,8 +15688,101 @@ function BusinessPortal({
         />
       </section>
     )}
-    {tab === "Verification" && <section className="panel tab-panel"><div className="eyebrow">BUILD TRUST LOCALLY</div><h2>Verify your business location</h2><p>Share your location only when you are ready. Bizearch uses the location to check your business address; production verification requires a secure server-side workflow.</p><button className="primary-button" onClick={verifyLocation}>⌖ Verify with this device</button></section>}
+    {tab === "Verification" && (
+      <section className="panel tab-panel">
+        {/* JIT Verified Certificate Showcase Card */}
+        <div
+          style={{
+            background: "linear-gradient(135deg, #132f1d 0%, #1e4d2e 100%)",
+            borderRadius: "14px",
+            padding: "24px",
+            color: "#ffffff",
+            marginBottom: "24px",
+            boxShadow: "0 8px 24px rgba(19, 47, 29, 0.2)",
+            border: "1px solid #2d6b41",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "18px",
+          }}
+        >
+          <div style={{ maxWidth: "620px" }}>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                background: "#fef3c7",
+                color: "#92400e",
+                padding: "3px 10px",
+                borderRadius: "999px",
+                fontSize: "11px",
+                fontWeight: 800,
+                letterSpacing: "0.5px",
+                marginBottom: "8px",
+              }}
+            >
+              <span>★</span> JIT ON-GROUND VERIFIED MERCHANT
+            </div>
+            <h2 style={{ margin: "4px 0 8px 0", fontSize: "22px", color: "#ffffff" }}>
+              Official JIT Store Certificate
+            </h2>
+            <p style={{ margin: 0, fontSize: "13px", color: "#d1ede0", lineHeight: 1.5 }}>
+              Your store <strong>{accountBusinessName || "Your Business"}</strong> is certified on-ground by JIT field operations agents. Print or download this official A4 Landscape Certificate to frame at your billing counter or storefront for 5X customer trust.
+            </p>
+          </div>
 
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <button
+              type="button"
+              className="primary-button"
+              onClick={() => setShowCertModal(true)}
+              style={{
+                background: "#ffffff",
+                color: "#113820",
+                fontWeight: 800,
+                fontSize: "13px",
+                padding: "10px 18px",
+                boxShadow: "0 4px 14px rgba(0,0,0,0.15)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+            >
+              <span>🏆</span> View &amp; Print Certificate
+            </button>
+            <a
+              href={`/certificate?business=${encodeURIComponent(accountBusinessName || "")}`}
+              target="_blank"
+              rel="noreferrer"
+              className="outline-button"
+              style={{
+                color: "#ffffff",
+                borderColor: "rgba(255,255,255,0.4)",
+                background: "rgba(255,255,255,0.1)",
+                fontWeight: 700,
+                fontSize: "13px",
+                padding: "10px 16px",
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+            >
+              <span>↗</span> Open Shareable Page
+            </a>
+          </div>
+        </div>
+
+        <div className="eyebrow">BUILD TRUST LOCALLY</div><h2>Verify your business location</h2><p>Share your location only when you are ready. Bizearch uses the location to check your business address; production verification requires a secure server-side workflow.</p><button className="primary-button" onClick={verifyLocation}>⌖ Verify with this device</button></section>)}
+
+  {showCertModal && (
+      <CertificateModal
+        data={certData}
+        close={() => setShowCertModal(false)}
+      />
+    )}
   </div>;
 }
 
@@ -20536,6 +20642,7 @@ function CompanyPortal({
 }) {
   const [activeTab, setActiveTab] = useState(initialTab || "Overview");
   const [companyAdSubTab, setCompanyAdSubTab] = useState<"bookings" | "default" | "pricing">("bookings");
+  const [selectedCertBusiness, setSelectedCertBusiness] = useState<JitCertificateData | null>(null);
   useEffect(() => {
     if (initialTab && initialTab !== "Overview") setActiveTab(initialTab);
   }, [initialTab]);
@@ -21541,6 +21648,34 @@ function CompanyPortal({
                     </button>
                   )}
 
+                  <button
+                    type="button"
+                    className="outline-button"
+                    style={{
+                      fontSize: "11px",
+                      padding: "6px 12px",
+                      color: "#166534",
+                      borderColor: "#86efac",
+                      background: "#f0fdf4",
+                      fontWeight: 700,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                    onClick={() => {
+                      setSelectedCertBusiness({
+                        businessName: business.name,
+                        category: business.category,
+                        address: business.address ? Object.values(business.address).filter(Boolean).join(", ") : undefined,
+                        phone: businessPhoneFor(business),
+                        gstin: (business as any).gstin,
+                        profileUrl: "https://bizearch.in",
+                      });
+                    }}
+                    title="View and print official JIT Verified Certificate"
+                  >
+                    <span>📜</span> Certificate
+                  </button>
                   {/* Delete Option: STRICTLY SUPER ADMIN ONLY */}
                   {accessLevel === "Super Admin" && (
                     <button
@@ -22483,6 +22618,12 @@ function CompanyPortal({
           </form>
         </div>
       </div>
+    )}
+  {selectedCertBusiness && (
+      <CertificateModal
+        data={selectedCertBusiness}
+        close={() => setSelectedCertBusiness(null)}
+      />
     )}
   </div>;
 }
