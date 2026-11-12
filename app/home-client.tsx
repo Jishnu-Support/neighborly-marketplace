@@ -3874,19 +3874,39 @@ export default function Home() {
       ["neighborly-demo-v1", "neighborly-demo-v2", "neighborly-demo-v3", "neighborly-demo-v4", "neighborly-demo-v5"].forEach((k) => {
         try { window.localStorage.removeItem(k); } catch {}
       });
+      let savedOrders: OrderRecord[] = [];
+      try {
+        const dedicatedOrdersRaw = window.localStorage.getItem("bizearch_customer_orders_v1");
+        if (dedicatedOrdersRaw) {
+          const ords = JSON.parse(dedicatedOrdersRaw);
+          if (Array.isArray(ords)) savedOrders = ords;
+        }
+      } catch {}
+
       const saved = window.localStorage.getItem("bizearch-customer-session-v1");
       if (saved) {
-        const parsed: unknown = JSON.parse(saved);
-        if (isDemoData(parsed)) {
-          setDemoData((prev) => ({
-            ...prev,
-            favorites: Array.isArray(parsed.favorites) ? parsed.favorites : [],
-            recentSearches: Array.isArray(parsed.recentSearches) ? parsed.recentSearches : [],
-            enquiries: Array.isArray(parsed.enquiries) ? parsed.enquiries : [],
-            checkouts: Array.isArray(parsed.checkouts) ? parsed.checkouts : [],
-            orders: Array.isArray(parsed.orders) ? parsed.orders : [],
-          }));
-        }
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed === "object") {
+            const rawOrders = Array.isArray(parsed.orders) ? (parsed.orders as OrderRecord[]) : [];
+            const mergedOrders = [...savedOrders, ...rawOrders].filter(
+              (o, idx, arr) => arr.findIndex((x) => x.id === o.id) === idx
+            );
+            setDemoData((prev) => ({
+              ...prev,
+              favorites: Array.isArray(parsed.favorites) ? parsed.favorites : prev.favorites,
+              recentSearches: Array.isArray(parsed.recentSearches) ? parsed.recentSearches : prev.recentSearches,
+              enquiries: Array.isArray(parsed.enquiries) ? parsed.enquiries : prev.enquiries,
+              checkouts: Array.isArray(parsed.checkouts) ? parsed.checkouts : prev.checkouts,
+              orders: mergedOrders.length > 0 ? mergedOrders : (prev.orders || []),
+            }));
+          }
+        } catch {}
+      } else if (savedOrders.length > 0) {
+        setDemoData((prev) => ({
+          ...prev,
+          orders: savedOrders,
+        }));
       }
       setStorageReady(true);
       try { window.sessionStorage.removeItem("bizearch_auto_retry"); } catch {}
@@ -3906,6 +3926,9 @@ export default function Home() {
         orders: demoData.orders,
       };
       window.localStorage.setItem("bizearch-customer-session-v1", JSON.stringify(toSave));
+      if (Array.isArray(demoData.orders) && demoData.orders.length > 0) {
+        window.localStorage.setItem("bizearch_customer_orders_v1", JSON.stringify(demoData.orders));
+      }
       setStorageError("");
     } catch (error) {
       setStorageError(error instanceof Error ? error.message : "Could not save session in this browser.");
@@ -4023,9 +4046,43 @@ export default function Home() {
       .catch(() => {});
   }, []);
 
+  const [serverOrders, setServerOrders] = useState<OrderRecord[]>([]);
+
+  const loadServerOrders = useCallback(() => {
+    fetch("/api/orders", { cache: "no-store", credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && Array.isArray(data.orders)) {
+          setServerOrders(data.orders);
+          setDemoData((prev) => {
+            const currentOrders = prev.orders || [];
+            const merged = [...data.orders, ...currentOrders].filter(
+              (o, idx, arr) => arr.findIndex((x) => x.id === o.id) === idx
+            );
+            try {
+              if (merged.length > 0) {
+                window.localStorage.setItem("bizearch_customer_orders_v1", JSON.stringify(merged));
+                const raw = window.localStorage.getItem("bizearch-customer-session-v1");
+                const parsed = raw ? JSON.parse(raw) : {};
+                parsed.orders = merged;
+                window.localStorage.setItem("bizearch-customer-session-v1", JSON.stringify(parsed));
+              }
+            } catch {}
+            return { ...prev, orders: merged };
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     loadServerQuotes();
-  }, [loadServerQuotes, role]);
+    loadServerOrders();
+    window.addEventListener("neighborly-businesses-refresh", loadServerOrders);
+    return () => {
+      window.removeEventListener("neighborly-businesses-refresh", loadServerOrders);
+    };
+  }, [loadServerQuotes, loadServerOrders, role]);
 
   const { results, relatedProducts, relatedSearches, correctedQuery, searchDurationMs, autocompleteData } = useMemo(() => {
     const t0 = typeof performance !== "undefined" ? performance.now() : Date.now();
@@ -4896,10 +4953,20 @@ export default function Home() {
       createdAt: new Date().toISOString(),
     };
 
-    setDemoData((prev) => ({
-      ...prev,
-      orders: [newOrder, ...(prev.orders || [])],
-    }));
+    setDemoData((prev) => {
+      const updatedOrders = [newOrder, ...(prev.orders || [])];
+      try {
+        window.localStorage.setItem("bizearch_customer_orders_v1", JSON.stringify(updatedOrders));
+        const raw = window.localStorage.getItem("bizearch-customer-session-v1");
+        const parsed = raw ? JSON.parse(raw) : {};
+        parsed.orders = updatedOrders;
+        window.localStorage.setItem("bizearch-customer-session-v1", JSON.stringify(parsed));
+      } catch {}
+      return {
+        ...prev,
+        orders: updatedOrders,
+      };
+    });
 
     recordEvent(`Order placed: ${orderId} for ${orderData.businessName}`);
 
@@ -4914,6 +4981,18 @@ export default function Home() {
         payload: "Business",
       },
     });
+
+    // Save order to persistent server API /api/orders
+    fetch("/api/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(newOrder),
+    })
+      .then(() => {
+        loadServerOrders();
+      })
+      .catch(() => {});
 
     // Record order in company platform transactions
     fetch("/api/company/transactions", {
@@ -4948,8 +5027,26 @@ export default function Home() {
         }
         return o;
       });
+      try {
+        window.localStorage.setItem("bizearch_customer_orders_v1", JSON.stringify(orders));
+        const raw = window.localStorage.getItem("bizearch-customer-session-v1");
+        const parsed = raw ? JSON.parse(raw) : {};
+        parsed.orders = orders;
+        window.localStorage.setItem("bizearch-customer-session-v1", JSON.stringify(parsed));
+      } catch {}
       return { ...prev, orders };
     });
+
+    fetch("/api/orders", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ id: orderId, status: nextStatus }),
+    })
+      .then(() => {
+        loadServerOrders();
+      })
+      .catch(() => {});
 
     recordEvent(`Order status updated: ${orderId} to ${nextStatus}`);
 
