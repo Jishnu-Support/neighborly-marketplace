@@ -60,6 +60,22 @@ export type BusinessReview = {
   createdAt: string;
 };
 
+export type DayOperatingSchedule = {
+  open: string;
+  close: string;
+  isClosed?: boolean;
+};
+
+export type WeeklyOperatingSchedule = {
+  monday: DayOperatingSchedule;
+  tuesday: DayOperatingSchedule;
+  wednesday: DayOperatingSchedule;
+  thursday: DayOperatingSchedule;
+  friday: DayOperatingSchedule;
+  saturday: DayOperatingSchedule;
+  sunday: DayOperatingSchedule;
+};
+
 export type StoredBusiness = {
   id: string;
   name: string;
@@ -84,6 +100,7 @@ export type StoredBusiness = {
   gstin?: string;
   entityType?: string;
   hours?: string;
+  operatingHours?: WeeklyOperatingSchedule;
   products: BusinessProduct[];
   subscribed: boolean;
   active: boolean;
@@ -710,6 +727,7 @@ export async function updateBusinessProfile(idOrIdentity: string, updates: Parti
   website?: string;
   gstin?: string;
   hours?: string;
+  operatingHours?: WeeklyOperatingSchedule;
   products: BusinessProduct[];
   coordinates: { latitude: number; longitude: number } | null;
   rating?: number;
@@ -751,6 +769,7 @@ export async function updateBusinessProfile(idOrIdentity: string, updates: Parti
   if (updates.website !== undefined) current.website = updates.website.trim();
   if (updates.gstin !== undefined) current.gstin = updates.gstin.trim();
   if (updates.hours !== undefined) current.hours = updates.hours.trim();
+  if (updates.operatingHours !== undefined) current.operatingHours = updates.operatingHours;
   if (updates.products !== undefined) current.products = updates.products;
   if (updates.rating !== undefined) current.rating = updates.rating;
   if (updates.reviews !== undefined) current.reviews = updates.reviews;

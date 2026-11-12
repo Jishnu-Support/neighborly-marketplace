@@ -38,6 +38,7 @@ import {
   type RegistrationVideoConfig,
 } from "./lib/registration-video.shared";
 import type { QuoteEnquiry } from "./lib/quotes.shared";
+import type { WeeklyOperatingSchedule, DayOperatingSchedule } from "./lib/businesses";
 
 const subcategoriesSummary: Record<string, string> = {
   Automobiles: "Sales · Service → Two wheelers · Three wheelers · Four wheelers · Heavy vehicles",
@@ -250,6 +251,7 @@ type Business = {
   gstin?: string;
   website?: string;
   hours?: string;
+  operatingHours?: WeeklyOperatingSchedule;
   verificationStatus?: "Pending Agent Visit" | "Pending Admin Approval" | "Approved" | "Rejected";
   assignedAgentId?: string;
   assignedAgentName?: string;
@@ -880,6 +882,132 @@ function updateCatalogueSelections(current: CatalogueSelection[], activity: Cata
   ];
 }
 
+const WEEKDAY_KEYS = [
+  { key: "monday", label: "Monday", short: "Mon" },
+  { key: "tuesday", label: "Tuesday", short: "Tue" },
+  { key: "wednesday", label: "Wednesday", short: "Wed" },
+  { key: "thursday", label: "Thursday", short: "Thu" },
+  { key: "friday", label: "Friday", short: "Fri" },
+  { key: "saturday", label: "Saturday", short: "Sat" },
+  { key: "sunday", label: "Sunday", short: "Sun" },
+] as const;
+
+function formatTime12(timeStr?: string): string {
+  if (!timeStr) return "";
+  const parts = timeStr.trim().split(":");
+  let h = parseInt(parts[0], 10);
+  const m = parseInt(parts[1] || "0", 10);
+  if (isNaN(h)) return timeStr;
+  const ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12;
+  if (h === 0) h = 12;
+  const mFmt = m < 10 ? `0${m}` : `${m}`;
+  return m === 0 ? `${h}:00 ${ampm}` : `${h}:${mFmt} ${ampm}`;
+}
+
+function parseTimeTo24(str?: string, defaultTime = "09:00"): string {
+  if (!str) return defaultTime;
+  str = str.trim();
+  const match12 = str.match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)/i);
+  if (match12) {
+    let h = parseInt(match12[1], 10);
+    const m = match12[2] ? parseInt(match12[2], 10) : 0;
+    const isPM = match12[3].toUpperCase() === "PM";
+    if (isPM && h < 12) h += 12;
+    if (!isPM && h === 12) h = 0;
+    return `${h < 10 ? "0" + h : h}:${m < 10 ? "0" + m : m}`;
+  }
+  const match24 = str.match(/(\d{1,2}):(\d{2})/);
+  if (match24) {
+    const h = parseInt(match24[1], 10);
+    const m = parseInt(match24[2], 10);
+    return `${h < 10 ? "0" + h : h}:${m < 10 ? "0" + m : m}`;
+  }
+  return defaultTime;
+}
+
+function createDefaultWeeklySchedule(): WeeklyOperatingSchedule {
+  return {
+    monday: { open: "09:00", close: "20:30", isClosed: false },
+    tuesday: { open: "09:00", close: "20:30", isClosed: false },
+    wednesday: { open: "09:00", close: "20:30", isClosed: false },
+    thursday: { open: "09:00", close: "20:30", isClosed: false },
+    friday: { open: "09:00", close: "20:30", isClosed: false },
+    saturday: { open: "09:00", close: "20:30", isClosed: false },
+    sunday: { open: "09:00", close: "20:30", isClosed: true },
+  };
+}
+
+function parseHoursToWeekly(operatingHours?: any, hoursStr?: string): WeeklyOperatingSchedule {
+  if (operatingHours && typeof operatingHours === "object" && operatingHours.monday) {
+    return {
+      monday: { open: operatingHours.monday.open || "09:00", close: operatingHours.monday.close || "20:30", isClosed: Boolean(operatingHours.monday.isClosed) },
+      tuesday: { open: operatingHours.tuesday.open || "09:00", close: operatingHours.tuesday.close || "20:30", isClosed: Boolean(operatingHours.tuesday.isClosed) },
+      wednesday: { open: operatingHours.wednesday.open || "09:00", close: operatingHours.wednesday.close || "20:30", isClosed: Boolean(operatingHours.wednesday.isClosed) },
+      thursday: { open: operatingHours.thursday.open || "09:00", close: operatingHours.thursday.close || "20:30", isClosed: Boolean(operatingHours.thursday.isClosed) },
+      friday: { open: operatingHours.friday.open || "09:00", close: operatingHours.friday.close || "20:30", isClosed: Boolean(operatingHours.friday.isClosed) },
+      saturday: { open: operatingHours.saturday.open || "09:00", close: operatingHours.saturday.close || "20:30", isClosed: Boolean(operatingHours.saturday.isClosed) },
+      sunday: { open: operatingHours.sunday.open || "09:00", close: operatingHours.sunday.close || "20:30", isClosed: operatingHours.sunday.isClosed ?? true },
+    };
+  }
+
+  const def = createDefaultWeeklySchedule();
+  if (!hoursStr || typeof hoursStr !== "string") return def;
+
+  if (/24\s*(?:hours|x\s*7|hrs)/i.test(hoursStr)) {
+    for (const d of WEEKDAY_KEYS) {
+      def[d.key] = { open: "00:00", close: "23:59", isClosed: false };
+    }
+    return def;
+  }
+
+  const timeMatches = hoursStr.match(/(\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm)?)/gi);
+  if (timeMatches && timeMatches.length >= 2) {
+    const open24 = parseTimeTo24(timeMatches[0], "09:00");
+    const close24 = parseTimeTo24(timeMatches[1], "20:30");
+    const sunClosed = !/all\s*days|sun(?:day)?(?!\s*:\s*closed)/i.test(hoursStr);
+    for (const d of WEEKDAY_KEYS) {
+      def[d.key] = {
+        open: open24,
+        close: close24,
+        isClosed: d.key === "sunday" ? sunClosed : false,
+      };
+    }
+  }
+
+  return def;
+}
+
+function summarizeWeeklySchedule(schedule: WeeklyOperatingSchedule): string {
+  const groups: { timeStr: string; days: string[] }[] = [];
+  let currentGroup: { timeStr: string; days: string[] } | null = null;
+
+  for (const day of WEEKDAY_KEYS) {
+    const s = schedule[day.key] || { open: "09:00", close: "20:30", isClosed: false };
+    const timeStr = s.isClosed ? "Closed" : `${formatTime12(s.open)} – ${formatTime12(s.close)}`;
+
+    if (currentGroup && currentGroup.timeStr === timeStr) {
+      currentGroup.days.push(day.short);
+    } else {
+      if (currentGroup) groups.push(currentGroup);
+      currentGroup = { timeStr, days: [day.short] };
+    }
+  }
+  if (currentGroup) groups.push(currentGroup);
+
+  return groups
+    .map((g) => {
+      const dayLabel =
+        g.days.length === 1
+          ? g.days[0]
+          : g.days.length === 2
+          ? g.days.join(", ")
+          : `${g.days[0]}–${g.days[g.days.length - 1]}`;
+      return `${dayLabel}: ${g.timeStr}`;
+    })
+    .join(" · ");
+}
+
 function getBusinessWorkingStatus(business: Business): { isOpen: boolean; label: string } {
   // Use Indian Standard Time (UTC+5:30)
   const now = new Date();
@@ -888,6 +1016,38 @@ function getBusinessWorkingStatus(business: Business): { isOpen: boolean; label:
   const currentHour = istDate.getHours();
   const currentMinute = istDate.getMinutes();
   const timeNum = currentHour + currentMinute / 60;
+
+  const dayIndex = istDate.getDay(); // 0 is Sunday, 1 is Monday...
+  const dayKeys: (keyof WeeklyOperatingSchedule)[] = [
+    "sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+  ];
+  const currentDayKey = dayKeys[dayIndex];
+
+  if (business.operatingHours && business.operatingHours[currentDayKey]) {
+    const todaySched = business.operatingHours[currentDayKey];
+    if (todaySched.isClosed) {
+      return { isOpen: false, label: "Closed today" };
+    }
+    const [openH, openM] = todaySched.open.split(":").map(Number);
+    const [closeH, closeM] = todaySched.close.split(":").map(Number);
+    const openTimeNum = (isNaN(openH) ? 9 : openH) + (isNaN(openM) ? 0 : openM) / 60;
+    const closeTimeNum = (isNaN(closeH) ? 20 : closeH) + (isNaN(closeM) ? 30 : closeM) / 60;
+    const isOpen = timeNum >= openTimeNum && timeNum < closeTimeNum;
+    return {
+      isOpen,
+      label: isOpen
+        ? `Open · Closes ${formatTime12(todaySched.close)}`
+        : timeNum < openTimeNum
+        ? `Closed · Opens ${formatTime12(todaySched.open)}`
+        : `Closed · Opens tomorrow`,
+    };
+  }
 
   // Most businesses in Hosur / India operate from 9:00 AM to 8:30 PM (20.5)
   // Food & dining operates 7:30 AM to 10:30 PM (22.5)
@@ -2603,6 +2763,7 @@ export default function Home() {
         gstin: currentBusinessRecord.gstin || "",
         website: currentBusinessRecord.website || "",
         hours: currentBusinessRecord.hours || "",
+        operatingHours: currentBusinessRecord.operatingHours,
         distance: 0.5,
         rating: (Array.isArray(currentBusinessRecord.customerReviews) && currentBusinessRecord.customerReviews.length > 0) ? (currentBusinessRecord.rating || 5) : 0,
         reviews: Array.isArray(currentBusinessRecord.customerReviews) ? currentBusinessRecord.customerReviews.length : 0,
@@ -3777,6 +3938,8 @@ export default function Home() {
                 }
               : undefined,
             icon: "🏢",
+            hours: b.hours || "",
+            operatingHours: b.operatingHours,
           };
         });
 
@@ -10382,6 +10545,7 @@ function BusinessDetailDialog({
   const [travelMode, setTravelMode] = useState<"driving" | "two-wheeler" | "walking">("driving");
   const [mapProvider, setMapProvider] = useState<"google" | "osm">("google");
   const [copiedCoords, setCopiedCoords] = useState(false);
+  const [showHoursSchedule, setShowHoursSchedule] = useState(false);
 
   useEffect(() => {
     setActiveTab(initialTab);
@@ -10637,6 +10801,120 @@ function BusinessDetailDialog({
             </button>
           </div>
         </div>
+
+        {/* Business Operating Hours & Weekly Schedule */}
+        {(() => {
+          const st = getBusinessWorkingStatus(business);
+          const weekly = parseHoursToWeekly(business.operatingHours, business.hours);
+          const now = new Date();
+          const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+          const istDate = new Date(utc + 3600000 * 5.5);
+          const dayKeys: (keyof WeeklyOperatingSchedule)[] = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+          const todayKey = dayKeys[istDate.getDay()];
+
+          return (
+            <div
+              style={{
+                margin: "10px 0 12px",
+                padding: "10px 14px",
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0",
+                borderRadius: "10px",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span style={{ fontSize: "16px" }}>🕒</span>
+                  <div>
+                    <div style={{ fontSize: "12px", fontWeight: 800, color: "#0f172a", display: "flex", alignItems: "center", gap: "6px" }}>
+                      <span>Operating Hours:</span>
+                      <span
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: 800,
+                          padding: "2px 8px",
+                          borderRadius: "10px",
+                          background: st.isOpen ? "#ecfdf5" : "#fef2f2",
+                          color: st.isOpen ? "#15803d" : "#b91c1c",
+                          border: `1px solid ${st.isOpen ? "#bbf7d0" : "#fecaca"}`,
+                        }}
+                      >
+                        ● {st.label}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: "11px", color: "#64748b", marginTop: "2px" }}>
+                      {business.hours || summarizeWeeklySchedule(weekly)}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowHoursSchedule(!showHoursSchedule)}
+                  style={{
+                    background: "#ffffff",
+                    border: "1px solid #cbd5e1",
+                    borderRadius: "6px",
+                    padding: "4px 10px",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    color: "#00438b",
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "4px",
+                  }}
+                >
+                  <span>{showHoursSchedule ? "Hide Schedule" : "View 7-Day Schedule"}</span>
+                  <span>{showHoursSchedule ? "▲" : "▼"}</span>
+                </button>
+              </div>
+
+              {showHoursSchedule && (
+                <div
+                  style={{
+                    marginTop: "10px",
+                    paddingTop: "10px",
+                    borderTop: "1px solid #e2e8f0",
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
+                    gap: "8px",
+                  }}
+                >
+                  {WEEKDAY_KEYS.map((day) => {
+                    const isToday = day.key === todayKey;
+                    const item = weekly[day.key] || { open: "09:00", close: "20:30", isClosed: false };
+                    return (
+                      <div
+                        key={day.key}
+                        style={{
+                          padding: "8px 10px",
+                          borderRadius: "8px",
+                          border: isToday ? "1.5px solid #00438b" : "1px solid #e2e8f0",
+                          background: isToday ? "#eff6ff" : "#ffffff",
+                          fontSize: "11px",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
+                          <strong style={{ color: isToday ? "#00438b" : "#1e293b", fontWeight: 800 }}>
+                            {day.label}
+                          </strong>
+                          {isToday && (
+                            <span style={{ fontSize: "9px", fontWeight: 800, background: "#00438b", color: "#fff", padding: "1px 5px", borderRadius: "4px" }}>
+                              Today
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ color: item.isClosed ? "#dc2626" : "#334155", fontWeight: item.isClosed ? 700 : 500 }}>
+                          {item.isClosed ? "Closed" : `${formatTime12(item.open)} – ${formatTime12(item.close)}`}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Business Amenities & Attributes */}
         <div className="business-amenities-strip" style={{ display: "flex", gap: "6px", flexWrap: "wrap", margin: "4px 0 14px" }}>
@@ -13424,6 +13702,9 @@ function BusinessProfileEditorView({
   const [description, setDescription] = useState(business?.description || "");
   const [website, setWebsite] = useState(business?.website || "");
   const [hours, setHours] = useState(business?.hours || "Mon–Sat: 9:00 AM – 8:30 PM");
+  const [weeklySchedule, setWeeklySchedule] = useState<WeeklyOperatingSchedule>(() =>
+    parseHoursToWeekly(business?.operatingHours, business?.hours)
+  );
 
   const [doorNumber, setDoorNumber] = useState(business?.address?.doorNumber || "");
   const [street, setStreet] = useState(business?.address?.street || "");
@@ -13452,6 +13733,7 @@ function BusinessProfileEditorView({
     setDescription(business.description || "");
     setWebsite(business.website || "");
     setHours(business.hours || "Mon–Sat: 9:00 AM – 8:30 PM");
+    setWeeklySchedule(parseHoursToWeekly(business.operatingHours, business.hours));
     setDoorNumber(business.address?.doorNumber || "");
     setStreet(business.address?.street || "");
     setArea(business.address?.area || "");
@@ -13465,6 +13747,76 @@ function BusinessProfileEditorView({
       setCoordinates(business.coordinates || business.demoCoordinates!);
     }
   }, [business]);
+
+  const handleDayChange = (dayKey: keyof WeeklyOperatingSchedule, updates: Partial<DayOperatingSchedule>) => {
+    setWeeklySchedule((prev) => {
+      const next = {
+        ...prev,
+        [dayKey]: {
+          ...prev[dayKey],
+          ...updates,
+        },
+      };
+      const summary = summarizeWeeklySchedule(next);
+      setHours(summary);
+      return next;
+    });
+  };
+
+  const handleApplyPreset = (presetKey: "standard" | "corporate" | "all_days" | "24_7") => {
+    let next: WeeklyOperatingSchedule;
+    if (presetKey === "standard") {
+      next = createDefaultWeeklySchedule();
+    } else if (presetKey === "corporate") {
+      next = {
+        monday: { open: "09:00", close: "18:00", isClosed: false },
+        tuesday: { open: "09:00", close: "18:00", isClosed: false },
+        wednesday: { open: "09:00", close: "18:00", isClosed: false },
+        thursday: { open: "09:00", close: "18:00", isClosed: false },
+        friday: { open: "09:00", close: "18:00", isClosed: false },
+        saturday: { open: "09:00", close: "14:00", isClosed: false },
+        sunday: { open: "09:00", close: "18:00", isClosed: true },
+      };
+    } else if (presetKey === "all_days") {
+      next = {
+        monday: { open: "09:00", close: "21:00", isClosed: false },
+        tuesday: { open: "09:00", close: "21:00", isClosed: false },
+        wednesday: { open: "09:00", close: "21:00", isClosed: false },
+        thursday: { open: "09:00", close: "21:00", isClosed: false },
+        friday: { open: "09:00", close: "21:00", isClosed: false },
+        saturday: { open: "09:00", close: "21:00", isClosed: false },
+        sunday: { open: "09:00", close: "21:00", isClosed: false },
+      };
+    } else {
+      next = {
+        monday: { open: "00:00", close: "23:59", isClosed: false },
+        tuesday: { open: "00:00", close: "23:59", isClosed: false },
+        wednesday: { open: "00:00", close: "23:59", isClosed: false },
+        thursday: { open: "00:00", close: "23:59", isClosed: false },
+        friday: { open: "00:00", close: "23:59", isClosed: false },
+        saturday: { open: "00:00", close: "23:59", isClosed: false },
+        sunday: { open: "00:00", close: "23:59", isClosed: false },
+      };
+    }
+    setWeeklySchedule(next);
+    setHours(summarizeWeeklySchedule(next));
+    showNotice?.("✓ Applied operating hours preset!");
+  };
+
+  const handleCopyDayToAll = (fromDayKey: keyof WeeklyOperatingSchedule) => {
+    const source = weeklySchedule[fromDayKey];
+    setWeeklySchedule((prev) => {
+      const next = { ...prev };
+      for (const d of WEEKDAY_KEYS) {
+        if (d.key !== "sunday") {
+          next[d.key] = { ...source };
+        }
+      }
+      setHours(summarizeWeeklySchedule(next));
+      return next;
+    });
+    showNotice?.(`✓ Copied ${fromDayKey} hours to all weekdays!`);
+  };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -13552,6 +13904,7 @@ function BusinessProfileEditorView({
       description: description.trim(),
       website: website.trim(),
       hours: hours.trim(),
+      operatingHours: weeklySchedule,
       photos: images,
       images,
       address: {
@@ -13851,17 +14204,6 @@ function BusinessProfileEditorView({
             </label>
 
             <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
-              <span>Business Operating Hours</span>
-              <input
-                type="text"
-                value={hours}
-                onChange={(e) => setHours(e.target.value)}
-                placeholder="e.g. Mon–Sat: 9:00 AM – 8:30 PM"
-                style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
-              />
-            </label>
-
-            <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "11.5px", fontWeight: 700, color: "#334155" }}>
               <span>Website or Social Profile</span>
               <input
                 type="url"
@@ -13871,6 +14213,231 @@ function BusinessProfileEditorView({
                 style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px" }}
               />
             </label>
+
+            {/* Dedicated Day-Wise Operating Hours Scheduler */}
+            <div style={{ gridColumn: "1 / -1", display: "flex", flexDirection: "column", gap: "10px", marginTop: "8px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
+                <div>
+                  <span style={{ fontSize: "12px", fontWeight: 800, color: "#0f172a", display: "flex", alignItems: "center", gap: "6px" }}>
+                    <span>🕒 Business Operating Hours (Day &amp; Time Details) *</span>
+                  </span>
+                  <p style={{ margin: "2px 0 0", fontSize: "11px", color: "#64748b" }}>
+                    Set custom opening and closing times for each day of the week (e.g., Monday 9:00 AM – 6:00 PM, Tuesday 9:00 AM – 5:00 PM).
+                  </p>
+                </div>
+
+                {/* Preset shortcuts */}
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: "10px", fontWeight: 700, color: "#64748b" }}>Presets:</span>
+                  <button
+                    type="button"
+                    onClick={() => handleApplyPreset("standard")}
+                    style={{ background: "#f1f5f9", border: "1px solid #cbd5e1", borderRadius: "6px", padding: "4px 8px", fontSize: "10.5px", fontWeight: 700, color: "#334155", cursor: "pointer" }}
+                    title="Mon–Sat: 9:00 AM – 8:30 PM, Sun: Closed"
+                  >
+                    ⚡ Mon–Sat (9 AM–8:30 PM)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleApplyPreset("corporate")}
+                    style={{ background: "#f1f5f9", border: "1px solid #cbd5e1", borderRadius: "6px", padding: "4px 8px", fontSize: "10.5px", fontWeight: 700, color: "#334155", cursor: "pointer" }}
+                    title="Mon–Fri: 9:00 AM – 6:00 PM, Sat: Half day, Sun: Closed"
+                  >
+                    ⚡ Mon–Fri (9 AM–6 PM)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleApplyPreset("all_days")}
+                    style={{ background: "#f1f5f9", border: "1px solid #cbd5e1", borderRadius: "6px", padding: "4px 8px", fontSize: "10.5px", fontWeight: 700, color: "#334155", cursor: "pointer" }}
+                    title="Open all 7 days from 9:00 AM to 9:00 PM"
+                  >
+                    ⚡ All 7 Days (9 AM–9 PM)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleApplyPreset("24_7")}
+                    style={{ background: "#f1f5f9", border: "1px solid #cbd5e1", borderRadius: "6px", padding: "4px 8px", fontSize: "10.5px", fontWeight: 700, color: "#334155", cursor: "pointer" }}
+                    title="Always open 24/7"
+                  >
+                    ⚡ 24 Hours Open
+                  </button>
+                </div>
+              </div>
+
+              {/* Weekly Day-by-Day Table / Cards */}
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "8px",
+                  background: "#f8fafc",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: "10px",
+                  padding: "12px",
+                }}
+              >
+                {WEEKDAY_KEYS.map((day) => {
+                  const item = weeklySchedule[day.key] || { open: "09:00", close: "20:30", isClosed: false };
+                  const isClosed = Boolean(item.isClosed);
+
+                  return (
+                    <div
+                      key={day.key}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        flexWrap: "wrap",
+                        gap: "10px",
+                        padding: "8px 12px",
+                        background: "#ffffff",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "8px",
+                      }}
+                    >
+                      {/* Day Label & Quick Copy */}
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: "120px" }}>
+                        <span style={{ fontSize: "13px", fontWeight: 800, color: "#1e293b", minWidth: "85px" }}>
+                          {day.label}
+                        </span>
+                        {day.key === "monday" && (
+                          <button
+                            type="button"
+                            onClick={() => handleCopyDayToAll("monday")}
+                            title="Copy Monday's hours to Tuesday through Saturday"
+                            style={{
+                              fontSize: "10px",
+                              fontWeight: 700,
+                              background: "#e0f2fe",
+                              color: "#0369a1",
+                              border: "1px solid #bae6fd",
+                              borderRadius: "4px",
+                              padding: "2px 6px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Copy to all
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Open / Closed Toggle Button */}
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <button
+                          type="button"
+                          onClick={() => handleDayChange(day.key, { isClosed: !isClosed })}
+                          style={{
+                            padding: "5px 12px",
+                            borderRadius: "6px",
+                            fontSize: "11.5px",
+                            fontWeight: 800,
+                            cursor: "pointer",
+                            border: isClosed ? "1px solid #fecaca" : "1px solid #86efac",
+                            background: isClosed ? "#fef2f2" : "#f0fdf4",
+                            color: isClosed ? "#dc2626" : "#15803d",
+                            minWidth: "78px",
+                            textAlign: "center",
+                          }}
+                        >
+                          {isClosed ? "✕ Closed" : "● Open"}
+                        </button>
+                      </div>
+
+                      {/* Time Controls */}
+                      {!isClosed ? (
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                            <span style={{ fontSize: "10.5px", color: "#64748b", fontWeight: 600 }}>Opens:</span>
+                            <input
+                              type="time"
+                              value={item.open}
+                              onChange={(e) => handleDayChange(day.key, { open: e.target.value })}
+                              style={{
+                                padding: "6px 8px",
+                                borderRadius: "6px",
+                                border: "1px solid #cbd5e1",
+                                fontSize: "12px",
+                                background: "#fff",
+                              }}
+                            />
+                          </div>
+                          <span style={{ fontSize: "11px", color: "#64748b", fontWeight: 700 }}>to</span>
+                          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                            <span style={{ fontSize: "10.5px", color: "#64748b", fontWeight: 600 }}>Closes:</span>
+                            <input
+                              type="time"
+                              value={item.close}
+                              onChange={(e) => handleDayChange(day.key, { close: e.target.value })}
+                              style={{
+                                padding: "6px 8px",
+                                borderRadius: "6px",
+                                border: "1px solid #cbd5e1",
+                                fontSize: "12px",
+                                background: "#fff",
+                              }}
+                            />
+                          </div>
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              fontWeight: 700,
+                              color: "#0f766e",
+                              background: "#f0fdfa",
+                              padding: "4px 8px",
+                              borderRadius: "6px",
+                              border: "1px solid #ccfbf1",
+                              minWidth: "125px",
+                              textAlign: "center",
+                            }}
+                          >
+                            {formatTime12(item.open)} – {formatTime12(item.close)}
+                          </span>
+                        </div>
+                      ) : (
+                        <div style={{ color: "#94a3b8", fontSize: "11.5px", fontStyle: "italic", padding: "6px 0" }}>
+                          Closed all day
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Summary String & Override */}
+              <div
+                style={{
+                  background: "#ffffff",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: "8px",
+                  padding: "10px 14px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "6px",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "6px" }}>
+                  <span style={{ fontSize: "11px", fontWeight: 800, color: "#334155", textTransform: "uppercase" }}>
+                    Formatted Hours Summary (Displayed on Storefront &amp; Cards)
+                  </span>
+                  <span style={{ fontSize: "10px", color: "#16a34a", fontWeight: 700 }}>✓ Auto-synced from weekly schedule</span>
+                </div>
+                <input
+                  type="text"
+                  value={hours}
+                  onChange={(e) => setHours(e.target.value)}
+                  placeholder="e.g. Mon: 9:00 AM – 6:00 PM · Tue: 9:00 AM – 5:00 PM · Sun: Closed"
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: "6px",
+                    border: "1px solid #cbd5e1",
+                    fontSize: "12.5px",
+                    color: "#0f172a",
+                    fontWeight: 600,
+                    background: "#f8fafc",
+                  }}
+                />
+              </div>
+            </div>
           </div>
         </section>
 

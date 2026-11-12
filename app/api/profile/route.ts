@@ -144,6 +144,7 @@ export async function PATCH(request: Request) {
         photos: photosArray,
         images: photosArray,
         hours: typeof body.hours === "string" ? body.hours : undefined,
+        operatingHours: body.operatingHours && typeof body.operatingHours === "object" ? (body.operatingHours as any) : undefined,
       });
 
       const response = NextResponse.json({ success: true, business: updated });
