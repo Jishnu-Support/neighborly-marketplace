@@ -3923,15 +3923,30 @@ export default function Home() {
             subscribed: b.subscribed ?? true,
             active: b.active ?? true,
             disabledReason: b.disabledReason || "",
-            products: Array.isArray(b.products)
-              ? b.products.map((p: any, idx: number) => ({
-                  id: p.id || `reg-p-${idx}`,
-                  name: p.name,
-                  price: typeof p.price === "number" ? p.price : Number(p.price) || 0,
-                  description: p.description || "",
-                  unit: "unit",
-                }))
-              : [],
+            products: (() => {
+              let rawProds = Array.isArray(b.products) ? b.products : [];
+              try {
+                const rawOverrides = window.localStorage.getItem("bizearch_local_product_overrides");
+                if (rawOverrides) {
+                  const map = JSON.parse(rawOverrides);
+                  const bKey = (b.name || "").toLowerCase();
+                  if (Array.isArray(map[bKey]) && map[bKey].length > 0) {
+                    rawProds = map[bKey];
+                  }
+                }
+              } catch {}
+              return rawProds.map((p: any, idx: number) => ({
+                id: p.id || `reg-p-${idx}`,
+                name: p.name,
+                price: typeof p.price === "number" ? p.price : Number(p.price) || 0,
+                description: p.description || "",
+                unit: p.unit || "unit",
+                image: p.image || p.imageUrl || undefined,
+                badge: p.badge || undefined,
+                inStock: p.inStock !== false,
+                catalogueSelections: Array.isArray(p.catalogueSelections) ? p.catalogueSelections : undefined,
+              }));
+            })(),
             photos: b.images || [],
             images: b.images || [],
             businessModes: b.businessModes || ["In-store Sales", "Customer Service"],
@@ -4938,32 +4953,47 @@ export default function Home() {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       inStock: product.inStock !== false,
     };
-    if (currentBusinessRecord && currentBusinessRecord.name === businessName) {
+    let updatedProducts: Product[] = [];
+    if (currentBusinessRecord && (currentBusinessRecord.name?.toLowerCase() === businessName.toLowerCase())) {
+      updatedProducts = [...(currentBusinessRecord.products || []), newProduct];
       setCurrentBusinessRecord((prev: any) => prev ? {
         ...prev,
-        products: [...(prev.products || []), newProduct]
+        products: updatedProducts,
       } : prev);
     }
-    const currentBiz = demoData.businesses.find((b) => b.name === businessName);
-    const updatedProducts = currentBiz ? [...currentBiz.products, newProduct] : [newProduct];
+    const currentBiz = demoData.businesses.find((b) => b.name?.toLowerCase() === businessName.toLowerCase());
+    if (updatedProducts.length === 0) {
+      updatedProducts = currentBiz ? [...(currentBiz.products || []), newProduct] : [newProduct];
+    }
     setDemoData((current) => ({
       ...current,
       businesses: current.businesses.map((business) =>
-        business.name === businessName ? { ...business, products: updatedProducts } : business,
+        business.name?.toLowerCase() === businessName.toLowerCase() ? { ...business, products: updatedProducts } : business,
       ),
     }));
+    try {
+      const raw = window.localStorage.getItem("bizearch_local_product_overrides");
+      const map = raw ? JSON.parse(raw) : {};
+      map[businessName.toLowerCase()] = updatedProducts;
+      window.localStorage.setItem("bizearch_local_product_overrides", JSON.stringify(map));
+    } catch {}
     fetch("/api/businesses", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ name: businessName, products: updatedProducts }),
-    }).catch(() => {});
+    })
+      .then(() => {
+        window.dispatchEvent(new Event("neighborly-businesses-refresh"));
+      })
+      .catch(() => {});
     recordEvent("Business catalogue updated");
     showNotice(`"${product.name}" added to catalogue.`);
   }
 
   function updateProduct(businessName: string, productId: string, updated: Partial<Product>) {
     let updatedProducts: Product[] = [];
-    if (currentBusinessRecord && currentBusinessRecord.name === businessName) {
+    if (currentBusinessRecord && (currentBusinessRecord.name?.toLowerCase() === businessName.toLowerCase())) {
       setCurrentBusinessRecord((prev: any) => {
         if (!prev) return prev;
         updatedProducts = (prev.products || []).map((p: any) => p.id === productId ? { ...p, ...updated } : p);
@@ -4971,23 +5001,34 @@ export default function Home() {
       });
     }
     setDemoData((current) => {
-      const biz = current.businesses.find((b) => b.name === businessName);
+      const biz = current.businesses.find((b) => b.name?.toLowerCase() === businessName.toLowerCase());
       if (biz) {
         updatedProducts = biz.products.map((p) => p.id === productId ? { ...p, ...updated } : p);
       }
       return {
         ...current,
         businesses: current.businesses.map((business) =>
-          business.name === businessName ? { ...business, products: updatedProducts } : business
+          business.name?.toLowerCase() === businessName.toLowerCase() ? { ...business, products: updatedProducts } : business
         ),
       };
     });
     if (updatedProducts.length > 0) {
+      try {
+        const raw = window.localStorage.getItem("bizearch_local_product_overrides");
+        const map = raw ? JSON.parse(raw) : {};
+        map[businessName.toLowerCase()] = updatedProducts;
+        window.localStorage.setItem("bizearch_local_product_overrides", JSON.stringify(map));
+      } catch {}
       fetch("/api/businesses", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ name: businessName, products: updatedProducts }),
-      }).catch(() => {});
+      })
+        .then(() => {
+          window.dispatchEvent(new Event("neighborly-businesses-refresh"));
+        })
+        .catch(() => {});
     }
     recordEvent("Business catalogue item updated");
     showNotice("Catalogue item updated.");
@@ -4995,7 +5036,7 @@ export default function Home() {
 
   function deleteProduct(businessName: string, productId: string) {
     let updatedProducts: Product[] = [];
-    if (currentBusinessRecord && currentBusinessRecord.name === businessName) {
+    if (currentBusinessRecord && (currentBusinessRecord.name?.toLowerCase() === businessName.toLowerCase())) {
       setCurrentBusinessRecord((prev: any) => {
         if (!prev) return prev;
         updatedProducts = (prev.products || []).filter((p: any) => p.id !== productId);
@@ -5003,22 +5044,33 @@ export default function Home() {
       });
     }
     setDemoData((current) => {
-      const biz = current.businesses.find((b) => b.name === businessName);
+      const biz = current.businesses.find((b) => b.name?.toLowerCase() === businessName.toLowerCase());
       if (biz) {
         updatedProducts = biz.products.filter((p) => p.id !== productId);
       }
       return {
         ...current,
         businesses: current.businesses.map((business) =>
-          business.name === businessName ? { ...business, products: updatedProducts } : business
+          business.name?.toLowerCase() === businessName.toLowerCase() ? { ...business, products: updatedProducts } : business
         ),
       };
     });
+    try {
+      const raw = window.localStorage.getItem("bizearch_local_product_overrides");
+      const map = raw ? JSON.parse(raw) : {};
+      map[businessName.toLowerCase()] = updatedProducts;
+      window.localStorage.setItem("bizearch_local_product_overrides", JSON.stringify(map));
+    } catch {}
     fetch("/api/businesses", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ name: businessName, products: updatedProducts }),
-    }).catch(() => {});
+    })
+      .then(() => {
+        window.dispatchEvent(new Event("neighborly-businesses-refresh"));
+      })
+      .catch(() => {});
     recordEvent("Business catalogue item deleted");
     showNotice("Catalogue item removed.");
   }
@@ -9293,6 +9345,7 @@ export default function Home() {
             setSelectedBusiness(b);
           }}
           onPlaceOrder={placeOrder}
+          customerProfile={currentCustomerProfile}
         />
       )}
       {activeReceipt && (
@@ -12030,28 +12083,44 @@ function OrderCheckoutDialog({
   close,
   onBack,
   onPlaceOrder,
+  customerProfile,
 }: {
   business: Business;
   product: Product;
   close: () => void;
   onBack?: () => void;
   onPlaceOrder: (order: Omit<OrderRecord, "id" | "createdAt">) => void;
+  customerProfile?: MemberProfile | null;
 }) {
+  const savedProfile = useMemo(() => {
+    if (customerProfile && (customerProfile.fullName || customerProfile.phone)) return customerProfile;
+    try {
+      if (typeof window !== "undefined") {
+        const raw = window.localStorage.getItem("neighborly_profile_Account") || window.localStorage.getItem("neighborly_profile_v1_Account");
+        if (raw) return JSON.parse(raw);
+      }
+    } catch {}
+    return null;
+  }, [customerProfile]);
+
+  const isFoodBusiness = useMemo(() => {
+    const text = `${business.category || ""} ${business.name || ""} ${product.name || ""} ${product.description || ""}`.toLowerCase();
+    return /restaurant|cafe|bakery|food|hotel|sweets|snack|cater|dosa|biryani|kitchen|tea|coffee|juice|mess/.test(text);
+  }, [business.category, business.name, product.name, product.description]);
+
   const [quantity, setQuantity] = useState(1);
   const [deliveryType, setDeliveryType] = useState<"delivery" | "pickup">("delivery");
-  const [customerName, setCustomerName] = useState("Senthil Nathan");
-  const [customerPhone, setCustomerPhone] = useState("+91 98450 12345");
-  const [customerAddress, setCustomerAddress] = useState(
-    "No. 18, 2nd Cross, Bagalur Road, Near Gandhi Statue, Hosur - 635109"
-  );
+  const [customerName, setCustomerName] = useState(savedProfile?.fullName || "");
+  const [customerPhone, setCustomerPhone] = useState(savedProfile?.phone || "");
+  const [customerAddress, setCustomerAddress] = useState(savedProfile?.address || "");
   const [notes, setNotes] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("upi");
-  const [upiId, setUpiId] = useState("senthil.n@okhdfcbank");
+  const [upiId, setUpiId] = useState("");
   const [cardData, setCardData] = useState({
-    number: "4532 8912 3456 7890",
-    expiry: "09/28",
-    cvv: "321",
-    name: "Senthil Nathan",
+    number: "",
+    expiry: "",
+    cvv: "",
+    name: savedProfile?.fullName || "",
   });
   const [selectedBank, setSelectedBank] = useState("State Bank of India (SBI)");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -12068,6 +12137,22 @@ function OrderCheckoutDialog({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (isProcessing) return;
+
+    if (typeof window !== "undefined" && (customerName.trim() || customerPhone.trim() || customerAddress.trim())) {
+      try {
+        const existingRaw = window.localStorage.getItem("neighborly_profile_Account");
+        const existing = existingRaw ? JSON.parse(existingRaw) : {};
+        window.localStorage.setItem(
+          "neighborly_profile_Account",
+          JSON.stringify({
+            ...existing,
+            fullName: customerName.trim() || existing.fullName || "",
+            phone: customerPhone.trim() || existing.phone || "",
+            address: customerAddress.trim() || existing.address || "",
+          })
+        );
+      } catch {}
+    }
 
     setIsProcessing(true);
     setProcessingStage(
@@ -12095,7 +12180,7 @@ function OrderCheckoutDialog({
         onPlaceOrder({
           businessName: business.name,
           customerName: customerName.trim() || "Customer",
-          customerPhone: customerPhone.trim() || "+91 98450 12345",
+          customerPhone: customerPhone.trim() || (savedProfile?.phone || ""),
           customerAddress: deliveryType === "delivery" ? customerAddress.trim() : `Store Pickup: ${business.name}, Hosur`,
           deliveryType,
           notes: notes.trim(),
@@ -12256,7 +12341,7 @@ function OrderCheckoutDialog({
                       required
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
-                      placeholder="e.g. Senthil Nathan"
+                      placeholder="Enter your name"
                       style={{ width: "100%", padding: "9px 12px", border: "1px solid #c9dcc8", borderRadius: "8px", marginTop: "4px" }}
                     />
                   </label>
@@ -12267,7 +12352,7 @@ function OrderCheckoutDialog({
                       required
                       value={customerPhone}
                       onChange={(e) => setCustomerPhone(e.target.value)}
-                      placeholder="+91 98450 12345"
+                      placeholder="10-digit mobile number"
                       style={{ width: "100%", padding: "9px 12px", border: "1px solid #c9dcc8", borderRadius: "8px", marginTop: "4px" }}
                     />
                   </label>
@@ -12281,19 +12366,19 @@ function OrderCheckoutDialog({
                       required
                       value={customerAddress}
                       onChange={(e) => setCustomerAddress(e.target.value)}
-                      placeholder="Door number, street name, Hosur area, landmark, pincode..."
+                      placeholder="Door no, street name, area, Hosur - 635109"
                       style={{ width: "100%", padding: "9px 12px", border: "1px solid #c9dcc8", borderRadius: "8px", marginTop: "4px", resize: "vertical" }}
                     />
                   </label>
                 )}
 
                 <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#36593e" }}>
-                  Cooking / Packing Instructions (Optional)
+                  {isFoodBusiness ? "Cooking / Packing Instructions (Optional)" : "Delivery / Handling Instructions (Optional)"}
                   <input
                     type="text"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="e.g. Pack spicy, extra chutney, banana leaf wrapping..."
+                    placeholder={isFoodBusiness ? "e.g. Less spicy, pack chutney separately..." : "e.g. Call before delivery, landmark instructions..."}
                     style={{ width: "100%", padding: "9px 12px", border: "1px solid #c9dcc8", borderRadius: "8px", marginTop: "4px" }}
                   />
                 </label>
@@ -12367,25 +12452,30 @@ function OrderCheckoutDialog({
                     </div>
 
                     <div style={{ display: "flex", gap: "6px", margin: "12px 0 8px", flexWrap: "wrap" }}>
-                      {["Google Pay", "PhonePe", "Paytm", "BHIM"].map((appName) => (
-                        <button
-                          key={appName}
-                          type="button"
-                          onClick={() => setUpiId(`senthil@${appName.toLowerCase().replace(/\s/g, "")}`)}
-                          style={{
-                            background: "#ffffff",
-                            border: "1px solid #cfded0",
-                            borderRadius: "6px",
-                            padding: "4px 8px",
-                            fontSize: "11px",
-                            fontWeight: 700,
-                            color: "#284a32",
-                            cursor: "pointer",
-                          }}
-                        >
-                          ⚡ {appName}
-                        </button>
-                      ))}
+                      {["Google Pay", "PhonePe", "Paytm", "BHIM"].map((appName) => {
+                        const cleanDigits = customerPhone.replace(/\D/g, "").slice(-10);
+                        const handle = cleanDigits || "mobile";
+                        const suffix = appName === "Google Pay" ? "okaxis" : appName === "PhonePe" ? "ybl" : appName === "Paytm" ? "paytm" : "upi";
+                        return (
+                          <button
+                            key={appName}
+                            type="button"
+                            onClick={() => setUpiId(`${handle}@${suffix}`)}
+                            style={{
+                              background: "#ffffff",
+                              border: "1px solid #cfded0",
+                              borderRadius: "6px",
+                              padding: "4px 8px",
+                              fontSize: "11px",
+                              fontWeight: 700,
+                              color: "#284a32",
+                              cursor: "pointer",
+                            }}
+                          >
+                            ⚡ {appName}
+                          </button>
+                        );
+                      })}
                     </div>
 
                     <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#36593e", marginTop: "6px" }}>
@@ -12395,16 +12485,21 @@ function OrderCheckoutDialog({
                           type="text"
                           value={upiId}
                           onChange={(e) => setUpiId(e.target.value)}
-                          placeholder="e.g. mobile@upi"
+                          placeholder="e.g. yourname@okhdfcbank or 9876543210@upi"
                           style={{ flex: 1, padding: "8px 10px", border: "1px solid #c9dcc8", borderRadius: "6px", fontSize: "13px" }}
                         />
-                        <button
-                          type="button"
-                          onClick={() => setUpiId("hosur.buyer@okhdfcbank")}
-                          style={{ background: "#e8f5e9", border: "1px solid #b7deb9", color: "#1b5e20", borderRadius: "6px", padding: "0 10px", fontSize: "11px", fontWeight: 700, cursor: "pointer" }}
-                        >
-                          Auto-fill
-                        </button>
+                        {customerPhone && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const cleanDigits = customerPhone.replace(/\D/g, "").slice(-10);
+                              if (cleanDigits) setUpiId(`${cleanDigits}@upi`);
+                            }}
+                            style={{ background: "#e8f5e9", border: "1px solid #b7deb9", color: "#1b5e20", borderRadius: "6px", padding: "0 10px", fontSize: "11px", fontWeight: 700, cursor: "pointer" }}
+                          >
+                            Use Mobile
+                          </button>
+                        )}
                       </div>
                     </label>
                   </div>
@@ -12424,6 +12519,7 @@ function OrderCheckoutDialog({
                         value={cardData.number}
                         onChange={(e) => setCardData({ ...cardData, number: e.target.value })}
                         maxLength={19}
+                        placeholder="•••• •••• •••• ••••"
                         style={{ width: "100%", padding: "8px 10px", border: "1px solid #c9dcc8", borderRadius: "6px", marginTop: "3px", fontFamily: "monospace", letterSpacing: "1px" }}
                       />
                     </label>
@@ -12435,6 +12531,7 @@ function OrderCheckoutDialog({
                           value={cardData.expiry}
                           onChange={(e) => setCardData({ ...cardData, expiry: e.target.value })}
                           maxLength={5}
+                          placeholder="MM/YY"
                           style={{ width: "100%", padding: "8px 10px", border: "1px solid #c9dcc8", borderRadius: "6px", marginTop: "3px" }}
                         />
                       </label>
@@ -12445,6 +12542,7 @@ function OrderCheckoutDialog({
                           value={cardData.cvv}
                           onChange={(e) => setCardData({ ...cardData, cvv: e.target.value })}
                           maxLength={4}
+                          placeholder="CVV"
                           style={{ width: "100%", padding: "8px 10px", border: "1px solid #c9dcc8", borderRadius: "6px", marginTop: "3px" }}
                         />
                       </label>
@@ -12454,6 +12552,7 @@ function OrderCheckoutDialog({
                           type="text"
                           value={cardData.name}
                           onChange={(e) => setCardData({ ...cardData, name: e.target.value })}
+                          placeholder="Name as on card"
                           style={{ width: "100%", padding: "8px 10px", border: "1px solid #c9dcc8", borderRadius: "6px", marginTop: "3px" }}
                         />
                       </label>

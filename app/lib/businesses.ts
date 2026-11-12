@@ -742,6 +742,7 @@ export async function updateBusinessProfile(idOrIdentity: string, updates: Parti
 
   const index = records.findIndex((b) => {
     if (b.id === idOrIdentity) return true;
+    if (b.name && b.name.trim().toLowerCase() === normalizedIdentity) return true;
     if (b.email && b.email.toLowerCase() === normalizedIdentity) return true;
     const bDigits = b.phone.replace(/\D/g, "");
     if (cleanDigits.length >= 8 && (bDigits === cleanDigits || bDigits.endsWith(cleanDigits) || cleanDigits.endsWith(bDigits))) {
@@ -750,7 +751,47 @@ export async function updateBusinessProfile(idOrIdentity: string, updates: Parti
     return b.phone.trim().toLowerCase() === normalizedIdentity;
   });
 
-  if (index < 0) return null;
+  if (index < 0) {
+    // If not found in records, create a registered record for this business so its products and profile persist!
+    const newRecord: StoredBusiness = {
+      id: `biz-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      name: updates.name || idOrIdentity,
+      category: updates.category || "Local Business",
+      phone: updates.phone || "04344 262821",
+      email: updates.email || "",
+      ownerName: updates.ownerName || "",
+      salt: "",
+      passwordHash: "",
+      businessModes: ["Storefront"],
+      subscribed: true,
+      description: updates.description || `${updates.category || "Business"} in Hosur`,
+      address: {
+        doorNumber: updates.address?.doorNumber || "",
+        street: updates.address?.street || "",
+        area: updates.address?.area || "Hosur",
+        cityTown: updates.address?.cityTown || "Hosur",
+        taluka: "Hosur",
+        district: "Krishnagiri",
+        state: "Tamil Nadu",
+        pincode: updates.address?.pincode || "635109",
+      },
+      images: updates.images || updates.photos || [],
+      photos: updates.photos || updates.images || [],
+      website: updates.website || "",
+      gstin: updates.gstin || "",
+      hours: updates.hours || "",
+      operatingHours: updates.operatingHours,
+      products: updates.products || [],
+      coordinates: updates.coordinates || { latitude: 12.7409, longitude: 77.8253 },
+      active: true,
+      verificationStatus: "Approved",
+      createdAt: new Date().toISOString(),
+    };
+    records.push(newRecord);
+    await writeBusinessRecords(records);
+    const { salt: _s, passwordHash: _p, ...pub } = newRecord;
+    return pub;
+  }
 
   const current = records[index];
   if (updates.name) current.name = updates.name.trim();

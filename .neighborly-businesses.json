@@ -1,1 +1,48 @@
-[]
+[
+  {
+    "id": "biz-1794474552991-ajj97",
+    "name": "Jishnu Learning Labs",
+    "category": "Local Business",
+    "phone": "04344 262821",
+    "email": "",
+    "ownerName": "",
+    "salt": "",
+    "passwordHash": "",
+    "businessModes": [
+      "Storefront"
+    ],
+    "subscribed": true,
+    "description": "Business in Hosur",
+    "address": {
+      "doorNumber": "",
+      "street": "",
+      "area": "Hosur",
+      "cityTown": "Hosur",
+      "taluka": "Hosur",
+      "district": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "pincode": "635109"
+    },
+    "images": [],
+    "photos": [],
+    "website": "",
+    "gstin": "",
+    "hours": "",
+    "products": [
+      {
+        "id": "p1",
+        "name": "SAP B1 Book",
+        "price": 2000,
+        "description": "SAP B1 version 10 handbook",
+        "unit": "unit"
+      }
+    ],
+    "coordinates": {
+      "latitude": 12.7409,
+      "longitude": 77.8253
+    },
+    "active": true,
+    "verificationStatus": "Approved",
+    "createdAt": "2026-11-12T09:09:12.991Z"
+  }
+]
