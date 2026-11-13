@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { getCurrentSession } from "@/app/lib/auth";
 import { createSosAlert, findSosAlertByRequestKey, type SosEmergencyType } from "@/app/lib/sos-alerts";
+import { createServerNotification } from "@/app/lib/notifications";
 
 const recentRequests = new Map<string, number[]>();
 const serviceNumbers: Record<SosEmergencyType, string> = {

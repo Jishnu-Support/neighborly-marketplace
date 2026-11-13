@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getCurrentSession, getCompanyAdminByIdentity } from "@/app/lib/auth";
 import { listBusinessesForAdminApproval, submitAdminBusinessApproval, assignBusinessAgent } from "@/app/lib/businesses";
 import { listAgentPartners } from "@/app/lib/agents";
+import { createServerNotification } from "@/app/lib/notifications";
 
 export async function GET(request: Request) {
   const session = await getCurrentSession(request);
@@ -62,6 +63,24 @@ export async function POST(request: Request) {
       action: action === "reject" ? "reject" : "approve",
       notes,
     });
+
+    try {
+      await createServerNotification({
+        title: `✓ Business ${action === "reject" ? "Verification Update" : "Approved & Verified!"}`,
+        message: action === "reject"
+          ? `Verification for ${updated.name} was not approved: ${notes || "Please update documents."}`
+          : `Congratulations! ${updated.name} has been verified and approved on Bizearch.`,
+        type: "business",
+        targetRole: "Business",
+        targetIdentity: updated.name,
+        linkText: "View Profile",
+        action: {
+          type: "portal",
+          payload: "Business",
+          tab: "Profile",
+        },
+      });
+    } catch {}
 
     return NextResponse.json({ success: true, business: updated });
   } catch (error) {

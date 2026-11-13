@@ -3,6 +3,7 @@ import { createAgentPartner } from "@/app/lib/agents";
 import { consumeVerifiedRegistrationOtp } from "@/app/lib/registration-otp";
 import { AUTH_COOKIE, authCookieOptions, createSessionToken } from "@/app/lib/auth";
 import { saveActivityLog } from "@/app/lib/activity-logs";
+import { createServerNotification } from "@/app/lib/notifications";
 
 export async function POST(request: Request) {
   try {
@@ -60,6 +61,22 @@ export async function POST(request: Request) {
     } catch {
       // Non-blocking log
     }
+
+    // Notify Company Admins & Super Admins
+    try {
+      await createServerNotification({
+        title: `🧑‍💼 New Agent Registration: ${agent.name}`,
+        message: `${agent.name} (${agent.phone}) submitted registration. Awaiting Admin review.`,
+        type: "agent",
+        targetRole: "Company",
+        linkText: "Review Agent",
+        action: {
+          type: "portal",
+          payload: "Company",
+          tab: "Approvals (Agents)",
+        },
+      });
+    } catch {}
 
     return NextResponse.json({
       success: true,

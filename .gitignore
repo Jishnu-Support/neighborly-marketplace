@@ -27,4 +27,5 @@ AGENTS.md
 .neighborly-transactions.json
 .neighborly-orders.json
 .neighborly-quotes.json
+.neighborly-notifications.json
 .neighborly-*.txt

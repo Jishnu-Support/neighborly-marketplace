@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { AUTH_COOKIE, verifySessionToken } from "@/app/lib/auth";
 import { approveAgentPartner, createAgentPartner, listAgentPartners, rejectAgentPartner, toggleAgentActive } from "@/app/lib/agents";
 import { saveActivityLog } from "@/app/lib/activity-logs";
+import { createServerNotification } from "@/app/lib/notifications";
 
 const noStore = { "Cache-Control": "no-store, no-cache, must-revalidate" };
 
@@ -60,6 +61,22 @@ export async function POST(request: Request) {
           actorName: session.identity || "Admin",
           actorRole: session.accessLevel || "Admin",
           details: `Field agent application approved by ${session.accessLevel || "Admin"} (${session.identity}). Account is now activated with referral code ${approved.referralCode}.`,
+        });
+      } catch {}
+
+      try {
+        await createServerNotification({
+          title: "✓ Agent Account Approved!",
+          message: `Congratulations ${approved.name}! Your agent account (${approved.referralCode || approved.id}) is approved and active.`,
+          type: "agent",
+          targetRole: "Agent",
+          targetIdentity: approved.referralCode || approved.phone,
+          linkText: "Open Agent Portal",
+          action: {
+            type: "portal",
+            payload: "Agent",
+            tab: "Overview",
+          },
         });
       } catch {}
 

@@ -411,7 +411,7 @@ type DemoData = {
 };
 type TaxonomyNode = { name: string; children: TaxonomyNode[] };
 
-export type NotificationType = "sos" | "enquiry" | "offer" | "business" | "favorite" | "system" | "order";
+export type NotificationType = "sos" | "enquiry" | "offer" | "business" | "favorite" | "system" | "order" | "agent" | "ad" | "plan";
 
 export type MarketplaceNotification = {
   id: string;
@@ -420,10 +420,13 @@ export type MarketplaceNotification = {
   timestamp: string;
   type: NotificationType;
   read: boolean;
+  targetRole?: string;
+  targetIdentity?: string;
   linkText?: string;
   action?: {
     type: "search" | "business" | "role" | "category" | "sos" | "order" | "portal";
     payload: string;
+    tab?: string;
   };
 };
 
@@ -2439,6 +2442,62 @@ function highlightMatch(text: string, q: string) {
   );
 }
 
+
+function playNotificationSound() {
+  try {
+    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    const now = ctx.currentTime;
+    
+    // High-low melodic chime
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc1.type = "sine";
+    osc1.frequency.setValueAtTime(587.33, now); // D5
+    osc1.frequency.setValueAtTime(880, now + 0.12); // A5
+
+    osc2.type = "triangle";
+    osc2.frequency.setValueAtTime(1174.66, now + 0.12); // D6 harmonic
+
+    gain.gain.setValueAtTime(0.22, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+
+    osc1.connect(gain);
+    osc2.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc1.start(now);
+    osc1.stop(now + 0.55);
+    osc2.start(now + 0.12);
+    osc2.stop(now + 0.55);
+  } catch {
+    // Autoplay restrictions or unavailable audio device
+  }
+}
+
+function triggerDesktopNotification(notif: MarketplaceNotification, onClickAction?: () => void) {
+  try {
+    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+      const nativeNotif = new Notification(notif.title, {
+        body: notif.message,
+        icon: "/bizearch-logo.png",
+        badge: "/bizearch-logo.png",
+        tag: notif.id,
+      });
+      nativeNotif.onclick = () => {
+        window.focus();
+        if (onClickAction) onClickAction();
+        nativeNotif.close();
+      };
+    }
+  } catch {
+    // Desktop notifications unsupported or blocked
+  }
+}
+
 export default function Home() {
   const [role, setRole] = useState<Role>("Discover");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -2870,11 +2929,14 @@ export default function Home() {
     locationCoordinates ? distanceBetween(locationCoordinates, business.coordinates || business.demoCoordinates) : business.distance;
 
   const [notifications, setNotifications] = useState<MarketplaceNotification[]>(initialNotifications);
+  const [toastQueue, setToastQueue] = useState<MarketplaceNotification[]>([]);
+  const [browserAlertsEnabled, setBrowserAlertsEnabled] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notificationFilter, setNotificationFilter] = useState<"all" | "unread">("all");
   const notificationsRef = useRef<HTMLDivElement>(null);
   const mobileNotificationsRef = useRef<HTMLDivElement>(null);
   const mobileNotificationsBtnRef = useRef<HTMLButtonElement>(null);
+  const alertedNotifIdsRef = useRef<Set<string>>(new Set());
   const unreadCount = useMemo(() => notifications.filter((n) => !n.read).length, [notifications]);
   const displayedNotifications = useMemo(
     () => (notificationFilter === "unread" ? notifications.filter((n) => !n.read) : notifications),
@@ -2937,35 +2999,176 @@ export default function Home() {
     } catch {}
   }, [notifications]);
 
+  useEffect(() => {
+    if (typeof window !== "undefined" && "Notification" in window) {
+      setBrowserAlertsEnabled(Notification.permission === "granted");
+    }
+  }, []);
+
+  const requestBrowserNotificationPermission = async () => {
+    try {
+      if (typeof window !== "undefined" && "Notification" in window) {
+        const result = await Notification.requestPermission();
+        if (result === "granted") {
+          setBrowserAlertsEnabled(true);
+          showNotice("✓ Desktop browser notifications enabled!");
+          playNotificationSound();
+          try {
+            new Notification("Bizearch Notifications Active", {
+              body: "You will now receive instant desktop alerts for orders, enquiries and updates.",
+              icon: "/bizearch-logo.png",
+            });
+          } catch {}
+        } else {
+          showNotice("Desktop notifications were not enabled.");
+        }
+      } else {
+        showNotice("Desktop notifications are not supported by this browser.");
+      }
+    } catch {
+      showNotice("Could not request notification permission.");
+    }
+  };
+
+  const showNotificationToast = (notif: MarketplaceNotification) => {
+    setToastQueue((prev) => {
+      if (prev.some((t) => t.id === notif.id)) return prev;
+      return [notif, ...prev].slice(0, 4);
+    });
+    setTimeout(() => {
+      setToastQueue((prev) => prev.filter((t) => t.id !== notif.id));
+    }, 6000);
+  };
+
+  // Real-time server sync & periodic polling every 10 seconds
+  useEffect(() => {
+    let cancelled = false;
+
+    const syncNotifications = async () => {
+      try {
+        const queryRole = role || "Discover";
+        const queryId = sessionIdentity || "";
+        const res = await fetch(`/api/notifications?role=${encodeURIComponent(queryRole)}&identity=${encodeURIComponent(queryId)}`, {
+          cache: "no-store",
+          credentials: "include",
+        });
+        if (!res.ok) return;
+        const data = (await res.json()) as { notifications?: MarketplaceNotification[] };
+        if (cancelled || !Array.isArray(data.notifications)) return;
+
+        setNotifications((current) => {
+          const serverNotifs = data.notifications!;
+          const currentMap = new Map(current.map((n) => [n.id, n]));
+          
+          let hasNewUnread = false;
+          for (const sn of serverNotifs) {
+            const existing = currentMap.get(sn.id);
+            if (!existing) {
+              currentMap.set(sn.id, sn);
+              if (!sn.read && !alertedNotifIdsRef.current.has(sn.id)) {
+                alertedNotifIdsRef.current.add(sn.id);
+                hasNewUnread = true;
+                showNotificationToast(sn);
+                triggerDesktopNotification(sn, () => handleNotificationAction(sn));
+              }
+            } else if (existing.read !== sn.read) {
+              currentMap.set(sn.id, { ...existing, read: sn.read });
+            }
+          }
+
+          if (hasNewUnread) {
+            playNotificationSound();
+          }
+
+          return Array.from(currentMap.values()).sort((a, b) => {
+            const timeA = new Date(a.timestamp).getTime() || 0;
+            const timeB = new Date(b.timestamp).getTime() || 0;
+            return timeB - timeA;
+          });
+        });
+      } catch {}
+    };
+
+    syncNotifications();
+    const interval = setInterval(syncNotifications, 10000);
+    const onFocus = () => syncNotifications();
+    window.addEventListener("focus", onFocus);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [role, sessionIdentity]);
+
   function addNotification(notif: Omit<MarketplaceNotification, "id" | "timestamp" | "read"> & { id?: string; read?: boolean; timestamp?: string }) {
     const newNotif: MarketplaceNotification = {
       id: notif.id || `notif-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       title: notif.title,
       message: notif.message,
-      timestamp: notif.timestamp || "Just now",
+      timestamp: notif.timestamp || new Date().toISOString(),
       type: notif.type,
       read: notif.read ?? false,
       linkText: notif.linkText,
       action: notif.action,
+      targetRole: notif.targetRole,
+      targetIdentity: notif.targetIdentity,
     };
-    setNotifications((prev) => [newNotif, ...prev]);
+
+    setNotifications((prev) => [newNotif, ...prev.filter((n) => n.id !== newNotif.id)]);
+    alertedNotifIdsRef.current.add(newNotif.id);
+
+    // Audio chime
+    playNotificationSound();
+
+    // Floating toast popup
+    showNotificationToast(newNotif);
+
+    // Desktop browser push notification
+    triggerDesktopNotification(newNotif, () => handleNotificationAction(newNotif));
+
+    // Persist to server API in background
+    fetch("/api/notifications", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(newNotif),
+    }).catch(() => {});
   }
 
   function markNotificationRead(id: string) {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    fetch("/api/notifications", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ id, role, identity: sessionIdentity }),
+    }).catch(() => {});
   }
 
   function markAllNotificationsRead() {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    fetch("/api/notifications", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ all: true, role, identity: sessionIdentity }),
+    }).catch(() => {});
     showNotice("All notifications marked as read.");
   }
 
   function deleteNotification(id: string) {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
+    setToastQueue((prev) => prev.filter((t) => t.id !== id));
   }
 
   function clearAllNotifications() {
     setNotifications([]);
+    setToastQueue([]);
+    fetch(`/api/notifications?role=${encodeURIComponent(role)}&identity=${encodeURIComponent(sessionIdentity)}`, {
+      method: "DELETE",
+      credentials: "include",
+    }).catch(() => {});
     showNotice("All notifications cleared.");
   }
 
@@ -3015,6 +3218,9 @@ export default function Home() {
     markNotificationRead(notif.id);
     setNotificationsOpen(false);
     if (!notif.action) return;
+    if (notif.action.tab) {
+      setPortalActiveTab(notif.action.tab);
+    }
     if (notif.action.type === "business") {
       const biz = businesses.find((b) => b.name.toLowerCase() === notif.action?.payload.toLowerCase());
       if (biz) {
@@ -3055,6 +3261,29 @@ export default function Home() {
           {unreadCount > 0 && <span className="notification-count-pill">{unreadCount} new</span>}
         </div>
         <div className="notification-actions-top">
+          {typeof window !== "undefined" && "Notification" in window && !browserAlertsEnabled && (
+            <button
+              type="button"
+              className="notification-permission-btn"
+              onClick={requestBrowserNotificationPermission}
+              style={{
+                background: "#ecfdf5",
+                color: "#065f46",
+                border: "1px solid #a7f3d0",
+                borderRadius: "12px",
+                padding: "2px 8px",
+                fontSize: "10px",
+                fontWeight: 700,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "4px",
+              }}
+              title="Click to receive instant desktop popups"
+            >
+              🔔 Alerts
+            </button>
+          )}
           {unreadCount > 0 && (
             <button
               type="button"
@@ -3107,7 +3336,7 @@ export default function Home() {
               onClick={() => { if (!notif.read) markNotificationRead(notif.id); }}
             >
               <span className={`notification-item-icon ${notif.type}`}>
-                {notif.type === "sos" ? "🚨" : notif.type === "enquiry" ? "💬" : notif.type === "offer" ? "🎁" : notif.type === "business" ? "🏢" : notif.type === "favorite" ? "⭐" : "🔔"}
+                {notif.type === "sos" ? "🚨" : notif.type === "order" ? "🛍️" : notif.type === "agent" ? "🧑‍💼" : notif.type === "business" ? "🏢" : notif.type === "enquiry" ? "💬" : notif.type === "ad" ? "📢" : notif.type === "favorite" ? "⭐" : "🔔"}
               </span>
               <div className="notification-item-content">
                 <div className="notification-item-head">
@@ -10520,6 +10749,42 @@ export default function Home() {
           >
             {renderNotificationPopoverContent()}
           </div>
+        </div>
+      )}
+
+      {/* Floating Interactive Notification Toast Popups */}
+      {toastQueue.length > 0 && (
+        <div className="notification-toasts-container" role="region" aria-label="Notifications" aria-live="polite">
+          {toastQueue.map((toast) => (
+            <div
+              key={toast.id}
+              className={`notification-toast-card ${toast.type}`}
+              onClick={() => {
+                handleNotificationAction(toast);
+                setToastQueue((prev) => prev.filter((t) => t.id !== toast.id));
+              }}
+            >
+              <span className="notification-toast-icon">
+                {toast.type === "sos" ? "🚨" : toast.type === "order" ? "🛍️" : toast.type === "agent" ? "🧑‍💼" : toast.type === "business" ? "🏢" : toast.type === "enquiry" ? "💬" : toast.type === "ad" ? "📢" : toast.type === "favorite" ? "⭐" : "🔔"}
+              </span>
+              <div className="notification-toast-body">
+                <strong className="notification-toast-title">{toast.title}</strong>
+                <p className="notification-toast-msg">{toast.message}</p>
+                {toast.linkText && <span className="notification-toast-cta">{toast.linkText} →</span>}
+              </div>
+              <button
+                type="button"
+                className="notification-toast-close"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setToastQueue((prev) => prev.filter((t) => t.id !== toast.id));
+                }}
+                aria-label="Dismiss alert"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
         </div>
       )}
     </main>

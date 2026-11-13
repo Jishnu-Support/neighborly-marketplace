@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { registerBusinessAccount } from "@/app/lib/businesses";
+import { createServerNotification } from "@/app/lib/notifications";
 import { createSessionToken, AUTH_COOKIE, authCookieOptions, getCurrentSession, getCompanyAdminByIdentity } from "@/app/lib/auth";
 import { getAgentByIdentity } from "@/app/lib/agents";
 import { consumeVerifiedRegistrationOtp } from "@/app/lib/registration-otp";

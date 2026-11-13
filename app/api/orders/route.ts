@@ -11,6 +11,7 @@ import {
   OrderStatus,
   OrderRecord,
 } from "@/app/lib/orders";
+import { createServerNotification } from "@/app/lib/notifications";
 
 const noStoreHeaders = { "Cache-Control": "no-store, no-cache, must-revalidate" };
 
@@ -55,6 +56,38 @@ export async function POST(request: Request) {
     };
 
     const saved = await createOrder(order);
+
+    // Notify Merchant & Company Admins in real-time
+    try {
+      await createServerNotification({
+        title: `🛍️ New Order #${saved.id} - ₹${saved.totalAmount}`,
+        message: `${saved.customerName} ordered ${saved.items.map((i) => `${i.quantity}x ${i.name}`).join(", ")} from ${saved.businessName}. Please accept and prepare!`,
+        type: "order",
+        targetRole: "Business",
+        targetIdentity: saved.businessName,
+        linkText: "View order",
+        action: {
+          type: "portal",
+          payload: "Business",
+          tab: "Orders",
+        },
+      });
+
+      await createServerNotification({
+        title: `🛍️ Platform Order #${saved.id}`,
+        message: `New order for ${saved.businessName} placed by ${saved.customerName} (₹${saved.totalAmount}).`,
+        type: "order",
+        targetRole: "Company",
+        linkText: "View in orders",
+        action: {
+          type: "portal",
+          payload: "Company",
+          tab: "Orders",
+        },
+      });
+    } catch (notifErr) {
+      console.warn("Failed to create order notification:", notifErr);
+    }
 
     return NextResponse.json(
       {
@@ -149,6 +182,32 @@ export async function PATCH(request: Request) {
     const updated = await updateOrderStatus(body.id, body.status);
     if (!updated) {
       return NextResponse.json({ error: "Order not found." }, { status: 404, headers: noStoreHeaders });
+    }
+
+    // Notify Customer about order status update in real time
+    try {
+      const statusMessage =
+        body.status === "accepted" ? "accepted by store and entering preparation 👨‍🍳" :
+        body.status === "preparing" ? "now being freshly prepared by the business partner 👨‍🍳" :
+        body.status === "ready" ? "marked READY! Prepared and packed for pickup / delivery 🛵" :
+        body.status === "completed" ? "completed and successfully delivered ✅" :
+        body.status === "cancelled" ? "cancelled by store" : body.status;
+
+      await createServerNotification({
+        title: `Order #${updated.id} Update: ${body.status.toUpperCase()}`,
+        message: `Your order from ${updated.businessName} is ${statusMessage}.`,
+        type: "order",
+        targetRole: "Account",
+        targetIdentity: updated.customerPhone,
+        linkText: "Track order",
+        action: {
+          type: "portal",
+          payload: "Account",
+          tab: "Orders",
+        },
+      });
+    } catch (notifErr) {
+      console.warn("Failed to notify customer of order status:", notifErr);
     }
 
     return NextResponse.json({ success: true, order: updated }, { headers: noStoreHeaders });

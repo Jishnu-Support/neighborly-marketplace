@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { markAdBookingPaid } from "@/app/lib/ad-bookings";
 import { recordPlatformTransaction } from "@/app/lib/transactions";
+import { createServerNotification } from "@/app/lib/notifications";
 
 export async function POST(request: Request) {
   try {

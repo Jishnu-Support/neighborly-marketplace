@@ -10,6 +10,7 @@ import {
   QuoteStatus,
 } from "@/app/lib/quotes";
 import { getBusinessByIdentity } from "@/app/lib/businesses";
+import { createServerNotification } from "@/app/lib/notifications";
 
 const noStoreHeaders = { "Cache-Control": "no-store, no-cache, must-revalidate" };
 
@@ -90,6 +91,23 @@ export async function POST(request: Request) {
       customerLocality,
       message,
     });
+
+    // Notify the Merchant about this new enquiry
+    try {
+      await createServerNotification({
+        title: `💬 New Quote Enquiry from ${customerName}`,
+        message: `${customerName} enquired about "${body.productName || "Product / Service"}" from ${businessName}.`,
+        type: "enquiry",
+        targetRole: "Business",
+        targetIdentity: businessName,
+        linkText: "View enquiries",
+        action: {
+          type: "portal",
+          payload: "Business",
+          tab: "Enquiries",
+        },
+      });
+    } catch {}
 
     // Generate pre-filled WhatsApp link if business phone exists
     let whatsappUrl = "";
