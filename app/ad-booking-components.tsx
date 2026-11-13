@@ -81,9 +81,7 @@ export function AdBookingDialog({
   const [videoSourceUrl, setVideoSourceUrl] = useState(
     "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
   );
-  const [videoPosterUrl, setVideoPosterUrl] = useState(
-    "https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=900&q=85"
-  );
+  const [videoPosterUrl, setVideoPosterUrl] = useState("");
   const [videoCta, setVideoCta] = useState("Contact Business Now");
 
   // Upload status

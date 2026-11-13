@@ -673,13 +673,16 @@ export function resolveScheduledAds(
       });
     }
     if (b.video?.sourceUrl && (b.format === "video" || b.format === "combo")) {
+      const poster = (b.video?.posterUrl && !b.video.posterUrl.includes("1528605248644"))
+        ? b.video.posterUrl
+        : (baseConfig.videoAd?.posterUrl || "");
       customVideoAd = {
         adBookingId: b.id,
         businessName: b.businessName,
         title: b.video.title || `${b.businessName} Spotlight`,
         description: b.video.description,
         sourceUrl: b.video.sourceUrl,
-        posterUrl: b.video.posterUrl || "",
+        posterUrl: poster,
         callToAction: b.video.callToAction || "View business details",
         viewsCount: b.viewsCount || 0,
         locality: sb.locality,

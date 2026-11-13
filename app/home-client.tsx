@@ -7925,7 +7925,7 @@ export default function Home() {
               })()
             )}
           </section>
-          {Boolean(adConfig.videoAd?.sourceUrl) && (
+          {Boolean(adConfig.videoAd?.sourceUrl || adConfig.videoAd?.posterUrl) && (
             <section className="video-ad-panel" aria-label="Video advertisement">
             <div className="video-ad-heading" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -7979,20 +7979,31 @@ export default function Home() {
                 <small style={{ whiteSpace: "nowrap" }}>{t.localSpotlight}</small>
               </div>
             </div>
-            <video
-              key={adConfig.videoAd.sourceUrl}
-              className="video-ad-player"
-              controls
-              muted
-              loop
-              autoPlay
-              playsInline
-              onPlay={handleVideoAdImpression}
-              poster={adConfig.videoAd.posterUrl || undefined}
-              src={adConfig.videoAd.sourceUrl}
-            >
-              Your browser does not support embedded video.
-            </video>
+            {adConfig.videoAd?.sourceUrl ? (
+              <video
+                key={`${adConfig.videoAd.sourceUrl}-${adConfig.videoAd.posterUrl || ""}`}
+                className="video-ad-player"
+                controls
+                muted
+                loop
+                preload="metadata"
+                playsInline
+                onPlay={handleVideoAdImpression}
+                poster={adConfig.videoAd.posterUrl || undefined}
+                src={adConfig.videoAd.sourceUrl}
+              >
+                Your browser does not support embedded video.
+              </video>
+            ) : adConfig.videoAd?.posterUrl ? (
+              <div style={{ position: "relative", width: "100%", borderRadius: "8px", overflow: "hidden", background: "#0b192c" }}>
+                <img
+                  src={adConfig.videoAd.posterUrl}
+                  alt={adConfig.videoAd.title || "Video Advertisement Poster"}
+                  className="video-ad-player"
+                  style={{ width: "100%", height: "auto", display: "block", objectFit: "contain", maxHeight: "320px" }}
+                />
+              </div>
+            ) : null}
             <div className="video-ad-caption">
               <strong>{adConfig.videoAd.title}</strong>
               <p>{adConfig.videoAd.description}</p>
@@ -9389,10 +9400,34 @@ export default function Home() {
               );
             })()}
 
-            {Boolean(adConfig.videoAd?.sourceUrl) && (
+            {Boolean(adConfig.videoAd?.sourceUrl || adConfig.videoAd?.posterUrl) && (
               <section className="video-ad-panel mobile-video-ad" aria-label="Video advertisement">
                 <div className="video-ad-heading"><span>{t.videoAd}</span><small>{t.localSpotlight}</small></div>
-                <video key={adConfig.videoAd.sourceUrl} className="video-ad-player" controls muted loop playsInline poster={adConfig.videoAd.posterUrl || undefined} src={adConfig.videoAd.sourceUrl}>Your browser does not support embedded video.</video>
+                {adConfig.videoAd?.sourceUrl ? (
+                  <video
+                    key={`${adConfig.videoAd.sourceUrl}-${adConfig.videoAd.posterUrl || ""}`}
+                    className="video-ad-player"
+                    controls
+                    muted
+                    loop
+                    preload="metadata"
+                    playsInline
+                    onPlay={handleVideoAdImpression}
+                    poster={adConfig.videoAd.posterUrl || undefined}
+                    src={adConfig.videoAd.sourceUrl}
+                  >
+                    Your browser does not support embedded video.
+                  </video>
+                ) : adConfig.videoAd?.posterUrl ? (
+                  <div style={{ position: "relative", width: "100%", borderRadius: "8px", overflow: "hidden", background: "#0b192c" }}>
+                    <img
+                      src={adConfig.videoAd.posterUrl}
+                      alt={adConfig.videoAd.title || "Video Advertisement Poster"}
+                      className="video-ad-player"
+                      style={{ width: "100%", height: "auto", display: "block", objectFit: "contain", maxHeight: "260px" }}
+                    />
+                  </div>
+                ) : null}
                 <div className="video-ad-caption">
                   <strong>{adConfig.videoAd.title}</strong>
                   <p>{adConfig.videoAd.description}</p>
@@ -24601,7 +24636,7 @@ function CompanyAdManager() {
   useEffect(() => { configRef.current = config; }, [config]);
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/company/ads", { cache: "no-store" }).then(async (response) => {
+    fetch("/api/company/ads", { cache: "no-store", credentials: "include" }).then(async (response) => {
       const result = await response.json() as { config?: AdConfig; error?: string };
       if (!response.ok || !result.config) throw new Error(result.error || "Could not load ads.");
       if (!cancelled) { configRef.current = result.config; setConfig(result.config); }
@@ -24615,7 +24650,7 @@ function CompanyAdManager() {
   async function persistConfig(nextConfig: AdConfig): Promise<boolean> {
     setSaving(true); setError(""); setSaved(false);
     try {
-      const response = await fetch("/api/company/ads", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ config: nextConfig }) });
+      const response = await fetch("/api/company/ads", { method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ config: nextConfig }) });
       const result = await response.json() as { config?: AdConfig; error?: string };
       if (!response.ok || !result.config) throw new Error(result.error || "Could not save advertising settings.");
       configRef.current = result.config;
@@ -24630,7 +24665,7 @@ function CompanyAdManager() {
   }
   async function postMedia(file: File, kind: "image" | "video" | "audio") {
     const body = new FormData(); body.append("file", file); body.append("kind", kind);
-    const response = await fetch("/api/company/ads/media", { method: "POST", body });
+    const response = await fetch("/api/company/ads/media", { method: "POST", credentials: "include", body });
     const result = await response.json() as { url?: string; error?: string };
     if (!response.ok || !result.url) throw new Error(result.error || "Could not upload this file.");
     return result.url;
