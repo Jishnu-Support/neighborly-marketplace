@@ -366,9 +366,14 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name, phone, password, email }),
           });
-          const result = (await response.json()) as { error?: string; message?: string; agent?: { referralCode: string } };
+          const result = (await response.json()) as { error?: string; message?: string; requiresApproval?: boolean; agent?: { referralCode: string } };
           if (!response.ok) throw new Error(result.error || "Could not complete agent registration.");
           setIsSuccess(true);
+          if (result.requiresApproval) {
+            setMessage(result.message || "✓ Agent registration submitted! Awaiting administrator approval before activation.");
+            setBusy(false);
+            return;
+          }
           setMessage(result.message || "✓ Agent registered successfully! Loading your agent portal...");
           try {
             localStorage.setItem("bizearch_registered_user", JSON.stringify({ name, phone, email, role: "Agent", registeredAt: new Date().toISOString() }));

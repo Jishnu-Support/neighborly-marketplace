@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { AUTH_COOKIE, verifySessionToken } from "@/app/lib/auth";
-import { createAgentPartner, listAgentPartners, toggleAgentActive } from "@/app/lib/agents";
+import { approveAgentPartner, createAgentPartner, listAgentPartners, rejectAgentPartner, toggleAgentActive } from "@/app/lib/agents";
 import { saveActivityLog } from "@/app/lib/activity-logs";
 
 const noStore = { "Cache-Control": "no-store, no-cache, must-revalidate" };
@@ -36,7 +36,56 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Only Company Admins can manage agent partner records." }, { status: 403, headers: noStore });
     }
 
-    const body = await request.json() as { action?: string; id?: string; active?: boolean; name?: string; phone?: string; email?: string; password?: string; referralCode?: string };
+    const body = await request.json() as {
+      action?: string;
+      id?: string;
+      active?: boolean;
+      reason?: string;
+      name?: string;
+      phone?: string;
+      email?: string;
+      password?: string;
+      referralCode?: string;
+    };
+
+    if (body.action === "approve" && typeof body.id === "string") {
+      const adminIdentity = `${session.accessLevel || "Admin"}: ${session.identity}`;
+      const approved = await approveAgentPartner(body.id, adminIdentity);
+      if (!approved) return NextResponse.json({ error: "Agent partner not found." }, { status: 404, headers: noStore });
+
+      try {
+        await saveActivityLog({
+          action: `Agent partner approved: ${approved.name} (Code: ${approved.referralCode})`,
+          category: "Approval",
+          actorName: session.identity || "Admin",
+          actorRole: session.accessLevel || "Admin",
+          details: `Field agent application approved by ${session.accessLevel || "Admin"} (${session.identity}). Account is now activated with referral code ${approved.referralCode}.`,
+        });
+      } catch {}
+
+      const agents = await listAgentPartners();
+      return NextResponse.json({ success: true, agent: approved, agents, count: agents.length }, { headers: noStore });
+    }
+
+    if (body.action === "reject" && typeof body.id === "string") {
+      const adminIdentity = `${session.accessLevel || "Admin"}: ${session.identity}`;
+      const reason = typeof body.reason === "string" ? body.reason : undefined;
+      const rejected = await rejectAgentPartner(body.id, adminIdentity, reason);
+      if (!rejected) return NextResponse.json({ error: "Agent partner not found." }, { status: 404, headers: noStore });
+
+      try {
+        await saveActivityLog({
+          action: `Agent partner application rejected: ${rejected.name}`,
+          category: "Approval",
+          actorName: session.identity || "Admin",
+          actorRole: session.accessLevel || "Admin",
+          details: `Field agent application rejected by ${session.accessLevel || "Admin"} (${session.identity}).${reason ? ` Reason: ${reason}` : ""}`,
+        });
+      } catch {}
+
+      const agents = await listAgentPartners();
+      return NextResponse.json({ success: true, agent: rejected, agents, count: agents.length }, { headers: noStore });
+    }
 
     if (body.action === "toggle" && typeof body.id === "string" && typeof body.active === "boolean") {
       if (session.accessLevel !== "Super Admin") {
@@ -68,6 +117,8 @@ export async function POST(request: Request) {
         email: body.email,
         password: body.password,
         referralCode: body.referralCode,
+        approvalStatus: "Approved",
+        active: true,
       });
 
       try {

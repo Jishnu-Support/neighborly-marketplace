@@ -4,6 +4,7 @@ import path from "node:path";
 import { resolveStorePath } from "./storage-paths";
 
 export type ActivityLogCategory =
+  | "Approval"
   | "Registration"
   | "Login"
   | "Search"

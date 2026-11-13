@@ -3,6 +3,8 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { resolveStorePath } from "./storage-paths";
 
+export type AgentApprovalStatus = "Pending" | "Approved" | "Rejected";
+
 export type AgentPartner = {
   id: string;
   name: string;
@@ -13,6 +15,12 @@ export type AgentPartner = {
   active: boolean;
   createdAt: string;
   referredCount: number;
+  approvalStatus?: AgentApprovalStatus;
+  approvedAt?: string;
+  approvedBy?: string;
+  rejectedAt?: string;
+  rejectedBy?: string;
+  rejectionReason?: string;
 };
 
 export type StoredAgentPartner = AgentPartner & {
@@ -47,6 +55,7 @@ export function createDefaultJitAgent(): StoredAgentPartner {
     email: "jit@bizearch.in",
     referralCode: DEFAULT_JIT_REFERRAL_CODE,
     active: true,
+    approvalStatus: "Approved",
     createdAt: "2026-01-01T00:00:00.000Z",
     referredCount: 0,
     salt,
@@ -92,6 +101,15 @@ export async function readAgentRecords(): Promise<StoredAgentPartner[]> {
           a.active = true;
           modified = true;
         }
+        if (a.approvalStatus !== "Approved") {
+          a.approvalStatus = "Approved";
+          modified = true;
+        }
+      }
+
+      if (!a.approvalStatus) {
+        a.approvalStatus = a.active ? "Approved" : "Pending";
+        modified = true;
       }
     }
 
@@ -136,6 +154,8 @@ export async function createAgentPartner(input: {
   email?: string;
   password?: string;
   referralCode?: string;
+  approvalStatus?: AgentApprovalStatus;
+  active?: boolean;
 }): Promise<AgentPartner> {
   const existing = await readAgentRecords();
   const cleanPhone = (input.phone || "").replace(/\D/g, "");
@@ -163,13 +183,17 @@ export async function createAgentPartner(input: {
       ? DEFAULT_JIT_REFERRAL_CODE
       : input.referralCode?.trim().toUpperCase() || `BIZ-${cleanName}-${randomSuffix}`;
 
+  const approvalStatus: AgentApprovalStatus = input.approvalStatus ?? "Pending";
+  const active = input.active !== undefined ? input.active : approvalStatus === "Approved";
+
   const newRecord: StoredAgentPartner = {
     id: randomUUID(),
     name: input.name.trim(),
     phone: input.phone.trim(),
     email: input.email?.trim().toLowerCase() || "",
     referralCode,
-    active: true,
+    active,
+    approvalStatus,
     createdAt: new Date().toISOString(),
     referredCount: 0,
     salt,
@@ -212,6 +236,7 @@ export async function verifyAgentCredentials(identity: string, password: string)
 
   const agent = agents.find((a) => {
     if (!a.active) return false;
+    if (a.approvalStatus && a.approvalStatus !== "Approved") return false;
     if (a.email && a.email.toLowerCase() === normalizedIdentity) return true;
     if (a.name && a.name.toLowerCase() === normalizedIdentity) return true;
     if (a.referralCode && a.referralCode.toLowerCase() === normalizedIdentity) return true;
@@ -349,4 +374,125 @@ export async function resetAgentPassword(identity: string, newPassword: string):
   agents[index].passwordHash = hashPassword(newPassword, salt);
   await writeAgentRecords(agents);
   return true;
+}
+
+export async function approveAgentPartner(id: string, adminIdentity?: string): Promise<AgentPartner | null> {
+  const agents = await readAgentRecords();
+  const index = agents.findIndex((a) => a.id === id);
+  if (index === -1) return null;
+  agents[index].active = true;
+  agents[index].approvalStatus = "Approved";
+  agents[index].approvedAt = new Date().toISOString();
+  if (adminIdentity) {
+    agents[index].approvedBy = adminIdentity;
+  }
+  delete agents[index].rejectedAt;
+  delete agents[index].rejectedBy;
+  delete agents[index].rejectionReason;
+  await writeAgentRecords(agents);
+  const { salt: _s, passwordHash: _p, ...publicAgent } = agents[index];
+  return publicAgent;
+}
+
+export async function rejectAgentPartner(id: string, adminIdentity?: string, reason?: string): Promise<AgentPartner | null> {
+  const agents = await readAgentRecords();
+  const index = agents.findIndex((a) => a.id === id);
+  if (index === -1) return null;
+  agents[index].active = false;
+  agents[index].approvalStatus = "Rejected";
+  agents[index].rejectedAt = new Date().toISOString();
+  if (adminIdentity) {
+    agents[index].rejectedBy = adminIdentity;
+  }
+  if (reason) {
+    agents[index].rejectionReason = reason.trim();
+  }
+  await writeAgentRecords(agents);
+  const { salt: _s, passwordHash: _p, ...publicAgent } = agents[index];
+  return publicAgent;
+}
+
+export async function getAgentLoginCheck(
+  identity: string,
+  password?: string
+): Promise<{
+  canLogin: boolean;
+  status: AgentApprovalStatus | "Disabled" | "NotFound" | "InvalidPassword";
+  message?: string;
+  agent?: AgentPartner;
+}> {
+  const cleanDigits = identity.replace(/\D/g, "");
+  const normalized = identity.trim().toLowerCase();
+
+  if (
+    normalized === "jit" ||
+    normalized === "jit@bizearch.in" ||
+    cleanDigits === "9043022219"
+  ) {
+    if (password && password !== DEFAULT_JIT_PASSWORD) {
+      return { canLogin: false, status: "InvalidPassword", message: "Incorrect password for Agent JIT." };
+    }
+    const createdJit = createDefaultJitAgent();
+    const { salt: _s, passwordHash: _p, ...publicAgent } = createdJit;
+    return { canLogin: true, status: "Approved", agent: publicAgent };
+  }
+
+  const agents = await readAgentRecords();
+  const agent = agents.find((a) => {
+    if (a.email && a.email.toLowerCase() === normalized) return true;
+    if (a.referralCode && a.referralCode.toLowerCase() === normalized) return true;
+    if (a.name && a.name.toLowerCase() === normalized) return true;
+    if (cleanDigits.length >= 8 && a.phone) {
+      const aDigits = a.phone.replace(/\D/g, "");
+      if (
+        aDigits === cleanDigits ||
+        (aDigits.length >= 10 && cleanDigits.length >= 10 && aDigits.slice(-10) === cleanDigits.slice(-10))
+      ) {
+        return true;
+      }
+    }
+    return false;
+  });
+
+  if (!agent) {
+    return { canLogin: false, status: "NotFound", message: "No agent account found for this mobile number or email." };
+  }
+
+  if (password && !passwordsMatch(password, agent.salt, agent.passwordHash)) {
+    return { canLogin: false, status: "InvalidPassword", message: "Incorrect password." };
+  }
+
+  const { salt: _s, passwordHash: _p, ...publicAgent } = agent;
+
+  if (agent.approvalStatus === "Pending") {
+    return {
+      canLogin: false,
+      status: "Pending",
+      message:
+        "Your Agent Partner registration is pending approval by Bizearch Administrators & Super Admins. Please wait for authorization before logging in.",
+      agent: publicAgent,
+    };
+  }
+
+  if (agent.approvalStatus === "Rejected") {
+    return {
+      canLogin: false,
+      status: "Rejected",
+      message: `Your Agent Partner registration was rejected by company administration.${
+        agent.rejectionReason ? ` Reason: ${agent.rejectionReason}` : ""
+      }`,
+      agent: publicAgent,
+    };
+  }
+
+  if (!agent.active) {
+    return {
+      canLogin: false,
+      status: "Disabled",
+      message: "This Agent Partner account has been deactivated by company administration. Please contact support.",
+      agent: publicAgent,
+    };
+  }
+
+  return { canLogin: true, status: "Approved", agent: publicAgent };
 }

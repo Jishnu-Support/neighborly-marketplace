@@ -43,37 +43,35 @@ export async function POST(request: Request) {
       phone: phone.trim() || (hasEmail ? email.trim() : ""),
       email,
       password: password.length >= 6 ? password : undefined,
+      approvalStatus: "Pending",
+      active: false,
     });
 
-    // Record persistent activity log for agent registration
+    // Record persistent activity log for agent approval request
     try {
       await saveActivityLog({
-        action: `Agent partner registered: ${agent.name} (Code: ${agent.referralCode})`,
-        category: "Registration",
+        action: `Agent registration submitted (Pending Approval): ${agent.name} (Code: ${agent.referralCode})`,
+        category: "Approval",
         actorName: agent.name,
         actorPhone: agent.phone,
         actorRole: "Agent",
-        details: `Field agent registered. Referral code assigned: ${agent.referralCode}. Contact: ${agent.phone}${agent.email ? ` · ${agent.email}` : ""}.`,
+        details: `New field agent partner application submitted by ${agent.name} (${agent.phone}${agent.email ? `, ${agent.email}` : ""}). Awaiting Administrator or Super Admin review and approval.`,
       });
     } catch {
       // Non-blocking log
     }
 
-    const primaryIdentity = agent.phone || agent.email || cleanPhone || cleanEmail;
-    const token = createSessionToken("Agent", primaryIdentity);
-    const response = NextResponse.json({
+    return NextResponse.json({
       success: true,
+      requiresApproval: true,
       agent: {
         id: agent.id,
         name: agent.name,
         phone: agent.phone,
         referralCode: agent.referralCode,
       },
-      message: `✓ Agent application approved! Your referral code is ${agent.referralCode}.`,
+      message: "✓ Agent registration submitted! Your application is pending review and approval by Bizearch Administrators & Super Admins. You will be able to log in once approved.",
     }, { status: 201 });
-    response.cookies.set(AUTH_COOKIE, token, authCookieOptions);
-
-    return response;
   } catch (error) {
     console.error("Agent registration error:", error);
     return NextResponse.json({ error: error instanceof Error ? error.message : "Could not complete agent registration." }, { status: 400 });

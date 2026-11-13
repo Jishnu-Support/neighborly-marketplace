@@ -12,7 +12,7 @@ import {
   verifyCredentials,
 } from "@/app/lib/auth";
 import { getBusinessByIdentity } from "@/app/lib/businesses";
-import { getAgentByIdentity, isAgentPartnerDisabled } from "@/app/lib/agents";
+import { getAgentByIdentity, getAgentLoginCheck, isAgentPartnerDisabled } from "@/app/lib/agents";
 import { saveActivityLog } from "@/app/lib/activity-logs";
 
 export async function POST(request: Request) {
@@ -93,14 +93,33 @@ export async function POST(request: Request) {
     }
 
     if (!matchedRole) {
-      // Check if the account was disabled by Super Admin
-      if (body.role === "Agent" && (await isAgentPartnerDisabled(body.identity, body.password))) {
-        return NextResponse.json(
-          {
-            error: "This Agent Partner account has been disabled by Super Admin. Please contact company administration.",
-          },
-          { status: 403 }
-        );
+      // Check agent approval status or disabled state
+      if (body.role === "Agent") {
+        const check = await getAgentLoginCheck(body.identity, body.password);
+        if (check.status === "Pending") {
+          return NextResponse.json(
+            {
+              error: "Your Agent Partner registration is pending approval by Bizearch Administrators & Super Admins. Please wait for authorization before logging in.",
+            },
+            { status: 403 }
+          );
+        }
+        if (check.status === "Rejected") {
+          return NextResponse.json(
+            {
+              error: check.message || "Your Agent Partner registration was rejected by company administration.",
+            },
+            { status: 403 }
+          );
+        }
+        if (check.status === "Disabled") {
+          return NextResponse.json(
+            {
+              error: "This Agent Partner account has been disabled by company administration. Please contact support.",
+            },
+            { status: 403 }
+          );
+        }
       }
 
       if (body.role === "Account" && (await isCustomerAccountDisabled(body.identity, body.password))) {

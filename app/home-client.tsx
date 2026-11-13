@@ -21321,7 +21321,36 @@ function CompanyPortal({
     active: boolean;
     createdAt: string;
     referredCount: number;
+    approvalStatus?: "Pending" | "Approved" | "Rejected";
+    approvedAt?: string;
+    approvedBy?: string;
+    rejectedAt?: string;
+    rejectedBy?: string;
+    rejectionReason?: string;
   };
+  const [approvalSubTab, setApprovalSubTab] = useState<"businesses" | "agents">("businesses");
+  const [agentFilterTab, setAgentFilterTab] = useState<"all" | "pending" | "active" | "rejected">("all");
+  const [reviewingAgentId, setReviewingAgentId] = useState<string | null>(null);
+
+  async function handleReviewAgent(id: string, action: "approve" | "reject", reason?: string) {
+    setReviewingAgentId(id);
+    try {
+      const res = await fetch("/api/company/agents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, id, reason }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update agent status.");
+      showNotice(action === "approve" ? "✓ Agent partner approved and activated!" : "Agent partner application rejected.");
+      loadAgents();
+    } catch (err) {
+      showNotice(err instanceof Error ? err.message : "Failed to review agent.");
+    } finally {
+      setReviewingAgentId(null);
+    }
+  }
+
   const [agents, setAgents] = useState<AgentRecord[]>([]);
   const [agentsLoading, setAgentsLoading] = useState(false);
   const [agentsError, setAgentsError] = useState("");
@@ -21669,7 +21698,9 @@ function CompanyPortal({
     }
   }
 
-  const pendingApprovalsCount = approvals.filter((b) => b.verificationStatus === "Pending Admin Approval" || b.verificationStatus === "Pending Agent Assignment").length;
+  const pendingBizApprovalsCount = approvals.filter((b) => b.verificationStatus === "Pending Admin Approval" || b.verificationStatus === "Pending Agent Assignment").length;
+  const pendingAgentApprovalsCount = agents.filter((a) => a.approvalStatus === "Pending").length;
+  const pendingApprovalsCount = pendingBizApprovalsCount + pendingAgentApprovalsCount;
 
   const tabNames = accessLevel === "Super Admin"
     ? ["Overview", "Businesses", `Approvals${pendingApprovalsCount > 0 ? ` (${pendingApprovalsCount})` : ""}`, "Agents", "Transactions", "Advertisements", "Ads Activity log", "Plans & Pricing", "Categories", "Registration forms", "Customer registrations", "Admins", "Activity log", "Safety", "Profile details", "Settings"]
@@ -21921,7 +21952,27 @@ function CompanyPortal({
             Refresh ↻
           </button>
         </div>
-        <p>Verified field agents onboard local merchants, distribute referral links, and earn commissions. Real agent registrations appear here.</p>
+        <p>Verified field agents onboard local merchants, distribute referral links, and earn commissions. Review pending applications and manage active agents.</p>
+
+        <div style={{ display: "flex", gap: "8px", margin: "14px 0 16px", flexWrap: "wrap" }}>
+          {[
+            { id: "all", label: `All Partners (${agents.length})` },
+            { id: "pending", label: `Pending Approval (${agents.filter((a) => a.approvalStatus === "Pending").length})` },
+            { id: "active", label: `Active (${agents.filter((a) => a.active && a.approvalStatus === "Approved").length})` },
+            { id: "rejected", label: `Rejected (${agents.filter((a) => a.approvalStatus === "Rejected").length})` },
+          ].map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              className={agentFilterTab === f.id ? "primary-button" : "outline-button"}
+              onClick={() => setAgentFilterTab(f.id as any)}
+              style={{ fontSize: "12px", padding: "6px 14px" }}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
         {agentsLoading && <p>Loading agent partners…</p>}
         {agentsError && <p className="form-error" role="alert">{agentsError}</p>}
         {!agentsLoading && !agentsError && agents.length === 0 && (
@@ -21930,57 +21981,164 @@ function CompanyPortal({
             text="When field agents register and verify via OTP, their profiles and referral codes will appear here in real time."
           />
         )}
-        {agents.map((agent) => (
-          <div className="listing-row" key={agent.id}>
-            <span className="listing-icon lavender">🤝</span>
-            <span className="listing-name">
-              <strong>{agent.name}</strong>
-              <small>
-                Mobile: {agent.phone} {agent.email ? `· ${agent.email}` : ""} · Joined {new Date(agent.createdAt).toLocaleDateString()}
-              </small>
-              <small>Referral Code: <strong>{agent.referralCode}</strong> · Businesses referred: {agent.referredCount || 0}</small>
-            </span>
-            <span className={`status-pill ${agent.active ? "verified" : "pending"}`}>
-              {agent.active ? "● Active partner" : "● Inactive (Disabled)"}
-            </span>
-            {accessLevel === "Super Admin" && (
-              <button
-                className="outline-button"
-                type="button"
+        {(() => {
+          const filteredAgents = agents.filter((agent) => {
+            if (agentFilterTab === "pending") return agent.approvalStatus === "Pending";
+            if (agentFilterTab === "active") return agent.active && agent.approvalStatus === "Approved";
+            if (agentFilterTab === "rejected") return agent.approvalStatus === "Rejected";
+            return true;
+          });
+
+          if (!agentsLoading && !agentsError && agents.length > 0 && filteredAgents.length === 0) {
+            return (
+              <p style={{ padding: "16px", color: "#66786c", fontStyle: "italic" }}>
+                No agent partners found matching the &quot;{agentFilterTab}&quot; filter.
+              </p>
+            );
+          }
+
+          return filteredAgents.map((agent) => {
+            const isPending = agent.approvalStatus === "Pending";
+            const isRejected = agent.approvalStatus === "Rejected";
+            const isApproved = agent.approvalStatus === "Approved";
+            const isReviewing = reviewingAgentId === agent.id;
+
+            return (
+              <div
+                className="listing-row"
+                key={agent.id}
                 style={{
-                  color: agent.active ? "#b91c1c" : "#15803d",
-                  borderColor: agent.active ? "#fca5a5" : "#86efac",
-                  fontWeight: 600,
-                  fontSize: "12px",
-                }}
-                onClick={async () => {
-                  const willDisable = agent.active;
-                  const confirmed = window.confirm(
-                    willDisable
-                      ? `Are you sure you want to disable agent "${agent.name}"? They will not be able to log in or verify businesses.`
-                      : `Activate agent partner "${agent.name}"?`
-                  );
-                  if (!confirmed) return;
-                  try {
-                    const res = await fetch("/api/company/agents", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ action: "toggle", id: agent.id, active: !agent.active }),
-                    });
-                    const data = await res.json();
-                    if (!res.ok) throw new Error(data.error || "Could not update agent status.");
-                    loadAgents();
-                    showNotice(`Agent ${agent.name} ${!agent.active ? "activated" : "disabled"} successfully.`);
-                  } catch (e) {
-                    showNotice(e instanceof Error ? e.message : "Error updating agent.");
-                  }
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: "12px",
+                  background: isPending ? "#fffbeb" : isRejected ? "#fffdfa" : "#fff",
+                  border: isPending ? "1.5px solid #fde68a" : isRejected ? "1px solid #fecaca" : "1px solid #e2e8f0",
+                  borderRadius: "10px",
+                  padding: "14px 16px",
+                  marginBottom: "8px",
                 }}
               >
-                {agent.active ? "Disable Agent" : "Activate Agent"}
-              </button>
-            )}
-          </div>
-        ))}
+                <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", flex: 1, minWidth: "260px" }}>
+                  <span className={`listing-icon ${isPending ? "butter" : isRejected ? "peach" : "lavender"}`}>🤝</span>
+                  <span className="listing-name" style={{ flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                      <strong style={{ fontSize: "14.5px" }}>{agent.name}</strong>
+                      <span
+                        className="status-pill"
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: 700,
+                          padding: "2px 8px",
+                          borderRadius: "10px",
+                          background: isPending ? "#fffbeb" : isRejected ? "#fef2f2" : agent.active ? "#f0fdf4" : "#f1f5f9",
+                          color: isPending ? "#b45309" : isRejected ? "#991b1b" : agent.active ? "#166534" : "#475569",
+                          border: isPending ? "1px solid #fde68a" : isRejected ? "1px solid #fecaca" : agent.active ? "1px solid #bbf7d0" : "1px solid #cbd5e1",
+                        }}
+                      >
+                        ● {isPending ? "Pending Approval" : isRejected ? "Rejected" : agent.active ? "Active partner" : "Inactive (Disabled)"}
+                      </span>
+                    </div>
+                    <small style={{ display: "block", color: "#475569", margin: "3px 0" }}>
+                      Mobile: <strong>{agent.phone}</strong> {agent.email ? `· Email: ${agent.email}` : ""} · Applied: {new Date(agent.createdAt).toLocaleDateString()}
+                    </small>
+                    <small style={{ display: "block", color: "#0f172a" }}>
+                      Referral Code: <strong style={{ color: "#1e3a8a" }}>{agent.referralCode}</strong> · Businesses referred: {agent.referredCount || 0}
+                    </small>
+                    {isRejected && agent.rejectionReason && (
+                      <div style={{ marginTop: "4px", fontSize: "11px", color: "#991b1b", background: "#fee2e2", padding: "3px 8px", borderRadius: "4px" }}>
+                        Reason for rejection: {agent.rejectionReason}
+                      </div>
+                    )}
+                    {agent.approvedBy && (
+                      <small style={{ display: "block", color: "#15803d", marginTop: "2px", fontSize: "10.5px" }}>
+                        ✓ Approved by {agent.approvedBy} {agent.approvedAt ? `on ${new Date(agent.approvedAt).toLocaleDateString()}` : ""}
+                      </small>
+                    )}
+                  </span>
+                </div>
+
+                <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+                  {isPending && (
+                    <>
+                      <button
+                        className="primary-button"
+                        type="button"
+                        disabled={isReviewing}
+                        style={{ background: "#166534", borderColor: "#166534", fontSize: "12px", padding: "6px 14px" }}
+                        onClick={() => handleReviewAgent(agent.id, "approve")}
+                      >
+                        {isReviewing ? "Processing..." : "✓ Approve Agent"}
+                      </button>
+                      <button
+                        className="outline-button"
+                        type="button"
+                        disabled={isReviewing}
+                        style={{ color: "#b91c1c", borderColor: "#fca5a5", fontSize: "12px", padding: "6px 12px" }}
+                        onClick={() => {
+                          const reason = window.prompt("Reason for rejecting agent application (optional):");
+                          if (reason !== null) handleReviewAgent(agent.id, "reject", reason || undefined);
+                        }}
+                      >
+                        ✕ Reject
+                      </button>
+                    </>
+                  )}
+
+                  {isRejected && (
+                    <button
+                      className="primary-button"
+                      type="button"
+                      disabled={isReviewing}
+                      style={{ background: "#166534", borderColor: "#166534", fontSize: "12px", padding: "6px 12px" }}
+                      onClick={() => handleReviewAgent(agent.id, "approve")}
+                    >
+                      {isReviewing ? "Processing..." : "Re-Approve Agent"}
+                    </button>
+                  )}
+
+                  {isApproved && accessLevel === "Super Admin" && (
+                    <button
+                      className="outline-button"
+                      type="button"
+                      style={{
+                        color: agent.active ? "#b91c1c" : "#15803d",
+                        borderColor: agent.active ? "#fca5a5" : "#86efac",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                      }}
+                      onClick={async () => {
+                        const willDisable = agent.active;
+                        const confirmed = window.confirm(
+                          willDisable
+                            ? `Are you sure you want to disable agent "${agent.name}"? They will not be able to log in or verify businesses.`
+                            : `Activate agent partner "${agent.name}"?`
+                        );
+                        if (!confirmed) return;
+                        try {
+                          const res = await fetch("/api/company/agents", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ action: "toggle", id: agent.id, active: !agent.active }),
+                          });
+                          const data = await res.json();
+                          if (!res.ok) throw new Error(data.error || "Could not update agent status.");
+                          loadAgents();
+                          showNotice(`Agent ${agent.name} ${!agent.active ? "activated" : "disabled"} successfully.`);
+                        } catch (e) {
+                          showNotice(e instanceof Error ? e.message : "Error updating agent.");
+                        }
+                      }}
+                    >
+                      {agent.active ? "Disable Agent" : "Activate Agent"}
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          });
+        })()}
       </section>
     )}
     {(activeTab === "Customer registrations" || activeTab === "Customer locations") && (
@@ -22529,7 +22687,162 @@ function CompanyPortal({
               {approvalsLoading ? "Refreshing..." : "↻ Refresh Approvals"}
             </button>
           </div>
+        </div>        <div style={{ display: "flex", gap: "10px", margin: "14px 0 18px", borderBottom: "1px solid #d4e3d3", paddingBottom: "12px", flexWrap: "wrap" }}>
+          <button
+            type="button"
+            className={approvalSubTab === "businesses" ? "primary-button" : "outline-button"}
+            onClick={() => setApprovalSubTab("businesses")}
+            style={{ fontSize: "12px", padding: "8px 16px" }}
+          >
+            🏢 Business Approvals {pendingBizApprovalsCount > 0 ? `(${pendingBizApprovalsCount} pending)` : `(${approvals.length})`}
+          </button>
+          <button
+            type="button"
+            className={approvalSubTab === "agents" ? "primary-button" : "outline-button"}
+            onClick={() => setApprovalSubTab("agents")}
+            style={{ fontSize: "12px", padding: "8px 16px" }}
+          >
+            🤝 Agent Partner Approvals {pendingAgentApprovalsCount > 0 ? `(${pendingAgentApprovalsCount} pending)` : `(${agents.filter((a) => a.approvalStatus === "Pending").length})`}
+          </button>
         </div>
+
+        {approvalSubTab === "agents" ? (
+          <div>
+            <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: "10px", padding: "14px 18px", marginBottom: "18px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+                <div>
+                  <div style={{ fontSize: "11px", fontWeight: 800, color: "#92400e", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                    FIELD AGENT ONBOARDING PIPELINE
+                  </div>
+                  <h3 style={{ margin: "3px 0 0", fontSize: "15px", color: "#78350f" }}>
+                    {agents.filter((a) => a.approvalStatus === "Pending").length} Agent Application{agents.filter((a) => a.approvalStatus === "Pending").length === 1 ? "" : "s"} Awaiting Approval
+                  </h3>
+                  <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#92400e" }}>
+                    Field agents must be reviewed and authorized by Company Admins or Super Admins before their accounts are activated and can log in.
+                  </p>
+                </div>
+                <button type="button" className="outline-button" onClick={loadAgents} style={{ fontSize: "11.5px", padding: "6px 12px" }}>
+                  {agentsLoading ? "Refreshing..." : "↻ Refresh Agents"}
+                </button>
+              </div>
+            </div>
+
+            {agentsLoading ? (
+              <p style={{ padding: "20px", color: "#66786c" }}>Loading agent applications...</p>
+            ) : agents.length === 0 ? (
+              <EmptyState
+                title="No agent partners registered yet"
+                text="When field agents register via the agent portal, their applications will appear here for review."
+              />
+            ) : (
+              <div style={{ display: "grid", gap: "14px" }}>
+                {agents.map((agent) => {
+                  const isPending = agent.approvalStatus === "Pending";
+                  const isApproved = agent.approvalStatus === "Approved";
+                  const isRejected = agent.approvalStatus === "Rejected";
+                  const isReviewing = reviewingAgentId === agent.id;
+
+                  return (
+                    <div
+                      key={agent.id}
+                      style={{
+                        background: "#fff",
+                        border: `1.5px solid ${isPending ? "#f59e0b" : isApproved ? "#10b981" : "#e2e8f0"}`,
+                        borderRadius: "12px",
+                        padding: "18px",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "12px",
+                        boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
+                      }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px", flexWrap: "wrap" }}>
+                        <div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                            <strong style={{ fontSize: "16px", color: "#0f172a" }}>{agent.name}</strong>
+                            <span
+                              className="status-pill"
+                              style={{
+                                fontSize: "11px",
+                                fontWeight: 700,
+                                padding: "2px 8px",
+                                borderRadius: "10px",
+                                background: isPending ? "#fffbeb" : isRejected ? "#fef2f2" : "#f0fdf4",
+                                color: isPending ? "#b45309" : isRejected ? "#991b1b" : "#166534",
+                                border: isPending ? "1px solid #fde68a" : isRejected ? "1px solid #fecaca" : "1px solid #bbf7d0",
+                              }}
+                            >
+                              ● {isPending ? "Pending Admin Approval" : isRejected ? "Rejected" : "Approved & Active"}
+                            </span>
+                          </div>
+                          <p style={{ margin: "6px 0 2px", fontSize: "12.5px", color: "#475569" }}>
+                            📞 <strong>Mobile:</strong> {agent.phone} {agent.email ? `· ✉️ Email: ${agent.email}` : ""}
+                          </p>
+                          <p style={{ margin: "2px 0 0", fontSize: "12.5px", color: "#1e3a8a", fontWeight: 600 }}>
+                            🏷️ <strong>Referral Code:</strong> {agent.referralCode} · Businesses Referred: {agent.referredCount || 0}
+                          </p>
+                          <small style={{ color: "#94a3b8", fontSize: "11px", display: "block", marginTop: "4px" }}>
+                            Applied on: {new Date(agent.createdAt).toLocaleString()}
+                          </small>
+                          {agent.approvedBy && (
+                            <small style={{ color: "#15803d", fontSize: "11.5px", display: "block", marginTop: "2px", fontWeight: 600 }}>
+                              ✓ Approved by {agent.approvedBy} {agent.approvedAt ? `on ${new Date(agent.approvedAt).toLocaleString()}` : ""}
+                            </small>
+                          )}
+                          {isRejected && agent.rejectionReason && (
+                            <div style={{ marginTop: "6px", fontSize: "11.5px", color: "#991b1b", background: "#fef2f2", padding: "6px 10px", borderRadius: "6px", border: "1px solid #fecaca" }}>
+                              ✕ <strong>Rejection Reason:</strong> {agent.rejectionReason}
+                              {agent.rejectedBy ? ` (by ${agent.rejectedBy})` : ""}
+                            </div>
+                          )}
+                        </div>
+
+                        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
+                          {isPending ? (
+                            <>
+                              <button
+                                type="button"
+                                className="primary-button"
+                                style={{ background: "#166534", borderColor: "#166534", padding: "8px 16px", fontSize: "12.5px" }}
+                                disabled={isReviewing}
+                                onClick={() => handleReviewAgent(agent.id, "approve")}
+                              >
+                                {isReviewing ? "Processing..." : "✓ Approve & Activate Agent"}
+                              </button>
+                              <button
+                                type="button"
+                                className="outline-button"
+                                style={{ color: "#b91c1c", borderColor: "#fca5a5", padding: "8px 14px", fontSize: "12.5px" }}
+                                disabled={isReviewing}
+                                onClick={() => {
+                                  const reason = window.prompt("Reason for rejecting agent partner application (optional):");
+                                  if (reason !== null) handleReviewAgent(agent.id, "reject", reason || undefined);
+                                }}
+                              >
+                                ✕ Reject
+                              </button>
+                            </>
+                          ) : isRejected ? (
+                            <button
+                              type="button"
+                              className="primary-button"
+                              style={{ background: "#166534", borderColor: "#166534", padding: "8px 14px", fontSize: "12px" }}
+                              disabled={isReviewing}
+                              onClick={() => handleReviewAgent(agent.id, "approve")}
+                            >
+                              {isReviewing ? "Processing..." : "Re-Approve Agent"}
+                            </button>
+                          ) : null}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div>
 
         {approvalsLoading ? (
           <p style={{ padding: "20px", color: "#66786c" }}>Loading approvals queue...</p>
@@ -22774,6 +23087,8 @@ function CompanyPortal({
                 </div>
               );
             })}
+          </div>
+        )}
           </div>
         )}
       </section>
