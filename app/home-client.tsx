@@ -18966,7 +18966,9 @@ function ProfileAndSettingsPanel({
   onLanguageChange?: (lang: "en" | "ta" | "kn" | "te") => void;
   showNotice?: (msg: string) => void;
 }) {
-  const [activeSubTab, setActiveSubTab] = useState<"profile" | "settings" | "notifications" | "security" | "data" | "features">(initialSubTab);
+  const [activeSubTab, setActiveSubTab] = useState<"profile" | "settings" | "notifications" | "security" | "data" | "features">(
+    initialSubTab === "features" && role === "Agent" ? "profile" : initialSubTab
+  );
   const [profile, setProfile] = useState<MemberProfile>(emptyMemberProfile);
   const [settings, setSettings] = useState<UserSettings>(defaultUserSettings);
   const [profileSaved, setProfileSaved] = useState(false);
@@ -19515,13 +19517,15 @@ function ProfileAndSettingsPanel({
         >
           <span>📦</span> Data &amp; Storage
         </button>
-        <button
-          type="button"
-          className={`profile-subtab-btn ${activeSubTab === "features" ? "active" : ""}`}
-          onClick={() => setActiveSubTab("features")}
-        >
-          <span>⚡</span> Features &amp; Portals
-        </button>
+        {role !== "Agent" && (
+          <button
+            type="button"
+            className={`profile-subtab-btn ${activeSubTab === "features" ? "active" : ""}`}
+            onClick={() => setActiveSubTab("features")}
+          >
+            <span>⚡</span> Features &amp; Portals
+          </button>
+        )}
       </nav>
 
       {/* TAB 1: PROFILE DETAILS */}
@@ -20294,74 +20298,124 @@ function ProfileAndSettingsPanel({
       {activeSubTab === "data" && (
         <div className="settings-section-card">
           <div className="settings-card-header">
-            <h3><span>📦</span> Data Storage, Backups &amp; Privacy Exports</h3>
-            <p>Inspect local storage statistics, download GDPR-compliant JSON backups, or export order spreadsheets.</p>
+            <h3><span>📦</span> Data Storage {role !== "Agent" ? "& Backups" : "& Device Cache"}</h3>
+            <p>
+              {role === "Agent"
+                ? "Inspect local storage allocations, device caching, and secure session telemetry."
+                : "Inspect local storage statistics, download GDPR-compliant JSON backups, or export order spreadsheets."}
+            </p>
           </div>
 
           {/* Live Stats */}
           <div className="data-stats-grid">
-            <div className="data-stat-card">
-              <div className="data-stat-icon">🛍️</div>
-              <div className="data-stat-info">
-                <strong>{data?.orders?.length || 0}</strong>
-                <small>Order Records</small>
-              </div>
-            </div>
-            <div className="data-stat-card">
-              <div className="data-stat-icon">❤️</div>
-              <div className="data-stat-info">
-                <strong>{data?.favorites.length || 0}</strong>
-                <small>Saved Places</small>
-              </div>
-            </div>
-            <div className="data-stat-card">
-              <div className="data-stat-icon">🔍</div>
-              <div className="data-stat-info">
-                <strong>{data?.recentSearches.length || 0}</strong>
-                <small>Cached Searches</small>
-              </div>
-            </div>
-            <div className="data-stat-card">
-              <div className="data-stat-icon">💾</div>
-              <div className="data-stat-info">
-                <strong>~14 KB</strong>
-                <small>Local Storage Used</small>
-              </div>
-            </div>
+            {role !== "Agent" ? (
+              <>
+                <div className="data-stat-card">
+                  <div className="data-stat-icon">🛍️</div>
+                  <div className="data-stat-info">
+                    <strong>{data?.orders?.length || 0}</strong>
+                    <small>Order Records</small>
+                  </div>
+                </div>
+                <div className="data-stat-card">
+                  <div className="data-stat-icon">❤️</div>
+                  <div className="data-stat-info">
+                    <strong>{data?.favorites.length || 0}</strong>
+                    <small>Saved Places</small>
+                  </div>
+                </div>
+                <div className="data-stat-card">
+                  <div className="data-stat-icon">🔍</div>
+                  <div className="data-stat-info">
+                    <strong>{data?.recentSearches.length || 0}</strong>
+                    <small>Cached Searches</small>
+                  </div>
+                </div>
+                <div className="data-stat-card">
+                  <div className="data-stat-icon">💾</div>
+                  <div className="data-stat-info">
+                    <strong>~14 KB</strong>
+                    <small>Local Storage Used</small>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="data-stat-card">
+                  <div className="data-stat-icon">💾</div>
+                  <div className="data-stat-info">
+                    <strong>~14 KB</strong>
+                    <small>Device Storage Used</small>
+                  </div>
+                </div>
+                <div className="data-stat-card">
+                  <div className="data-stat-icon">⚡</div>
+                  <div className="data-stat-info">
+                    <strong>Encrypted</strong>
+                    <small>Local Cache Status</small>
+                  </div>
+                </div>
+                <div className="data-stat-card">
+                  <div className="data-stat-icon">🛡️</div>
+                  <div className="data-stat-info">
+                    <strong>Active</strong>
+                    <small>Agent Session Guard</small>
+                  </div>
+                </div>
+                <div className="data-stat-card">
+                  <div className="data-stat-icon">📱</div>
+                  <div className="data-stat-info">
+                    <strong>Synced</strong>
+                    <small>Device Telemetry</small>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
-          {/* Export Actions */}
-          <div style={{ display: "flex", gap: "12px", marginTop: "10px", flexWrap: "wrap" }}>
-            <button
-              type="button"
-              className="primary-button"
-              onClick={downloadBackupJson}
-              style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "10px 18px", fontSize: "12px" }}
-            >
-              <span>📥</span> Download My Data (JSON Backup)
-            </button>
-            <button
-              type="button"
-              className="outline-button"
-              onClick={exportOrdersCsv}
-              style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "10px 18px", fontSize: "12px" }}
-            >
-              <span>📊</span> Export Order Receipts (CSV)
-            </button>
-          </div>
+          {/* Export Actions - Hidden in agent portal */}
+          {role !== "Agent" && (
+            <div style={{ display: "flex", gap: "12px", marginTop: "10px", flexWrap: "wrap" }}>
+              <button
+                type="button"
+                className="primary-button"
+                onClick={downloadBackupJson}
+                style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "10px 18px", fontSize: "12px" }}
+              >
+                <span>📥</span> Download My Data (JSON Backup)
+              </button>
+              <button
+                type="button"
+                className="outline-button"
+                onClick={exportOrdersCsv}
+                style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "10px 18px", fontSize: "12px" }}
+              >
+                <span>📊</span> Export Order Receipts (CSV)
+              </button>
+            </div>
+          )}
 
-          <div className="form-note" style={{ margin: "6px 0 0" }}>
-            <strong>Local data portability</strong>
-            <span>
-              Your profile, saved places, order invoices, and emergency contacts are encrypted in your local browser sandbox.
-              Exporting provides an offline, permanent copy of your records.
-            </span>
-          </div>
+          {role !== "Agent" ? (
+            <div className="form-note" style={{ margin: "6px 0 0" }}>
+              <strong>Local data portability</strong>
+              <span>
+                Your profile, saved places, order invoices, and emergency contacts are encrypted in your local browser sandbox.
+                Exporting provides an offline, permanent copy of your records.
+              </span>
+            </div>
+          ) : (
+            <div className="form-note" style={{ margin: "6px 0 0" }}>
+              <strong>Local device storage</strong>
+              <span>
+                Field agent verification data, offline form drafts, and session credentials are securely encrypted and managed in your browser local storage.
+              </span>
+            </div>
+          )}
         </div>
       )}
 
       {/* TAB 6: CONNECTED FEATURES & PORTALS */}
-      {activeSubTab === "features" && (
+      {activeSubTab === "features" && role !== "Agent" && (
         <div className="settings-section-card">
           <div className="settings-card-header">
             <h3><span>⚡</span> Platform Workspace Switcher &amp; Features</h3>
