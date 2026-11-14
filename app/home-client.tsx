@@ -18245,45 +18245,6 @@ function AgentPortal({
             </div>
           </section>
           
-          {/* Commission Schedule (Registration & Renewals) */}
-          <div style={{ margin: '14px 0 20px', padding: '16px', background: agentCustomPricing ? 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)' : '#f8fafc', borderRadius: '12px', border: agentCustomPricing ? '1px solid #86efac' : '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
-              <div style={{ fontWeight: 700, fontSize: '13.5px', color: agentCustomPricing ? '#166534' : '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span>💰</span> {agentCustomPricing ? 'Your Assigned Commission Schedule' : 'Platform Referral Commission Schedule'}
-              </div>
-              <span style={{ fontSize: '11px', background: agentCustomPricing ? '#dcfce7' : '#e2e8f0', color: agentCustomPricing ? '#15803d' : '#475569', padding: '3px 9px', borderRadius: '999px', fontWeight: 600 }}>
-                {agentCustomPricing ? '👑 Customized by Super Admin' : 'Standard Platform Rates'}
-              </span>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
-              <div style={{ background: '#ffffff', padding: '12px 10px', borderRadius: '8px', border: '1px solid ' + (agentCustomPricing ? '#bbf7d0' : '#e2e8f0'), textAlign: 'center' }}>
-                <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>New Registration</div>
-                <div style={{ fontSize: '22px', fontWeight: 800, color: '#15803d', margin: '4px 0 2px' }}>{regRate}%</div>
-                <div style={{ fontSize: '10.5px', color: '#94a3b8' }}>On merchant onboarding</div>
-              </div>
-              <div style={{ background: '#ffffff', padding: '12px 10px', borderRadius: '8px', border: '1px solid ' + (agentCustomPricing ? '#bbf7d0' : '#e2e8f0'), textAlign: 'center' }}>
-                <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>1st Renewal</div>
-                <div style={{ fontSize: '22px', fontWeight: 800, color: '#0284c7', margin: '4px 0 2px' }}>{renewal1Rate}%</div>
-                <div style={{ fontSize: '10.5px', color: '#94a3b8' }}>1st renewal payout</div>
-              </div>
-              <div style={{ background: '#ffffff', padding: '12px 10px', borderRadius: '8px', border: '1px solid ' + (agentCustomPricing ? '#bbf7d0' : '#e2e8f0'), textAlign: 'center' }}>
-                <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>2nd Renewal</div>
-                <div style={{ fontSize: '22px', fontWeight: 800, color: '#7c3aed', margin: '4px 0 2px' }}>{renewal2Rate}%</div>
-                <div style={{ fontSize: '10.5px', color: '#94a3b8' }}>2nd renewal payout</div>
-              </div>
-              <div style={{ background: '#ffffff', padding: '12px 10px', borderRadius: '8px', border: '1px solid ' + (agentCustomPricing ? '#bbf7d0' : '#e2e8f0'), textAlign: 'center' }}>
-                <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>3rd+ Renewals</div>
-                <div style={{ fontSize: '22px', fontWeight: 800, color: '#d97706', margin: '4px 0 2px' }}>{renewalSubRate}%</div>
-                <div style={{ fontSize: '10.5px', color: '#94a3b8' }}>Subsequent renewals</div>
-              </div>
-            </div>
-            {agentCustomPricing?.customNotes && (
-              <div style={{ marginTop: '10px', fontSize: '12px', color: '#166534', background: '#ffffff', padding: '8px 12px', borderRadius: '6px', border: '1px dashed #86efac' }}>
-                <strong>Super Admin Notes:</strong> {agentCustomPricing.customNotes}
-              </div>
-            )}
-          </div>
-
           {/* Performance & Ratings Breakdown Card (Genuine Data Only) */}
           {(() => {
             const hasEval = Boolean(agentRatings && typeof agentRatings.overall === "number" && !isJunkRatingData(agentRatings));
@@ -24024,158 +23985,42 @@ function CompanyPortal({
         <p>Verified field agents onboard local merchants, distribute referral links, and earn commissions. Review pending applications and manage active agents.</p>
 
         {/* ================================================================ */}
-        {/* SUPER ADMIN: AGENT REFERRAL COMMISSION PERCENTAGE CONFIGURATION */}
+        {/* SUPER ADMIN: PER-AGENT COMMISSION RATE CONFIGURATION NOTICE */}
         {/* ================================================================ */}
         <div
           style={{
-            background: "#f0fdf4",
+            background: "linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)",
             border: "1.5px solid #86efac",
             borderRadius: "12px",
-            padding: "18px 20px",
+            padding: "16px 20px",
             margin: "16px 0 20px",
-            boxShadow: "0 2px 8px rgba(22, 101, 52, 0.06)",
+            boxShadow: "0 2px 8px rgba(22, 101, 52, 0.05)",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "12px",
           }}
         >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "10px", marginBottom: "12px" }}>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span style={{ fontSize: "20px" }}>⚙️</span>
-                <h3 style={{ margin: 0, fontSize: "16px", color: "#14532d", fontWeight: 800 }}>
-                  Agent Referral Commission Rate Configuration
-                </h3>
-                <span style={{ background: "#dcfce7", color: "#166534", fontSize: "11px", fontWeight: 700, padding: "2px 8px", borderRadius: "12px", border: "1px solid #bbf7d0" }}>
-                  Super Admin Only
-                </span>
-              </div>
-              <p style={{ margin: "4px 0 0", fontSize: "12.5px", color: "#166534" }}>
-                Define the official referral amount percentage awarded to field agents for every business registration and subscription renewal. This percentage is dynamically synchronized and visible to both Super Admins and Agents.
-              </p>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ fontSize: "20px" }}>⚙️</span>
+              <h3 style={{ margin: 0, fontSize: "15.5px", color: "#14532d", fontWeight: 800 }}>
+                Agent Referral Commission Rate Configuration
+              </h3>
+              <span style={{ background: "#dcfce7", color: "#166534", fontSize: "11px", fontWeight: 700, padding: "2px 8px", borderRadius: "10px", border: "1px solid #bbf7d0" }}>
+                Super Admin Only
+              </span>
             </div>
-            {commissionSaving && (
-              <span style={{ fontSize: "12px", color: "#15803d", fontWeight: 600 }}>Saving changes...</span>
-            )}
+            <p style={{ margin: "4px 0 0", fontSize: "12.5px", color: "#166534" }}>
+              Commission rates are configured separately for each agent. <strong>Click on any agent below</strong> to open their <strong>Agent Referral Commission Rate Configuration</strong> and set their <em>Registration Commission</em>, <em>1st Renewal Commission</em>, <em>2nd Renewal Commission</em>, and subsequent renewal rates individually.
+            </p>
           </div>
-
-          <form onSubmit={handleSaveCommissionConfig} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "14px", alignItems: "end" }}>
-              <div>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#14532d", marginBottom: "6px" }}>
-                  Referral Commission Rate (%)
-                </label>
-                <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.5"
-                    value={adminReferralPercentage}
-                    onChange={(e) => setAdminReferralPercentage(Number(e.target.value))}
-                    style={{
-                      width: "90px",
-                      padding: "8px 12px",
-                      fontSize: "16px",
-                      fontWeight: 800,
-                      color: "#14532d",
-                      borderRadius: "8px",
-                      border: "1.5px solid #4ade80",
-                      background: "#fff",
-                    }}
-                    required
-                  />
-                  <span style={{ fontSize: "16px", fontWeight: 800, color: "#15803d" }}>%</span>
-                  {/* Quick percentage buttons */}
-                  <div style={{ display: "flex", gap: "4px", marginLeft: "4px", flexWrap: "wrap" }}>
-                    {[10, 15, 20, 25, 30].map((pct) => (
-                      <button
-                        key={pct}
-                        type="button"
-                        onClick={() => setAdminReferralPercentage(pct)}
-                        style={{
-                          padding: "4px 8px",
-                          fontSize: "11px",
-                          fontWeight: 700,
-                          borderRadius: "6px",
-                          border: adminReferralPercentage === pct ? "1.5px solid #16a34a" : "1px solid #cbd5e1",
-                          background: adminReferralPercentage === pct ? "#dcfce7" : "#fff",
-                          color: adminReferralPercentage === pct ? "#15803d" : "#475569",
-                          cursor: "pointer",
-                        }}
-                      >
-                        {pct}%
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#14532d", marginBottom: "6px" }}>
-                  Payout Schedule
-                </label>
-                <select
-                  value={adminPayoutCycle}
-                  onChange={(e) => setAdminPayoutCycle(e.target.value as any)}
-                  style={{
-                    width: "100%",
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    border: "1px solid #cbd5e1",
-                    background: "#fff",
-                    fontSize: "13px",
-                  }}
-                >
-                  <option value="Instant">Instant (upon merchant plan activation)</option>
-                  <option value="Weekly">Weekly (every Monday)</option>
-                  <option value="Monthly">Monthly (1st of every month)</option>
-                </select>
-              </div>
-
-              <div>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#14532d", marginBottom: "6px" }}>
-                  Minimum Payout Threshold (₹)
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  step="100"
-                  value={adminMinPayout}
-                  onChange={(e) => setAdminMinPayout(Number(e.target.value))}
-                  style={{
-                    width: "100%",
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    border: "1px solid #cbd5e1",
-                    background: "#fff",
-                    fontSize: "13px",
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Live Earning Simulator Box */}
-            <div style={{ background: "#ffffff", border: "1px solid #bbf7d0", borderRadius: "8px", padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px", fontSize: "12px" }}>
-              <div style={{ color: "#166534" }}>
-                <strong>💡 Live Commission Preview at {adminReferralPercentage}%:</strong>
-                <span style={{ marginLeft: "8px", color: "#14532d" }}>
-                  Starter (₹999/yr) → <strong>₹{Math.round(999 * (adminReferralPercentage / 100))}</strong> · Growth (₹2,999/yr) → <strong>₹{Math.round(2999 * (adminReferralPercentage / 100))}</strong> · Pro (₹5,999/yr) → <strong>₹{Math.round(5999 * (adminReferralPercentage / 100))}</strong>
-                </span>
-              </div>
-              <button
-                type="submit"
-                className="primary-button"
-                disabled={commissionSaving}
-                style={{ padding: "8px 18px", fontSize: "12px", fontWeight: 700 }}
-              >
-                {commissionSaving ? "Saving..." : "💾 Update Commission Rate"}
-              </button>
-            </div>
-
-            {adminCommissionConfig.lastUpdated && (
-              <div style={{ fontSize: "11px", color: "#64748b" }}>
-                Current configured percentage: <strong style={{ color: "#15803d" }}>{adminCommissionConfig.referralPercentage}%</strong> · Last updated by <strong>{adminCommissionConfig.updatedBy || "Super Admin"}</strong> on {new Date(adminCommissionConfig.lastUpdated).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
-              </div>
-            )}
-          </form>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "12px", color: "#15803d", background: "#ffffff", padding: "6px 14px", borderRadius: "8px", border: "1px solid #86efac", fontWeight: 700 }}>
+              👆 Click an Agent to Configure
+            </span>
+          </div>
         </div>
 
         <div style={{ display: "flex", gap: "8px", margin: "14px 0 16px", flexWrap: "wrap" }}>
@@ -24248,7 +24093,15 @@ function CompanyPortal({
                   <span className={`listing-icon ${isPending ? "butter" : isRejected ? "peach" : "lavender"}`}>🤝</span>
                   <span className="listing-name" style={{ flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-                      <strong style={{ fontSize: "14.5px" }}>{agent.name}</strong>
+                      <strong
+                        style={{ fontSize: "14.5px", cursor: accessLevel === "Super Admin" ? "pointer" : "default", textDecoration: accessLevel === "Super Admin" ? "underline" : "none" }}
+                        onClick={() => {
+                          if (accessLevel === "Super Admin") handleOpenAgentPricing(agent);
+                        }}
+                        title={accessLevel === "Super Admin" ? "Click to configure commission rates for " + agent.name : undefined}
+                      >
+                        {agent.name} ⚙️
+                      </strong>
                       <span
                         className="status-pill"
                         style={{
@@ -24280,6 +24133,51 @@ function CompanyPortal({
                         ✓ Approved by {agent.approvedBy} {agent.approvedAt ? `on ${new Date(agent.approvedAt).toLocaleDateString()}` : ""}
                       </small>
                     )}
+
+                    {/* Agent Referral Commission Rates Box */}
+                    <div style={{ marginTop: "10px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "8px", padding: "10px 12px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px", flexWrap: "wrap", gap: "6px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <span style={{ fontSize: "11px", fontWeight: 800, color: "#166534", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                            💰 Referral Commission Rates
+                          </span>
+                          <span style={{ fontSize: "11px", fontWeight: 700, color: agent.commissionPricing ? "#15803d" : "#475569", background: agent.commissionPricing ? "#dcfce7" : "#e2e8f0", padding: "1px 8px", borderRadius: "10px" }}>
+                            {agent.commissionPricing ? "Custom Rates Configured" : "Default 20% Schedule"}
+                          </span>
+                        </div>
+                        {accessLevel === "Super Admin" && (
+                          <button
+                            type="button"
+                            className="outline-button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenAgentPricing(agent);
+                            }}
+                            style={{ fontSize: "11px", padding: "4px 10px", color: "#166534", borderColor: "#86efac", background: "#ffffff", fontWeight: 700, cursor: "pointer" }}
+                          >
+                            ⚙️ Configure Commission Rates
+                          </button>
+                        )}
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "6px", fontSize: "11px" }}>
+                        <div style={{ background: "#ffffff", border: "1px solid #bbf7d0", borderRadius: "6px", padding: "6px 8px", textAlign: "center" }}>
+                          <span style={{ color: "#64748b", display: "block", fontSize: "10px", fontWeight: 600 }}>Registration</span>
+                          <strong style={{ color: "#15803d", fontSize: "14px" }}>{agent.commissionPricing?.registrationPercentage ?? (adminCommissionConfig.referralPercentage || 20)}%</strong>
+                        </div>
+                        <div style={{ background: "#ffffff", border: "1px solid #bbf7d0", borderRadius: "6px", padding: "6px 8px", textAlign: "center" }}>
+                          <span style={{ color: "#64748b", display: "block", fontSize: "10px", fontWeight: 600 }}>1st Renewal</span>
+                          <strong style={{ color: "#0284c7", fontSize: "14px" }}>{agent.commissionPricing?.firstRenewalPercentage ?? (adminCommissionConfig.referralPercentage || 20)}%</strong>
+                        </div>
+                        <div style={{ background: "#ffffff", border: "1px solid #bbf7d0", borderRadius: "6px", padding: "6px 8px", textAlign: "center" }}>
+                          <span style={{ color: "#64748b", display: "block", fontSize: "10px", fontWeight: 600 }}>2nd Renewal</span>
+                          <strong style={{ color: "#7c3aed", fontSize: "14px" }}>{agent.commissionPricing?.secondRenewalPercentage ?? (adminCommissionConfig.referralPercentage || 20)}%</strong>
+                        </div>
+                        <div style={{ background: "#ffffff", border: "1px solid #bbf7d0", borderRadius: "6px", padding: "6px 8px", textAlign: "center" }}>
+                          <span style={{ color: "#64748b", display: "block", fontSize: "10px", fontWeight: 600 }}>3rd+ Renewals</span>
+                          <strong style={{ color: "#d97706", fontSize: "14px" }}>{agent.commissionPricing?.subsequentRenewalPercentage ?? (adminCommissionConfig.referralPercentage || 20)}%</strong>
+                        </div>
+                      </div>
+                    </div>
 
                     {/* Agent Multi-Pillar Performance Ratings (Genuine Data Only) */}
                     <div style={{ marginTop: "10px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "10px 12px" }}>
@@ -25948,10 +25846,10 @@ function CompanyPortal({
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid #e2e8f0", paddingBottom: "12px" }}>
               <div>
                 <span style={{ fontSize: "11px", fontWeight: 800, color: "#166534", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                  💰 PER-AGENT COMMISSION PRICING
+                  ⚙️ AGENT REFERRAL COMMISSION RATE CONFIGURATION · SUPER ADMIN
                 </span>
                 <h3 style={{ margin: "2px 0 0", fontSize: "18px", color: "#0f172a" }}>
-                  Edit Details &amp; Pricing: {selectedAgentForPricing.name}
+                  ⚙️ Agent Referral Commission Rate Configuration
                 </h3>
                 <small style={{ color: "#64748b" }}>
                   Referral Code: <strong style={{ color: "#1e40af" }}>{selectedAgentForPricing.referralCode}</strong> · Phone: {selectedAgentForPricing.phone}
@@ -26034,7 +25932,7 @@ function CompanyPortal({
                   <div style={{ background: "#ffffff", padding: "10px 12px", borderRadius: "8px", border: "1px solid #bbf7d0" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
                       <label style={{ fontSize: "12px", fontWeight: 700, color: "#166534" }}>
-                        1. New Merchant Registration Commission (%)
+                        1. Registration Commission (%)
                       </label>
                       <span style={{ fontSize: "14px", fontWeight: 800, color: "#166534" }}>{pricingForm.registrationPercentage}%</span>
                     </div>
@@ -26070,7 +25968,7 @@ function CompanyPortal({
                   <div style={{ background: "#ffffff", padding: "10px 12px", borderRadius: "8px", border: "1px solid #bfdbfe" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
                       <label style={{ fontSize: "12px", fontWeight: 700, color: "#1e40af" }}>
-                        2. 1st Subscription Renewal Commission (%)
+                        2. 1st Registration / Renewal Commission (%)
                       </label>
                       <span style={{ fontSize: "14px", fontWeight: 800, color: "#1e40af" }}>{pricingForm.firstRenewalPercentage}%</span>
                     </div>
@@ -26106,7 +26004,7 @@ function CompanyPortal({
                   <div style={{ background: "#ffffff", padding: "10px 12px", borderRadius: "8px", border: "1px solid #e9d5ff" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
                       <label style={{ fontSize: "12px", fontWeight: 700, color: "#6b21a8" }}>
-                        3. 2nd Subscription Renewal Commission (%)
+                        3. 2nd Renewal Commission (%)
                       </label>
                       <span style={{ fontSize: "14px", fontWeight: 800, color: "#6b21a8" }}>{pricingForm.secondRenewalPercentage}%</span>
                     </div>
@@ -26142,7 +26040,7 @@ function CompanyPortal({
                   <div style={{ background: "#ffffff", padding: "10px 12px", borderRadius: "8px", border: "1px solid #fbcfe8" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
                       <label style={{ fontSize: "12px", fontWeight: 700, color: "#9d174d" }}>
-                        4. 3rd+ &amp; Subsequent Renewals Commission (%)
+                        4. 3rd &amp; Subsequent Renewals Commission (%)
                       </label>
                       <span style={{ fontSize: "14px", fontWeight: 800, color: "#9d174d" }}>{pricingForm.subsequentRenewalPercentage}%</span>
                     </div>
