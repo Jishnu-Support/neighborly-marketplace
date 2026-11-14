@@ -49,6 +49,11 @@ import {
 } from "./lib/address-suggestions";
 import { CompanyRegistrationVideoManager } from "./components/CompanyRegistrationVideoManager";
 import {
+  UsedProductChoiceModal,
+  UsedProductsMarketplaceModal,
+  UsedProductsPanel,
+} from "./used-products-components";
+import {
   type AgentCommissionConfig,
   DEFAULT_AGENT_COMMISSION_CONFIG,
 } from "./lib/agent-commission-config.shared";
@@ -2507,6 +2512,37 @@ function triggerDesktopNotification(notif: MarketplaceNotification, onClickActio
 
 export default function Home() {
   const [role, setRole] = useState<Role>("Discover");
+  const [showUsedProductChoiceModal, setShowUsedProductChoiceModal] = useState(false);
+  const [showUsedProductsModal, setShowUsedProductsModal] = useState(false);
+  const [usedProductInitialMode, setUsedProductInitialMode] = useState<"buy" | "sell">("buy");
+  const [usedProductsCount, setUsedProductsCount] = useState<number>(0);
+
+  const loadUsedProductsCount = useCallback(() => {
+    fetch("/api/used-products", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && Array.isArray(data.products)) {
+          setUsedProductsCount(data.products.length);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    loadUsedProductsCount();
+    const handleOpenUsed = (e: Event) => {
+      const custom = e as CustomEvent<{ mode?: "buy" | "sell"; askChoice?: boolean }>;
+      if (custom.detail?.askChoice) {
+        setShowUsedProductChoiceModal(true);
+      } else {
+        if (custom.detail?.mode) setUsedProductInitialMode(custom.detail.mode);
+        setShowUsedProductsModal(true);
+      }
+    };
+    window.addEventListener("neighborly-open-used-products", handleOpenUsed);
+    return () => window.removeEventListener("neighborly-open-used-products", handleOpenUsed);
+  }, [loadUsedProductsCount]);
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authenticatedPortals, setAuthenticatedPortals] = useState<PortalRole[]>([]);
   const [customerCareConfig, setCustomerCareConfig] = useState<SupportConfig>(defaultSupportConfig);
@@ -10846,19 +10882,16 @@ export default function Home() {
 
                 <button
                   type="button"
-                  className={`mobile-bottom-tab ${role === "Account" && portalActiveTab === "Saved" ? "active" : ""}`}
+                  className={`mobile-bottom-tab ${showUsedProductsModal || showUsedProductChoiceModal || (role === "Account" && portalActiveTab === "Used Products") ? "active" : ""}`}
                   onClick={() => {
-                    openPortal("Account");
-                    setPortalActiveTab("Saved");
-                    window.setTimeout(() => {
-                      window.dispatchEvent(new CustomEvent("neighborly-open-profile", { detail: { tab: "Saved" } }));
-                    }, 30);
+                    setShowUsedProductChoiceModal(true);
                   }}
+                  title="Used Product Sales - Buy or Sell pre-owned items"
                 >
-                  <span className="tab-icon">♡</span>
-                  <span>Saved</span>
-                  {savedCount > 0 && <span className="mobile-bottom-tab-badge">{savedCount}</span>}
-                  {role === "Account" && portalActiveTab === "Saved" && <span className="mobile-bottom-tab-dot" />}
+                  <span className="tab-icon">🏷️</span>
+                  <span>Used Sales</span>
+                  {usedProductsCount > 0 && <span className="mobile-bottom-tab-badge">{usedProductsCount}</span>}
+                  {(showUsedProductsModal || showUsedProductChoiceModal || (role === "Account" && portalActiveTab === "Used Products")) && <span className="mobile-bottom-tab-dot" />}
                 </button>
               </>
             )}
@@ -11469,6 +11502,34 @@ export default function Home() {
         </div>
       )}
 
+      <UsedProductChoiceModal
+        isOpen={showUsedProductChoiceModal}
+        onClose={() => setShowUsedProductChoiceModal(false)}
+        onSelectBuy={() => {
+          setShowUsedProductChoiceModal(false);
+          setUsedProductInitialMode("buy");
+          setShowUsedProductsModal(true);
+        }}
+        onSelectSell={() => {
+          setShowUsedProductChoiceModal(false);
+          setUsedProductInitialMode("sell");
+          setShowUsedProductsModal(true);
+        }}
+      />
+
+      <UsedProductsMarketplaceModal
+        isOpen={showUsedProductsModal}
+        initialMode={usedProductInitialMode}
+        onClose={() => {
+          setShowUsedProductsModal(false);
+          loadUsedProductsCount();
+        }}
+        currentLocality={selectedNeighborhood !== "All Localities" ? selectedNeighborhood : (selectedCity !== "All India" ? selectedCity : "Hosur")}
+        userName={currentCustomerProfile?.fullName || sessionIdentity || ""}
+        userPhone={currentCustomerProfile?.phone || ""}
+        showNotice={showNotice}
+      />
+
       {/* Floating Interactive Notification Toast Popups */}
       {toastQueue.length > 0 && (
         <div className="notification-toasts-container" role="region" aria-label="Notifications" aria-live="polite">
@@ -11576,7 +11637,7 @@ function CustomerPortal({
   const displayEnquiries = (quotes && quotes.length > 0) ? quotes : data.enquiries;
   return <div className="page-content portal-content">
     <div className="portal-header"><div><div className="eyebrow"><span /> YOUR NEIGHBORHOOD ACTIVITY</div><h1>Your local <em>shortlist.</em></h1><p>Saved places, searches and active enquiries with neighborhood businesses.</p></div><button className="primary-button" onClick={onOpenAccount}>Sign in or register ↗</button></div>
-    <div className="portal-tabs">{["Overview", "Orders", "Saved", "Recent searches", "Enquiries", "Profile details", "Settings"].map((item) => <button key={item} className={tab === item || (item === "Profile details" && tab === "Profile") ? "current" : ""} onClick={() => setTab(item)}>{item}</button>)}</div>
+    <div className="portal-tabs">{["Overview", "Orders", "Used Products", "Recent searches", "Enquiries", "Profile details", "Settings"].map((item) => <button key={item} className={tab === item || (item === "Profile details" && tab === "Profile") ? "current" : ""} onClick={() => setTab(item)}>{item}</button>)}</div>
     {tab === "Overview" && <>
       <div className="metric-grid">
         <Metric
@@ -11587,11 +11648,11 @@ function CustomerPortal({
           onClick={() => setTab("Orders")}
         />
         <Metric
-          label="Saved businesses"
-          value={String(data.favorites.length)}
-          delta="Stored on this device"
-          icon="♡"
-          onClick={() => setTab("Saved")}
+          label="Used Products"
+          value="Buy / Sell"
+          delta="Pre-owned marketplace"
+          icon="🏷️"
+          onClick={() => setTab("Used Products")}
         />
         <Metric
           label="Recent searches"
@@ -11630,7 +11691,14 @@ function CustomerPortal({
         />
       </section>
     )}
-    {tab === "Saved" && <section className="panel tab-panel"><div className="eyebrow">SAVED BUSINESSES</div><h2>Your favorites</h2>{savedBusinesses.length ? savedBusinesses.map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category} · {business.distance.toFixed(1)} km (sample distance)</small></span><button className="outline-button" onClick={() => onFindBusiness(business.name)}>View</button><button className="row-more" aria-label={`Remove ${business.name} from saved`} onClick={() => onRemoveFavorite(business.name)}>×</button></div>) : <EmptyState title="No saved businesses yet" text="Tap the heart on a search result to save it on this device." />}</section>}
+    {(tab === "Used Products" || tab === "Saved") && (
+      <UsedProductsPanel
+        onOpenSell={() => {
+          window.dispatchEvent(new CustomEvent("neighborly-open-used-products", { detail: { mode: "sell" } }));
+        }}
+        showNotice={showNotice}
+      />
+    )}
     {tab === "Recent searches" && <section className="panel tab-panel"><div className="eyebrow">YOUR RECENT SEARCHES</div><h2>Pick up where you left off</h2>{data.recentSearches.length ? data.recentSearches.map((term) => <button className="history-row" key={term} onClick={() => onSearch(term)}><span>⌕</span><strong>{term}</strong><span>Search again →</span></button>) : <EmptyState title="No recent searches" text="Your search history appears here after you choose Find nearby." />}</section>}
     {tab === "Enquiries" && (
       <section className="panel tab-panel">
@@ -30901,6 +30969,7 @@ function Dialog({
         isOpen={showDialogVideoModal}
         onClose={() => setShowDialogVideoModal(false)}
       />
+
     </section>
   </div>;
 }
