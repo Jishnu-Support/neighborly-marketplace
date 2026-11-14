@@ -184,7 +184,12 @@ export async function GET(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
-    const body = (await request.json()) as { id?: string; status?: OrderStatus };
+    const body = (await request.json()) as {
+      id?: string;
+      status?: OrderStatus;
+      cancellationReason?: string;
+      cancelledBy?: "Customer" | "Business" | "Company" | "Admin";
+    };
 
     if (!body.id || typeof body.id !== "string") {
       return NextResponse.json({ error: "Order ID is required." }, { status: 400, headers: noStoreHeaders });
@@ -195,24 +200,33 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "Invalid order status value." }, { status: 400, headers: noStoreHeaders });
     }
 
-    const updated = await updateOrderStatus(body.id, body.status);
+    const updated = await updateOrderStatus(body.id, body.status, body.cancellationReason, body.cancelledBy);
     if (!updated) {
       return NextResponse.json({ error: "Order not found." }, { status: 404, headers: noStoreHeaders });
     }
 
     // Notify Customer and Business about order status update in real time
     try {
+      const reasonSuffix = body.cancellationReason ? ` (${body.cancellationReason})` : "";
+      const isCancelled = body.status === "cancelled";
+
       const statusMessage =
         body.status === "accepted" ? "accepted by store and entering preparation 👨‍🍳" :
         body.status === "preparing" ? "now being freshly prepared by the business partner 👨‍🍳" :
         body.status === "ready" ? "marked READY! Prepared and packed for pickup / delivery 🛵" :
         body.status === "completed" ? "completed and successfully delivered ✅" :
-        body.status === "cancelled" ? "cancelled by store" : body.status;
+        body.status === "cancelled"
+          ? (body.cancelledBy === "Customer" ? `cancelled by you${reasonSuffix}` : `cancelled by store${reasonSuffix}`)
+          : body.status;
 
       if (updated.customerPhone || updated.customerName) {
         await createServerNotification({
-          title: `🛵 Order #${updated.id} Update: ${body.status.toUpperCase()}`,
-          message: `Your order from ${updated.businessName} is ${statusMessage}.`,
+          title: isCancelled ? `❌ Order #${updated.id} Cancelled` : `🛵 Order #${updated.id} Update: ${body.status.toUpperCase()}`,
+          message: isCancelled
+            ? (body.cancelledBy === "Customer"
+                ? `Your order from ${updated.businessName} was cancelled successfully.${reasonSuffix} If prepaid, your refund has been initiated.`
+                : `${updated.businessName} could not fulfill your order #${updated.id} and had to cancel.${reasonSuffix} If prepaid, your refund is in process.`)
+            : `Your order from ${updated.businessName} is ${statusMessage}.`,
           type: "order",
           targetRole: "Account",
           targetIdentity: updated.customerPhone || updated.customerName,
@@ -226,8 +240,14 @@ export async function PATCH(request: Request) {
       }
 
       await createServerNotification({
-        title: `📦 Order #${updated.id} Status: ${body.status.toUpperCase()}`,
-        message: `Order #${updated.id} for ${updated.customerName} has been updated to ${statusMessage}.`,
+        title: isCancelled
+          ? (body.cancelledBy === "Customer" ? `⚠️ Order #${updated.id} Cancelled by Customer` : `❌ Order #${updated.id} Marked Cancelled`)
+          : `📦 Order #${updated.id} Status: ${body.status.toUpperCase()}`,
+        message: isCancelled
+          ? (body.cancelledBy === "Customer"
+              ? `${updated.customerName} cancelled order #${updated.id}.${reasonSuffix} Do not prepare or dispatch.`
+              : `Order #${updated.id} for ${updated.customerName} was marked cancelled.${reasonSuffix}`)
+          : `Order #${updated.id} for ${updated.customerName} has been updated to ${statusMessage}.`,
         type: "order",
         targetRole: "Business",
         targetIdentity: updated.businessName,
@@ -238,6 +258,21 @@ export async function PATCH(request: Request) {
           tab: "Orders",
         },
       });
+
+      if (isCancelled) {
+        await createServerNotification({
+          title: `❌ Platform Order #${updated.id} Cancelled`,
+          message: `Order #${updated.id} for ${updated.businessName} was cancelled by ${body.cancelledBy || "user"}.${reasonSuffix}`,
+          type: "order",
+          targetRole: "Company",
+          linkText: "View order",
+          action: {
+            type: "portal",
+            payload: "Company",
+            tab: "Orders",
+          },
+        });
+      }
     } catch (notifErr) {
       console.warn("Failed to notify customer/business of order status:", notifErr);
     }

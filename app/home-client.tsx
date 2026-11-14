@@ -398,6 +398,9 @@ export type OrderRecord = {
   status: OrderStatus;
   createdAt: string;
   estimatedTime: string;
+  cancellationReason?: string;
+  cancelledBy?: "Customer" | "Business" | "Company" | "Admin";
+  cancelledAt?: string;
 };
 
 type DemoData = {
@@ -2532,6 +2535,10 @@ export default function Home() {
   const [enquiryProduct, setEnquiryProduct] = useState<{ business: Business; product: Product } | null>(null);
   const [orderingItem, setOrderingItem] = useState<{ business: Business; product: Product } | null>(null);
   const [activeReceipt, setActiveReceipt] = useState<OrderRecord | null>(null);
+  const [cancellingOrder, setCancellingOrder] = useState<{
+    order: OrderRecord;
+    role: "Customer" | "Business";
+  } | null>(null);
   const [subscriptionCheckout, setSubscriptionCheckout] = useState<{ businessName?: string; plan?: string } | null>(null);
   const [subscriptionReceipt, setSubscriptionReceipt] = useState<CheckoutRequest | null>(null);
   const [navigatingBusiness, setNavigatingBusiness] = useState<Business | null>(null);
@@ -2589,7 +2596,8 @@ export default function Home() {
       Boolean(subscriptionCheckout) ||
       Boolean(subscriptionReceipt) ||
       adBookingWizardOpen ||
-      Boolean(activeAdReceipt);
+      Boolean(activeAdReceipt) ||
+      Boolean(cancellingOrder);
 
     if (!isAnyModalOrSheetOpen) return;
 
@@ -5506,12 +5514,27 @@ export default function Home() {
     showNotice(`🎉 Order #${orderId} placed successfully! The business partner has been alerted to prepare your order.`);
   }
 
-  function updateOrderStatus(orderId: string, nextStatus: OrderStatus) {
+  function updateOrderStatus(
+    orderId: string,
+    nextStatus: OrderStatus,
+    cancellationReason?: string,
+    cancelledBy: "Customer" | "Business" | "Company" = role === "Business" ? "Business" : "Customer"
+  ) {
     let orderToNotify: OrderRecord | undefined;
     setDemoData((prev) => {
       const orders = (prev.orders || []).map((o) => {
         if (o.id === orderId) {
-          orderToNotify = { ...o, status: nextStatus };
+          orderToNotify = {
+            ...o,
+            status: nextStatus,
+            ...(nextStatus === "cancelled"
+              ? {
+                  cancellationReason: cancellationReason || "Cancelled by user",
+                  cancelledBy,
+                  cancelledAt: new Date().toISOString(),
+                }
+              : {}),
+          };
           return orderToNotify;
         }
         return o;
@@ -5526,31 +5549,56 @@ export default function Home() {
       return { ...prev, orders };
     });
 
+    if (activeReceipt && activeReceipt.id === orderId) {
+      setActiveReceipt((prev) => (prev ? {
+        ...prev,
+        status: nextStatus,
+        ...(nextStatus === "cancelled"
+          ? {
+              cancellationReason: cancellationReason || "Cancelled by user",
+              cancelledBy,
+              cancelledAt: new Date().toISOString(),
+            }
+          : {}),
+      } : null));
+    }
+
     fetch("/api/orders", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ id: orderId, status: nextStatus }),
+      body: JSON.stringify({
+        id: orderId,
+        status: nextStatus,
+        cancellationReason,
+        cancelledBy,
+      }),
     })
       .then(() => {
         loadServerOrders();
       })
       .catch(() => {});
 
-    recordEvent(`Order status updated: ${orderId} to ${nextStatus}`);
+    recordEvent(`Order status updated: ${orderId} to ${nextStatus}${cancellationReason ? ` (${cancellationReason})` : ""}`);
 
+    const isCancelled = nextStatus === "cancelled";
+    const reasonText = cancellationReason ? ` (${cancellationReason})` : "";
     const statusMessage =
       nextStatus === "accepted" ? "accepted by store and entering preparation 👨‍🍳" :
       nextStatus === "preparing" ? "now being freshly prepared by the business partner 👨‍🍳" :
       nextStatus === "ready" ? "marked READY! Prepared and packed for pickup / delivery 🛵" :
       nextStatus === "completed" ? "completed and successfully delivered ✅" :
-      nextStatus === "cancelled" ? "cancelled by store" : nextStatus;
+      nextStatus === "cancelled" ? (cancelledBy === "Customer" ? `cancelled by you${reasonText}` : `cancelled by store${reasonText}`) : nextStatus;
 
     // Notify Customer about status progression
     addNotification({
       type: "order",
-      title: `🛵 Order #${orderId}: ${nextStatus.toUpperCase()}`,
-      message: `Your order from ${orderToNotify?.businessName || "the store"} is ${statusMessage}.`,
+      title: isCancelled ? `❌ Order #${orderId} Cancelled` : `🛵 Order #${orderId}: ${nextStatus.toUpperCase()}`,
+      message: isCancelled
+        ? (cancelledBy === "Customer"
+            ? `Your order from ${orderToNotify?.businessName || "the store"} was cancelled successfully.${reasonText} If prepaid, your refund has been initiated.`
+            : `${orderToNotify?.businessName || "The store"} could not fulfill your order #${orderId} and had to cancel.${reasonText} If prepaid, your refund is in process.`)
+        : `Your order from ${orderToNotify?.businessName || "the store"} is ${statusMessage}.`,
       targetRole: "Account",
       targetIdentity: orderToNotify?.customerPhone || orderToNotify?.customerName || sessionIdentity || "Customer",
       linkText: "Track order",
@@ -5564,8 +5612,14 @@ export default function Home() {
     // Notify Business Portal
     addNotification({
       type: "order",
-      title: `📦 Order #${orderId} Status: ${nextStatus.toUpperCase()}`,
-      message: `Order #${orderId} for ${orderToNotify?.customerName || "Customer"} has been updated to ${statusMessage}.`,
+      title: isCancelled
+        ? (cancelledBy === "Customer" ? `⚠️ Order #${orderId} Cancelled by Customer` : `❌ Order #${orderId} Marked Cancelled`)
+        : `📦 Order #${orderId} Status: ${nextStatus.toUpperCase()}`,
+      message: isCancelled
+        ? (cancelledBy === "Customer"
+            ? `${orderToNotify?.customerName || "Customer"} cancelled order #${orderId}.${reasonText} Do not prepare or dispatch.`
+            : `Order #${orderId} for ${orderToNotify?.customerName || "Customer"} was marked cancelled.${reasonText}`)
+        : `Order #${orderId} for ${orderToNotify?.customerName || "Customer"} has been updated to ${statusMessage}.`,
       targetRole: "Business",
       targetIdentity: orderToNotify?.businessName || "Business",
       linkText: "View order",
@@ -5576,7 +5630,11 @@ export default function Home() {
       },
     });
 
-    showNotice(`Order #${orderId} updated to ${nextStatus.toUpperCase()}! Customer notified.`);
+    if (isCancelled) {
+      showNotice(`Order #${orderId} has been cancelled.${reasonText}`);
+    } else {
+      showNotice(`Order #${orderId} updated to ${nextStatus.toUpperCase()}! Customer notified.`);
+    }
   }
 
   function addProduct(businessName: string, product: Omit<Product, "id">) {
@@ -10106,6 +10164,7 @@ export default function Home() {
             }}
             onOpenAccount={() => setDialog("login")}
             onViewReceipt={(order) => setActiveReceipt(order)}
+            onCancelOrder={(ord) => setCancellingOrder({ order: ord, role: "Customer" })}
             onOpenPortal={openPortal}
             onLanguageChange={(l) => setLang(l)}
             showNotice={showNotice}
@@ -10161,6 +10220,7 @@ export default function Home() {
             showNotice={showNotice}
             onUpdateBusinessProfile={handleUpdateFullBusinessProfile}
             onRefreshAdBookings={refreshAdBookings}
+            onCancelOrder={(ord) => setCancellingOrder({ order: ord, role: "Business" })}
           />
         )}
         {role === "Agent" && (
@@ -10239,6 +10299,7 @@ export default function Home() {
               setRole("Account");
             }
           }}
+          onCancelOrder={(ord) => setCancellingOrder({ order: ord, role: "Customer" })}
         />
       )}
       {subscriptionCheckout && (
@@ -10248,6 +10309,19 @@ export default function Home() {
           initialPlan={subscriptionCheckout.plan}
           close={() => setSubscriptionCheckout(null)}
           onProcessPayment={processSubscriptionPayment}
+        />
+      )}
+      {cancellingOrder && (
+        <CancelOrderDialog
+          order={cancellingOrder.order}
+          role={cancellingOrder.role}
+          onConfirm={(reason) => {
+            const ord = cancellingOrder.order;
+            const targetRole = cancellingOrder.role;
+            setCancellingOrder(null);
+            updateOrderStatus(ord.id, "cancelled", reason, targetRole);
+          }}
+          onClose={() => setCancellingOrder(null)}
         />
       )}
       {subscriptionReceipt && (
@@ -11291,6 +11365,7 @@ function CustomerPortal({
   onFindBusiness,
   onOpenAccount,
   onViewReceipt,
+  onCancelOrder,
   onOpenPortal,
   onLanguageChange,
   showNotice,
@@ -11303,6 +11378,7 @@ function CustomerPortal({
   onFindBusiness: (businessName: string) => void;
   onOpenAccount: () => void;
   onViewReceipt?: (order: OrderRecord) => void;
+  onCancelOrder?: (order: OrderRecord) => void;
   onOpenPortal?: (role: Role) => void;
   onLanguageChange?: (lang: "en" | "ta" | "kn" | "te") => void;
   showNotice: (message: string) => void;
@@ -11352,6 +11428,7 @@ function CustomerPortal({
         <CustomerOrdersManager
           orders={data.orders || []}
           onViewReceipt={onViewReceipt || (() => {})}
+          onCancelOrder={onCancelOrder}
         />
       </section>
     )}
@@ -13691,14 +13768,176 @@ function OrderCheckoutDialog({
   );
 }
 
+function CancelOrderDialog({
+  order,
+  role,
+  onConfirm,
+  onClose,
+}: {
+  order: OrderRecord;
+  role: "Customer" | "Business";
+  onConfirm: (reason: string) => void;
+  onClose: () => void;
+}) {
+  const customerReasons = [
+    "Changed my mind",
+    "Ordered by mistake / wrong items",
+    "Estimated delivery time is too long",
+    "Found another store / alternative option",
+    "Incorrect delivery address entered",
+    "Need to reorder with different payment method",
+    "Other reason",
+  ];
+
+  const merchantReasons = [
+    "Item(s) currently out of stock",
+    "Store kitchen / shop closing for the day",
+    "Customer address is outside delivery radius",
+    "Customer requested cancellation via phone",
+    "High peak order volume - cannot fulfill within time",
+    "Other operational reason",
+  ];
+
+  const reasons = role === "Business" ? merchantReasons : customerReasons;
+  const [selectedReason, setSelectedReason] = useState(reasons[0]);
+  const [customNote, setCustomNote] = useState("");
+
+  const handleCancelSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const finalReason = customNote.trim() ? `${selectedReason} - ${customNote.trim()}` : selectedReason;
+    onConfirm(finalReason);
+  };
+
+  return (
+    <div className="order-modal-backdrop" onClick={onClose}>
+      <div
+        className="panel"
+        style={{
+          maxWidth: "460px",
+          width: "92%",
+          padding: "24px",
+          borderRadius: "14px",
+          background: "#ffffff",
+          boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "14px" }}>
+          <div
+            style={{
+              width: "42px",
+              height: "42px",
+              borderRadius: "50%",
+              background: "#fee2e2",
+              color: "#dc2626",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "20px",
+              fontWeight: 800,
+            }}
+          >
+            ✕
+          </div>
+          <div>
+            <h3 style={{ margin: 0, fontSize: "18px", color: "#111827", fontWeight: 800 }}>
+              {role === "Business" ? "Reject / Cancel Order" : "Cancel Order"} #{order.id}
+            </h3>
+            <p style={{ margin: "2px 0 0", fontSize: "12.5px", color: "#6b7280" }}>
+              {role === "Business" ? `Customer: ${order.customerName}` : `Merchant: ${order.businessName}`} · ₹{order.totalAmount.toLocaleString("en-IN")}
+            </p>
+          </div>
+        </div>
+
+        <p style={{ fontSize: "13.5px", color: "#374151", margin: "0 0 14px 0", lineHeight: 1.5 }}>
+          {role === "Business"
+            ? "Are you sure you want to cancel this order? The customer will receive an immediate cancellation alert."
+            : "Are you sure you want to cancel this order? If you paid online via UPI/Card, your refund will be processed back to your original payment method."}
+        </p>
+
+        <form onSubmit={handleCancelSubmit}>
+          <label style={{ display: "block", marginBottom: "10px", fontSize: "12.5px", fontWeight: 700, color: "#374151" }}>
+            Reason for cancellation:
+            <select
+              value={selectedReason}
+              onChange={(e) => setSelectedReason(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "9px 12px",
+                borderRadius: "8px",
+                border: "1.5px solid #d1d5db",
+                marginTop: "4px",
+                fontSize: "13px",
+                background: "#f9fafb",
+              }}
+            >
+              {reasons.map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label style={{ display: "block", marginBottom: "18px", fontSize: "12.5px", fontWeight: 700, color: "#374151" }}>
+            Additional notes (optional):
+            <textarea
+              rows={2}
+              value={customNote}
+              onChange={(e) => setCustomNote(e.target.value)}
+              placeholder="Provide extra details for the other party..."
+              maxLength={160}
+              style={{
+                width: "100%",
+                padding: "8px 12px",
+                borderRadius: "8px",
+                border: "1.5px solid #d1d5db",
+                marginTop: "4px",
+                fontSize: "13px",
+              }}
+            />
+          </label>
+
+          <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+            <button
+              type="button"
+              className="outline-button"
+              onClick={onClose}
+              style={{ padding: "9px 16px", fontSize: "13px" }}
+            >
+              Keep Order
+            </button>
+            <button
+              type="submit"
+              className="primary-button"
+              style={{
+                background: "#dc2626",
+                borderColor: "#dc2626",
+                color: "#ffffff",
+                padding: "9px 18px",
+                fontSize: "13px",
+                fontWeight: 700,
+              }}
+            >
+              Yes, Cancel Order
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function OrderReceiptModal({
   order,
   close,
   onViewInPortal,
+  onCancelOrder,
 }: {
   order: OrderRecord;
   close: () => void;
   onViewInPortal: () => void;
+  onCancelOrder?: (order: OrderRecord) => void;
 }) {
   const steps: { key: OrderStatus; label: string; icon: string }[] = [
     { key: "placed", label: "Placed", icon: "✓" },
@@ -13721,13 +13960,23 @@ function OrderReceiptModal({
   return (
     <div className="order-modal-backdrop" onClick={close}>
       <div className="order-receipt-card" onClick={(e) => e.stopPropagation()}>
-        <div className="receipt-header-banner">
-          <div className="receipt-check-icon">✓</div>
-          <h2 style={{ margin: "0 0 6px", fontSize: "20px", fontWeight: 800 }}>Order Confirmed!</h2>
-          <p style={{ margin: 0, fontSize: "13px", opacity: 0.9 }}>
-            The business partner has been alerted to make your order ready.
-          </p>
-        </div>
+        {order.status === "cancelled" ? (
+          <div className="receipt-header-banner" style={{ background: "linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%)" }}>
+            <div className="receipt-check-icon" style={{ background: "#ef4444" }}>✕</div>
+            <h2 style={{ margin: "0 0 6px", fontSize: "20px", fontWeight: 800 }}>Order Cancelled</h2>
+            <p style={{ margin: 0, fontSize: "13px", opacity: 0.9 }}>
+              {order.cancellationReason ? `Reason: ${order.cancellationReason}` : "This order has been cancelled."}
+            </p>
+          </div>
+        ) : (
+          <div className="receipt-header-banner">
+            <div className="receipt-check-icon">✓</div>
+            <h2 style={{ margin: "0 0 6px", fontSize: "20px", fontWeight: 800 }}>Order Confirmed!</h2>
+            <p style={{ margin: 0, fontSize: "13px", opacity: 0.9 }}>
+              The business partner has been alerted to make your order ready.
+            </p>
+          </div>
+        )}
 
         <div style={{ padding: "20px 24px" }}>
           {/* Order ID & Time */}
@@ -13867,7 +14116,7 @@ function OrderReceiptModal({
           </div>
 
           {/* Action buttons */}
-          <div style={{ display: "flex", gap: "10px" }}>
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
             <button
               type="button"
               className="primary-button"
@@ -13876,6 +14125,16 @@ function OrderReceiptModal({
             >
               Track in My Activity ↗
             </button>
+            {order.status !== "cancelled" && order.status !== "completed" && onCancelOrder && (
+              <button
+                type="button"
+                className="outline-button"
+                style={{ padding: "10px 14px", color: "#dc2626", borderColor: "#fca5a5", fontWeight: 700 }}
+                onClick={() => onCancelOrder(order)}
+              >
+                ✕ Cancel Order
+              </button>
+            )}
             <button
               type="button"
               className="outline-button"
@@ -13903,10 +14162,12 @@ function MerchantOrdersManager({
   orders,
   businessName,
   onUpdateStatus,
+  onCancelOrder,
 }: {
   orders: OrderRecord[];
   businessName?: string;
   onUpdateStatus: (orderId: string, status: OrderStatus) => void;
+  onCancelOrder?: (order: OrderRecord) => void;
 }) {
   const [filter, setFilter] = useState<"all" | "prep" | "ready" | "completed">("all");
 
@@ -14053,12 +14314,32 @@ function MerchantOrdersManager({
 
                   <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                     {order.status === "placed" && (
+                      <>
+                        <button
+                          type="button"
+                          className="merchant-action-btn prep"
+                          onClick={() => onUpdateStatus(order.id, "preparing")}
+                        >
+                          👨‍🍳 Accept &amp; Start Prep
+                        </button>
+                        <button
+                          type="button"
+                          className="merchant-action-btn"
+                          style={{ background: "#fef2f2", color: "#b91c1c", border: "1px solid #fecaca", padding: "6px 12px", borderRadius: "6px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}
+                          onClick={() => onCancelOrder ? onCancelOrder(order) : onUpdateStatus(order.id, "cancelled")}
+                        >
+                          ✕ Reject Order
+                        </button>
+                      </>
+                    )}
+                    {(order.status === "accepted" || order.status === "preparing") && onCancelOrder && (
                       <button
                         type="button"
-                        className="merchant-action-btn prep"
-                        onClick={() => onUpdateStatus(order.id, "preparing")}
+                        className="merchant-action-btn"
+                        style={{ background: "#fef2f2", color: "#b91c1c", border: "1px solid #fecaca", padding: "6px 12px", borderRadius: "6px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}
+                        onClick={() => onCancelOrder(order)}
                       >
-                        👨‍🍳 Accept &amp; Start Prep
+                        ✕ Cancel Order
                       </button>
                     )}
                     {(order.status === "accepted" || order.status === "preparing") && (
@@ -14098,9 +14379,11 @@ function MerchantOrdersManager({
 function CustomerOrdersManager({
   orders,
   onViewReceipt,
+  onCancelOrder,
 }: {
   orders: OrderRecord[];
   onViewReceipt: (order: OrderRecord) => void;
+  onCancelOrder?: (order: OrderRecord) => void;
 }) {
   if (orders.length === 0) {
     return (
@@ -14188,6 +14471,16 @@ function CustomerOrdersManager({
                 >
                   🧾 View Receipt
                 </button>
+                {order.status !== "cancelled" && order.status !== "completed" && onCancelOrder && (
+                  <button
+                    type="button"
+                    className="outline-button"
+                    style={{ padding: "6px 12px", fontSize: "12px", color: "#dc2626", borderColor: "#fca5a5", fontWeight: 700 }}
+                    onClick={() => onCancelOrder(order)}
+                  >
+                    ✕ Cancel Order
+                  </button>
+                )}
                 <a
                   href={order.businessPhone ? `tel:+${order.businessPhone.replace(/\D/g, "")}` : "tel:"}
                   className="outline-button"
@@ -16499,6 +16792,7 @@ function BusinessPortal({
   onUpdateBusinessProfile,
   onUpdateQuoteStatus,
   onRefreshAdBookings,
+  onCancelOrder,
 }: {
   businesses: Business[];
   categoryConfig: CategoryConfig;
@@ -16528,6 +16822,7 @@ function BusinessPortal({
   onLanguageChange?: (lang: "en" | "ta" | "kn" | "te") => void;
   showNotice: (message: string) => void;
   onUpdateBusinessProfile?: (updatedBiz: any) => void;
+  onCancelOrder?: (order: OrderRecord) => void;
 }) {
   const [tab, setTab] = useState(initialTab === "My business" || initialTab === "Profile details" ? "Profile" : initialTab || "Overview");
   const accountBusinessName = businesses[0]?.name;
@@ -16782,6 +17077,7 @@ function BusinessPortal({
           orders={accountOrders}
           businessName={accountBusinessName}
           onUpdateStatus={onUpdateOrderStatus || (() => {})}
+          onCancelOrder={onCancelOrder}
         />
       </section>
     )}

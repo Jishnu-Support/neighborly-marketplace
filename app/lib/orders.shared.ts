@@ -32,4 +32,7 @@ export type OrderRecord = {
   status: OrderStatus;
   createdAt: string;
   estimatedTime: string;
+  cancellationReason?: string;
+  cancelledBy?: "Customer" | "Business" | "Company" | "Admin";
+  cancelledAt?: string;
 };

@@ -127,7 +127,12 @@ export async function listOrdersForBusiness(businessIdentifier: string): Promise
   });
 }
 
-export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<OrderRecord | null> {
+export async function updateOrderStatus(
+  orderId: string,
+  status: OrderStatus,
+  cancellationReason?: string,
+  cancelledBy?: "Customer" | "Business" | "Company" | "Admin"
+): Promise<OrderRecord | null> {
   const orders = await readOrdersFile();
   const index = orders.findIndex((o) => o.id === orderId);
   if (index < 0) return null;
@@ -135,22 +140,35 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus): P
   orders[index] = {
     ...orders[index],
     status,
+    ...(status === "cancelled"
+      ? {
+          cancellationReason: cancellationReason || orders[index].cancellationReason || "Cancelled by user",
+          cancelledBy: cancelledBy || orders[index].cancelledBy || "Customer",
+          cancelledAt: new Date().toISOString(),
+        }
+      : {}),
   };
 
   await writeOrdersFile(orders);
 
   try {
     await saveActivityLog({
-      action: `Order #${orderId} status updated to ${status.toUpperCase()}`,
+      action: status === "cancelled"
+        ? `Order #${orderId} CANCELLED by ${cancelledBy || "User"}`
+        : `Order #${orderId} status updated to ${status.toUpperCase()}`,
       category: "Order",
-      actorName: orders[index].businessName,
-      actorPhone: orders[index].businessPhone,
-      actorRole: "Business",
-      details: `Order #${orderId} for ${orders[index].customerName} updated to status: ${status}`,
+      actorName: cancelledBy === "Customer" ? orders[index].customerName : orders[index].businessName,
+      actorPhone: cancelledBy === "Customer" ? orders[index].customerPhone : orders[index].businessPhone,
+      actorRole: cancelledBy === "Customer" ? "Customer" : "Business",
+      details: status === "cancelled"
+        ? `Order #${orderId} for ${orders[index].customerName} (${orders[index].businessName}) was CANCELLED by ${cancelledBy || "User"}. Reason: ${cancellationReason || "None provided"}`
+        : `Order #${orderId} for ${orders[index].customerName} updated to status: ${status}`,
       metadata: {
         orderId,
         businessName: orders[index].businessName,
         status,
+        cancellationReason,
+        cancelledBy,
       },
     });
   } catch {
