@@ -17596,6 +17596,25 @@ type AgentVerificationItem = {
   createdAt: string;
 };
 
+function isJunkRatingData(r: any): boolean {
+  if (!r || typeof r !== "object") return true;
+  const feedbackNote = typeof r.feedbackNote === "string" ? r.feedbackNote : "";
+  const registrationsNote = typeof r.registrationsNote === "string" ? r.registrationsNote : "";
+  const renewalNote = typeof r.renewalNote === "string" ? r.renewalNote : "";
+  const lastUpdated = typeof r.lastUpdated === "string" ? r.lastUpdated : "";
+
+  return (
+    feedbackNote.includes("Positive merchant feedback") ||
+    feedbackNote.includes("High merchant satisfaction") ||
+    registrationsNote.includes("Consistent onboarding performance") ||
+    registrationsNote.includes("Exceeded monthly onboarding") ||
+    renewalNote.includes("Solid retention on merchant") ||
+    renewalNote.includes("98% on-time subscription renewals") ||
+    lastUpdated.startsWith("2026-01-01") ||
+    (r.overall === 98 && r.businessFeedback === 98 && r.registrationsCount === 95 && r.registrationRenewal === 100)
+  );
+}
+
 function AgentPortal({
   initialTab = "Overview",
   onOpenPortal,
@@ -17769,7 +17788,7 @@ function AgentPortal({
           if (result.agent?.referralCode) {
             setAgentReferralCode(result.agent.referralCode);
           }
-          if ((result.agent as any)?.ratings) {
+          if ((result.agent as any)?.ratings && !isJunkRatingData((result.agent as any).ratings)) {
             setAgentRatings((result.agent as any).ratings);
           } else {
             setAgentRatings(null);
@@ -18150,7 +18169,7 @@ function AgentPortal({
           </section>
           {/* Performance & Ratings Breakdown Card (Genuine Data Only) */}
           {(() => {
-            const hasEval = Boolean(agentRatings && typeof agentRatings.overall === "number");
+            const hasEval = Boolean(agentRatings && typeof agentRatings.overall === "number" && !isJunkRatingData(agentRatings));
             const regTotal = agentStats.referredCount || referrals.length;
             const renewTotal = agentStats.activeRenewals;
 
@@ -18173,7 +18192,7 @@ function AgentPortal({
             // Genuine Pillar 2: Registrations Count
             const hasReg = hasEval && typeof agentRatings!.registrationsCount === "number";
             const regVal = hasReg ? `${agentRatings!.registrationsCount}%` : `${regTotal} Onboarded`;
-            const regBar = hasReg ? agentRatings!.registrationsCount : Math.min(100, regTotal * 20);
+            const regBar = hasReg ? agentRatings!.registrationsCount : (regTotal > 0 ? Math.min(100, regTotal * 10) : 0);
             const regDesc = regTotal > 0
               ? `${regTotal} verified merchant registration${regTotal > 1 ? "s" : ""} on platform.`
               : "No verified businesses registered yet.";
@@ -18181,7 +18200,7 @@ function AgentPortal({
 
             // Genuine Pillar 3: Registration Renewal
             const hasRen = hasEval && typeof agentRatings!.registrationRenewal === "number";
-            const renVal = hasRen ? `${agentRatings!.registrationRenewal}%` : `${renewTotal} Active`;
+            const renVal = hasRen ? `${agentRatings!.registrationRenewal}%` : `${renewTotal} Renewed`;
             const renBar = hasRen ? agentRatings!.registrationRenewal : (regTotal > 0 ? Math.round((renewTotal / regTotal) * 100) : 0);
             const renDesc = renewTotal > 0
               ? `${renewTotal} active subscription renewal${renewTotal > 1 ? "s" : ""} maintained.`
@@ -19435,8 +19454,10 @@ function ProfileAndSettingsPanel({
       fetch("/api/agent/verifications", { cache: "no-store", credentials: "include" })
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => {
-          if (data?.agent?.ratings) {
+          if (data?.agent?.ratings && !isJunkRatingData(data.agent.ratings)) {
             setAgentRatingsInfo(data.agent.ratings);
+          } else {
+            setAgentRatingsInfo(null);
           }
         })
         .catch(() => {});

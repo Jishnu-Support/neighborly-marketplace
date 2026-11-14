@@ -58,6 +58,26 @@ function passwordsMatch(password: string, salt: string, expectedHash: string) {
   return expected.length === actual.length && timingSafeEqual(expected, actual);
 }
 
+export function isJunkRating(r: unknown): boolean {
+  if (!r || typeof r !== "object") return true;
+  const rating = r as Record<string, unknown>;
+  const feedbackNote = typeof rating.feedbackNote === "string" ? rating.feedbackNote : "";
+  const registrationsNote = typeof rating.registrationsNote === "string" ? rating.registrationsNote : "";
+  const renewalNote = typeof rating.renewalNote === "string" ? rating.renewalNote : "";
+  const lastUpdated = typeof rating.lastUpdated === "string" ? rating.lastUpdated : "";
+
+  return (
+    feedbackNote.includes("Positive merchant feedback") ||
+    feedbackNote.includes("High merchant satisfaction") ||
+    registrationsNote.includes("Consistent onboarding performance") ||
+    registrationsNote.includes("Exceeded monthly onboarding") ||
+    renewalNote.includes("Solid retention on merchant") ||
+    renewalNote.includes("98% on-time subscription renewals") ||
+    lastUpdated.startsWith("2026-01-01") ||
+    (rating.overall === 98 && rating.businessFeedback === 98 && rating.registrationsCount === 95 && rating.registrationRenewal === 100)
+  );
+}
+
 export function createDefaultJitAgent(): StoredAgentPartner {
   const salt = randomBytes(16).toString("hex");
   const passwordHash = hashPassword(DEFAULT_JIT_PASSWORD, salt);
@@ -125,7 +145,11 @@ export async function readAgentRecords(): Promise<StoredAgentPartner[]> {
         modified = true;
       }
 
-      // No fake ratings auto-injection: ratings are genuine from Super Admin evaluation or merchant feedback
+      // Strictly purge any legacy mock/junk ratings from disk
+      if (a.ratings && isJunkRating(a.ratings)) {
+        delete a.ratings;
+        modified = true;
+      }
     }
 
     if (!foundJit) {

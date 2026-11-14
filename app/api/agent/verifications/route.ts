@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentSession } from "@/app/lib/auth";
-import { getAgentByIdentity } from "@/app/lib/agents";
+import { getAgentByIdentity, isJunkRating } from "@/app/lib/agents";
 import { listBusinessesForAgentVerification, submitAgentVerification } from "@/app/lib/businesses";
 import { getFeedbacksForAgent } from "@/app/lib/agent-feedback";
 
@@ -35,7 +35,7 @@ export async function GET(request: Request) {
             name: agent.name,
             phone: agent.phone,
             referralCode: agent.referralCode || "JIT",
-            ratings: agent.ratings || null,
+            ratings: agent.ratings && !isJunkRating(agent.ratings) ? agent.ratings : null,
             stats: {
               referredCount,
               activeRenewals,
