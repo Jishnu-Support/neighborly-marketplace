@@ -11407,10 +11407,34 @@ function CustomerPortal({
     <div className="portal-tabs">{["Overview", "Orders", "Saved", "Recent searches", "Enquiries", "Profile details", "Settings"].map((item) => <button key={item} className={tab === item || (item === "Profile details" && tab === "Profile") ? "current" : ""} onClick={() => setTab(item)}>{item}</button>)}</div>
     {tab === "Overview" && <>
       <div className="metric-grid">
-        <Metric label="Orders placed" value={String((data.orders || []).length)} delta="Active orders on device" icon="🛍️" />
-        <Metric label="Saved businesses" value={String(data.favorites.length)} delta="Stored on this device" icon="♡" />
-        <Metric label="Recent searches" value={String(data.recentSearches.length)} delta="Searches you chose to run" icon="⌕" />
-        <Metric label="Quotes & Enquiries" value={String(displayEnquiries.length)} delta="Direct inquiries sent" icon="💬" />
+        <Metric
+          label="Orders placed"
+          value={String((data.orders || []).length)}
+          delta="Active orders on device"
+          icon="🛍️"
+          onClick={() => setTab("Orders")}
+        />
+        <Metric
+          label="Saved businesses"
+          value={String(data.favorites.length)}
+          delta="Stored on this device"
+          icon="♡"
+          onClick={() => setTab("Saved")}
+        />
+        <Metric
+          label="Recent searches"
+          value={String(data.recentSearches.length)}
+          delta="Searches you chose to run"
+          icon="⌕"
+          onClick={() => setTab("Recent searches")}
+        />
+        <Metric
+          label="Quotes & Enquiries"
+          value={String(displayEnquiries.length)}
+          delta="Direct inquiries sent"
+          icon="💬"
+          onClick={() => setTab("Enquiries")}
+        />
       </div>
       <section className="panel tab-panel"><div className="panel-heading"><div><div className="eyebrow">YOUR SHORTLIST</div><h2>Saved businesses</h2></div><button className="text-link" onClick={() => setTab("Saved")}>See saved →</button></div>
         {savedBusinesses.length ? savedBusinesses.slice(0, 4).map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category}</small></span><button className="outline-button" onClick={() => onFindBusiness(business.name)}>View catalogue</button></div>) : <EmptyState title="Your shortlist is ready" text="Save a local business from Discover to find it here." />}
@@ -16978,24 +17002,28 @@ function BusinessPortal({
           value={String(profileAnalytics.profileViews > 0 ? profileAnalytics.profileViews : (businesses[0]?.verificationStatus === "Approved" ? "1" : "0"))}
           delta={profileAnalytics.profileViews > 0 ? `${profileAnalytics.profileViews} live customer views` : (businesses[0]?.verificationStatus === "Approved" ? "Live listing views" : "Listing pending verification")}
           icon="◉"
+          onClick={() => setTab("Profile")}
         />
         <Metric
           label="Active orders"
           value={String(accountOrders.length)}
           delta={accountOrders.length > 0 ? `${pendingPrepCount} awaiting preparation` : "No pending orders"}
           icon="🛍️"
+          onClick={() => setTab("Orders")}
         />
         <Metric
           label="Customer enquiries"
           value={String(accountEnquiries.length)}
           delta={accountEnquiries.length > 0 ? `${accountEnquiries.length} received` : "No customer enquiries yet"}
           icon="↗"
+          onClick={() => setTab("Enquiries")}
         />
         <Metric
           label="Search appearances"
           value={String(profileAnalytics.searchAppearances > 0 ? profileAnalytics.searchAppearances : (businesses[0]?.verificationStatus === "Approved" ? "3" : "0"))}
           delta={profileAnalytics.searchAppearances > 0 ? `${profileAnalytics.searchAppearances} search impressions` : (businesses[0]?.verificationStatus === "Approved" ? "Live search appearances" : "Listing pending verification")}
           icon="⌕"
+          onClick={() => setTab("Ad promotions")}
         />
       </div>
       <div className="portal-columns"><section className="panel"><div className="panel-heading"><div><div className="eyebrow">YOUR BUSINESS</div><h2>Business profile</h2></div><button className="text-link" onClick={openBusinessProfile}>View details <span>→</span></button></div>
@@ -17844,6 +17872,7 @@ function AgentPortal({
               value={String(pendingCount)}
               delta={pendingCount > 0 ? "Requires field visit & photos" : "All visits up to date"}
               icon="📍"
+              onClick={() => setTab("Business verifications")}
             />
             <div style={{ cursor: "pointer" }} onClick={() => setTab("Referrals")} title="Click to view all referred businesses">
               <Metric
@@ -17853,7 +17882,7 @@ function AgentPortal({
                 icon="♧"
               />
             </div>
-            <Metric label="This month's reward" value="₹0" delta="Real-time commission" icon="↗" />
+            <Metric label="This month's reward" value="₹0" delta="Real-time commission" icon="↗" onClick={() => setTab("Referrals")} />
           </div>
 
           {pendingCount > 0 && (
@@ -22847,9 +22876,12 @@ function CompanyPortal({
   const pendingAgentApprovalsCount = agents.filter((a) => a.approvalStatus === "Pending").length;
   const pendingApprovalsCount = pendingBizApprovalsCount + pendingAgentApprovalsCount;
 
+  const [businessFilter, setBusinessFilter] = useState<"all" | "subscribed" | "pending" | "disabled">("all");
+  const [enquiryFilter, setEnquiryFilter] = useState<"all" | "New" | "Contacted" | "Quoted" | "Completed">("all");
+
   const tabNames = accessLevel === "Super Admin"
-    ? ["Overview", "Businesses", `Approvals${pendingApprovalsCount > 0 ? ` (${pendingApprovalsCount})` : ""}`, "Agents", "Transactions", "Advertisements", "Ads Activity log", "Plans & Pricing", "Categories", "Registration forms", "Customer registrations", "Admins", "Activity log", "Safety", "Profile details", "Settings"]
-    : ["Overview", "Businesses", `Approvals${pendingApprovalsCount > 0 ? ` (${pendingApprovalsCount})` : ""}`, "Agents", "Transactions", "Advertisements", "Ads Activity log", "Categories", "Customer registrations", "Activity log", "Safety", "Profile details", "Settings"];
+    ? ["Overview", "Businesses", `Approvals${pendingApprovalsCount > 0 ? ` (${pendingApprovalsCount})` : ""}`, "Agents", `Enquiries${enquiries.length > 0 ? ` (${enquiries.length})` : ""}`, "Transactions", "Advertisements", "Ads Activity log", "Plans & Pricing", "Categories", "Registration forms", "Customer registrations", "Admins", "Activity log", "Safety", "Profile details", "Settings"]
+    : ["Overview", "Businesses", `Approvals${pendingApprovalsCount > 0 ? ` (${pendingApprovalsCount})` : ""}`, "Agents", `Enquiries${enquiries.length > 0 ? ` (${enquiries.length})` : ""}`, "Transactions", "Advertisements", "Ads Activity log", "Categories", "Customer registrations", "Activity log", "Safety", "Profile details", "Settings"];
 
   const loadCustomerRegistrations = useCallback(() => {
     let cancelled = false;
@@ -23019,11 +23051,12 @@ function CompanyPortal({
     <div className="portal-tabs">
       {tabNames.map((tab) => {
         const isApprovals = tab.startsWith("Approvals") && activeTab.startsWith("Approvals");
+        const isEnquiries = tab.startsWith("Enquiries") && activeTab.startsWith("Enquiries");
         return (
           <button
             key={tab}
-            className={activeTab === tab || isApprovals ? "current" : ""}
-            onClick={() => setActiveTab(tab.startsWith("Approvals") ? "Approvals" : tab)}
+            className={activeTab === tab || isApprovals || isEnquiries ? "current" : ""}
+            onClick={() => setActiveTab(tab.startsWith("Approvals") ? "Approvals" : tab.startsWith("Enquiries") ? "Enquiries" : tab)}
           >
             {tab}
           </button>
@@ -23080,7 +23113,46 @@ function CompanyPortal({
         <CompanyPlansManager showNotice={showNotice} />
       </section>
     )}
-    {activeTab === "Overview" && <><div className="metric-grid"><Metric label="Registered businesses" value={String(businesses.length)} delta="Verified business directory" icon="▧" /><Metric label="Active subscriptions" value={String(businesses.filter((business) => business.subscribed).length)} delta="Active subscriptions" icon="◉" /><Metric label="Customer enquiries" value={String(enquiries.length)} delta="Customer enquiries" icon="⌕" /><Metric label="Agent partners" value={String(agents.length)} delta={agents.length === 0 ? "No agents registered yet" : `${agents.length} active partner${agents.length > 1 ? "s" : ""}`} icon="♧" /></div>
+    {activeTab === "Overview" && <><div className="metric-grid">
+        <Metric
+          label="Registered businesses"
+          value={String(businesses.length)}
+          delta="Verified business directory"
+          icon="▧"
+          onClick={() => {
+            setBusinessFilter("all");
+            setActiveTab("Businesses");
+          }}
+        />
+        <Metric
+          label="Active subscriptions"
+          value={String(businesses.filter((business) => business.subscribed).length)}
+          delta="Active subscriptions"
+          icon="◉"
+          onClick={() => {
+            setBusinessFilter("subscribed");
+            setActiveTab("Businesses");
+          }}
+        />
+        <Metric
+          label="Customer enquiries"
+          value={String(enquiries.length)}
+          delta="Customer enquiries"
+          icon="⌕"
+          onClick={() => {
+            setActiveTab("Enquiries");
+          }}
+        />
+        <Metric
+          label="Agent partners"
+          value={String(agents.length)}
+          delta={agents.length === 0 ? "No agents registered yet" : `${agents.length} active partner${agents.length > 1 ? "s" : ""}`}
+          icon="♧"
+          onClick={() => {
+            setActiveTab("Agents");
+          }}
+        />
+      </div>
       <div className="portal-columns"><section className="panel"><div className="panel-heading"><div><div className="eyebrow">RECENT SIGNUPS</div><h2>Business registrations</h2></div><button className="text-link" onClick={() => setActiveTab("Businesses")}>View all →</button></div>{businesses.slice(0, 4).map((business, index) => <div className="listing-row" key={`${business.name}-${index}`}><span className={`listing-icon ${business.color}`}>{business.icon}</span><span className="listing-name"><strong>{business.name}</strong><small>{business.category}</small></span><span className={`status-pill ${business.subscribed ? "verified" : "pending"}`}>● {business.subscribed ? "Subscribed" : "Pending"}</span></div>)}</section>
       <section className="panel admin-privacy"><div className="privacy-icon">⌖</div><div className="eyebrow">PRIVACY BY DESIGN</div><h2>Activity is opt-in.</h2><p>Precise location and sign-in activity should be collected only with explicit user consent, retained securely and visible only to authorized administrators.</p><button className="outline-button" onClick={() => setActiveTab("Customer locations")}>Review privacy controls ↗</button></section></div>
       <div className="verification-banner"><span className="verify-icon">⌖</span><div><strong>Device location permission</strong><p>{locationEnabled ? "Granted for this browser session. Coordinates were not stored or transmitted." : "Not granted. No location data is available in this demo."}</p></div><button onClick={downloadReport}>Download CSV ↗</button></div>
@@ -23472,9 +23544,44 @@ function CompanyPortal({
             );
           })()}
 
+          {/* Business Filter Navigation */}
+          <div style={{ display: "flex", gap: "8px", margin: "0 0 16px", flexWrap: "wrap", alignItems: "center" }}>
+            {[
+              { id: "all", label: `All Businesses (${businesses.length})` },
+              { id: "subscribed", label: `Active Subscriptions (${businesses.filter((b) => b.subscribed).length})` },
+              { id: "pending", label: `Pending Subscriptions (${businesses.filter((b) => !b.subscribed).length})` },
+              { id: "disabled", label: `Disabled (${businesses.filter((b) => b.active === false).length})` },
+            ].map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                className={businessFilter === f.id ? "primary-button" : "outline-button"}
+                onClick={() => setBusinessFilter(f.id as any)}
+                style={{ fontSize: "12px", padding: "6px 14px" }}
+              >
+                {f.label}
+              </button>
+            ))}
+            {businessFilter === "subscribed" && (
+              <button
+                type="button"
+                className="text-link"
+                onClick={() => setActiveTab("Transactions")}
+                style={{ fontSize: "12px", marginLeft: "auto", fontWeight: 700, color: "#166534" }}
+              >
+                💳 View Subscriptions, Invoices &amp; Billing History (Transactions) →
+              </button>
+            )}
+          </div>
+
           {/* Business Listings */}
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {businesses.map((business, index) => (
+            {businesses.filter((b) => {
+              if (businessFilter === "subscribed") return b.subscribed;
+              if (businessFilter === "pending") return !b.subscribed;
+              if (businessFilter === "disabled") return b.active === false;
+              return true;
+            }).map((business, index) => (
               <div
                 className="listing-row"
                 key={`${business.name}-${index}`}
@@ -24439,6 +24546,72 @@ function CompanyPortal({
         accessLevel={accessLevel}
       />
     )}
+    {(activeTab === "Enquiries" || activeTab.startsWith("Enquiries")) && (
+      <section className="panel tab-panel">
+        <div className="panel-heading">
+          <div>
+            <div className="eyebrow">CUSTOMER LEADS &amp; ENQUIRIES</div>
+            <h2>All Customer Enquiries ({enquiries.length})</h2>
+          </div>
+          <button
+            type="button"
+            className="outline-button"
+            onClick={() => showNotice("Customer enquiries refreshed.")}
+          >
+            ↻ Refresh
+          </button>
+        </div>
+        <p>
+          Platform-wide customer quote requests and enquiries submitted to Hosur merchants. Monitor response times, conversion pipelines, and lead activity.
+        </p>
+
+        {/* Filter buttons */}
+        <div style={{ display: "flex", gap: "8px", margin: "14px 0 16px", flexWrap: "wrap" }}>
+          {[
+            { id: "all", label: `All Enquiries (${enquiries.length})` },
+            { id: "New", label: `New Leads (${enquiries.filter((e) => (e.status || "New") === "New").length})` },
+            { id: "Contacted", label: `Contacted (${enquiries.filter((e) => e.status === "Contacted").length})` },
+            { id: "Quoted", label: `Quoted (${enquiries.filter((e) => e.status === "Quoted").length})` },
+            { id: "Completed", label: `Completed (${enquiries.filter((e) => e.status === "Completed").length})` },
+          ].map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              className={enquiryFilter === f.id ? "primary-button" : "outline-button"}
+              onClick={() => setEnquiryFilter(f.id as any)}
+              style={{ fontSize: "12px", padding: "6px 14px" }}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        {(() => {
+          const filtered = enquiries.filter((e) => {
+            if (enquiryFilter === "all") return true;
+            return (e.status || "New") === enquiryFilter;
+          });
+
+          if (!filtered.length) {
+            return (
+              <EmptyState
+                title="No customer enquiries in this view"
+                text="When customers request custom quotes or estimates from local businesses, inquiries will appear here."
+              />
+            );
+          }
+
+          return (
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {filtered.map((enquiry) => (
+                <EnquiryRow enquiry={enquiry} key={enquiry.id} isBusinessView={false} />
+              ))}
+            </div>
+          );
+        })()}
+      </section>
+    )}
+
     {(activeTab === "Transactions" || activeTab === "Billing") && (
       <CompanyTransactionsManager
         businesses={businesses}
@@ -26700,8 +26873,46 @@ function PlansSection({
   );
 }
 
-function Metric({ label, value, delta, icon }: { label: string; value: string; delta: string; icon: string }) {
-  return <div className="metric-card"><span className="metric-icon">{icon}</span><span className="metric-label">{label}</span><strong>{value}</strong><small>{delta}</small></div>;
+function Metric({
+  label,
+  value,
+  delta,
+  icon,
+  onClick,
+}: {
+  label: string;
+  value: string;
+  delta: string;
+  icon: string;
+  onClick?: () => void;
+}) {
+  const isClickable = Boolean(onClick);
+  return (
+    <div
+      className={`metric-card ${isClickable ? "metric-card-clickable" : ""}`}
+      onClick={onClick}
+      role={isClickable ? "button" : undefined}
+      tabIndex={isClickable ? 0 : undefined}
+      onKeyDown={
+        isClickable
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick?.();
+              }
+            }
+          : undefined
+      }
+    >
+      <span className="metric-icon">{icon}</span>
+      <span className="metric-label">{label}</span>
+      <strong>{value}</strong>
+      <small style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span>{delta}</span>
+        {isClickable && <span style={{ opacity: 0.65, fontSize: "11px", fontWeight: 700 }}>→</span>}
+      </small>
+    </div>
+  );
 }
 
 function Dialog({

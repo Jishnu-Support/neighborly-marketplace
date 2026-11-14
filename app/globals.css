@@ -5250,3 +5250,24 @@ html, body {
   opacity: 0.35;
   cursor: not-allowed;
 }
+
+/* Metric Cards Clickable */
+.metric-card.metric-card-clickable {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.metric-card.metric-card-clickable:hover {
+  transform: translateY(-2px);
+  border-color: #2b6139 !important;
+  box-shadow: 0 6px 16px rgba(43, 97, 57, 0.12) !important;
+}
+
+.metric-card.metric-card-clickable:active {
+  transform: translateY(0);
+}
+
+.metric-card.metric-card-clickable:focus-visible {
+  outline: 2px solid #2b6139;
+  outline-offset: 2px;
+}
