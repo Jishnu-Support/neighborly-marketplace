@@ -10,7 +10,7 @@ import { resolveStorePath } from "./storage-paths";
 export type PortalRole = "Account" | "Business" | "Agent" | "Company";
 export type CompanyAccessLevel = "Admin" | "Super Admin";
 export type AuthSession = { role: PortalRole; identity: string; expiresAt: number; accessLevel?: CompanyAccessLevel };
-export type CompanyAdmin = { id: string; name: string; email: string; active: boolean; createdAt: string; emergencyPhone?: string };
+export type CompanyAdmin = { id: string; name: string; email: string; active: boolean; createdAt: string; emergencyPhone?: string; accessLevel?: CompanyAccessLevel };
 type StoredAdmin = CompanyAdmin & { salt: string; passwordHash: string };
 
 export type CustomerAccount = {
@@ -67,9 +67,9 @@ async function writeAdminRecords(admins: StoredAdmin[]) {
   await rename(temporaryPath, adminStorePath);
 }
 
-async function createStoredAdmin(name: string, email: string, password: string, id: string = randomUUID()): Promise<StoredAdmin> {
+async function createStoredAdmin(name: string, email: string, password: string, id: string = randomUUID(), accessLevel: CompanyAccessLevel = "Admin"): Promise<StoredAdmin> {
   const salt = randomBytes(16).toString("hex");
-  return { id, name, email, active: true, createdAt: new Date().toISOString(), salt, passwordHash: hashPassword(password, salt) };
+  return { id, name, email, active: true, createdAt: new Date().toISOString(), salt, passwordHash: hashPassword(password, salt), accessLevel };
 }
 
 const defaultAdmins: { name: string; email: string; defaultPassword: string }[] = [];
@@ -304,20 +304,21 @@ export async function verifyCredentials(role: PortalRole, identity: string, pass
     const isSuper = isSuperAdminIdentity(normalizedIdentity);
 
     if (accessLevel === "Super Admin") {
-      // Must strictly be a Super Admin identity
-      if (!isSuper) return false;
-      const configuredPassword = process.env.NEIGHBORLY_SUPER_ADMIN_PASSWORD;
-      if (
-        password === "SuperAdmin123!" ||
-        password === "SuperAdminSecret2026!" ||
-        Boolean(configuredPassword && password === configuredPassword)
-      ) {
-        return true;
+      // Must strictly be a Super Admin identity or an admin promoted to Super Admin
+      if (isSuper) {
+        const configuredPassword = process.env.NEIGHBORLY_SUPER_ADMIN_PASSWORD;
+        if (
+          password === "SuperAdmin123!" ||
+          password === "SuperAdminSecret2026!" ||
+          Boolean(configuredPassword && password === configuredPassword)
+        ) {
+          return true;
+        }
       }
       const admin = (await readAdminRecords()).find(
-        (item) => item.email.toLowerCase() === normalizedIdentity && item.active
+        (item) => (item.email.toLowerCase() === normalizedIdentity || item.name.toLowerCase() === normalizedIdentity) && item.active
       );
-      if (admin && passwordsMatch(password, admin.salt, admin.passwordHash)) {
+      if (admin && (isSuper || admin.accessLevel === "Super Admin") && passwordsMatch(password, admin.salt, admin.passwordHash)) {
         return true;
       }
       return false;
@@ -335,6 +336,9 @@ export async function verifyCredentials(role: PortalRole, identity: string, pass
           item.active
       );
       if (!admin) return false;
+      if (admin.accessLevel === "Super Admin") {
+        return false;
+      }
       const defaultDef = defaultAdmins.find((d) => d.email.toLowerCase() === normalizedIdentity);
       if (defaultDef && password === defaultDef.defaultPassword) {
         return true;
@@ -517,16 +521,24 @@ export function verifySessionToken(token: string | undefined): AuthSession | nul
 
 export async function listCompanyAdmins(): Promise<CompanyAdmin[]> {
   const admins = await readAdminRecords();
-  return admins.map(({ id, name, email, active, createdAt }) => ({ id, name, email, active, createdAt }));
+  return admins.map(({ id, name, email, active, createdAt, emergencyPhone, accessLevel }) => ({
+    id,
+    name,
+    email,
+    active,
+    createdAt,
+    emergencyPhone,
+    accessLevel: accessLevel || "Admin",
+  }));
 }
 
-export async function registerCompanyAdmin(name: string, email: string, password: string) {
+export async function registerCompanyAdmin(name: string, email: string, password: string, accessLevel: CompanyAccessLevel = "Admin") {
   const normalizedEmail = email.trim().toLowerCase();
   const admins = await readAdminRecords();
   if (normalizedEmail === (process.env.NEIGHBORLY_SUPER_ADMIN_EMAIL || "admin@bizearch.in").trim().toLowerCase() || admins.some((admin) => admin.email === normalizedEmail)) {
     throw new Error("An account already exists with that email.");
   }
-  const admin = await createStoredAdmin(name.trim(), normalizedEmail, password);
+  const admin = await createStoredAdmin(name.trim(), normalizedEmail, password, undefined, accessLevel);
   await writeAdminRecords([admin, ...admins]);
   const { salt: _salt, passwordHash: _hash, ...publicAdmin } = admin;
   return publicAdmin;
@@ -543,6 +555,7 @@ export async function updateCompanyAdmin(input: {
   active?: boolean;
   password?: string;
   emergencyPhone?: string;
+  accessLevel?: CompanyAccessLevel;
 }): Promise<CompanyAdmin | null> {
   const admins = await readAdminRecords();
   const selectedAdmin = admins.find((admin) => admin.id === input.id);
@@ -571,6 +584,10 @@ export async function updateCompanyAdmin(input: {
 
   if (typeof input.active === "boolean") {
     selectedAdmin.active = input.active;
+  }
+
+  if (input.accessLevel === "Admin" || input.accessLevel === "Super Admin") {
+    selectedAdmin.accessLevel = input.accessLevel;
   }
 
   if (typeof input.emergencyPhone === "string") {

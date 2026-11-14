@@ -2,6 +2,8 @@ import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from "node:crypt
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { resolveStorePath } from "./storage-paths";
+import type { AgentCommissionPricing } from "./agent-commission-config.shared";
+export type { AgentCommissionPricing } from "./agent-commission-config.shared";
 
 export type AgentApprovalStatus = "Pending" | "Approved" | "Rejected";
 
@@ -34,6 +36,7 @@ export type AgentPartner = {
   rejectedBy?: string;
   rejectionReason?: string;
   ratings?: AgentRatingBreakdown;
+  commissionPricing?: AgentCommissionPricing;
 };
 
 export type StoredAgentPartner = AgentPartner & {
@@ -325,6 +328,100 @@ export async function updateAgentRatings(
     lastUpdated: new Date().toISOString(),
     updatedBy: updatedBy || "Super Admin",
   };
+
+  await writeAgentRecords(records);
+  const { salt, passwordHash, ...publicAgent } = agent;
+  return publicAgent;
+}
+
+export async function updateAgentCommissionPricing(
+  agentId: string,
+  pricing: {
+    registrationPercentage: number;
+    firstRenewalPercentage: number;
+    secondRenewalPercentage: number;
+    subsequentRenewalPercentage: number;
+    customNotes?: string;
+  },
+  updatedBy: string = "Super Admin"
+): Promise<AgentPartner | null> {
+  const records = await readAgentRecords();
+  const agent = records.find((a) => a.id === agentId || a.referralCode === agentId);
+  if (!agent) return null;
+
+  const reg = Math.max(0, Math.min(100, Math.round(Number(pricing.registrationPercentage) * 10) / 10));
+  const r1 = Math.max(0, Math.min(100, Math.round(Number(pricing.firstRenewalPercentage) * 10) / 10));
+  const r2 = Math.max(0, Math.min(100, Math.round(Number(pricing.secondRenewalPercentage) * 10) / 10));
+  const rSub = Math.max(0, Math.min(100, Math.round(Number(pricing.subsequentRenewalPercentage) * 10) / 10));
+
+  agent.commissionPricing = {
+    registrationPercentage: reg,
+    firstRenewalPercentage: r1,
+    secondRenewalPercentage: r2,
+    subsequentRenewalPercentage: rSub,
+    customNotes: pricing.customNotes !== undefined ? String(pricing.customNotes).trim() : (agent.commissionPricing?.customNotes || ""),
+    lastUpdated: new Date().toISOString(),
+    updatedBy: updatedBy || "Super Admin",
+  };
+
+  await writeAgentRecords(records);
+  const { salt, passwordHash, ...publicAgent } = agent;
+  return publicAgent;
+}
+
+export async function updateAgentDetails(
+  agentId: string,
+  details: {
+    name?: string;
+    phone?: string;
+    email?: string;
+    referralCode?: string;
+    active?: boolean;
+    commissionPricing?: {
+      registrationPercentage: number;
+      firstRenewalPercentage: number;
+      secondRenewalPercentage: number;
+      subsequentRenewalPercentage: number;
+      customNotes?: string;
+    };
+  },
+  updatedBy: string = "Super Admin"
+): Promise<AgentPartner | null> {
+  const records = await readAgentRecords();
+  const agent = records.find((a) => a.id === agentId || a.referralCode === agentId);
+  if (!agent) return null;
+
+  if (typeof details.name === "string" && details.name.trim()) {
+    agent.name = details.name.trim();
+  }
+  if (typeof details.phone === "string" && details.phone.trim()) {
+    agent.phone = details.phone.trim();
+  }
+  if (typeof details.email === "string") {
+    agent.email = details.email.trim().toLowerCase();
+  }
+  if (typeof details.referralCode === "string" && details.referralCode.trim()) {
+    agent.referralCode = details.referralCode.trim().toUpperCase();
+  }
+  if (typeof details.active === "boolean") {
+    agent.active = details.active;
+  }
+  if (details.commissionPricing) {
+    const reg = Math.max(0, Math.min(100, Math.round(Number(details.commissionPricing.registrationPercentage) * 10) / 10));
+    const r1 = Math.max(0, Math.min(100, Math.round(Number(details.commissionPricing.firstRenewalPercentage) * 10) / 10));
+    const r2 = Math.max(0, Math.min(100, Math.round(Number(details.commissionPricing.secondRenewalPercentage) * 10) / 10));
+    const rSub = Math.max(0, Math.min(100, Math.round(Number(details.commissionPricing.subsequentRenewalPercentage) * 10) / 10));
+
+    agent.commissionPricing = {
+      registrationPercentage: reg,
+      firstRenewalPercentage: r1,
+      secondRenewalPercentage: r2,
+      subsequentRenewalPercentage: rSub,
+      customNotes: details.commissionPricing.customNotes !== undefined ? String(details.commissionPricing.customNotes).trim() : (agent.commissionPricing?.customNotes || ""),
+      lastUpdated: new Date().toISOString(),
+      updatedBy: updatedBy || "Super Admin",
+    };
+  }
 
   await writeAgentRecords(records);
   const { salt, passwordHash, ...publicAgent } = agent;

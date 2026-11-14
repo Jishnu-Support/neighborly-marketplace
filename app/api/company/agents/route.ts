@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { AUTH_COOKIE, verifySessionToken } from "@/app/lib/auth";
-import { approveAgentPartner, createAgentPartner, listAgentPartners, rejectAgentPartner, toggleAgentActive, updateAgentRatings } from "@/app/lib/agents";
+import { approveAgentPartner, createAgentPartner, listAgentPartners, rejectAgentPartner, toggleAgentActive, updateAgentRatings, updateAgentCommissionPricing, updateAgentDetails } from "@/app/lib/agents";
 import { saveActivityLog } from "@/app/lib/activity-logs";
 import { createServerNotification } from "@/app/lib/notifications";
 
@@ -82,6 +82,59 @@ export async function POST(request: Request) {
           targetRole: "Agent",
           targetIdentity: updated.referralCode || updated.phone,
           linkText: "View My Ratings",
+          action: {
+            type: "portal",
+            payload: "Agent",
+            tab: "Overview",
+          },
+        });
+      } catch {}
+
+      const agents = await listAgentPartners();
+      return NextResponse.json({ success: true, agent: updated, agents, count: agents.length }, { headers: noStore });
+    }
+
+    if ((body.action === "update_commission_pricing" || body.action === "update_details") && typeof body.id === "string") {
+      const adminIdentity = `${session.accessLevel || "Admin"}: ${session.identity}`;
+      const commissionPricing = (body as any).commissionPricing ? {
+        registrationPercentage: Number((body as any).commissionPricing.registrationPercentage) || 0,
+        firstRenewalPercentage: Number((body as any).commissionPricing.firstRenewalPercentage) || 0,
+        secondRenewalPercentage: Number((body as any).commissionPricing.secondRenewalPercentage) || 0,
+        subsequentRenewalPercentage: Number((body as any).commissionPricing.subsequentRenewalPercentage) || 0,
+        customNotes: (body as any).commissionPricing.customNotes,
+      } : undefined;
+
+      const updated = await updateAgentDetails(body.id, {
+        name: typeof body.name === "string" ? body.name : undefined,
+        phone: typeof body.phone === "string" ? body.phone : undefined,
+        email: typeof body.email === "string" ? body.email : undefined,
+        referralCode: typeof body.referralCode === "string" ? body.referralCode : undefined,
+        active: typeof body.active === "boolean" ? body.active : undefined,
+        commissionPricing,
+      }, adminIdentity);
+
+      if (!updated) {
+        return NextResponse.json({ error: "Agent partner not found." }, { status: 404, headers: noStore });
+      }
+
+      try {
+        await saveActivityLog({
+          action: `Agent pricing & details updated: ${updated.name}`,
+          category: "Admin",
+          actorName: session.identity || "Super Admin",
+          actorRole: session.accessLevel || "Super Admin",
+          details: `Field agent ${updated.name} (${updated.referralCode}) commission updated: Registration: ${updated.commissionPricing?.registrationPercentage}%, 1st Renewal: ${updated.commissionPricing?.firstRenewalPercentage}%, 2nd Renewal: ${updated.commissionPricing?.secondRenewalPercentage}%, 3rd+ Renewal: ${updated.commissionPricing?.subsequentRenewalPercentage}%.`,
+        });
+      } catch {}
+
+      try {
+        await createServerNotification({
+          title: `💰 Commission Pricing Updated for ${updated.name}`,
+          message: `Your referral commission rate schedule has been configured by Super Admin: Reg: ${updated.commissionPricing?.registrationPercentage}%, 1st Renewal: ${updated.commissionPricing?.firstRenewalPercentage}%, 2nd Renewal: ${updated.commissionPricing?.secondRenewalPercentage}%, 3rd+ Renewal: ${updated.commissionPricing?.subsequentRenewalPercentage}%.`,
+          type: "agent",
+          targetRole: "Agent",
+          targetIdentity: updated.referralCode || updated.phone,
+          linkText: "View My Commission Rates",
           action: {
             type: "portal",
             payload: "Agent",

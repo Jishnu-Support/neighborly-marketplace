@@ -55,6 +55,7 @@ import {
 } from "./used-products-components";
 import {
   type AgentCommissionConfig,
+  type AgentCommissionPricing,
   DEFAULT_AGENT_COMMISSION_CONFIG,
 } from "./lib/agent-commission-config.shared";
 import { RegistrationVideoPlayerModal } from "./components/RegistrationVideoPlayerModal";
@@ -17699,6 +17700,7 @@ function AgentPortal({
   const [copied, setCopied] = useState(false);
   const [tab, setTab] = useState(initialTab || "Overview");
   const [agentReferralCode, setAgentReferralCode] = useState("JIT");
+  const [agentCustomPricing, setAgentCustomPricing] = useState<AgentCommissionPricing | null>(null);
   const [agentRatings, setAgentRatings] = useState<{
     businessFeedback: number;
     registrationsCount: number;
@@ -17856,6 +17858,9 @@ function AgentPortal({
           if (result.agent?.referralCode) {
             setAgentReferralCode(result.agent.referralCode);
           }
+          if ((result.agent as any)?.commissionPricing) {
+            setAgentCustomPricing((result.agent as any).commissionPricing);
+          }
           if ((result.agent as any)?.ratings && !isJunkRatingData((result.agent as any).ratings)) {
             setAgentRatings((result.agent as any).ratings);
           } else {
@@ -17938,7 +17943,11 @@ function AgentPortal({
     return () => window.removeEventListener("neighborly-agent-commission-updated", handleCommissionUpdate);
   }, [loadCommissionConfig]);
 
-  const commissionRate = commissionConfig.referralPercentage ?? 20;
+  const regRate = agentCustomPricing?.registrationPercentage ?? (commissionConfig.referralPercentage ?? 20);
+  const renewal1Rate = agentCustomPricing?.firstRenewalPercentage ?? (commissionConfig.referralPercentage ?? 20);
+  const renewal2Rate = agentCustomPricing?.secondRenewalPercentage ?? (commissionConfig.referralPercentage ?? 20);
+  const renewalSubRate = agentCustomPricing?.subsequentRenewalPercentage ?? (commissionConfig.referralPercentage ?? 20);
+  const commissionRate = regRate;
   const totalEarnedCommission = referrals.reduce((sum, r) => {
     const isApprovedOrSubscribed = r.status.toLowerCase().includes("subscribed") || r.status.toLowerCase().includes("approved") || r.status.toLowerCase().includes("verified");
     if (isApprovedOrSubscribed) {
@@ -18235,6 +18244,46 @@ function AgentPortal({
               </button>
             </div>
           </section>
+          
+          {/* Commission Schedule (Registration & Renewals) */}
+          <div style={{ margin: '14px 0 20px', padding: '16px', background: agentCustomPricing ? 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)' : '#f8fafc', borderRadius: '12px', border: agentCustomPricing ? '1px solid #86efac' : '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+              <div style={{ fontWeight: 700, fontSize: '13.5px', color: agentCustomPricing ? '#166534' : '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>💰</span> {agentCustomPricing ? 'Your Assigned Commission Schedule' : 'Platform Referral Commission Schedule'}
+              </div>
+              <span style={{ fontSize: '11px', background: agentCustomPricing ? '#dcfce7' : '#e2e8f0', color: agentCustomPricing ? '#15803d' : '#475569', padding: '3px 9px', borderRadius: '999px', fontWeight: 600 }}>
+                {agentCustomPricing ? '👑 Customized by Super Admin' : 'Standard Platform Rates'}
+              </span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
+              <div style={{ background: '#ffffff', padding: '12px 10px', borderRadius: '8px', border: '1px solid ' + (agentCustomPricing ? '#bbf7d0' : '#e2e8f0'), textAlign: 'center' }}>
+                <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>New Registration</div>
+                <div style={{ fontSize: '22px', fontWeight: 800, color: '#15803d', margin: '4px 0 2px' }}>{regRate}%</div>
+                <div style={{ fontSize: '10.5px', color: '#94a3b8' }}>On merchant onboarding</div>
+              </div>
+              <div style={{ background: '#ffffff', padding: '12px 10px', borderRadius: '8px', border: '1px solid ' + (agentCustomPricing ? '#bbf7d0' : '#e2e8f0'), textAlign: 'center' }}>
+                <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>1st Renewal</div>
+                <div style={{ fontSize: '22px', fontWeight: 800, color: '#0284c7', margin: '4px 0 2px' }}>{renewal1Rate}%</div>
+                <div style={{ fontSize: '10.5px', color: '#94a3b8' }}>1st renewal payout</div>
+              </div>
+              <div style={{ background: '#ffffff', padding: '12px 10px', borderRadius: '8px', border: '1px solid ' + (agentCustomPricing ? '#bbf7d0' : '#e2e8f0'), textAlign: 'center' }}>
+                <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>2nd Renewal</div>
+                <div style={{ fontSize: '22px', fontWeight: 800, color: '#7c3aed', margin: '4px 0 2px' }}>{renewal2Rate}%</div>
+                <div style={{ fontSize: '10.5px', color: '#94a3b8' }}>2nd renewal payout</div>
+              </div>
+              <div style={{ background: '#ffffff', padding: '12px 10px', borderRadius: '8px', border: '1px solid ' + (agentCustomPricing ? '#bbf7d0' : '#e2e8f0'), textAlign: 'center' }}>
+                <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>3rd+ Renewals</div>
+                <div style={{ fontSize: '22px', fontWeight: 800, color: '#d97706', margin: '4px 0 2px' }}>{renewalSubRate}%</div>
+                <div style={{ fontSize: '10.5px', color: '#94a3b8' }}>Subsequent renewals</div>
+              </div>
+            </div>
+            {agentCustomPricing?.customNotes && (
+              <div style={{ marginTop: '10px', fontSize: '12px', color: '#166534', background: '#ffffff', padding: '8px 12px', borderRadius: '6px', border: '1px dashed #86efac' }}>
+                <strong>Super Admin Notes:</strong> {agentCustomPricing.customNotes}
+              </div>
+            )}
+          </div>
+
           {/* Performance & Ratings Breakdown Card (Genuine Data Only) */}
           {(() => {
             const hasEval = Boolean(agentRatings && typeof agentRatings.overall === "number" && !isJunkRatingData(agentRatings));
@@ -23045,7 +23094,7 @@ function CatalogueTaxonomyOptions({
   return paths.length ? <div className="catalogue-taxonomy-options">{renderOptions(tree)}</div> : <small>No category options are configured for {activity.toLowerCase()}.</small>;
 }
 
-type ManagedCompanyAdmin = { id: string; name: string; email: string; active: boolean; createdAt: string };
+type ManagedCompanyAdmin = { id: string; name: string; email: string; active: boolean; createdAt: string; accessLevel?: CompanyAccessLevel };
 
 function CompanyPortal({
   businesses,
@@ -23184,6 +23233,7 @@ function CompanyPortal({
     rejectedBy?: string;
     rejectionReason?: string;
     ratings?: AgentRatingDetails;
+    commissionPricing?: AgentCommissionPricing;
   };
   const [approvalSubTab, setApprovalSubTab] = useState<"businesses" | "agents">("businesses");
   const [agentFilterTab, setAgentFilterTab] = useState<"all" | "pending" | "active" | "rejected">("all");
@@ -23201,6 +23251,80 @@ function CompanyPortal({
     renewalNote: "",
   });
   const [ratingsSubmitting, setRatingsSubmitting] = useState(false);
+
+  // Per-Agent Custom Pricing & Commission State
+  const [selectedAgentForPricing, setSelectedAgentForPricing] = useState<AgentRecord | null>(null);
+  const [showAgentPricingModal, setShowAgentPricingModal] = useState(false);
+  const [pricingForm, setPricingForm] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    referralCode: "",
+    registrationPercentage: 20,
+    firstRenewalPercentage: 15,
+    secondRenewalPercentage: 10,
+    subsequentRenewalPercentage: 10,
+    customNotes: "",
+  });
+  const [pricingSubmitting, setPricingSubmitting] = useState(false);
+
+  const handleOpenAgentPricing = (agent: AgentRecord) => {
+    setSelectedAgentForPricing(agent);
+    setPricingForm({
+      name: agent.name || "",
+      phone: agent.phone || "",
+      email: agent.email || "",
+      referralCode: agent.referralCode || "",
+      registrationPercentage: agent.commissionPricing?.registrationPercentage ?? adminReferralPercentage ?? 20,
+      firstRenewalPercentage: agent.commissionPricing?.firstRenewalPercentage ?? 15,
+      secondRenewalPercentage: agent.commissionPricing?.secondRenewalPercentage ?? 10,
+      subsequentRenewalPercentage: agent.commissionPricing?.subsequentRenewalPercentage ?? 10,
+      customNotes: agent.commissionPricing?.customNotes || "",
+    });
+    setShowAgentPricingModal(true);
+  };
+
+  const handleSaveAgentPricing = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedAgentForPricing) return;
+    setPricingSubmitting(true);
+    try {
+      const res = await fetch("/api/company/agents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          action: "update_commission_pricing",
+          id: selectedAgentForPricing.id,
+          name: pricingForm.name.trim(),
+          phone: pricingForm.phone.trim(),
+          email: pricingForm.email.trim(),
+          referralCode: pricingForm.referralCode.trim(),
+          commissionPricing: {
+            registrationPercentage: Number(pricingForm.registrationPercentage) || 0,
+            firstRenewalPercentage: Number(pricingForm.firstRenewalPercentage) || 0,
+            secondRenewalPercentage: Number(pricingForm.secondRenewalPercentage) || 0,
+            subsequentRenewalPercentage: Number(pricingForm.subsequentRenewalPercentage) || 0,
+            customNotes: pricingForm.customNotes.trim(),
+          },
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update agent pricing details");
+      if (Array.isArray(data.agents)) {
+        setAgents(data.agents);
+      } else if (data.agent) {
+        setAgents((prev) => prev.map((a) => (a.id === data.agent.id ? data.agent : a)));
+      }
+      setShowAgentPricingModal(false);
+      setSelectedAgentForPricing(null);
+      showNotice(`✓ Updated custom commission pricing and details for ${pricingForm.name || selectedAgentForPricing.name}!`);
+    } catch (err: any) {
+      alert(err.message || "Failed to update agent pricing");
+    } finally {
+      setPricingSubmitting(false);
+    }
+  };
 
   const handleSaveAgentRatings = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23682,7 +23806,7 @@ function CompanyPortal({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ name: form.get("name"), email: form.get("email"), password: form.get("password") }),
+        body: JSON.stringify({ name: form.get("name"), email: form.get("email"), password: form.get("password"), accessLevel: form.get("accessLevel") || "Admin" }),
       });
       const result = await response.json() as { admin?: ManagedCompanyAdmin; error?: string };
       if (!response.ok || !result.admin) throw new Error(result.error || "Could not create Admin account.");
@@ -24164,7 +24288,7 @@ function CompanyPortal({
                           <span style={{ fontSize: "11px", fontWeight: 800, color: "#0f172a", textTransform: "uppercase", letterSpacing: "0.5px" }}>
                             ⭐ Performance Ratings
                           </span>
-                          {agent.ratings?.overall !== undefined ? (
+                          {agent.ratings?.overall !== undefined && !isJunkRatingData(agent.ratings) ? (
                             <span style={{ fontSize: "13px", fontWeight: 800, color: "#166534", background: "#dcfce7", padding: "1px 8px", borderRadius: "10px" }}>
                               Overall: {agent.ratings.overall}%
                             </span>
@@ -25792,7 +25916,346 @@ function CompanyPortal({
         </div>
       )}
 
-      {/* Company Admin Direct Business Registration Modal */}
+
+      {/* Super Admin: Edit Agent Pricing & Details Modal */}
+      {showAgentPricingModal && selectedAgentForPricing && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.65)",
+            backdropFilter: "blur(3px)",
+            display: "grid",
+            placeItems: "center",
+            zIndex: 99999,
+            padding: "16px",
+          }}
+          onClick={() => setShowAgentPricingModal(false)}
+        >
+          <div
+            style={{
+              background: "#ffffff",
+              borderRadius: "16px",
+              padding: "24px",
+              maxWidth: "600px",
+              width: "100%",
+              maxHeight: "90vh",
+              overflowY: "auto",
+              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.2)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid #e2e8f0", paddingBottom: "12px" }}>
+              <div>
+                <span style={{ fontSize: "11px", fontWeight: 800, color: "#166534", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                  💰 PER-AGENT COMMISSION PRICING
+                </span>
+                <h3 style={{ margin: "2px 0 0", fontSize: "18px", color: "#0f172a" }}>
+                  Edit Details &amp; Pricing: {selectedAgentForPricing.name}
+                </h3>
+                <small style={{ color: "#64748b" }}>
+                  Referral Code: <strong style={{ color: "#1e40af" }}>{selectedAgentForPricing.referralCode}</strong> · Phone: {selectedAgentForPricing.phone}
+                </small>
+              </div>
+              <button
+                type="button"
+                className="outline-button"
+                onClick={() => setShowAgentPricingModal(false)}
+                style={{ padding: "4px 8px", fontSize: "12px" }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveAgentPricing} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              {/* Agent Basic Information */}
+              <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "10px", padding: "12px" }}>
+                <strong style={{ fontSize: "12px", color: "#334155", display: "block", marginBottom: "8px" }}>
+                  👤 Agent Profile Information
+                </strong>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "#475569", marginBottom: "3px" }}>Agent Name</label>
+                    <input
+                      type="text"
+                      value={pricingForm.name}
+                      onChange={(e) => setPricingForm((prev) => ({ ...prev, name: e.target.value }))}
+                      style={{ width: "100%", padding: "7px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "#475569", marginBottom: "3px" }}>Mobile Number</label>
+                    <input
+                      type="tel"
+                      value={pricingForm.phone}
+                      onChange={(e) => setPricingForm((prev) => ({ ...prev, phone: e.target.value }))}
+                      style={{ width: "100%", padding: "7px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "#475569", marginBottom: "3px" }}>Referral Code</label>
+                    <input
+                      type="text"
+                      value={pricingForm.referralCode}
+                      onChange={(e) => setPricingForm((prev) => ({ ...prev, referralCode: e.target.value.toUpperCase() }))}
+                      style={{ width: "100%", padding: "7px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px", fontWeight: 700 }}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "#475569", marginBottom: "3px" }}>Email (Optional)</label>
+                    <input
+                      type="email"
+                      value={pricingForm.email}
+                      onChange={(e) => setPricingForm((prev) => ({ ...prev, email: e.target.value }))}
+                      style={{ width: "100%", padding: "7px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Commission Stages Breakdown */}
+              <div style={{ background: "#f0fdf4", border: "1.5px solid #86efac", borderRadius: "10px", padding: "14px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                  <div>
+                    <strong style={{ fontSize: "13px", color: "#166534", display: "block" }}>
+                      💰 Commission Rates by Subscription Stage
+                    </strong>
+                    <small style={{ color: "#15803d" }}>
+                      Configure the exact percentage earned by this agent for each stage.
+                    </small>
+                  </div>
+                </div>
+
+                <div style={{ display: "grid", gap: "12px" }}>
+                  {/* Stage 1: Registration */}
+                  <div style={{ background: "#ffffff", padding: "10px 12px", borderRadius: "8px", border: "1px solid #bbf7d0" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                      <label style={{ fontSize: "12px", fontWeight: 700, color: "#166534" }}>
+                        1. New Merchant Registration Commission (%)
+                      </label>
+                      <span style={{ fontSize: "14px", fontWeight: 800, color: "#166534" }}>{pricingForm.registrationPercentage}%</span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.5"
+                        value={pricingForm.registrationPercentage}
+                        onChange={(e) => setPricingForm((prev) => ({ ...prev, registrationPercentage: Number(e.target.value) }))}
+                        style={{ width: "80px", padding: "6px 8px", borderRadius: "6px", border: "1px solid #86efac", fontSize: "13px", fontWeight: 700 }}
+                      />
+                      <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                        {[10, 15, 20, 25, 30].map((pct) => (
+                          <button
+                            key={pct}
+                            type="button"
+                            onClick={() => setPricingForm((prev) => ({ ...prev, registrationPercentage: pct }))}
+                            style={{ padding: "3px 8px", fontSize: "11px", fontWeight: 600, borderRadius: "5px", border: pricingForm.registrationPercentage === pct ? "1.5px solid #166534" : "1px solid #cbd5e1", background: pricingForm.registrationPercentage === pct ? "#dcfce7" : "#fff", cursor: "pointer" }}
+                          >
+                            {pct}%
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <small style={{ color: "#64748b", fontSize: "10px", display: "block", marginTop: "3px" }}>
+                      Paid upon new merchant onboarding and initial subscription activation.
+                    </small>
+                  </div>
+
+                  {/* Stage 2: 1st Renewal */}
+                  <div style={{ background: "#ffffff", padding: "10px 12px", borderRadius: "8px", border: "1px solid #bfdbfe" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                      <label style={{ fontSize: "12px", fontWeight: 700, color: "#1e40af" }}>
+                        2. 1st Subscription Renewal Commission (%)
+                      </label>
+                      <span style={{ fontSize: "14px", fontWeight: 800, color: "#1e40af" }}>{pricingForm.firstRenewalPercentage}%</span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.5"
+                        value={pricingForm.firstRenewalPercentage}
+                        onChange={(e) => setPricingForm((prev) => ({ ...prev, firstRenewalPercentage: Number(e.target.value) }))}
+                        style={{ width: "80px", padding: "6px 8px", borderRadius: "6px", border: "1px solid #93c5fd", fontSize: "13px", fontWeight: 700 }}
+                      />
+                      <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                        {[10, 15, 20, 25, 30].map((pct) => (
+                          <button
+                            key={pct}
+                            type="button"
+                            onClick={() => setPricingForm((prev) => ({ ...prev, firstRenewalPercentage: pct }))}
+                            style={{ padding: "3px 8px", fontSize: "11px", fontWeight: 600, borderRadius: "5px", border: pricingForm.firstRenewalPercentage === pct ? "1.5px solid #1e40af" : "1px solid #cbd5e1", background: pricingForm.firstRenewalPercentage === pct ? "#dbeafe" : "#fff", cursor: "pointer" }}
+                          >
+                            {pct}%
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <small style={{ color: "#64748b", fontSize: "10px", display: "block", marginTop: "3px" }}>
+                      Paid when referred merchant renews their subscription for the 1st time.
+                    </small>
+                  </div>
+
+                  {/* Stage 3: 2nd Renewal */}
+                  <div style={{ background: "#ffffff", padding: "10px 12px", borderRadius: "8px", border: "1px solid #e9d5ff" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                      <label style={{ fontSize: "12px", fontWeight: 700, color: "#6b21a8" }}>
+                        3. 2nd Subscription Renewal Commission (%)
+                      </label>
+                      <span style={{ fontSize: "14px", fontWeight: 800, color: "#6b21a8" }}>{pricingForm.secondRenewalPercentage}%</span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.5"
+                        value={pricingForm.secondRenewalPercentage}
+                        onChange={(e) => setPricingForm((prev) => ({ ...prev, secondRenewalPercentage: Number(e.target.value) }))}
+                        style={{ width: "80px", padding: "6px 8px", borderRadius: "6px", border: "1px solid #d8b4fe", fontSize: "13px", fontWeight: 700 }}
+                      />
+                      <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                        {[5, 10, 15, 20].map((pct) => (
+                          <button
+                            key={pct}
+                            type="button"
+                            onClick={() => setPricingForm((prev) => ({ ...prev, secondRenewalPercentage: pct }))}
+                            style={{ padding: "3px 8px", fontSize: "11px", fontWeight: 600, borderRadius: "5px", border: pricingForm.secondRenewalPercentage === pct ? "1.5px solid #6b21a8" : "1px solid #cbd5e1", background: pricingForm.secondRenewalPercentage === pct ? "#f3e8ff" : "#fff", cursor: "pointer" }}
+                          >
+                            {pct}%
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <small style={{ color: "#64748b", fontSize: "10px", display: "block", marginTop: "3px" }}>
+                      Paid when referred merchant maintains their subscription into year 3.
+                    </small>
+                  </div>
+
+                  {/* Stage 4: 3rd+ Subsequent Renewals */}
+                  <div style={{ background: "#ffffff", padding: "10px 12px", borderRadius: "8px", border: "1px solid #fbcfe8" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                      <label style={{ fontSize: "12px", fontWeight: 700, color: "#9d174d" }}>
+                        4. 3rd+ &amp; Subsequent Renewals Commission (%)
+                      </label>
+                      <span style={{ fontSize: "14px", fontWeight: 800, color: "#9d174d" }}>{pricingForm.subsequentRenewalPercentage}%</span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.5"
+                        value={pricingForm.subsequentRenewalPercentage}
+                        onChange={(e) => setPricingForm((prev) => ({ ...prev, subsequentRenewalPercentage: Number(e.target.value) }))}
+                        style={{ width: "80px", padding: "6px 8px", borderRadius: "6px", border: "1px solid #f472b6", fontSize: "13px", fontWeight: 700 }}
+                      />
+                      <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                        {[5, 10, 15, 20].map((pct) => (
+                          <button
+                            key={pct}
+                            type="button"
+                            onClick={() => setPricingForm((prev) => ({ ...prev, subsequentRenewalPercentage: pct }))}
+                            style={{ padding: "3px 8px", fontSize: "11px", fontWeight: 600, borderRadius: "5px", border: pricingForm.subsequentRenewalPercentage === pct ? "1.5px solid #9d174d" : "1px solid #cbd5e1", background: pricingForm.subsequentRenewalPercentage === pct ? "#fce7f3" : "#fff", cursor: "pointer" }}
+                          >
+                            {pct}%
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <small style={{ color: "#64748b", fontSize: "10px", display: "block", marginTop: "3px" }}>
+                      Recurring retention reward for all future merchant annual renewals.
+                    </small>
+                  </div>
+                </div>
+
+                {/* Custom Notes */}
+                <div style={{ marginTop: "12px" }}>
+                  <label style={{ display: "block", fontSize: "11.5px", fontWeight: 600, color: "#166534", marginBottom: "3px" }}>
+                    Special Terms / Field Agreement Note (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Special 25% onboarding incentive for Hosur Industrial Zone partner."
+                    value={pricingForm.customNotes}
+                    onChange={(e) => setPricingForm((prev) => ({ ...prev, customNotes: e.target.value }))}
+                    style={{ width: "100%", padding: "7px 10px", borderRadius: "6px", border: "1px solid #86efac", fontSize: "12px" }}
+                  />
+                </div>
+              </div>
+
+              {/* Live Earnings Simulation Table */}
+              <div style={{ background: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "10px", padding: "12px" }}>
+                <strong style={{ fontSize: "12px", color: "#0f172a", display: "block", marginBottom: "6px" }}>
+                  📊 Commission Simulation at Configured Rates:
+                </strong>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11.5px", textAlign: "left" }}>
+                  <thead>
+                    <tr style={{ borderBottom: "1.5px solid #e2e8f0", color: "#475569" }}>
+                      <th style={{ padding: "4px 6px" }}>Merchant Plan</th>
+                      <th style={{ padding: "4px 6px" }}>Reg ({pricingForm.registrationPercentage}%)</th>
+                      <th style={{ padding: "4px 6px" }}>1st Ren ({pricingForm.firstRenewalPercentage}%)</th>
+                      <th style={{ padding: "4px 6px" }}>2nd Ren ({pricingForm.secondRenewalPercentage}%)</th>
+                      <th style={{ padding: "4px 6px" }}>3rd+ Ren ({pricingForm.subsequentRenewalPercentage}%)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style={{ borderBottom: "1px solid #f1f5f9" }}>
+                      <td style={{ padding: "6px" }}>Starter (₹999)</td>
+                      <td style={{ padding: "6px", color: "#166534", fontWeight: 700 }}>₹{Math.round(999 * (pricingForm.registrationPercentage / 100))}</td>
+                      <td style={{ padding: "6px", color: "#1e40af", fontWeight: 700 }}>₹{Math.round(999 * (pricingForm.firstRenewalPercentage / 100))}</td>
+                      <td style={{ padding: "6px", color: "#6b21a8", fontWeight: 700 }}>₹{Math.round(999 * (pricingForm.secondRenewalPercentage / 100))}</td>
+                      <td style={{ padding: "6px", color: "#9d174d", fontWeight: 700 }}>₹{Math.round(999 * (pricingForm.subsequentRenewalPercentage / 100))}</td>
+                    </tr>
+                    <tr style={{ borderBottom: "1px solid #f1f5f9" }}>
+                      <td style={{ padding: "6px" }}>Growth (₹2,999)</td>
+                      <td style={{ padding: "6px", color: "#166534", fontWeight: 700 }}>₹{Math.round(2999 * (pricingForm.registrationPercentage / 100))}</td>
+                      <td style={{ padding: "6px", color: "#1e40af", fontWeight: 700 }}>₹{Math.round(2999 * (pricingForm.firstRenewalPercentage / 100))}</td>
+                      <td style={{ padding: "6px", color: "#6b21a8", fontWeight: 700 }}>₹{Math.round(2999 * (pricingForm.secondRenewalPercentage / 100))}</td>
+                      <td style={{ padding: "6px", color: "#9d174d", fontWeight: 700 }}>₹{Math.round(2999 * (pricingForm.subsequentRenewalPercentage / 100))}</td>
+                    </tr>
+                    <tr>
+                      <td style={{ padding: "6px" }}>Pro (₹5,999)</td>
+                      <td style={{ padding: "6px", color: "#166534", fontWeight: 700 }}>₹{Math.round(5999 * (pricingForm.registrationPercentage / 100))}</td>
+                      <td style={{ padding: "6px", color: "#1e40af", fontWeight: 700 }}>₹{Math.round(5999 * (pricingForm.firstRenewalPercentage / 100))}</td>
+                      <td style={{ padding: "6px", color: "#6b21a8", fontWeight: 700 }}>₹{Math.round(5999 * (pricingForm.secondRenewalPercentage / 100))}</td>
+                      <td style={{ padding: "6px", color: "#9d174d", fontWeight: 700 }}>₹{Math.round(5999 * (pricingForm.subsequentRenewalPercentage / 100))}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Buttons */}
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "6px" }}>
+                <button
+                  type="button"
+                  className="outline-button"
+                  onClick={() => setShowAgentPricingModal(false)}
+                  disabled={pricingSubmitting}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="primary-button"
+                  disabled={pricingSubmitting}
+                  style={{ background: "#166534" }}
+                >
+                  {pricingSubmitting ? "Saving Pricing..." : "💾 Save Commission Pricing →"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+            {/* Company Admin Direct Business Registration Modal */}
     {showCompanyRegisterModal && (
       <div
         style={{

@@ -36,6 +36,7 @@ export async function GET(request: Request) {
             phone: agent.phone,
             referralCode: agent.referralCode || "JIT",
             ratings: agent.ratings && !isJunkRating(agent.ratings) ? agent.ratings : null,
+            commissionPricing: agent.commissionPricing || null,
             stats: {
               referredCount,
               activeRenewals,

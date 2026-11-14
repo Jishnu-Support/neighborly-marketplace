@@ -1,3 +1,13 @@
+export type AgentCommissionPricing = {
+  registrationPercentage: number; // Commission for business registration (%)
+  firstRenewalPercentage: number; // Commission for 1st renewal (%)
+  secondRenewalPercentage: number; // Commission for 2nd renewal (%)
+  subsequentRenewalPercentage: number; // Commission for 3rd and subsequent renewals (%)
+  customNotes?: string;
+  lastUpdated?: string;
+  updatedBy?: string;
+};
+
 export type AgentCommissionConfig = {
   referralPercentage: number; // e.g. 20 for 20%
   minimumPayoutAmount: number; // e.g. 500
