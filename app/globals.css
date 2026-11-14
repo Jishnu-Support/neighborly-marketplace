@@ -5158,3 +5158,95 @@ html, body {
     padding: 12px 14px;
   }
 }
+
+
+/* Drag and Drop Category Ordering */
+.category-manager-sector {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.category-manager-sector.is-dragging {
+  opacity: 0.45;
+  border: 2px dashed #0284c7 !important;
+  background: #f0f9ff !important;
+  transform: scale(0.99);
+}
+
+.category-manager-sector.is-drag-over {
+  border-top: 3px solid #0284c7 !important;
+  box-shadow: 0 -4px 12px rgba(2, 132, 199, 0.25) !important;
+}
+
+.category-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 32px;
+  cursor: grab;
+  color: #64748b;
+  font-size: 18px;
+  font-weight: 700;
+  user-select: none;
+  border-radius: 6px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.category-drag-handle:hover {
+  background: #e2e8f0;
+  color: #0284c7;
+  border-color: #cbd5e1;
+}
+
+.category-drag-handle:active {
+  cursor: grabbing;
+}
+
+.category-order-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: 12px;
+  background: #0f172a;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+}
+
+.category-reorder-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.category-reorder-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+  color: #334155;
+  transition: all 0.15s ease;
+}
+
+.category-reorder-btn:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #0284c7;
+  color: #0284c7;
+}
+
+.category-reorder-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}

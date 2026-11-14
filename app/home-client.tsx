@@ -25445,6 +25445,9 @@ function CompanyCategoryManager({ accessLevel }: { accessLevel: CompanyAccessLev
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
+  const [draggedSectorIndex, setDraggedSectorIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
   useEffect(() => {
     let cancelled = false;
     fetch("/api/company/categories", { cache: "no-store" }).then(async (response) => {
@@ -25460,15 +25463,80 @@ function CompanyCategoryManager({ accessLevel }: { accessLevel: CompanyAccessLev
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, []);
+
   function updateSector(index: number, patch: Partial<CategorySector>) {
     setConfig((current) => ({ ...current, sectors: current.sectors.map((sector, i) => i === index ? { ...sector, ...patch } : sector) }));
     setSaved(false);
   }
-  function updatePath(index: number, pathIndex: number, value: string) {
-    const path = value.split(">").map((part) => part.trim()).filter(Boolean);
-    setConfig((current) => ({ ...current, sectors: current.sectors.map((sector, i) => i !== index ? sector : { ...sector, paths: sector.paths.map((entry, p) => p === pathIndex ? path : entry) }) }));
+
+  function moveSector(fromIndex: number, toIndex: number) {
+    if (fromIndex === toIndex || toIndex < 0 || toIndex >= config.sectors.length) return;
+    setConfig((current) => {
+      const updated = [...current.sectors];
+      const [moved] = updated.splice(fromIndex, 1);
+      updated.splice(toIndex, 0, moved);
+      return { ...current, sectors: updated };
+    });
     setSaved(false);
   }
+
+  const handleDragStart = (index: number, e: React.DragEvent) => {
+    setDraggedSectorIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", String(index));
+  };
+
+  const handleDragOver = (index: number, e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (dragOverIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleDrop = (targetIndex: number, e: React.DragEvent) => {
+    e.preventDefault();
+    if (draggedSectorIndex !== null && draggedSectorIndex !== targetIndex) {
+      moveSector(draggedSectorIndex, targetIndex);
+    }
+    setDraggedSectorIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedSectorIndex(null);
+    setDragOverIndex(null);
+  };
+
+  function sortAlphabetically() {
+    setConfig((current) => {
+      const allItem = current.sectors.find((s) => s.name.toLowerCase() === "all");
+      const rest = current.sectors.filter((s) => s.name.toLowerCase() !== "all");
+      rest.sort((a, b) => a.name.localeCompare(b.name));
+      return {
+        ...current,
+        sectors: allItem ? [allItem, ...rest] : rest,
+      };
+    });
+    setSaved(false);
+  }
+
+  function resetToDefaultOrder() {
+    setConfig((current) => {
+      const defaultNames = defaultCategoryConfig.sectors.map((s) => s.name.toLowerCase());
+      const sorted = [...current.sectors].sort((a, b) => {
+        const idxA = defaultNames.indexOf(a.name.toLowerCase());
+        const idxB = defaultNames.indexOf(b.name.toLowerCase());
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return a.name.localeCompare(b.name);
+      });
+      return { ...current, sectors: sorted };
+    });
+    setSaved(false);
+  }
+
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); setSaving(true); setError(""); setSaved(false);
     try {
@@ -25480,37 +25548,182 @@ function CompanyCategoryManager({ accessLevel }: { accessLevel: CompanyAccessLev
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not save category settings."); }
     finally { setSaving(false); }
   }
+
   if (loading) return <section className="panel tab-panel"><p>Loading categories...</p></section>;
+
   return <form className="panel tab-panel category-manager-form" onSubmit={save}>
-    <div className="category-manager-heading"><div><div className="eyebrow">DISCOVERY TAXONOMY</div><h2>Manage sectors and subcategories</h2><p>These settings control the public category tiles and business registration sectors. You are signed in as {accessLevel}. Admins and Super Admins can add or remove sectors and edit names, icons, and category paths.</p></div><button className="outline-button" type="button" disabled={config.sectors.length >= 30} onClick={() => setConfig((current) => ({ ...current, sectors: [...current.sectors, { name: "New sector", icon: "*", paths: [] }] }))}>Add sector</button></div>
-    <div className="category-manager-help">Select a checkbox to view the next level. Use <strong>+ New</strong> to add an option at the level shown. Upload a PNG, JPEG, or WebP logo (maximum 2 MB) for manufacturer options, including vehicle makes without model subcategories. Save category changes to publish uploaded logos.</div>
-    {config.sectors.map((sector, index) => <section className="category-manager-sector" key={`sector-${index}`}>
-      <div className="category-manager-sector-heading"><span className={`category-art cat-${index % 8}`}>{sector.icon || "*"}</span><strong>{sector.name || "Untitled sector"}</strong><button className="outline-button" type="button" disabled={config.sectors.length <= 1} onClick={() => setConfig((current) => ({ ...current, sectors: current.sectors.filter((_, i) => i !== index) }))}>Remove sector</button></div>
-      <div className="category-manager-fields"><label>Sector name<input value={sector.name} maxLength={60} onChange={(event) => updateSector(index, { name: event.target.value })} required /></label><label>Tile symbol<input value={sector.icon} maxLength={8} onChange={(event) => updateSector(index, { icon: event.target.value })} required /></label></div>
-      <CategoryTreeEditor
-        paths={sector.paths}
-        sectorName={sector.name}
-        brandLogos={config.brandLogos || {}}
-        onUploadLogo={async (name, file) => {
-          setError("");
-          const body = new FormData();
-          body.append("file", file);
-          try {
-            const response = await fetch("/api/company/categories/logos", { method: "POST", body });
-            const result = await response.json() as { url?: string; error?: string };
-            if (!response.ok || !result.url) throw new Error(result.error || "Could not upload this logo.");
-            const logoUrl = result.url;
-            setConfig((current) => ({ ...current, brandLogos: { ...current.brandLogos, [brandLogoKey(name)]: logoUrl } }));
-            setSaved(false);
-          } catch (reason) {
-            setError(reason instanceof Error ? reason.message : "Could not upload this logo.");
-          }
+    <div className="category-manager-heading">
+      <div>
+        <div className="eyebrow">DISCOVERY TAXONOMY</div>
+        <h2>Manage sectors and subcategories</h2>
+        <p>These settings control the public category tiles and business registration sectors. You are signed in as {accessLevel}. Drag and drop cards to reorder categories across the entire marketplace.</p>
+      </div>
+      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
+        <button
+          className="outline-button"
+          type="button"
+          title="Sort sectors alphabetically A-Z"
+          onClick={sortAlphabetically}
+        >
+          Sort A-Z
+        </button>
+        <button
+          className="outline-button"
+          type="button"
+          title="Restore default category order"
+          onClick={resetToDefaultOrder}
+        >
+          Reset Order
+        </button>
+        <button
+          className="outline-button"
+          type="button"
+          disabled={config.sectors.length >= 40}
+          onClick={() => setConfig((current) => ({ ...current, sectors: [...current.sectors, { name: "New sector", icon: "*", paths: [] }] }))}
+        >
+          + Add sector
+        </button>
+      </div>
+    </div>
+
+    {/* Drag and Drop Instruction Callout */}
+    <div
+      style={{
+        background: "linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%)",
+        border: "1px solid #bae6fd",
+        borderRadius: "10px",
+        padding: "12px 16px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "12px",
+        flexWrap: "wrap",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <span style={{ fontSize: "20px" }}>⇄</span>
+        <div style={{ fontSize: "12.5px", color: "#0369a1", lineHeight: 1.4 }}>
+          <strong>Drag &amp; Drop Reordering Active:</strong> Grab the <strong>⋮⋮ handle</strong> on any category card to drag and drop it into your preferred order, or use the <strong>▲ / ▼</strong> arrow buttons. The Discover homepage tiles and search filter drawers will display categories in this exact order.
+        </div>
+      </div>
+      <span style={{ fontSize: "11.5px", fontWeight: 700, color: "#0f766e", background: "#ffffff", padding: "4px 10px", borderRadius: "12px", border: "1px solid #99f6e4", whiteSpace: "nowrap" }}>
+        {config.sectors.length} Sectors Active
+      </span>
+    </div>
+
+    <div className="category-manager-help">
+      Select a checkbox to view the next level. Use <strong>+ New</strong> to add an option at the level shown. Upload a PNG, JPEG, or WebP logo (maximum 2 MB) for manufacturer options, including vehicle makes without model subcategories. Save category changes to publish your reordered list and logos.
+    </div>
+
+    {config.sectors.map((sector, index) => (
+      <section
+        className={`category-manager-sector ${draggedSectorIndex === index ? "is-dragging" : ""} ${dragOverIndex === index ? "is-drag-over" : ""}`}
+        key={`sector-${index}-${sector.name}`}
+        draggable={true}
+        onDragStart={(e) => handleDragStart(index, e)}
+        onDragOver={(e) => handleDragOver(index, e)}
+        onDragLeave={() => {
+          if (dragOverIndex === index) setDragOverIndex(null);
         }}
-        onChange={(paths) => updateSector(index, { paths })}
-      />
-    </section>)}
-    {error && <p className="form-error" role="alert">{error}</p>}{saved && <p className="status-pill verified" role="status">Category settings saved.</p>}
-    <button className="primary-button" type="submit" disabled={saving}>{saving ? "Saving..." : "Save category changes"}</button>
+        onDrop={(e) => handleDrop(index, e)}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="category-manager-sector-heading">
+          {/* Drag Handle */}
+          <span
+            className="category-drag-handle"
+            title="Click and drag to rearrange category order"
+            aria-label="Drag to rearrange"
+          >
+            ⋮⋮
+          </span>
+
+          {/* Numerical Order Badge */}
+          <span className="category-order-badge" title={`Display position #${index + 1}`}>
+            #{index + 1}
+          </span>
+
+          <span className={`category-art cat-${index % 8}`}>{sector.icon || "*"}</span>
+
+          <strong style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px" }}>
+            {sector.name || "Untitled sector"}
+          </strong>
+
+          {/* Quick 1-click Move Up / Move Down buttons */}
+          <div className="category-reorder-actions">
+            <button
+              type="button"
+              className="category-reorder-btn"
+              title="Move up"
+              aria-label="Move category up"
+              disabled={index === 0}
+              onClick={() => moveSector(index, index - 1)}
+            >
+              ▲
+            </button>
+            <button
+              type="button"
+              className="category-reorder-btn"
+              title="Move down"
+              aria-label="Move category down"
+              disabled={index === config.sectors.length - 1}
+              onClick={() => moveSector(index, index + 1)}
+            >
+              ▼
+            </button>
+          </div>
+
+          <button
+            className="outline-button"
+            type="button"
+            disabled={config.sectors.length <= 1}
+            onClick={() => setConfig((current) => ({ ...current, sectors: current.sectors.filter((_, i) => i !== index) }))}
+          >
+            Remove sector
+          </button>
+        </div>
+
+        <div className="category-manager-fields">
+          <label>
+            Sector name
+            <input value={sector.name} maxLength={60} onChange={(event) => updateSector(index, { name: event.target.value })} required />
+          </label>
+          <label>
+            Tile symbol
+            <input value={sector.icon} maxLength={8} onChange={(event) => updateSector(index, { icon: event.target.value })} required />
+          </label>
+        </div>
+
+        <CategoryTreeEditor
+          paths={sector.paths}
+          sectorName={sector.name}
+          brandLogos={config.brandLogos || {}}
+          onUploadLogo={async (name, file) => {
+            setError("");
+            const body = new FormData();
+            body.append("file", file);
+            try {
+              const response = await fetch("/api/company/categories/logos", { method: "POST", body });
+              const result = await response.json() as { url?: string; error?: string };
+              if (!response.ok || !result.url) throw new Error(result.error || "Could not upload this logo.");
+              const logoUrl = result.url;
+              setConfig((current) => ({ ...current, brandLogos: { ...current.brandLogos, [brandLogoKey(name)]: logoUrl } }));
+              setSaved(false);
+            } catch (reason) {
+              setError(reason instanceof Error ? reason.message : "Could not upload this logo.");
+            }
+          }}
+          onChange={(paths) => updateSector(index, { paths })}
+        />
+      </section>
+    ))}
+
+    {error && <p className="form-error" role="alert">{error}</p>}
+    {saved && <p className="status-pill verified" role="status">✓ Category order &amp; taxonomy settings saved and published successfully.</p>}
+
+    <button className="primary-button" type="submit" disabled={saving}>
+      {saving ? "Saving changes..." : "Save category changes"}
+    </button>
   </form>;
 }
 
