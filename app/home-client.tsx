@@ -48,6 +48,10 @@ import {
   PINCODE_SUGGESTIONS,
 } from "./lib/address-suggestions";
 import { CompanyRegistrationVideoManager } from "./components/CompanyRegistrationVideoManager";
+import {
+  type AgentCommissionConfig,
+  DEFAULT_AGENT_COMMISSION_CONFIG,
+} from "./lib/agent-commission-config.shared";
 import { RegistrationVideoPlayerModal } from "./components/RegistrationVideoPlayerModal";
 import {
   formatYouTubeWatchUrl,
@@ -2506,6 +2510,32 @@ export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authenticatedPortals, setAuthenticatedPortals] = useState<PortalRole[]>([]);
   const [customerCareConfig, setCustomerCareConfig] = useState<SupportConfig>(defaultSupportConfig);
+  const [agentCommissionConfig, setAgentCommissionConfig] = useState<AgentCommissionConfig>(DEFAULT_AGENT_COMMISSION_CONFIG);
+
+  const loadCommissionConfig = useCallback(() => {
+    fetch("/api/agent-commission", { cache: "no-store", credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && data.config) {
+          setAgentCommissionConfig(data.config);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    loadCommissionConfig();
+    const handleCommissionUpdate = (e: Event) => {
+      const custom = e as CustomEvent<AgentCommissionConfig>;
+      if (custom.detail) {
+        setAgentCommissionConfig(custom.detail);
+      } else {
+        loadCommissionConfig();
+      }
+    };
+    window.addEventListener("neighborly-agent-commission-updated", handleCommissionUpdate);
+    return () => window.removeEventListener("neighborly-agent-commission-updated", handleCommissionUpdate);
+  }, [loadCommissionConfig]);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
   const [companyAccessLevel, setCompanyAccessLevel] = useState<CompanyAccessLevel>("Admin");
@@ -5845,11 +5875,12 @@ export default function Home() {
     });
 
     // Notify Agent about referral renewal & commission earned
-    const commissionAmt = Math.round(data.totalAmount * 0.20);
+    const commissionRate = agentCommissionConfig?.referralPercentage ?? 20;
+    const commissionAmt = Math.round(data.totalAmount * (commissionRate / 100));
     addNotification({
       type: "agent",
       title: `💰 Commission Earned: ${data.businessName} Plan Activated!`,
-      message: `${data.businessName} activated their ${data.plan} plan (₹${data.totalAmount.toLocaleString("en-IN")}). ₹${commissionAmt.toLocaleString("en-IN")} referral commission has been credited to your agent payout account!`,
+      message: `${data.businessName} activated their ${data.plan} plan (₹${data.totalAmount.toLocaleString("en-IN")}). ₹${commissionAmt.toLocaleString("en-IN")} referral commission (${commissionRate}%) has been credited to your agent payout account!`,
       targetRole: "Agent",
       targetIdentity: "JIT",
       linkText: "View Commission Wallet",
@@ -17717,7 +17748,7 @@ function AgentPortal({
               category: b.category,
               joined: b.createdAt ? new Date(b.createdAt).toLocaleDateString() : "Recent",
               status: b.verificationStatus || "Pending Agent Visit",
-              commission: "₹500",
+              commission: `₹${Math.round(2999 * ((commissionConfig?.referralPercentage ?? 20) / 100)).toLocaleString("en-IN")} (${commissionConfig?.referralPercentage ?? 20}%)`,
             }));
           if (refList.length > 0) {
             setReferrals(refList);
@@ -17745,6 +17776,41 @@ function AgentPortal({
   }, []);
 
   const [referrals, setReferrals] = useState<Array<{ businessName: string; category: string; joined: string; status: string; commission?: string }>>([]);
+  const [commissionConfig, setCommissionConfig] = useState<AgentCommissionConfig>(DEFAULT_AGENT_COMMISSION_CONFIG);
+
+  const loadCommissionConfig = useCallback(() => {
+    fetch("/api/agent-commission", { cache: "no-store", credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && data.config) {
+          setCommissionConfig(data.config);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    loadCommissionConfig();
+    const handleCommissionUpdate = (e: Event) => {
+      const custom = e as CustomEvent<AgentCommissionConfig>;
+      if (custom.detail) {
+        setCommissionConfig(custom.detail);
+      } else {
+        loadCommissionConfig();
+      }
+    };
+    window.addEventListener("neighborly-agent-commission-updated", handleCommissionUpdate);
+    return () => window.removeEventListener("neighborly-agent-commission-updated", handleCommissionUpdate);
+  }, [loadCommissionConfig]);
+
+  const commissionRate = commissionConfig.referralPercentage ?? 20;
+  const totalEarnedCommission = referrals.reduce((sum, r) => {
+    const isApprovedOrSubscribed = r.status.toLowerCase().includes("subscribed") || r.status.toLowerCase().includes("approved") || r.status.toLowerCase().includes("verified");
+    if (isApprovedOrSubscribed) {
+      return sum + Math.round(2999 * (commissionRate / 100));
+    }
+    return sum;
+  }, 0);
 
   function downloadReferralReport() {
     const rows = [
@@ -18009,9 +18075,9 @@ function AgentPortal({
         <>
           <section className="referral-card">
             <div className="referral-copy">
-              <div className="eyebrow">YOUR REFERRAL CODE</div>
-              <h2>Share the local love.</h2>
-              <p>Businesses that use your code will be linked to your agent account when they register.</p>
+              <div className="eyebrow">YOUR REFERRAL CODE &amp; COMMISSION</div>
+              <h2>Share the local love · Earn {commissionRate}%</h2>
+              <p>Businesses that use your code will be linked to your agent account when they register. You earn <strong style={{ color: "#166534" }}>{commissionRate}% recurring commission</strong> (defined by Super Admin) on every merchant registration and subscription renewal.</p>
             </div>
             <div className="code-box">
               <code>{agentReferralCode}</code>
@@ -18181,7 +18247,8 @@ function AgentPortal({
                 icon="♧"
               />
             </div>
-            <Metric label="This month's reward" value="₹0" delta="Real-time commission" icon="↗" onClick={() => setTab("Referrals")} />
+            <Metric label="Commission Rate" value={`${commissionRate}%`} delta="Defined by Super Admin" icon="💰" onClick={() => setTab("Referrals")} />
+            <Metric label="This month's reward" value={`₹${totalEarnedCommission.toLocaleString("en-IN")}`} delta={`Real-time at ${commissionRate}%`} icon="↗" onClick={() => setTab("Referrals")} />
           </div>
 
           {pendingCount > 0 && (
@@ -18294,12 +18361,17 @@ function AgentPortal({
               icon="♧"
             />
             <Metric
-              label="Active Partners"
-              value={String(referrals.length)}
-              delta="Linked to your agent account"
-              icon="📍"
+              label="Commission Rate"
+              value={`${commissionRate}%`}
+              delta="Defined by Super Admin"
+              icon="💰"
             />
-            <Metric label="Commission earned" value="₹0" delta="Real-time commission" icon="↗" />
+            <Metric
+              label="Commission earned"
+              value={`₹${totalEarnedCommission.toLocaleString("en-IN")}`}
+              delta={`Real-time at ${commissionRate}%`}
+              icon="↗"
+            />
           </div>
 
           <section className="panel agent-table">
@@ -18340,7 +18412,7 @@ function AgentPortal({
                 <div className="table-row" key={row.businessName}>
                   <div>
                     <strong style={{ color: "#1c2e22" }}>{row.businessName}</strong>
-                    <div style={{ fontSize: "11.5px", color: "#64748b" }}>Code: {agentReferralCode} · Commission: {row.commission || "₹500"}</div>
+                    <div style={{ fontSize: "11.5px", color: "#64748b" }}>Code: {agentReferralCode} · Referral Commission: <strong style={{ color: "#15803d" }}>{row.commission || `₹${Math.round(2999 * (commissionRate / 100))} (${commissionRate}%)`}</strong></div>
                   </div>
                   <span>{row.category}</span>
                   <span>{row.joined}</span>
@@ -22895,6 +22967,58 @@ function CompanyPortal({
   const [sosError, setSosError] = useState("");
   const [adminError, setAdminError] = useState("");
   const [adminLoading, setAdminLoading] = useState(false);
+  const [adminCommissionConfig, setAdminCommissionConfig] = useState<AgentCommissionConfig>(DEFAULT_AGENT_COMMISSION_CONFIG);
+  const [adminReferralPercentage, setAdminReferralPercentage] = useState<number>(20);
+  const [adminPayoutCycle, setAdminPayoutCycle] = useState<"Instant" | "Weekly" | "Monthly">("Instant");
+  const [adminMinPayout, setAdminMinPayout] = useState<number>(500);
+  const [commissionSaving, setCommissionSaving] = useState(false);
+
+  const loadAdminCommissionConfig = useCallback(() => {
+    fetch("/api/agent-commission", { cache: "no-store", credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && data.config) {
+          setAdminCommissionConfig(data.config);
+          setAdminReferralPercentage(data.config.referralPercentage ?? 20);
+          setAdminPayoutCycle(data.config.payoutCycle ?? "Instant");
+          setAdminMinPayout(data.config.minimumPayoutAmount ?? 500);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    loadAdminCommissionConfig();
+  }, [loadAdminCommissionConfig]);
+
+  const handleSaveCommissionConfig = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCommissionSaving(true);
+    try {
+      const res = await fetch("/api/agent-commission", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          referralPercentage: Number(adminReferralPercentage),
+          payoutCycle: adminPayoutCycle,
+          minimumPayoutAmount: Number(adminMinPayout),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update referral percentage.");
+      if (data.config) {
+        setAdminCommissionConfig(data.config);
+        setAdminReferralPercentage(data.config.referralPercentage);
+        window.dispatchEvent(new CustomEvent("neighborly-agent-commission-updated", { detail: data.config }));
+      }
+      showNotice(`✓ Agent referral commission percentage updated to ${adminReferralPercentage}% by Super Admin.`);
+    } catch (err) {
+      showNotice(err instanceof Error ? err.message : "Failed to update commission.");
+    } finally {
+      setCommissionSaving(false);
+    }
+  };
   type AgentRatingDetails = {
     businessFeedback: number;
     registrationsCount: number;
@@ -23637,6 +23761,161 @@ function CompanyPortal({
           </button>
         </div>
         <p>Verified field agents onboard local merchants, distribute referral links, and earn commissions. Review pending applications and manage active agents.</p>
+
+        {/* ================================================================ */}
+        {/* SUPER ADMIN: AGENT REFERRAL COMMISSION PERCENTAGE CONFIGURATION */}
+        {/* ================================================================ */}
+        <div
+          style={{
+            background: "#f0fdf4",
+            border: "1.5px solid #86efac",
+            borderRadius: "12px",
+            padding: "18px 20px",
+            margin: "16px 0 20px",
+            boxShadow: "0 2px 8px rgba(22, 101, 52, 0.06)",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "10px", marginBottom: "12px" }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span style={{ fontSize: "20px" }}>⚙️</span>
+                <h3 style={{ margin: 0, fontSize: "16px", color: "#14532d", fontWeight: 800 }}>
+                  Agent Referral Commission Rate Configuration
+                </h3>
+                <span style={{ background: "#dcfce7", color: "#166534", fontSize: "11px", fontWeight: 700, padding: "2px 8px", borderRadius: "12px", border: "1px solid #bbf7d0" }}>
+                  Super Admin Only
+                </span>
+              </div>
+              <p style={{ margin: "4px 0 0", fontSize: "12.5px", color: "#166534" }}>
+                Define the official referral amount percentage awarded to field agents for every business registration and subscription renewal. This percentage is dynamically synchronized and visible to both Super Admins and Agents.
+              </p>
+            </div>
+            {commissionSaving && (
+              <span style={{ fontSize: "12px", color: "#15803d", fontWeight: 600 }}>Saving changes...</span>
+            )}
+          </div>
+
+          <form onSubmit={handleSaveCommissionConfig} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "14px", alignItems: "end" }}>
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#14532d", marginBottom: "6px" }}>
+                  Referral Commission Rate (%)
+                </label>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.5"
+                    value={adminReferralPercentage}
+                    onChange={(e) => setAdminReferralPercentage(Number(e.target.value))}
+                    style={{
+                      width: "90px",
+                      padding: "8px 12px",
+                      fontSize: "16px",
+                      fontWeight: 800,
+                      color: "#14532d",
+                      borderRadius: "8px",
+                      border: "1.5px solid #4ade80",
+                      background: "#fff",
+                    }}
+                    required
+                  />
+                  <span style={{ fontSize: "16px", fontWeight: 800, color: "#15803d" }}>%</span>
+                  {/* Quick percentage buttons */}
+                  <div style={{ display: "flex", gap: "4px", marginLeft: "4px", flexWrap: "wrap" }}>
+                    {[10, 15, 20, 25, 30].map((pct) => (
+                      <button
+                        key={pct}
+                        type="button"
+                        onClick={() => setAdminReferralPercentage(pct)}
+                        style={{
+                          padding: "4px 8px",
+                          fontSize: "11px",
+                          fontWeight: 700,
+                          borderRadius: "6px",
+                          border: adminReferralPercentage === pct ? "1.5px solid #16a34a" : "1px solid #cbd5e1",
+                          background: adminReferralPercentage === pct ? "#dcfce7" : "#fff",
+                          color: adminReferralPercentage === pct ? "#15803d" : "#475569",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {pct}%
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#14532d", marginBottom: "6px" }}>
+                  Payout Schedule
+                </label>
+                <select
+                  value={adminPayoutCycle}
+                  onChange={(e) => setAdminPayoutCycle(e.target.value as any)}
+                  style={{
+                    width: "100%",
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    border: "1px solid #cbd5e1",
+                    background: "#fff",
+                    fontSize: "13px",
+                  }}
+                >
+                  <option value="Instant">Instant (upon merchant plan activation)</option>
+                  <option value="Weekly">Weekly (every Monday)</option>
+                  <option value="Monthly">Monthly (1st of every month)</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#14532d", marginBottom: "6px" }}>
+                  Minimum Payout Threshold (₹)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="100"
+                  value={adminMinPayout}
+                  onChange={(e) => setAdminMinPayout(Number(e.target.value))}
+                  style={{
+                    width: "100%",
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    border: "1px solid #cbd5e1",
+                    background: "#fff",
+                    fontSize: "13px",
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Live Earning Simulator Box */}
+            <div style={{ background: "#ffffff", border: "1px solid #bbf7d0", borderRadius: "8px", padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px", fontSize: "12px" }}>
+              <div style={{ color: "#166534" }}>
+                <strong>💡 Live Commission Preview at {adminReferralPercentage}%:</strong>
+                <span style={{ marginLeft: "8px", color: "#14532d" }}>
+                  Starter (₹999/yr) → <strong>₹{Math.round(999 * (adminReferralPercentage / 100))}</strong> · Growth (₹2,999/yr) → <strong>₹{Math.round(2999 * (adminReferralPercentage / 100))}</strong> · Pro (₹5,999/yr) → <strong>₹{Math.round(5999 * (adminReferralPercentage / 100))}</strong>
+                </span>
+              </div>
+              <button
+                type="submit"
+                className="primary-button"
+                disabled={commissionSaving}
+                style={{ padding: "8px 18px", fontSize: "12px", fontWeight: 700 }}
+              >
+                {commissionSaving ? "Saving..." : "💾 Update Commission Rate"}
+              </button>
+            </div>
+
+            {adminCommissionConfig.lastUpdated && (
+              <div style={{ fontSize: "11px", color: "#64748b" }}>
+                Current configured percentage: <strong style={{ color: "#15803d" }}>{adminCommissionConfig.referralPercentage}%</strong> · Last updated by <strong>{adminCommissionConfig.updatedBy || "Super Admin"}</strong> on {new Date(adminCommissionConfig.lastUpdated).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
+              </div>
+            )}
+          </form>
+        </div>
 
         <div style={{ display: "flex", gap: "8px", margin: "14px 0 16px", flexWrap: "wrap" }}>
           {[
