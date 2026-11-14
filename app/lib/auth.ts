@@ -528,7 +528,7 @@ export async function listCompanyAdmins(): Promise<CompanyAdmin[]> {
     active,
     createdAt,
     emergencyPhone,
-    accessLevel: accessLevel || "Admin",
+    accessLevel: isSuperAdminIdentity(email) ? "Super Admin" : (accessLevel || "Admin"),
   }));
 }
 
