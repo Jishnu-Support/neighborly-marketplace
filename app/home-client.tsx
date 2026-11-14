@@ -2593,6 +2593,8 @@ export default function Home() {
   const [activeVideoAdIndex, setActiveVideoAdIndex] = useState(0);
   const [isVideoSplashActive, setIsVideoSplashActive] = useState(false);
   const [splashCountdown, setSplashCountdown] = useState(3);
+  const [videoAdMuted, setVideoAdMuted] = useState(true);
+  const [popupVideoMuted, setPopupVideoMuted] = useState(true);
 
   // Popup Video Ads State
   const [popupAdOpen, setPopupAdOpen] = useState(false);
@@ -8582,20 +8584,58 @@ export default function Home() {
                 </div>
               </div>
             ) : currentVideoAd?.sourceUrl ? (
-              <video
-                key={`${currentVideoAd.sourceUrl}-${currentVideoAd.posterUrl || ""}`}
-                className="video-ad-player"
-                controls
-                muted
-                preload="metadata"
-                playsInline
-                onPlay={() => handleVideoAdImpression()}
-                onEnded={handleVideoEnded}
-                poster={currentVideoAd.posterUrl || undefined}
-                src={currentVideoAd.sourceUrl}
-              >
-                Your browser does not support embedded video.
-              </video>
+              <div style={{ position: "relative", width: "100%", borderRadius: "8px", overflow: "hidden", background: "#000000" }}>
+                <video
+                  key={`${currentVideoAd.sourceUrl}-${currentVideoAd.posterUrl || ""}`}
+                  className="video-ad-player"
+                  controls
+                  autoPlay
+                  muted={videoAdMuted}
+                  preload="auto"
+                  playsInline
+                  ref={(el) => {
+                    if (el) {
+                      el.muted = videoAdMuted;
+                      el.play().catch(() => {});
+                    }
+                  }}
+                  onPlay={() => handleVideoAdImpression()}
+                  onEnded={handleVideoEnded}
+                  poster={currentVideoAd.posterUrl || undefined}
+                  src={currentVideoAd.sourceUrl}
+                >
+                  Your browser does not support embedded video.
+                </video>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setVideoAdMuted((prev) => !prev);
+                  }}
+                  style={{
+                    position: "absolute",
+                    top: "10px",
+                    right: "10px",
+                    background: "rgba(15, 23, 42, 0.78)",
+                    backdropFilter: "blur(6px)",
+                    color: "#ffffff",
+                    border: "1px solid rgba(255, 255, 255, 0.35)",
+                    borderRadius: "20px",
+                    padding: "4px 10px",
+                    fontSize: "10.5px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    zIndex: 10,
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+                  }}
+                  title={videoAdMuted ? "Click to unmute video audio" : "Click to mute video audio"}
+                >
+                  {videoAdMuted ? "🔇 Unmute" : "🔊 Sound On"}
+                </button>
+              </div>
             ) : currentVideoAd?.posterUrl ? (
               <div style={{ position: "relative", width: "100%", borderRadius: "8px", overflow: "hidden", background: "#0b192c" }}>
                 <img
@@ -10068,20 +10108,58 @@ export default function Home() {
                     </div>
                   </div>
                 ) : currentVideoAd?.sourceUrl ? (
-                  <video
-                    key={`${currentVideoAd.sourceUrl}-${currentVideoAd.posterUrl || ""}`}
-                    className="video-ad-player"
-                    controls
-                    muted
-                    preload="metadata"
-                    playsInline
-                    onPlay={() => handleVideoAdImpression()}
-                    onEnded={handleVideoEnded}
-                    poster={currentVideoAd.posterUrl || undefined}
-                    src={currentVideoAd.sourceUrl}
-                  >
-                    Your browser does not support embedded video.
-                  </video>
+                  <div style={{ position: "relative", width: "100%", borderRadius: "8px", overflow: "hidden", background: "#000000" }}>
+                    <video
+                      key={`${currentVideoAd.sourceUrl}-${currentVideoAd.posterUrl || ""}`}
+                      className="video-ad-player"
+                      controls
+                      autoPlay
+                      muted={videoAdMuted}
+                      preload="auto"
+                      playsInline
+                      ref={(el) => {
+                        if (el) {
+                          el.muted = videoAdMuted;
+                          el.play().catch(() => {});
+                        }
+                      }}
+                      onPlay={() => handleVideoAdImpression()}
+                      onEnded={handleVideoEnded}
+                      poster={currentVideoAd.posterUrl || undefined}
+                      src={currentVideoAd.sourceUrl}
+                    >
+                      Your browser does not support embedded video.
+                    </video>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setVideoAdMuted((prev) => !prev);
+                      }}
+                      style={{
+                        position: "absolute",
+                        top: "10px",
+                        right: "10px",
+                        background: "rgba(15, 23, 42, 0.78)",
+                        backdropFilter: "blur(6px)",
+                        color: "#ffffff",
+                        border: "1px solid rgba(255, 255, 255, 0.35)",
+                        borderRadius: "20px",
+                        padding: "4px 10px",
+                        fontSize: "10px",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        zIndex: 10,
+                        boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+                      }}
+                      title={videoAdMuted ? "Click to unmute video audio" : "Click to mute video audio"}
+                    >
+                      {videoAdMuted ? "🔇 Unmute" : "🔊 Sound On"}
+                    </button>
+                  </div>
                 ) : currentVideoAd?.posterUrl ? (
                   <div style={{ position: "relative", width: "100%", borderRadius: "8px", overflow: "hidden", background: "#0b192c" }}>
                     <img
@@ -11287,20 +11365,59 @@ export default function Home() {
               />
             </div>
 
-            <div className="popup-video-player-wrap">
+            <div className="popup-video-player-wrap" style={{ position: "relative" }}>
               {popupAdCurrent.sourceUrl ? (
-                <video
-                  key={`popup-${popupAdCurrent.id || popupAdCurrent.sourceUrl}`}
-                  className="popup-video-element"
-                  controls
-                  autoPlay
-                  playsInline
-                  poster={popupAdCurrent.posterUrl || "/bizearch-splash-banner.png"}
-                  src={popupAdCurrent.sourceUrl}
-                  onPlay={() => handleVideoAdImpression()}
-                >
-                  Your browser does not support embedded video.
-                </video>
+                <>
+                  <video
+                    key={`popup-${popupAdCurrent.id || popupAdCurrent.sourceUrl}`}
+                    className="popup-video-element"
+                    controls
+                    autoPlay
+                    muted={popupVideoMuted}
+                    preload="auto"
+                    playsInline
+                    ref={(el) => {
+                      if (el) {
+                        el.muted = popupVideoMuted;
+                        el.play().catch(() => {});
+                      }
+                    }}
+                    poster={popupAdCurrent.posterUrl || "/bizearch-splash-banner.png"}
+                    src={popupAdCurrent.sourceUrl}
+                    onPlay={() => handleVideoAdImpression()}
+                  >
+                    Your browser does not support embedded video.
+                  </video>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPopupVideoMuted((prev) => !prev);
+                    }}
+                    style={{
+                      position: "absolute",
+                      top: "12px",
+                      right: "12px",
+                      background: "rgba(15, 23, 42, 0.8)",
+                      backdropFilter: "blur(6px)",
+                      color: "#ffffff",
+                      border: "1px solid rgba(255, 255, 255, 0.35)",
+                      borderRadius: "20px",
+                      padding: "5px 12px",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "5px",
+                      zIndex: 15,
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.35)",
+                    }}
+                    title={popupVideoMuted ? "Click to unmute video audio" : "Click to mute video audio"}
+                  >
+                    {popupVideoMuted ? "🔇 Unmute Audio" : "🔊 Sound On"}
+                  </button>
+                </>
               ) : (
                 <img
                   src={popupAdCurrent.posterUrl || "/bizearch-splash-banner.png"}
