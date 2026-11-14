@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { saveActivityLog, ActivityActorRole } from "@/app/lib/activity-logs";
+import { createServerNotification } from "@/app/lib/notifications";
 
 export async function POST(request: Request) {
   try {
@@ -11,6 +12,8 @@ export async function POST(request: Request) {
       callerPhone?: string;
       callerRole?: string;
       locality?: string;
+      businessName?: string;
+      businessId?: string;
     };
 
     const targetName = body.targetName?.trim() || "Local Business";
@@ -44,6 +47,28 @@ export async function POST(request: Request) {
         device: "Dialer Pad",
       },
     });
+
+    // Notify Business Portal if target is a merchant
+    if (targetType === "Business" || body.businessName || body.targetName) {
+      const bizName = body.businessName || targetName;
+      try {
+        await createServerNotification({
+          title: `📞 Inbound Call Lead: ${callerName}`,
+          message: `${callerName}${callerPhone ? ` (${callerPhone})` : ""} tapped to call your business phone (${targetPhone || "Direct"}) from Bizearch. Follow up if missed!`,
+          type: "business",
+          targetRole: "Business",
+          targetIdentity: bizName,
+          linkText: "View Call Logs",
+          action: {
+            type: "portal",
+            payload: "Business",
+            tab: "activity",
+          },
+        });
+      } catch (notifErr) {
+        console.warn("Failed to create call notification:", notifErr);
+      }
+    }
 
     return NextResponse.json({ success: true, id: record.id });
   } catch (error) {

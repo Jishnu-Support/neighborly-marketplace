@@ -1,4 +1,4 @@
-import { type AdConfig } from "./ad-config.shared";
+import { type AdConfig, type VideoAd } from "./ad-config.shared";
 
 export type AdFormat = "poster" | "content" | "video" | "combo";
 
@@ -649,6 +649,7 @@ export function resolveScheduledAds(
 
   const extraTickers: string[] = [];
   const extraImages: AdConfig["imageAds"] = [];
+  const extraVideoAds: VideoAd[] = [];
   let customVideoAd = baseConfig.videoAd;
 
   for (const sb of filteredBookings) {
@@ -675,8 +676,9 @@ export function resolveScheduledAds(
     if (b.video?.sourceUrl && (b.format === "video" || b.format === "combo")) {
       const poster = (b.video?.posterUrl && !b.video.posterUrl.includes("1528605248644"))
         ? b.video.posterUrl
-        : (baseConfig.videoAd?.posterUrl || "");
-      customVideoAd = {
+        : (baseConfig.videoAd?.posterUrl || "/bizearch-splash-banner.png");
+      const bookedVid: VideoAd = {
+        id: b.id,
         adBookingId: b.id,
         businessName: b.businessName,
         title: b.video.title || `${b.businessName} Spotlight`,
@@ -690,8 +692,45 @@ export function resolveScheduledAds(
         matchedReason: sb.matchedReason,
         isSearchMatch: sb.isSearchMatch,
       };
+      extraVideoAds.push(bookedVid);
+      if (!customVideoAd || customVideoAd === baseConfig.videoAd) {
+        customVideoAd = bookedVid;
+      }
     }
   }
+
+  // Base video ads from baseConfig
+  const baseVideos: VideoAd[] = (baseConfig.videoAds && baseConfig.videoAds.length > 0)
+    ? baseConfig.videoAds
+    : (baseConfig.videoAd ? [baseConfig.videoAd] : []);
+
+  // Check search matches on base video ads
+  const evaluatedBaseVideos = baseVideos.map((va) => {
+    let isSearchMatch = false;
+    let matchedReason = va.matchedReason;
+    if (cleanQuery) {
+      const hay = `${va.title} ${va.description} ${va.businessName || ""} ${va.category || ""} ${(va.keywords || []).join(" ")}`.toLowerCase();
+      if (hay.includes(cleanQuery)) {
+        isSearchMatch = true;
+        matchedReason = `Matching "${cleanQuery}"`;
+      }
+    }
+    return {
+      ...va,
+      isSearchMatch: isSearchMatch || va.isSearchMatch,
+      matchedReason: isSearchMatch ? matchedReason : va.matchedReason,
+    };
+  });
+
+  // Combine booked videos + base videos, prioritizing search-matching videos to the front
+  const combinedVideoAds = [...extraVideoAds, ...evaluatedBaseVideos];
+  const sortedVideoAds = [...combinedVideoAds].sort((a, b) => {
+    if (a.isSearchMatch && !b.isSearchMatch) return -1;
+    if (!a.isSearchMatch && b.isSearchMatch) return 1;
+    return 0;
+  });
+
+  const finalVideoAds = sortedVideoAds.length > 0 ? sortedVideoAds : (baseConfig.videoAd ? [baseConfig.videoAd] : []);
 
   const finalImageAds = [...extraImages, ...eligibleBaseImages.map((x) => x.ad)];
 
@@ -729,7 +768,10 @@ export function resolveScheduledAds(
     ...baseConfig,
     tickerMessages: finalTickers,
     imageAds: finalImageAds,
-    videoAd: customVideoAd,
+    videoAd: finalVideoAds[0] || customVideoAd,
+    videoAds: finalVideoAds,
+    videoSettings: baseConfig.videoSettings,
+    popupAdConfig: baseConfig.popupAdConfig,
     targetingSummary,
   };
 }

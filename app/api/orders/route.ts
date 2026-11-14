@@ -57,7 +57,7 @@ export async function POST(request: Request) {
 
     const saved = await createOrder(order);
 
-    // Notify Merchant & Company Admins in real-time
+    // Notify Merchant, Customer & Company Admins in real-time
     try {
       await createServerNotification({
         title: `🛍️ New Order #${saved.id} - ₹${saved.totalAmount}`,
@@ -72,6 +72,22 @@ export async function POST(request: Request) {
           tab: "Orders",
         },
       });
+
+      if (saved.customerPhone || saved.customerName) {
+        await createServerNotification({
+          title: `✅ Order Placed: #${saved.id} - ₹${saved.totalAmount}`,
+          message: `Your order for ${saved.items.map((i) => `${i.quantity}x ${i.name}`).join(", ")} from ${saved.businessName} has been placed. Estimated delivery: ${saved.estimatedTime}.`,
+          type: "order",
+          targetRole: "Account",
+          targetIdentity: saved.customerPhone || saved.customerName,
+          linkText: "Track order",
+          action: {
+            type: "portal",
+            payload: "Account",
+            tab: "Orders",
+          },
+        });
+      }
 
       await createServerNotification({
         title: `🛍️ Platform Order #${saved.id}`,
@@ -184,7 +200,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "Order not found." }, { status: 404, headers: noStoreHeaders });
     }
 
-    // Notify Customer about order status update in real time
+    // Notify Customer and Business about order status update in real time
     try {
       const statusMessage =
         body.status === "accepted" ? "accepted by store and entering preparation 👨‍🍳" :
@@ -193,21 +209,37 @@ export async function PATCH(request: Request) {
         body.status === "completed" ? "completed and successfully delivered ✅" :
         body.status === "cancelled" ? "cancelled by store" : body.status;
 
+      if (updated.customerPhone || updated.customerName) {
+        await createServerNotification({
+          title: `🛵 Order #${updated.id} Update: ${body.status.toUpperCase()}`,
+          message: `Your order from ${updated.businessName} is ${statusMessage}.`,
+          type: "order",
+          targetRole: "Account",
+          targetIdentity: updated.customerPhone || updated.customerName,
+          linkText: "Track order",
+          action: {
+            type: "portal",
+            payload: "Account",
+            tab: "Orders",
+          },
+        });
+      }
+
       await createServerNotification({
-        title: `Order #${updated.id} Update: ${body.status.toUpperCase()}`,
-        message: `Your order from ${updated.businessName} is ${statusMessage}.`,
+        title: `📦 Order #${updated.id} Status: ${body.status.toUpperCase()}`,
+        message: `Order #${updated.id} for ${updated.customerName} has been updated to ${statusMessage}.`,
         type: "order",
-        targetRole: "Account",
-        targetIdentity: updated.customerPhone,
-        linkText: "Track order",
+        targetRole: "Business",
+        targetIdentity: updated.businessName,
+        linkText: "View order",
         action: {
           type: "portal",
-          payload: "Account",
+          payload: "Business",
           tab: "Orders",
         },
       });
     } catch (notifErr) {
-      console.warn("Failed to notify customer of order status:", notifErr);
+      console.warn("Failed to notify customer/business of order status:", notifErr);
     }
 
     return NextResponse.json({ success: true, order: updated }, { headers: noStoreHeaders });

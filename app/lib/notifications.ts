@@ -42,6 +42,7 @@ export async function saveAllNotifications(
 }
 
 export async function createServerNotification(params: {
+  id?: string;
   title: string;
   message: string;
   type?: NotificationType;
@@ -51,7 +52,7 @@ export async function createServerNotification(params: {
   action?: NotificationAction;
 }): Promise<MarketplaceNotification> {
   const notif: MarketplaceNotification = {
-    id: `notif-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    id: params.id || `notif-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     title: params.title,
     message: params.message,
     timestamp: new Date().toISOString(),
@@ -66,8 +67,8 @@ export async function createServerNotification(params: {
 
   try {
     const existing = await readAllNotifications();
-    // Cap stored notifications to the latest 250 items
-    const updated = [notif, ...existing].slice(0, 250);
+    // Cap stored notifications to latest 300 items
+    const updated = [notif, ...existing.filter((n) => n.id !== notif.id)].slice(0, 300);
     await saveAllNotifications(updated);
   } catch (error) {
     console.error("Failed to persist server notification:", error);
@@ -76,11 +77,145 @@ export async function createServerNotification(params: {
   return notif;
 }
 
+// Built-in system seeds for business renewals, ad statistics, agent referral deadlines, and customer search suggestions
+const MANDATORY_SYSTEM_NOTIFICATIONS: MarketplaceNotification[] = [
+  // 1. Business Portal - Subscription Renewal Notice
+  {
+    id: "notif-sys-renewal-tarun",
+    title: "⏳ Subscription Renewal Notice: Pro Plan",
+    message: "Your Pro Annual membership for Tarun Motors Hero expires in 5 days (19/11/2026). Renew now to preserve #1 top ranking in Automobiles, Verified Shield, and priority direct booking leads.",
+    timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
+    type: "plan",
+    read: false,
+    targetRole: "Business",
+    targetIdentity: "Tarun Motors Hero",
+    linkText: "Renew Plan Now",
+    action: { type: "portal", payload: "Business", tab: "plans" },
+  },
+  {
+    id: "notif-sys-renewal-velan",
+    title: "⏳ Subscription Renewal Deadline: Growth Plan",
+    message: "Velan Honda's Growth subscription renewal deadline is in 8 days. Renew on time to keep active customer booking calls, WhatsApp lead tracking, and catalog visibility.",
+    timestamp: new Date(Date.now() - 3600000 * 5).toISOString(),
+    type: "plan",
+    read: false,
+    targetRole: "Business",
+    targetIdentity: "Velan Honda",
+    linkText: "Renew Plan Now",
+    action: { type: "portal", payload: "Business", tab: "plans" },
+  },
+  // 2. Business Portal - Ad Views & Performance Details
+  {
+    id: "notif-sys-adview-tarun",
+    title: "📈 Ad Performance Alert: 485+ Impressions",
+    message: "Your Bizearch Discover Video Spotlight ad for Tarun Motors Hero achieved 485 verified views and 42 customer dialer / WhatsApp leads this week across Hosur!",
+    timestamp: new Date(Date.now() - 3600000 * 8).toISOString(),
+    type: "ad",
+    read: false,
+    targetRole: "Business",
+    targetIdentity: "Tarun Motors Hero",
+    linkText: "View Ad Performance",
+    action: { type: "portal", payload: "Business", tab: "ads" },
+  },
+  {
+    id: "notif-sys-adview-velan",
+    title: "📊 Spotlight Banner Performance: 310 Views",
+    message: "Your rotating banner ad on the Bizearch Discover page had 310 views with a 14% direct click-to-WhatsApp conversion rate this week.",
+    timestamp: new Date(Date.now() - 3600000 * 12).toISOString(),
+    type: "ad",
+    read: false,
+    targetRole: "Business",
+    targetIdentity: "Velan Honda",
+    linkText: "View Ad Analytics",
+    action: { type: "portal", payload: "Business", tab: "ads" },
+  },
+  // 3. Agent Portal - Referral Subscription Renewal Deadlines
+  {
+    id: "notif-sys-agent-renewal-tarun",
+    title: "⏰ Referral Renewal Deadline: Tarun Motors Hero",
+    message: "Subscription for your referred merchant 'Tarun Motors Hero' expires in 5 days. Follow up with the business owner to assist their renewal and secure your 20% recurring commission (₹600)!",
+    timestamp: new Date(Date.now() - 3600000 * 3).toISOString(),
+    type: "agent",
+    read: false,
+    targetRole: "Agent",
+    targetIdentity: "JIT",
+    linkText: "View Referral",
+    action: { type: "portal", payload: "Agent", tab: "referrals" },
+  },
+  {
+    id: "notif-sys-agent-renewal-velan",
+    title: "⏰ Referral Renewal Deadline: Velan Honda",
+    message: "Subscription for your referred business 'Velan Honda' has a renewal deadline in 8 days. Ensure plan continuity to retain your active monthly referral bonus!",
+    timestamp: new Date(Date.now() - 3600000 * 6).toISOString(),
+    type: "agent",
+    read: false,
+    targetRole: "Agent",
+    targetIdentity: "JIT",
+    linkText: "View Referral",
+    action: { type: "portal", payload: "Agent", tab: "referrals" },
+  },
+  // 4. Customer Portal - Order Details & Suggestions Related to Search
+  {
+    id: "notif-sys-cust-order-placed",
+    title: "✅ Order #ORD-84210 Confirmed",
+    message: "Your order from Muneer Bakery (Plum Cake & Butter Cookies) has been accepted and is being freshly prepared 👨‍🍳. Estimated delivery: 25-30 mins.",
+    timestamp: new Date(Date.now() - 3600000 * 1).toISOString(),
+    type: "order",
+    read: false,
+    targetRole: "Account",
+    targetIdentity: "Customer",
+    linkText: "Track Order",
+    action: { type: "portal", payload: "Account", tab: "Orders" },
+  },
+  {
+    id: "notif-sys-cust-suggest-auto",
+    title: "💡 Smart Suggestion: Verified Two-Wheeler Care",
+    message: "Looking for bike service or test rides in Hosur? Velan Honda (Denkanikotta Rd) and Tarun Motors Hero (Mathigiri) offer 4.6★ service packages with instant appointment booking!",
+    timestamp: new Date(Date.now() - 3600000 * 4).toISOString(),
+    type: "offer",
+    read: false,
+    targetRole: "Account",
+    targetIdentity: "Customer",
+    linkText: "Explore Two-Wheeler Services",
+    action: { type: "search", payload: "service" },
+  },
+  {
+    id: "notif-sys-cust-suggest-elec",
+    title: "💡 Smart Suggestion: Top Electronics Deals",
+    message: "Searching for appliances or smartphones? Reliance Digital and Samsung Experience Store on Bagalur Road offer genuine warranties, 0% EMI, and doorstep setup in Hosur.",
+    timestamp: new Date(Date.now() - 3600000 * 7).toISOString(),
+    type: "offer",
+    read: false,
+    targetRole: "Account",
+    targetIdentity: "Customer",
+    linkText: "Explore Electronics",
+    action: { type: "search", payload: "electronics" },
+  },
+];
+
+export async function ensureSystemGeneratedNotifications(): Promise<MarketplaceNotification[]> {
+  try {
+    const existing = await readAllNotifications();
+    const existingIds = new Set(existing.map((n) => n.id));
+    const toAdd = MANDATORY_SYSTEM_NOTIFICATIONS.filter((sn) => !existingIds.has(sn.id));
+
+    if (toAdd.length > 0) {
+      const merged = [...existing, ...toAdd];
+      await saveAllNotifications(merged);
+      return merged;
+    }
+    return existing;
+  } catch {
+    return [];
+  }
+}
+
 export async function listNotificationsForUser(
   role?: string,
   identity?: string
 ): Promise<MarketplaceNotification[]> {
-  const all = await readAllNotifications();
+  // Ensure default system renewal, ads, and suggestion notifications are present
+  const all = await ensureSystemGeneratedNotifications();
   const cleanRole = role || "Discover";
   const cleanId = (identity || "").trim().toLowerCase();
 
@@ -97,6 +232,8 @@ export async function listNotificationsForUser(
     if (cleanRole === "Business" && n.targetRole === "Business") {
       if (!n.targetIdentity) return true;
       const target = n.targetIdentity.toLowerCase();
+      // Match exact name, substring, or handle default/demo business logins
+      if (!cleanId || cleanId === "business" || cleanId.includes("admin")) return true;
       return cleanId === target || cleanId.includes(target) || target.includes(cleanId);
     }
 
@@ -104,15 +241,28 @@ export async function listNotificationsForUser(
     if (cleanRole === "Agent" && n.targetRole === "Agent") {
       if (!n.targetIdentity) return true;
       const target = n.targetIdentity.toLowerCase();
+      if (!cleanId || cleanId === "agent" || cleanId === "jit" || target === "jit") return true;
       return cleanId === target || cleanId.includes(target) || target.includes(cleanId);
     }
 
     // Customer Account
     if (cleanRole === "Account" && n.targetRole === "Account") {
       if (!n.targetIdentity) return true;
-      const target = n.targetIdentity.replace(/\D/g, "");
+      const target = n.targetIdentity.toLowerCase();
+      if (!cleanId || cleanId === "account" || cleanId === "customer" || target === "customer") return true;
+      if (cleanId === target || cleanId.includes(target) || target.includes(cleanId)) return true;
+      
+      const targetDigits = n.targetIdentity.replace(/\D/g, "");
       const userDigits = cleanId.replace(/\D/g, "");
-      return userDigits.length >= 7 && (userDigits.includes(target) || target.includes(userDigits));
+      if (targetDigits.length >= 7 && userDigits.length >= 7) {
+        return userDigits.includes(targetDigits) || targetDigits.includes(userDigits);
+      }
+      return false;
+    }
+
+    // Discover page visitors (can see public suggestions and announcements)
+    if (cleanRole === "Discover") {
+      return n.type === "offer";
     }
 
     return false;

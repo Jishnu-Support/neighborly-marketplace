@@ -4836,3 +4836,325 @@ html, body {
     max-width: none;
   }
 }
+
+
+/* ==========================================================================
+   Popup Video Ads & Cyclic Video Spotlight with 3s Bizearch Splash
+   ========================================================================== */
+
+/* 3-Second Bizearch Splash Screen Transition */
+.video-splash-screen {
+  position: relative;
+  width: 100%;
+  min-height: 200px;
+  height: 220px;
+  background: linear-gradient(135deg, #071e3d 0%, #0c2d58 50%, #04142b 100%);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  color: #ffffff;
+  overflow: hidden;
+  box-shadow: inset 0 0 30px rgba(0,0,0,0.4);
+  animation: splashFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes splashFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.video-splash-logo {
+  max-width: 220px;
+  max-height: 75px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
+  margin-bottom: 8px;
+  animation: splashLogoPulse 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes splashLogoPulse {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.04); }
+}
+
+.video-splash-tagline {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #f59e0b;
+  margin-bottom: 12px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+
+.video-splash-countdown-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(4px);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+}
+
+.video-splash-progress-track {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.video-splash-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b 0%, #10b981 100%);
+  transition: width 0.1s linear;
+}
+
+/* Cyclic Video Ad Navigation Dots & Counter */
+.video-cycle-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 4px 2px;
+}
+
+.video-cycle-dots {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.video-cycle-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.video-cycle-dot.active {
+  background: #0284c7;
+  width: 18px;
+  border-radius: 4px;
+}
+
+.video-cycle-badge {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 2px 7px;
+  border-radius: 6px;
+}
+
+/* Popup Video Ad Modal for Discover Page */
+.popup-video-ad-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 20, 35, 0.78);
+  backdrop-filter: blur(6px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: popupOverlayFadeIn 0.25s ease-out;
+}
+
+@keyframes popupOverlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.popup-video-ad-modal {
+  position: relative;
+  background: #ffffff;
+  border-radius: 14px;
+  max-width: 620px;
+  width: 100%;
+  max-height: calc(100vh - 32px);
+  overflow: hidden;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  animation: popupModalScaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes popupModalScaleIn {
+  from { opacity: 0; transform: scale(0.92) translateY(16px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.popup-video-ad-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: #0f172a;
+  color: #ffffff;
+  border-bottom: 1px solid #1e293b;
+}
+
+.popup-video-ad-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.popup-video-ad-badge.search-matched {
+  color: #38bdf8;
+}
+
+.popup-skip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: not-allowed;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.popup-skip-btn.locked {
+  background: rgba(255, 255, 255, 0.12);
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.popup-skip-btn.active {
+  background: #dc2626;
+  color: #ffffff;
+  border: 1px solid #ef4444;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+  animation: skipBtnPulse 1s infinite alternate;
+}
+
+@keyframes skipBtnPulse {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.05); }
+}
+
+.popup-skip-btn.active:hover {
+  background: #b91c1c;
+}
+
+.popup-video-player-wrap {
+  position: relative;
+  width: 100%;
+  background: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-height: 380px;
+  overflow: hidden;
+}
+
+.popup-video-element {
+  width: 100%;
+  max-height: 360px;
+  object-fit: contain;
+  display: block;
+}
+
+.popup-mandatory-timer-bar-track {
+  width: 100%;
+  height: 4px;
+  background: #e2e8f0;
+}
+
+.popup-mandatory-timer-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b 0%, #10b981 100%);
+  transition: width 0.25s linear;
+}
+
+.popup-video-ad-body {
+  padding: 14px 18px 16px;
+  background: #ffffff;
+}
+
+.popup-video-ad-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 4px;
+}
+
+.popup-video-ad-desc {
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.5;
+  margin: 0 0 12px;
+}
+
+.popup-video-ad-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.popup-cta-btn {
+  background: #00438b;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s ease;
+}
+
+.popup-cta-btn:hover {
+  background: #00336e;
+}
+
+.popup-timer-indicator {
+  font-size: 11px;
+  font-weight: 700;
+  color: #d97706;
+}
+
+@media (max-width: 640px) {
+  .popup-video-ad-modal {
+    max-width: 100%;
+    border-radius: 12px;
+  }
+  .popup-video-player-wrap {
+    max-height: 250px;
+  }
+  .popup-video-element {
+    max-height: 250px;
+  }
+  .popup-video-ad-body {
+    padding: 12px 14px;
+  }
+}

@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { defaultAdConfig, type AdConfig } from "./ad-config.shared";
+import { defaultAdConfig, defaultPopupAdConfig, defaultVideoSettings, defaultInitialVideoAds, type AdConfig, type VideoAd, type VideoAdSettings, type PopupAdConfig } from "./ad-config.shared";
 import { resolveStorePath } from "./storage-paths";
 import { saveActivityLog } from "./activity-logs";
 import { saveAdActivityLog } from "./ad-activity-logs";
@@ -45,10 +45,52 @@ export function normalizeAdConfig(input: unknown): AdConfig {
     title: typeof rawVideo.title === "string" ? rawVideo.title.trim().slice(0, 120) : "",
     description: typeof rawVideo.description === "string" ? rawVideo.description.trim().slice(0, 300) : "",
     sourceUrl: typeof rawVideo.sourceUrl === "string" ? rawVideo.sourceUrl.trim() : "",
-    posterUrl: typeof rawVideo.posterUrl === "string" ? rawVideo.posterUrl.trim() : "",
+    posterUrl: typeof rawVideo.posterUrl === "string" && rawVideo.posterUrl.trim() ? rawVideo.posterUrl.trim() : "/bizearch-splash-banner.png",
     callToAction: typeof rawVideo.callToAction === "string" && rawVideo.callToAction.trim() ? rawVideo.callToAction.trim().slice(0, 60) : "Learn More",
     viewsCount: typeof rawVideo.viewsCount === "number" ? rawVideo.viewsCount : 0,
     locality: typeof rawVideo.locality === "string" ? rawVideo.locality : undefined,
+    category: typeof rawVideo.category === "string" ? rawVideo.category : undefined,
+  };
+
+  // 3b. Multiple cyclic video ads
+  const videoAds: VideoAd[] = Array.isArray(raw.videoAds) && raw.videoAds.length > 0
+    ? raw.videoAds
+        .filter((item): item is Record<string, unknown> => Boolean(item && typeof item === "object"))
+        .map((item, idx) => ({
+          id: typeof item.id === "string" && item.id.trim() ? item.id.trim() : `video-ad-${idx + 1}`,
+          adBookingId: typeof item.adBookingId === "string" ? item.adBookingId.trim() : undefined,
+          businessName: typeof item.businessName === "string" ? item.businessName.trim() : undefined,
+          title: typeof item.title === "string" ? item.title.trim().slice(0, 120) : "Bizearch Video Spotlight",
+          description: typeof item.description === "string" ? item.description.trim().slice(0, 300) : "",
+          sourceUrl: typeof item.sourceUrl === "string" ? item.sourceUrl.trim() : "",
+          posterUrl: typeof item.posterUrl === "string" && item.posterUrl.trim() ? item.posterUrl.trim() : "/bizearch-splash-banner.png",
+          callToAction: typeof item.callToAction === "string" && item.callToAction.trim() ? item.callToAction.trim().slice(0, 60) : "Learn More",
+          keywords: Array.isArray(item.keywords) ? item.keywords.filter((k): k is string => typeof k === "string").map((k) => k.trim()) : undefined,
+          category: typeof item.category === "string" ? item.category.trim() : undefined,
+          viewsCount: typeof item.viewsCount === "number" ? item.viewsCount : 0,
+          locality: typeof item.locality === "string" ? item.locality : undefined,
+        }))
+    : (videoAd.sourceUrl || videoAd.posterUrl ? [videoAd] : defaultInitialVideoAds);
+
+  // 3c. Video settings (splash screen & timing)
+  const rawVidSettings = raw.videoSettings && typeof raw.videoSettings === "object" ? (raw.videoSettings as Record<string, unknown>) : {};
+  const videoSettings: VideoAdSettings = {
+    splashDurationSeconds: typeof rawVidSettings.splashDurationSeconds === "number" && rawVidSettings.splashDurationSeconds >= 1 ? Math.min(30, Math.round(rawVidSettings.splashDurationSeconds)) : defaultVideoSettings.splashDurationSeconds,
+    splashImageUrl: typeof rawVidSettings.splashImageUrl === "string" && rawVidSettings.splashImageUrl.trim() ? rawVidSettings.splashImageUrl.trim() : defaultVideoSettings.splashImageUrl,
+    splashTagline: typeof rawVidSettings.splashTagline === "string" && rawVidSettings.splashTagline.trim() ? rawVidSettings.splashTagline.trim().slice(0, 100) : defaultVideoSettings.splashTagline,
+    autoCycleIntervalSeconds: typeof rawVidSettings.autoCycleIntervalSeconds === "number" && rawVidSettings.autoCycleIntervalSeconds >= 3 ? Math.round(rawVidSettings.autoCycleIntervalSeconds) : defaultVideoSettings.autoCycleIntervalSeconds,
+  };
+
+  // 3d. Popup video ads config
+  const rawPopup = raw.popupAdConfig && typeof raw.popupAdConfig === "object" ? (raw.popupAdConfig as Record<string, unknown>) : {};
+  const popupAdConfig: PopupAdConfig = {
+    enabled: rawPopup.enabled !== false,
+    mandatoryWatchSeconds: typeof rawPopup.mandatoryWatchSeconds === "number" && rawPopup.mandatoryWatchSeconds >= 1 ? Math.min(120, Math.round(rawPopup.mandatoryWatchSeconds)) : defaultPopupAdConfig.mandatoryWatchSeconds,
+    firstAdDelaySeconds: typeof rawPopup.firstAdDelaySeconds === "number" && rawPopup.firstAdDelaySeconds >= 5 ? Math.round(rawPopup.firstAdDelaySeconds) : defaultPopupAdConfig.firstAdDelaySeconds,
+    secondAdDelaySeconds: typeof rawPopup.secondAdDelaySeconds === "number" && rawPopup.secondAdDelaySeconds >= 10 ? Math.round(rawPopup.secondAdDelaySeconds) : defaultPopupAdConfig.secondAdDelaySeconds,
+    thirdAdDelaySeconds: typeof rawPopup.thirdAdDelaySeconds === "number" && rawPopup.thirdAdDelaySeconds >= 10 ? Math.round(rawPopup.thirdAdDelaySeconds) : defaultPopupAdConfig.thirdAdDelaySeconds,
+    repeatIntervalSeconds: typeof rawPopup.repeatIntervalSeconds === "number" && rawPopup.repeatIntervalSeconds >= 10 ? Math.round(rawPopup.repeatIntervalSeconds) : defaultPopupAdConfig.repeatIntervalSeconds,
+    searchTriggerEnabled: rawPopup.searchTriggerEnabled !== false,
   };
 
   // 4. Audio ad (optional or populated)
@@ -62,7 +104,10 @@ export function normalizeAdConfig(input: unknown): AdConfig {
   return {
     tickerMessages,
     imageAds,
-    videoAd,
+    videoAd: videoAds[0] || videoAd,
+    videoAds,
+    videoSettings,
+    popupAdConfig,
     audioAd,
   };
 }
