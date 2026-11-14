@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { AUTH_COOKIE, verifySessionToken } from "@/app/lib/auth";
-import { approveAgentPartner, createAgentPartner, listAgentPartners, rejectAgentPartner, toggleAgentActive } from "@/app/lib/agents";
+import { approveAgentPartner, createAgentPartner, listAgentPartners, rejectAgentPartner, toggleAgentActive, updateAgentRatings } from "@/app/lib/agents";
 import { saveActivityLog } from "@/app/lib/activity-logs";
 import { createServerNotification } from "@/app/lib/notifications";
 
@@ -47,7 +47,52 @@ export async function POST(request: Request) {
       email?: string;
       password?: string;
       referralCode?: string;
+      ratings?: {
+        businessFeedback: number;
+        registrationsCount: number;
+        registrationRenewal: number;
+        feedbackNote?: string;
+        registrationsNote?: string;
+        renewalNote?: string;
+      };
     };
+
+    if (body.action === "update_ratings" && typeof body.id === "string" && body.ratings) {
+      const adminIdentity = `${session.accessLevel || "Admin"}: ${session.identity}`;
+      const updated = await updateAgentRatings(body.id, body.ratings, adminIdentity);
+      if (!updated) {
+        return NextResponse.json({ error: "Agent partner not found." }, { status: 404, headers: noStore });
+      }
+
+      try {
+        await saveActivityLog({
+          action: `Agent ratings updated: ${updated.name} (Overall: ${updated.ratings?.overall}%)`,
+          category: "Admin",
+          actorName: session.identity || "Super Admin",
+          actorRole: session.accessLevel || "Super Admin",
+          details: `Field agent ratings updated: Business Feedback: ${updated.ratings?.businessFeedback}%, Registrations Count: ${updated.ratings?.registrationsCount}%, Renewal: ${updated.ratings?.registrationRenewal}%. Overall score: ${updated.ratings?.overall}%.`,
+        });
+      } catch {}
+
+      try {
+        await createServerNotification({
+          title: `⭐ Agent Performance Rating: ${updated.ratings?.overall}%`,
+          message: `Your agent performance ratings have been evaluated by Super Admin. Business Feedback: ${updated.ratings?.businessFeedback}%, Registrations: ${updated.ratings?.registrationsCount}%, Renewal: ${updated.ratings?.registrationRenewal}%.`,
+          type: "agent",
+          targetRole: "Agent",
+          targetIdentity: updated.referralCode || updated.phone,
+          linkText: "View My Ratings",
+          action: {
+            type: "portal",
+            payload: "Agent",
+            tab: "Overview",
+          },
+        });
+      } catch {}
+
+      const agents = await listAgentPartners();
+      return NextResponse.json({ success: true, agent: updated, agents, count: agents.length }, { headers: noStore });
+    }
 
     if (body.action === "approve" && typeof body.id === "string") {
       const adminIdentity = `${session.accessLevel || "Admin"}: ${session.identity}`;

@@ -20,6 +20,7 @@ export async function GET(request: Request) {
             name: agent.name,
             phone: agent.phone,
             referralCode: agent.referralCode || "JIT",
+            ratings: agent.ratings,
           }
         : null,
     },
