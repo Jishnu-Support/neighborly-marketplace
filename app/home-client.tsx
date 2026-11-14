@@ -5,7 +5,7 @@ import type { JitCertificateData } from "./components/JitCertificate";
 
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CompanyAccessLevel } from "./lib/auth";
-import { defaultAdConfig, defaultPopupAdConfig, defaultVideoSettings, defaultInitialVideoAds, type AdConfig, type VideoAd, type VideoAdSettings, type PopupAdConfig } from "./lib/ad-config.shared";
+import { defaultAdConfig, defaultPopupAdConfig, defaultVideoSettings, defaultInitialVideoAds, defaultTickerMessages, defaultInitialImageAds, type AdConfig, type ImageAd, type VideoAd, type VideoAdSettings, type PopupAdConfig } from "./lib/ad-config.shared";
 import { type AdBookingRequest, resolveScheduledAds, findNearestNeighborhood, NEIGHBORHOOD_CENTROIDS, calculateDistanceMeters } from "./lib/ad-booking.shared";
 import {
   AdBookingDialog,
@@ -3529,6 +3529,14 @@ export default function Home() {
         setRawAdConfig(config);
         setAdConfig(config);
         setActiveAd(0);
+        fetch("/api/ads", { cache: "no-store" })
+          .then(async (response) => {
+            if (!response.ok) return;
+            const result = (await response.json()) as { config?: AdConfig; rawConfig?: AdConfig; bookings?: AdBookingRequest[] };
+            if (result.config) setAdConfig(result.config);
+            if (Array.isArray(result.bookings)) setAdBookings(result.bookings);
+          })
+          .catch(() => undefined);
       }
     };
     window.addEventListener("neighborly-ads-updated", onAdsUpdated);
@@ -27042,30 +27050,85 @@ function CompanyAdManager() {
   useEffect(() => { configRef.current = config; }, [config]);
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/company/ads", { cache: "no-store", credentials: "include" }).then(async (response) => {
-      const result = await response.json() as { config?: AdConfig; error?: string };
-      if (!response.ok || !result.config) throw new Error(result.error || "Could not load ads.");
-      if (!cancelled) {
-        const c = result.config;
-        if (!c.videoAds || c.videoAds.length === 0) {
-          c.videoAds = defaultInitialVideoAds;
+    fetch("/api/company/ads", { cache: "no-store", credentials: "include" })
+      .then(async (response) => {
+        const result = (await response.json()) as { config?: AdConfig; error?: string };
+        if (!response.ok || !result.config) throw new Error(result.error || "Could not load ads.");
+        if (!cancelled) {
+          const c = result.config;
+          if (!c.tickerMessages || c.tickerMessages.length === 0) {
+            c.tickerMessages = defaultTickerMessages;
+          }
+          if (!c.imageAds || c.imageAds.length === 0) {
+            c.imageAds = defaultInitialImageAds;
+          }
+          if (!c.videoAds || c.videoAds.length === 0) {
+            c.videoAds = defaultInitialVideoAds;
+          }
+          if (!c.videoSettings) {
+            c.videoSettings = defaultVideoSettings;
+          }
+          if (!c.popupAdConfig) {
+            c.popupAdConfig = defaultPopupAdConfig;
+          }
+          configRef.current = c;
+          setConfig(c);
         }
-        if (!c.videoSettings) {
-          c.videoSettings = defaultVideoSettings;
-        }
-        if (!c.popupAdConfig) {
-          c.popupAdConfig = defaultPopupAdConfig;
-        }
-        configRef.current = c;
-        setConfig(c);
-      }
-    }).catch((reason) => { if (!cancelled) setError(reason instanceof Error ? reason.message : "Could not load ads."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
+      })
+      .catch((reason) => {
+        if (!cancelled) setError(reason instanceof Error ? reason.message : "Could not load ads.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  function updateImage(index: number, key: keyof AdConfig["imageAds"][number], value: string) {
-    setConfig((current) => ({ ...current, imageAds: current.imageAds.map((ad, i) => i === index ? { ...ad, [key]: value } : ad) }));
+  function updateImage(index: number, key: keyof ImageAd, value: any) {
+    setConfig((current) => ({
+      ...current,
+      imageAds: current.imageAds.map((ad, i) => (i === index ? { ...ad, [key]: value } : ad)),
+    }));
+  }
+
+  function addImageAd() {
+    setConfig((current) => {
+      if (current.imageAds.length >= 8) return current;
+      const newAd: ImageAd = {
+        id: `img-ad-${Date.now()}`,
+        businessName: "Bizearch Local Partner",
+        label: "Bizearch Local Partner • Hosur",
+        title: "Discover Local Products & Special Services",
+        image: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=900&q=85",
+        tone: "gold",
+        locality: "Bagalur Road",
+        category: "Everyday services",
+        distanceKm: 1.2,
+        viewsCount: 0,
+      };
+      return { ...current, imageAds: [...current.imageAds, newAd] };
+    });
+  }
+
+  function removeImageAd(index: number) {
+    setConfig((current) => ({
+      ...current,
+      imageAds: current.imageAds.filter((_, i) => i !== index),
+    }));
+  }
+
+  function moveImageAd(index: number, direction: -1 | 1) {
+    setConfig((current) => {
+      const newIndex = index + direction;
+      if (newIndex < 0 || newIndex >= current.imageAds.length) return current;
+      const updated = [...current.imageAds];
+      const temp = updated[index];
+      updated[index] = updated[newIndex];
+      updated[newIndex] = temp;
+      return { ...current, imageAds: updated };
+    });
   }
 
   function updateVideoAd(index: number, key: keyof VideoAd, value: any) {
@@ -27092,7 +27155,7 @@ function CompanyAdManager() {
         businessName: "Bizearch Local Partner",
         title: "Exclusive Local Spotlight",
         description: "Explore Hosur's top-rated products, verified service appointments, and special seasonal savings.",
-        sourceUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+        sourceUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
         posterUrl: "/bizearch-splash-banner.png",
         callToAction: "Discover Now",
         keywords: ["general", "deals", "hosur"],
@@ -27121,6 +27184,46 @@ function CompanyAdManager() {
     });
   }
 
+  function moveVideoAd(index: number, direction: -1 | 1) {
+    setConfig((current) => {
+      const currentAds = current.videoAds && current.videoAds.length > 0 ? [...current.videoAds] : [...defaultInitialVideoAds];
+      const newIndex = index + direction;
+      if (newIndex < 0 || newIndex >= currentAds.length) return current;
+      const updated = [...currentAds];
+      const temp = updated[index];
+      updated[index] = updated[newIndex];
+      updated[newIndex] = temp;
+      return {
+        ...current,
+        videoAds: updated,
+        videoAd: updated[0] || current.videoAd,
+      };
+    });
+  }
+
+  function restoreRecommendedHosurAds() {
+    const fresh: AdConfig = {
+      tickerMessages: [...defaultTickerMessages],
+      imageAds: [...defaultInitialImageAds],
+      videoAd: defaultInitialVideoAds[0],
+      videoAds: [...defaultInitialVideoAds],
+      videoSettings: { ...defaultVideoSettings },
+      popupAdConfig: { ...defaultPopupAdConfig },
+      audioAd: { title: "", description: "", sourceUrl: "" },
+    };
+    setConfig(fresh);
+    configRef.current = fresh;
+    setTestNotification("✨ Loaded recommended Hosur showcase creatives! Click 'Save advertising settings' to publish.");
+    setTimeout(() => setTestNotification(""), 6000);
+  }
+
+  function appendTickerMessage(msg: string) {
+    setConfig((current) => {
+      if (current.tickerMessages.length >= 10) return current;
+      return { ...current, tickerMessages: [...current.tickerMessages, msg] };
+    });
+  }
+
   function updateVideoSettings<K extends keyof VideoAdSettings>(key: K, value: VideoAdSettings[K]) {
     setConfig((current) => ({
       ...current,
@@ -27142,36 +27245,54 @@ function CompanyAdManager() {
   }
 
   async function persistConfig(nextConfig: AdConfig): Promise<boolean> {
-    setSaving(true); setError(""); setSaved(false);
+    setSaving(true);
+    setError("");
+    setSaved(false);
     try {
-      const response = await fetch("/api/company/ads", { method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ config: nextConfig }) });
-      const result = await response.json() as { config?: AdConfig; error?: string };
+      const response = await fetch("/api/company/ads", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ config: nextConfig }),
+      });
+      const result = (await response.json()) as { config?: AdConfig; error?: string };
       if (!response.ok || !result.config) throw new Error(result.error || "Could not save advertising settings.");
       configRef.current = result.config;
       setConfig(result.config);
       setSaved(true);
       window.dispatchEvent(new CustomEvent("neighborly-ads-updated", { detail: result.config }));
+      setTimeout(() => setSaved(false), 5000);
       return true;
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Could not save advertising settings.");
       return false;
-    } finally { setSaving(false); }
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function postMedia(file: File, kind: "image" | "video" | "audio") {
-    const body = new FormData(); body.append("file", file); body.append("kind", kind);
+    const body = new FormData();
+    body.append("file", file);
+    body.append("kind", kind);
     const response = await fetch("/api/company/ads/media", { method: "POST", credentials: "include", body });
-    const result = await response.json() as { url?: string; error?: string };
+    const result = (await response.json()) as { url?: string; error?: string };
     if (!response.ok || !result.url) throw new Error(result.error || "Could not upload this file.");
     return result.url;
   }
 
-  async function uploadSelected(event: React.ChangeEvent<HTMLInputElement>, kind: "image" | "video" | "audio", applyUpload: (url: string, current: AdConfig) => AdConfig) {
+  async function uploadSelected(
+    event: React.ChangeEvent<HTMLInputElement>,
+    kind: "image" | "video" | "audio",
+    applyUpload: (url: string, current: AdConfig) => AdConfig
+  ) {
     const file = event.currentTarget.files?.[0];
     event.currentTarget.value = "";
     if (!file) return;
     if (uploading) return;
-    setUploading(kind); setError(""); setSaved(false);
+    setUploading(kind);
+    setError("");
+    setSaved(false);
     try {
       let videoDetails: { durationSeconds: number; posterFile: File | null } | null = null;
       if (kind === "video") {
@@ -27192,9 +27313,14 @@ function CompanyAdManager() {
       configRef.current = nextConfig;
       setConfig(nextConfig);
       const persisted = await persistConfig(nextConfig);
-      if (!persisted) setError((current) => current || "The upload finished, but it could not be published. Use Save advertising settings to retry.");
-    } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not upload this file."); }
-    finally { setUploading(""); }
+      if (!persisted) {
+        setError((current) => current || "The upload finished, but it could not be published. Use Save advertising settings to retry.");
+      }
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Could not upload this file.");
+    } finally {
+      setUploading("");
+    }
   }
 
   async function save(event: React.FormEvent<HTMLFormElement>) {
@@ -27206,494 +27332,1089 @@ function CompanyAdManager() {
   const currentVideoSettings = config.videoSettings || defaultVideoSettings;
   const currentPopupConfig = config.popupAdConfig || defaultPopupAdConfig;
 
-  if (loading) return <section className="panel tab-panel"><p>Loading advertising settings...</p></section>;
-  return <form className="panel tab-panel product-form company-ad-manager" onSubmit={save}>
-    <div className="eyebrow">PLATFORM CONTENT</div>
-    <h2>Manage advertisements</h2>
-    <p>Super Admin control center: manage scrolling announcement tickers, rotating banner image ads, cyclic video spotlight ads with 3-second Bizearch splash screen bumpers, and Discover page 15-second mandatory popup video ads. Changes publish across all customer portals.</p>
+  if (loading) {
+    return (
+      <section className="panel tab-panel">
+        <p style={{ padding: "24px", color: "#64748b" }}>Loading advertising settings...</p>
+      </section>
+    );
+  }
 
-    {/* Section 1: Scrolling ticker */}
-    <section>
-      <h3>Scrolling announcement ticker</h3>
-      <p>One message per line, up to six messages. The text scrolls continuously across the top header.</p>
-      <textarea
-        rows={Math.max(3, config.tickerMessages.length)}
-        value={config.tickerMessages.join("\n")}
-        onChange={(event) => setConfig((current) => ({ ...current, tickerMessages: event.target.value.split(/\r?\n/).slice(0, 6) }))}
-        maxLength={900}
-        aria-label="Scrolling announcement messages"
-      />
-    </section>
-
-    {/* Section 2: Rotating image ads */}
-    <section>
-      <div className="panel-heading">
+  return (
+    <form className="panel tab-panel product-form company-ad-manager" onSubmit={save} style={{ gap: "24px" }}>
+      {/* STICKY TOP ACTION BAR */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: "12px",
+          background: "#ffffff",
+          padding: "16px 20px",
+          borderRadius: "12px",
+          border: "1px solid #d4e3d3",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+        }}
+      >
         <div>
-          <h3>Rotating image advertisements ({config.imageAds.length}/8)</h3>
-          <p>Add up to eight image creatives. Upload an image file for each ad.</p>
+          <div style={{ fontSize: "11px", fontWeight: 800, color: "#166534", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            PLATFORM CONTENT &amp; ADS MANAGEMENT
+          </div>
+          <h2 style={{ fontSize: "20px", fontWeight: 800, color: "#0f172a", margin: "2px 0 0" }}>
+            Manage Platform Advertisements
+          </h2>
+          <p style={{ fontSize: "12px", color: "#64748b", margin: "2px 0 0" }}>
+            Super Admin control center: Announcement tickers, rotating billboard images, cyclic spotlight video ads, 3s Bizearch transitions, and 15s Discover popups.
+          </p>
         </div>
-        <button
-          className="outline-button"
-          type="button"
-          disabled={config.imageAds.length >= 8 || Boolean(uploading)}
-          onClick={() => setConfig((current) => ({ ...current, imageAds: [...current.imageAds, { label: "New local ad", title: "Discover this business", image: "", tone: "community" }] }))}
-        >
-          + Add image ad
-        </button>
+
+        <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+          <button
+            type="button"
+            className="outline-button"
+            onClick={restoreRecommendedHosurAds}
+            style={{ fontSize: "12px", padding: "8px 14px", display: "inline-flex", alignItems: "center", gap: "6px" }}
+            title="Populate recommended Hosur store ads, tickers, and videos"
+          >
+            <span>✨</span> Restore Recommended Defaults
+          </button>
+
+          <button
+            type="submit"
+            className="primary-button"
+            disabled={saving || Boolean(uploading)}
+            style={{ fontSize: "12px", padding: "9px 20px", minWidth: "180px", fontWeight: 800 }}
+          >
+            {saving ? "Saving settings..." : "💾 Save Advertising Settings"}
+          </button>
+        </div>
       </div>
-      {config.imageAds.map((ad, index) => (
-        <div className="panel ad-manager-card" key={`managed-ad-${index}`}>
-          <h4>Image ad {index + 1}</h4>
+
+      {saved && (
+        <div
+          style={{
+            background: "#dcfce7",
+            border: "1px solid #86efac",
+            color: "#166534",
+            padding: "12px 18px",
+            borderRadius: "8px",
+            fontSize: "13px",
+            fontWeight: 700,
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          <span>✓</span> All advertising settings, tickers, rotating images, video cycles, and popup configurations saved and published across all customer portals!
+        </div>
+      )}
+
+      {error && (
+        <div
+          style={{
+            background: "#fee2e2",
+            border: "1px solid #fca5a5",
+            color: "#991b1b",
+            padding: "12px 18px",
+            borderRadius: "8px",
+            fontSize: "13px",
+            fontWeight: 700,
+          }}
+        >
+          ✕ {error}
+        </div>
+      )}
+
+      {testNotification && (
+        <div
+          style={{
+            background: "#eff6ff",
+            border: "1px solid #bfdbfe",
+            color: "#1e40af",
+            padding: "12px 18px",
+            borderRadius: "8px",
+            fontSize: "13px",
+            fontWeight: 700,
+          }}
+        >
+          {testNotification}
+        </div>
+      )}
+
+      {/* SECTION 1: SCROLLING ANNOUNCEMENT TICKER */}
+      <section style={{ background: "#ffffff", padding: "20px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "14px", flexWrap: "wrap", gap: "10px" }}>
+          <div>
+            <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#0f172a", margin: "0 0 4px" }}>
+              1. Scrolling Announcement Ticker (Top Header Marquee)
+            </h3>
+            <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
+              One message per line (up to 10 messages). Scrolls continuously across the top header on customer Discover portals.
+            </p>
+          </div>
+          <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+            <button
+              type="button"
+              className="outline-button"
+              onClick={() => appendTickerMessage("🌟 Welcome to Bizearch.in — Discover verified local businesses across Hosur")}
+              style={{ fontSize: "11px", padding: "5px 10px" }}
+            >
+              + Welcome Message
+            </button>
+            <button
+              type="button"
+              className="outline-button"
+              onClick={() => appendTickerMessage("📍 Support local shops: Explore automotive, dining, health & services nearby")}
+              style={{ fontSize: "11px", padding: "5px 10px" }}
+            >
+              + Local Shops Notice
+            </button>
+            <button
+              type="button"
+              className="outline-button"
+              onClick={() => appendTickerMessage("🚨 24/7 Emergency Assistance: Tap the SOS button anytime for instant local emergency help")}
+              style={{ fontSize: "11px", padding: "5px 10px" }}
+            >
+              + Emergency SOS Alert
+            </button>
+          </div>
+        </div>
+
+        <textarea
+          rows={Math.max(4, config.tickerMessages.length)}
+          value={config.tickerMessages.join("\n")}
+          onChange={(event) =>
+            setConfig((current) => ({
+              ...current,
+              tickerMessages: event.target.value.split(/\r?\n/).filter((s) => s.trim().length > 0).slice(0, 10),
+            }))
+          }
+          maxLength={1500}
+          placeholder="Enter one announcement message per line..."
+          aria-label="Scrolling announcement messages"
+          style={{ width: "100%", padding: "10px 12px", fontSize: "13px", lineHeight: "1.6", fontFamily: "inherit" }}
+        />
+
+        {/* Live Ticker Simulation Preview */}
+        {config.tickerMessages.length > 0 && (
+          <div style={{ marginTop: "12px" }}>
+            <span style={{ fontSize: "11px", fontWeight: 700, color: "#166534", textTransform: "uppercase" }}>
+              Live Ticker Preview:
+            </span>
+            <div
+              style={{
+                marginTop: "4px",
+                background: "#163a23",
+                color: "#f7fbf5",
+                padding: "8px 16px",
+                borderRadius: "6px",
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+                fontSize: "12px",
+                fontWeight: 600,
+                display: "flex",
+                gap: "24px",
+                alignItems: "center",
+              }}
+            >
+              {config.tickerMessages.map((msg, i) => (
+                <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: "10px" }}>
+                  <span>{msg}</span>
+                  <i style={{ color: "#f59e0b", fontStyle: "normal" }}>❋</i>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* SECTION 2: ROTATING IMAGE ADVERTISEMENTS */}
+      <section style={{ background: "#ffffff", padding: "20px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px", flexWrap: "wrap", gap: "10px" }}>
+          <div>
+            <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#0f172a", margin: "0 0 4px" }}>
+              2. Rotating Image Advertisements ({config.imageAds.length}/8)
+            </h3>
+            <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
+              High-impact billboard advertisements appearing in the right sidebar and mobile feed with direct Store Profile, WhatsApp, and Call buttons.
+            </p>
+          </div>
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+            {config.imageAds.length === 0 && (
+              <button
+                type="button"
+                className="outline-button"
+                onClick={() => setConfig((c) => ({ ...c, imageAds: [...defaultInitialImageAds] }))}
+                style={{ fontSize: "12px", padding: "7px 14px", fontWeight: 700 }}
+              >
+                ✨ Populate Hosur Showcase Ads
+              </button>
+            )}
+            <button
+              className="primary-button"
+              type="button"
+              disabled={config.imageAds.length >= 8 || Boolean(uploading)}
+              onClick={addImageAd}
+              style={{ fontSize: "12px", padding: "7px 16px" }}
+            >
+              + Add Image Ad
+            </button>
+          </div>
+        </div>
+
+        {config.imageAds.length === 0 ? (
+          <div
+            style={{
+              padding: "30px",
+              textAlign: "center",
+              background: "#f8fafc",
+              borderRadius: "8px",
+              border: "1px dashed #cbd5e1",
+            }}
+          >
+            <p style={{ color: "#64748b", margin: "0 0 12px", fontSize: "13px" }}>
+              No image advertisements currently configured. Add an ad or populate default Hosur partner showcases.
+            </p>
+            <button
+              type="button"
+              className="outline-button"
+              onClick={() => setConfig((c) => ({ ...c, imageAds: [...defaultInitialImageAds] }))}
+              style={{ fontSize: "12px", padding: "7px 16px", fontWeight: 700 }}
+            >
+              ✨ Populate Hosur Partner Ads
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: "grid", gap: "16px" }}>
+            {config.imageAds.map((ad, index) => (
+              <div
+                key={ad.id || `image-ad-card-${index}`}
+                style={{
+                  background: "#f8fafc",
+                  borderRadius: "10px",
+                  border: "1px solid #e2e8f0",
+                  padding: "16px",
+                  display: "grid",
+                  gap: "14px",
+                }}
+              >
+                {/* Card Header */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px", borderBottom: "1px solid #e2e8f0", paddingBottom: "10px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span
+                      style={{
+                        background: "#166534",
+                        color: "#ffffff",
+                        padding: "3px 10px",
+                        borderRadius: "12px",
+                        fontSize: "11px",
+                        fontWeight: 800,
+                      }}
+                    >
+                      Image Ad #{index + 1}
+                    </span>
+                    <span
+                      style={{
+                        background: "#f1f5f9",
+                        color: "#475569",
+                        padding: "2px 8px",
+                        borderRadius: "10px",
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        border: "1px solid #cbd5e1",
+                      }}
+                    >
+                      Theme: {ad.tone || "gold"}
+                    </span>
+                    <span
+                      style={{
+                        background: "#e8f5e9",
+                        color: "#166534",
+                        padding: "2px 8px",
+                        borderRadius: "10px",
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        border: "1px solid #bbf7d0",
+                      }}
+                    >
+                      👁️ {(ad.viewsCount || 0).toLocaleString("en-IN")} views
+                    </span>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "6px" }}>
+                    {index > 0 && (
+                      <button
+                        type="button"
+                        className="outline-button"
+                        onClick={() => moveImageAd(index, -1)}
+                        style={{ padding: "4px 8px", fontSize: "11px" }}
+                        title="Move ad up in rotation"
+                      >
+                        ↑ Move Up
+                      </button>
+                    )}
+                    {index < config.imageAds.length - 1 && (
+                      <button
+                        type="button"
+                        className="outline-button"
+                        onClick={() => moveImageAd(index, 1)}
+                        style={{ padding: "4px 8px", fontSize: "11px" }}
+                        title="Move ad down in rotation"
+                      >
+                        ↓ Move Down
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="outline-button"
+                      onClick={() => removeImageAd(index)}
+                      style={{ padding: "4px 8px", fontSize: "11px", color: "#dc2626", borderColor: "#fca5a5" }}
+                      title="Remove this ad creative"
+                    >
+                      ✕ Remove
+                    </button>
+                  </div>
+                </div>
+
+                {/* Form Inputs Grid */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "12px" }}>
+                  <label>
+                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Headline / Offer Title</span>
+                    <input
+                      value={ad.title}
+                      maxLength={120}
+                      placeholder="e.g. Special Neighborhood Educational Offer"
+                      onChange={(e) => updateImage(index, "title", e.target.value)}
+                    />
+                  </label>
+
+                  <label>
+                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Sponsor / Business Name</span>
+                    <input
+                      value={ad.businessName || ""}
+                      maxLength={100}
+                      placeholder="e.g. Jishnu Learning Labs"
+                      onChange={(e) => updateImage(index, "businessName", e.target.value)}
+                    />
+                  </label>
+
+                  <label>
+                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Eyebrow Subtitle (Store • Locality)</span>
+                    <input
+                      value={ad.label}
+                      maxLength={100}
+                      placeholder="e.g. Jishnu Learning Labs • Bagalur Road"
+                      onChange={(e) => updateImage(index, "label", e.target.value)}
+                    />
+                  </label>
+
+                  <label>
+                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Target Locality / Area</span>
+                    <input
+                      value={ad.locality || ""}
+                      maxLength={80}
+                      placeholder="e.g. Bagalur Road, SIPCOT, Mathigiri"
+                      onChange={(e) => updateImage(index, "locality", e.target.value)}
+                    />
+                  </label>
+
+                  <label>
+                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Business Category / Sector</span>
+                    <input
+                      value={ad.category || ""}
+                      maxLength={80}
+                      placeholder="e.g. Education & training, Automobiles, Health & wellness"
+                      onChange={(e) => updateImage(index, "category", e.target.value)}
+                    />
+                  </label>
+
+                  <label>
+                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Creative Theme Style</span>
+                    <select
+                      value={ad.tone || "gold"}
+                      onChange={(e) => updateImage(index, "tone", e.target.value)}
+                      style={{
+                        padding: "9px 11px",
+                        borderRadius: "5px",
+                        border: "1px solid #dfe6de",
+                        fontSize: "12px",
+                        background: "#fff",
+                      }}
+                    >
+                      <option value="gold">Gold (Premium Store)</option>
+                      <option value="mint">Mint (Fresh &amp; Wellness)</option>
+                      <option value="peach">Peach (Warm &amp; Dining)</option>
+                      <option value="lavender">Lavender (Royal &amp; Medical)</option>
+                      <option value="community">Community (Green &amp; Local)</option>
+                    </select>
+                  </label>
+                </div>
+
+                {/* Media Upload & URL */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "12px", alignItems: "center" }}>
+                  <label className="ad-upload-field">
+                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Upload New Image File</span>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      disabled={Boolean(uploading)}
+                      onChange={(event) =>
+                        void uploadSelected(event, "image", (url, current) => ({
+                          ...current,
+                          imageAds: current.imageAds.map((entry, i) => (i === index ? { ...entry, image: url } : entry)),
+                        }))
+                      }
+                    />
+                    {uploading === "image" ? (
+                      <small style={{ color: "#0284c7" }}>Uploading and publishing image...</small>
+                    ) : (
+                      <small>{ad.image ? "✓ Image file ready" : "Choose JPG, PNG, WebP or GIF (max 15 MB)"}</small>
+                    )}
+                  </label>
+
+                  <label>
+                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Or Direct Image URL</span>
+                    <input
+                      value={ad.image || ""}
+                      placeholder="https://images.unsplash.com/... or /image.png"
+                      onChange={(e) => updateImage(index, "image", e.target.value)}
+                    />
+                  </label>
+                </div>
+
+                {/* Live Ad Creative Preview Simulation */}
+                <div
+                  style={{
+                    background: "#ffffff",
+                    borderRadius: "10px",
+                    border: "1px solid #cbd5e1",
+                    overflow: "hidden",
+                    maxWidth: "380px",
+                  }}
+                >
+                  <div
+                    style={{
+                      height: "140px",
+                      position: "relative",
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      backgroundImage: ad.image
+                        ? `linear-gradient(180deg, rgba(15, 23, 42, 0.45) 0%, transparent 40%, rgba(15, 23, 42, 0.4) 100%), url("${ad.image}")`
+                        : "linear-gradient(135deg, #1b3824 0%, #0e2014 100%)",
+                      padding: "8px 10px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                    }}
+                  >
+                    <span style={{ background: "#f59e0b", color: "#000", fontSize: "9px", fontWeight: 800, padding: "2px 6px", borderRadius: "4px" }}>
+                      ADVERTISEMENT
+                    </span>
+                    <span style={{ background: "rgba(0,0,0,0.65)", color: "#fff", fontSize: "9px", padding: "2px 6px", borderRadius: "10px" }}>
+                      👁️ {(ad.viewsCount || 0).toLocaleString("en-IN")} views
+                    </span>
+                  </div>
+
+                  <div style={{ padding: "10px 12px", background: "#ffffff" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2px" }}>
+                      <span style={{ fontSize: "11px", fontWeight: 800, color: "#166534", textTransform: "uppercase" }}>
+                        {ad.businessName || ad.label || "Featured Store"}
+                      </span>
+                      {ad.locality && (
+                        <span style={{ fontSize: "10px", color: "#64748b", fontWeight: 600 }}>
+                          📍 {ad.locality}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: "12.5px", fontWeight: 700, color: "#0f172a", marginBottom: "8px", lineHeight: "1.3" }}>
+                      {ad.title || "Discover this business"}
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 0.8fr", gap: "6px" }}>
+                      <div style={{ background: "#15803d", color: "#ffffff", padding: "5px", borderRadius: "6px", fontSize: "10px", fontWeight: 700, textAlign: "center" }}>
+                        🛍️ View Store
+                      </div>
+                      <div style={{ background: "#25D366", color: "#ffffff", padding: "5px", borderRadius: "6px", fontSize: "10px", fontWeight: 700, textAlign: "center" }}>
+                        💬 WhatsApp
+                      </div>
+                      <div style={{ background: "#f8fafc", color: "#0f172a", border: "1px solid #cbd5e1", padding: "5px", borderRadius: "6px", fontSize: "10px", fontWeight: 700, textAlign: "center" }}>
+                        📞 Call
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* SECTION 3: CYCLIC VIDEO ADVERTISEMENTS SPOTLIGHT */}
+      <section style={{ background: "#ffffff", padding: "20px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px", flexWrap: "wrap", gap: "10px" }}>
+          <div>
+            <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#0f172a", margin: "0 0 4px" }}>
+              3. Cyclic Video Advertisements Spotlight ({currentVideoAds.length}/8)
+            </h3>
+            <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
+              Manage multiple video ads played in an automatic cycle with a 3-second Bizearch splash screen between ads. Visible in desktop and mobile spotlight rails.
+            </p>
+          </div>
+          <button
+            className="outline-button"
+            type="button"
+            disabled={currentVideoAds.length >= 8 || Boolean(uploading)}
+            onClick={addVideoAd}
+            style={{ fontSize: "12px", padding: "7px 16px", fontWeight: 700 }}
+          >
+            + Add Video Creative
+          </button>
+        </div>
+
+        <div style={{ display: "grid", gap: "16px" }}>
+          {currentVideoAds.map((vAd, index) => (
+            <div
+              key={vAd.id || `video-ad-item-${index}`}
+              style={{
+                background: "#f8fafc",
+                borderRadius: "10px",
+                border: "1px solid #e2e8f0",
+                padding: "16px",
+                display: "grid",
+                gap: "14px",
+              }}
+            >
+              {/* Header */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px", borderBottom: "1px solid #e2e8f0", paddingBottom: "10px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <h4 style={{ margin: 0, fontSize: "13px", fontWeight: 800, color: "#0f172a" }}>
+                    Video Ad #{index + 1}
+                  </h4>
+                  {index === 0 && (
+                    <span style={{ fontSize: "10px", background: "#f59e0b", color: "#fff", padding: "2px 8px", borderRadius: "12px", fontWeight: 800 }}>
+                      Primary
+                    </span>
+                  )}
+                  <span style={{ fontSize: "11px", color: "#166534", background: "#e8f5e9", border: "1px solid #bbf7d0", padding: "2px 8px", borderRadius: "10px", fontWeight: 700 }}>
+                    👁️ {(vAd.viewsCount || 0).toLocaleString("en-IN")} views
+                  </span>
+                </div>
+
+                <div style={{ display: "flex", gap: "6px" }}>
+                  {index > 0 && (
+                    <button
+                      type="button"
+                      className="outline-button"
+                      onClick={() => moveVideoAd(index, -1)}
+                      style={{ padding: "4px 8px", fontSize: "11px" }}
+                      title="Move ad up in cycle"
+                    >
+                      ↑ Move Up
+                    </button>
+                  )}
+                  {index < currentVideoAds.length - 1 && (
+                    <button
+                      type="button"
+                      className="outline-button"
+                      onClick={() => moveVideoAd(index, 1)}
+                      style={{ padding: "4px 8px", fontSize: "11px" }}
+                      title="Move ad down in cycle"
+                    >
+                      ↓ Move Down
+                    </button>
+                  )}
+                  {currentVideoAds.length > 1 && (
+                    <button
+                      type="button"
+                      className="outline-button"
+                      style={{ color: "#ef4444", borderColor: "#fca5a5", padding: "4px 8px", fontSize: "11px" }}
+                      disabled={Boolean(uploading)}
+                      onClick={() => removeVideoAd(index)}
+                    >
+                      ✕ Remove Ad
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Grid 1: Titles */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <label>
+                  <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Headline / Campaign Title</span>
+                  <input
+                    value={vAd.title}
+                    maxLength={100}
+                    placeholder="e.g. Tarun Motors Hero Splendor Plus"
+                    onChange={(e) => updateVideoAd(index, "title", e.target.value)}
+                  />
+                </label>
+                <label>
+                  <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Sponsor / Business Name</span>
+                  <input
+                    value={vAd.businessName || ""}
+                    maxLength={100}
+                    placeholder="e.g. Tarun Motors Hero Hosur"
+                    onChange={(e) => updateVideoAd(index, "businessName", e.target.value)}
+                  />
+                </label>
+              </div>
+
+              {/* Grid 2: Targeting */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <label>
+                  <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Target Category / Sector</span>
+                  <input
+                    value={vAd.category || "All"}
+                    maxLength={60}
+                    placeholder="e.g. Automobiles, Health & wellness, Food"
+                    onChange={(e) => updateVideoAd(index, "category", e.target.value)}
+                  />
+                </label>
+                <label>
+                  <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Search Matching Keywords (comma-separated)</span>
+                  <input
+                    value={Array.isArray(vAd.keywords) ? vAd.keywords.join(", ") : (vAd.keywords || "")}
+                    maxLength={160}
+                    placeholder="e.g. bike, hero, splendor, service, two-wheeler"
+                    onChange={(e) =>
+                      updateVideoAd(
+                        index,
+                        "keywords",
+                        e.target.value.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean)
+                      )
+                    }
+                  />
+                </label>
+              </div>
+              <small style={{ color: "#64748b", marginTop: "-6px" }}>
+                💡 Customer searches matching these keywords on the Discover page will immediately trigger this video ad in the popup!
+              </small>
+
+              <label>
+                <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Description / Promo Offer</span>
+                <textarea
+                  rows={2}
+                  value={vAd.description}
+                  maxLength={220}
+                  placeholder="Brief promotional copy or offer description"
+                  onChange={(e) => updateVideoAd(index, "description", e.target.value)}
+                />
+              </label>
+
+              {/* Video Media Source */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <label className="ad-upload-field">
+                  <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Video File (MP4)</span>
+                  <input
+                    type="file"
+                    accept="video/mp4"
+                    disabled={Boolean(uploading)}
+                    onChange={(event) =>
+                      void uploadSelected(event, "video", (url, current) => {
+                        const updated = (current.videoAds && current.videoAds.length > 0 ? [...current.videoAds] : [...defaultInitialVideoAds]).map(
+                          (item, i) => (i === index ? { ...item, sourceUrl: url } : item)
+                        );
+                        return { ...current, videoAds: updated, videoAd: updated[0] || current.videoAd };
+                      })
+                    }
+                  />
+                  {uploading === "video" ? <small>Uploading &amp; processing MP4...</small> : <small>{vAd.sourceUrl ? "✓ MP4 video attached" : "Upload MP4 (up to 5 min, 200 MB)"}</small>}
+                </label>
+                <label>
+                  <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Or Video Direct URL</span>
+                  <input
+                    value={vAd.sourceUrl || ""}
+                    placeholder="https://.../video.mp4"
+                    onChange={(e) => updateVideoAd(index, "sourceUrl", e.target.value)}
+                  />
+                </label>
+              </div>
+
+              {vAd.sourceUrl && (
+                <div style={{ margin: "2px 0" }}>
+                  <video
+                    key={vAd.sourceUrl}
+                    className="ad-video-preview"
+                    controls
+                    playsInline
+                    preload="metadata"
+                    poster={vAd.posterUrl || undefined}
+                    src={vAd.sourceUrl}
+                    style={{ maxHeight: "180px", width: "100%", borderRadius: "8px", background: "#000" }}
+                  >
+                    Your browser does not support video.
+                  </video>
+                </div>
+              )}
+
+              {/* Poster Image */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <label className="ad-upload-field">
+                  <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Poster Thumbnail Image</span>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    disabled={Boolean(uploading)}
+                    onChange={(event) =>
+                      void uploadSelected(event, "image", (url, current) => {
+                        const updated = (current.videoAds && current.videoAds.length > 0 ? [...current.videoAds] : [...defaultInitialVideoAds]).map(
+                          (item, i) => (i === index ? { ...item, posterUrl: url } : item)
+                        );
+                        return { ...current, videoAds: updated, videoAd: updated[0] || current.videoAd };
+                      })
+                    }
+                  />
+                  {uploading === "image" ? <small>Uploading poster image...</small> : <small>{vAd.posterUrl ? "✓ Poster attached" : "Upload JPG/PNG thumbnail"}</small>}
+                </label>
+                <label>
+                  <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Or Poster Direct URL</span>
+                  <input
+                    value={vAd.posterUrl || ""}
+                    placeholder="https://.../poster.jpg"
+                    onChange={(e) => updateVideoAd(index, "posterUrl", e.target.value)}
+                  />
+                </label>
+              </div>
+
+              {vAd.posterUrl && (
+                <div style={{ margin: "2px 0" }}>
+                  <img
+                    src={vAd.posterUrl}
+                    alt="Ad thumbnail"
+                    style={{ maxHeight: "90px", maxWidth: "180px", objectFit: "cover", borderRadius: "6px", border: "1px solid #cbd5e1" }}
+                  />
+                </div>
+              )}
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", alignItems: "flex-end" }}>
+                <label>
+                  <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Action Button Text (CTA)</span>
+                  <input
+                    value={vAd.callToAction || ""}
+                    maxLength={50}
+                    placeholder="e.g. Book Test Ride / View Store"
+                    onChange={(e) => updateVideoAd(index, "callToAction", e.target.value)}
+                  />
+                </label>
+                <div>
+                  <button
+                    type="button"
+                    className="outline-button"
+                    style={{ width: "100%", padding: "10px", fontWeight: 700 }}
+                    onClick={() => {
+                      window.dispatchEvent(new CustomEvent("test-popup-video-ad", { detail: vAd }));
+                      setTestNotification(`Triggered test popup for "${vAd.title}"`);
+                      setTimeout(() => setTestNotification(""), 4000);
+                    }}
+                  >
+                    ▶ Test as Popup Ad (15s Skip Lock)
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* SECTION 4: BIZERCH 3-SECOND SPLASH BUMPER TRANSITION */}
+      <section style={{ background: "#ffffff", padding: "20px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "14px", flexWrap: "wrap", gap: "10px" }}>
+          <div>
+            <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#0f172a", margin: "0 0 4px" }}>
+              4. Bizearch Inter-Ad Splash Transition (3s Screen)
+            </h3>
+            <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
+              Between each video ad in the sequence, an animated Bizearch branded splash bumper screen is presented for high-impact brand visibility.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="outline-button"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent("test-video-splash"));
+              setTestNotification("Playing 3-second Bizearch splash screen preview!");
+              setTimeout(() => setTestNotification(""), 4000);
+            }}
+            style={{ fontSize: "12px", padding: "7px 14px", fontWeight: 700 }}
+          >
+            ✨ Preview 3s Splash Screen
+          </button>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
           <label>
-            Eyebrow label
-            <input value={ad.label} maxLength={80} onChange={(event) => updateImage(index, "label", event.target.value)} />
+            <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Splash Duration (Seconds)</span>
+            <input
+              type="number"
+              min={1}
+              max={10}
+              value={currentVideoSettings.splashDurationSeconds ?? 3}
+              onChange={(e) => updateVideoSettings("splashDurationSeconds", Math.max(1, Number(e.target.value) || 3))}
+            />
           </label>
           <label>
-            Headline
-            <input value={ad.title} maxLength={100} onChange={(event) => updateImage(index, "title", event.target.value)} />
+            <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Splash Tagline</span>
+            <input
+              value={currentVideoSettings.splashTagline ?? "Find • Connect • Grow"}
+              maxLength={80}
+              placeholder="Find • Connect • Grow"
+              onChange={(e) => updateVideoSettings("splashTagline", e.target.value)}
+            />
           </label>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: "10px" }}>
           <label className="ad-upload-field">
-            Image file
+            <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Upload Splash Banner Image</span>
             <input
               type="file"
               accept="image/jpeg,image/png,image/webp,image/gif"
               disabled={Boolean(uploading)}
-              onChange={(event) => void uploadSelected(event, "image", (url, current) => ({ ...current, imageAds: current.imageAds.map((entry, i) => i === index ? { ...entry, image: url } : entry) }))}
+              onChange={(event) =>
+                void uploadSelected(event, "image", (url, current) => ({
+                  ...current,
+                  videoSettings: {
+                    ...(current.videoSettings || defaultVideoSettings),
+                    splashImageUrl: url,
+                  },
+                }))
+              }
             />
-            {uploading === "image" ? <small>Uploading and publishing image...</small> : <small>{ad.image ? "Image ready" : "Choose JPG, PNG, WebP or GIF (max 15 MB)"}</small>}
+            {uploading === "image" ? <small>Uploading splash image...</small> : <small>Choose high-res Bizearch banner</small>}
           </label>
-          {ad.image && <img className="ad-media-preview" src={ad.image} alt={`Preview for image ad ${index + 1}`} />}
           <label>
-            Style key
-            <input value={ad.tone} onChange={(event) => updateImage(index, "tone", event.target.value)} />
+            <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Or Splash Banner Image URL</span>
+            <input
+              value={currentVideoSettings.splashImageUrl ?? "/bizearch-splash-banner.png"}
+              placeholder="/bizearch-splash-banner.png"
+              onChange={(e) => updateVideoSettings("splashImageUrl", e.target.value)}
+            />
           </label>
-          <button className="outline-button" type="button" disabled={Boolean(uploading)} onClick={() => setConfig((current) => ({ ...current, imageAds: current.imageAds.filter((_, i) => i !== index) }))}>
-            Remove image ad
+        </div>
+
+        <div
+          style={{
+            marginTop: "12px",
+            padding: "14px",
+            background: "linear-gradient(135deg, #090d16 0%, #0f172a 100%)",
+            borderRadius: "8px",
+            display: "flex",
+            alignItems: "center",
+            gap: "1rem",
+          }}
+        >
+          <img
+            src={currentVideoSettings.splashImageUrl || "/bizearch-splash-banner.png"}
+            alt="Bizearch Splash Preview"
+            style={{ height: "44px", objectFit: "contain" }}
+          />
+          <div style={{ color: "#94a3b8", fontSize: "0.85rem" }}>
+            <strong style={{ color: "#ffffff" }}>Tagline:</strong> {currentVideoSettings.splashTagline || "Find • Connect • Grow"}
+            <br />
+            <strong style={{ color: "#ffffff" }}>Display:</strong> {currentVideoSettings.splashDurationSeconds ?? 3}s countdown transition between consecutive video ads
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 5: DISCOVER PAGE POPUP VIDEO ADS */}
+      <section style={{ background: "#ffffff", padding: "20px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "14px", flexWrap: "wrap", gap: "10px" }}>
+          <div>
+            <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#0f172a", margin: "0 0 4px" }}>
+              5. Discover Page Popup Video Ads &amp; Customer Search Triggers
+            </h3>
+            <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
+              Configure mandatory 15-second unskippable video ads presented in a popup dialog to visitors on the Discover page. Displays search-matched video ads when a customer searches, or falls back to the time-based sequence.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="outline-button"
+            style={{ fontWeight: 700, fontSize: "12px", padding: "7px 14px" }}
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent("test-popup-video-ad"));
+              setTestNotification("Opening test popup video ad with mandatory 15s skip lock!");
+              setTimeout(() => setTestNotification(""), 4000);
+            }}
+          >
+            ▶ Test Discover Popup Ad (15s Skip)
           </button>
         </div>
-      ))}
-    </section>
 
-    {/* Section 3: Multiple Cyclic Video Advertisements */}
-    <section>
-      <div className="panel-heading">
-        <div>
-          <h3>Cyclic Video Advertisements Spotlight ({currentVideoAds.length}/8)</h3>
-          <p>Manage multiple video ads played in an automatic cycle with a 3-second Bizearch splash screen between ads. Visible in desktop and mobile spotlight rails.</p>
-        </div>
-        <button
-          className="outline-button"
-          type="button"
-          disabled={currentVideoAds.length >= 8 || Boolean(uploading)}
-          onClick={addVideoAd}
-        >
-          + Add Video Creative
-        </button>
-      </div>
-
-      {currentVideoAds.map((vAd, index) => (
-        <div className="panel ad-manager-card" key={vAd.id || `video-ad-item-${index}`}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-            <h4 style={{ margin: 0 }}>
-              Video Ad #{index + 1} {index === 0 && <span style={{ fontSize: "0.75rem", background: "var(--accent, #f59e0b)", color: "#fff", padding: "2px 8px", borderRadius: "12px", marginLeft: "6px" }}>Primary</span>}
-            </h4>
-            {currentVideoAds.length > 1 && (
-              <button
-                type="button"
-                className="outline-button"
-                style={{ color: "#ef4444", borderColor: "#fca5a5" }}
-                disabled={Boolean(uploading)}
-                onClick={() => removeVideoAd(index)}
-              >
-                ✕ Remove Ad
-              </button>
-            )}
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
-            <label>
-              Headline / Campaign Title
-              <input
-                value={vAd.title}
-                maxLength={100}
-                placeholder="e.g. Tarun Motors Hero Splendor Plus"
-                onChange={(e) => updateVideoAd(index, "title", e.target.value)}
-              />
-            </label>
-            <label>
-              Sponsor / Business Name
-              <input
-                value={vAd.businessName || ""}
-                maxLength={100}
-                placeholder="e.g. Tarun Motors Hero Hosur"
-                onChange={(e) => updateVideoAd(index, "businessName", e.target.value)}
-              />
-            </label>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
-            <label>
-              Target Category / Sector
-              <input
-                value={vAd.category || "All"}
-                maxLength={60}
-                placeholder="e.g. Automobiles, Health & wellness, Food"
-                onChange={(e) => updateVideoAd(index, "category", e.target.value)}
-              />
-            </label>
-            <label>
-              Search Matching Keywords (comma-separated)
-              <input
-                value={Array.isArray(vAd.keywords) ? vAd.keywords.join(", ") : (vAd.keywords || "")}
-                maxLength={160}
-                placeholder="e.g. bike, hero, splendor, service, two-wheeler"
-                onChange={(e) => updateVideoAd(index, "keywords", e.target.value.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean))}
-              />
-            </label>
-          </div>
-          <small style={{ color: "var(--muted, #64748b)", display: "block", marginTop: "-0.25rem", marginBottom: "0.5rem" }}>
-            💡 Customer searches matching these keywords on the Discover page will immediately trigger this video ad in the popup!
-          </small>
-
-          <label>
-            Description / Promo Offer
-            <textarea
-              rows={2}
-              value={vAd.description}
-              maxLength={220}
-              placeholder="Brief promotional copy or offer description"
-              onChange={(e) => updateVideoAd(index, "description", e.target.value)}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", margin: "10px 0" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: "0.6rem", cursor: "pointer", fontWeight: 600, fontSize: "13px", color: "#1e293b" }}>
+            <input
+              type="checkbox"
+              checked={currentPopupConfig.enabled !== false}
+              onChange={(e) => updatePopupConfig("enabled", e.target.checked)}
+              style={{ width: "18px", height: "18px", accentColor: "#166534" }}
             />
+            Enable Popup Video Ads on Discover Page
           </label>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
-            <label className="ad-upload-field">
-              Video File (MP4)
-              <input
-                type="file"
-                accept="video/mp4"
-                disabled={Boolean(uploading)}
-                onChange={(event) => void uploadSelected(event, "video", (url, current) => {
-                  const updated = (current.videoAds && current.videoAds.length > 0 ? [...current.videoAds] : [...defaultInitialVideoAds]).map((item, i) => i === index ? { ...item, sourceUrl: url } : item);
-                  return { ...current, videoAds: updated, videoAd: updated[0] || current.videoAd };
-                })}
-              />
-              {uploading === "video" ? <small>Uploading & processing MP4...</small> : <small>{vAd.sourceUrl ? "MP4 video attached" : "Upload MP4 (up to 5 min, 200 MB)"}</small>}
-            </label>
-            <label>
-              Or Video Direct URL
-              <input
-                value={vAd.sourceUrl || ""}
-                placeholder="https://.../video.mp4"
-                onChange={(e) => updateVideoAd(index, "sourceUrl", e.target.value)}
-              />
-            </label>
-          </div>
-
-          {vAd.sourceUrl && (
-            <div style={{ margin: "0.5rem 0" }}>
-              <video
-                key={vAd.sourceUrl}
-                className="ad-video-preview"
-                controls
-                playsInline
-                preload="metadata"
-                poster={vAd.posterUrl || undefined}
-                src={vAd.sourceUrl}
-                style={{ maxHeight: "180px", width: "100%", borderRadius: "8px", background: "#000" }}
-              >
-                Your browser does not support video.
-              </video>
-            </div>
-          )}
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
-            <label className="ad-upload-field">
-              Poster Thumbnail Image
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
-                disabled={Boolean(uploading)}
-                onChange={(event) => void uploadSelected(event, "image", (url, current) => {
-                  const updated = (current.videoAds && current.videoAds.length > 0 ? [...current.videoAds] : [...defaultInitialVideoAds]).map((item, i) => i === index ? { ...item, posterUrl: url } : item);
-                  return { ...current, videoAds: updated, videoAd: updated[0] || current.videoAd };
-                })}
-              />
-              {uploading === "image" ? <small>Uploading poster image...</small> : <small>{vAd.posterUrl ? "Poster attached" : "Upload JPG/PNG thumbnail"}</small>}
-            </label>
-            <label>
-              Or Poster Direct URL
-              <input
-                value={vAd.posterUrl || ""}
-                placeholder="https://.../poster.jpg"
-                onChange={(e) => updateVideoAd(index, "posterUrl", e.target.value)}
-              />
-            </label>
-          </div>
-
-          {vAd.posterUrl && (
-            <div style={{ margin: "0.5rem 0" }}>
-              <img
-                src={vAd.posterUrl}
-                alt="Ad thumbnail"
-                style={{ maxHeight: "100px", maxWidth: "200px", objectFit: "cover", borderRadius: "6px", border: "1px solid #cbd5e1" }}
-              />
-            </div>
-          )}
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
-            <label>
-              Action Button Text (CTA)
-              <input
-                value={vAd.callToAction || ""}
-                maxLength={50}
-                placeholder="e.g. Book Test Ride / View Store"
-                onChange={(e) => updateVideoAd(index, "callToAction", e.target.value)}
-              />
-            </label>
-            <div style={{ display: "flex", alignItems: "flex-end", paddingBottom: "0.5rem" }}>
-              <button
-                type="button"
-                className="outline-button"
-                style={{ width: "100%" }}
-                onClick={() => {
-                  window.dispatchEvent(new CustomEvent("test-popup-video-ad", { detail: vAd }));
-                  setTestNotification(`Triggered preview for "${vAd.title}"`);
-                  setTimeout(() => setTestNotification(""), 4000);
-                }}
-              >
-                ▶ Test as Popup Ad
-              </button>
-            </div>
-          </div>
+          <label style={{ display: "flex", alignItems: "center", gap: "0.6rem", cursor: "pointer", fontWeight: 600, fontSize: "13px", color: "#1e293b" }}>
+            <input
+              type="checkbox"
+              checked={currentPopupConfig.searchTriggerEnabled !== false}
+              onChange={(e) => updatePopupConfig("searchTriggerEnabled", e.target.checked)}
+              style={{ width: "18px", height: "18px", accentColor: "#166534" }}
+            />
+            Enable Customer Search-Triggered Popup Ads
+          </label>
         </div>
-      ))}
-    </section>
 
-    {/* Section 4: Bizearch 3-Second Splash Bumper Transition Settings */}
-    <section>
-      <div className="panel-heading">
-        <div>
-          <h3>Bizearch Inter-Ad Splash Transition (3s Screen)</h3>
-          <p>Between each video ad in the sequence, an animated Bizearch branded splash bumper screen is presented for high-impact brand visibility and seamless transitions.</p>
-        </div>
-        <button
-          type="button"
-          className="outline-button"
-          onClick={() => {
-            window.dispatchEvent(new CustomEvent("test-video-splash"));
-            setTestNotification("Playing 3-second Bizearch splash screen preview!");
-            setTimeout(() => setTestNotification(""), 4000);
-          }}
-        >
-          ✨ Preview 3s Splash Screen
-        </button>
-      </div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
-        <label>
-          Splash Duration (Seconds)
+        <label style={{ margin: "10px 0" }}>
+          <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Mandatory Watch Duration Before Skip (Seconds)</span>
           <input
             type="number"
-            min={1}
-            max={10}
-            value={currentVideoSettings.splashDurationSeconds ?? 3}
-            onChange={(e) => updateVideoSettings("splashDurationSeconds", Math.max(1, Number(e.target.value) || 3))}
+            min={5}
+            max={60}
+            value={currentPopupConfig.mandatoryWatchSeconds ?? 15}
+            onChange={(e) => updatePopupConfig("mandatoryWatchSeconds", Math.max(5, Math.min(60, Number(e.target.value) || 15)))}
           />
+          <small style={{ color: "#64748b" }}>
+            The skip (✕) button will remain locked with a live countdown for this many seconds (default: 15s). After this, the customer can skip.
+          </small>
         </label>
-        <label>
-          Splash Tagline
-          <input
-            value={currentVideoSettings.splashTagline ?? "Find • Connect • Grow"}
-            maxLength={80}
-            placeholder="Find • Connect • Grow"
-            onChange={(e) => updateVideoSettings("splashTagline", e.target.value)}
-          />
-        </label>
-      </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", marginTop: "0.5rem" }}>
-        <label className="ad-upload-field">
-          Upload New Splash Banner Image
-          <input
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
-            disabled={Boolean(uploading)}
-            onChange={(event) => void uploadSelected(event, "image", (url, current) => ({
-              ...current,
-              videoSettings: {
-                ...(current.videoSettings || defaultVideoSettings),
-                splashImageUrl: url,
-              },
-            }))}
-          />
-          {uploading === "image" ? <small>Uploading splash image...</small> : <small>Choose high-res Bizearch banner</small>}
-        </label>
-        <label>
-          Or Splash Banner Image URL
-          <input
-            value={currentVideoSettings.splashImageUrl ?? "/bizearch-splash-banner.png"}
-            placeholder="/bizearch-splash-banner.png"
-            onChange={(e) => updateVideoSettings("splashImageUrl", e.target.value)}
-          />
-        </label>
-      </div>
-
-      <div style={{ marginTop: "0.5rem", padding: "12px", background: "linear-gradient(135deg, #090d16 0%, #0f172a 100%)", borderRadius: "8px", display: "flex", alignItems: "center", gap: "1rem" }}>
-        <img
-          src={currentVideoSettings.splashImageUrl || "/bizearch-splash-banner.png"}
-          alt="Bizearch Splash Preview"
-          style={{ height: "48px", objectFit: "contain" }}
-        />
-        <div style={{ color: "#94a3b8", fontSize: "0.85rem" }}>
-          <strong>Tagline:</strong> {currentVideoSettings.splashTagline || "Find • Connect • Grow"}
-          <br />
-          <strong>Display:</strong> {currentVideoSettings.splashDurationSeconds ?? 3}s countdown transition between consecutive video ads
+        <div style={{ marginTop: "12px", padding: "14px", background: "#f8fafc", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
+          <h4 style={{ margin: "0 0 8px 0", fontSize: "12px", fontWeight: 800, color: "#334155" }}>
+            Sequential Dwell-Time Popups (When no search match):
+          </h4>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "10px" }}>
+            <label>
+              <span style={{ fontSize: "11px", fontWeight: 700 }}>1st Ad Delay</span>
+              <input
+                type="number"
+                min={10}
+                max={3600}
+                value={currentPopupConfig.firstAdDelaySeconds ?? 60}
+                onChange={(e) => updatePopupConfig("firstAdDelaySeconds", Math.max(10, Number(e.target.value) || 60))}
+              />
+              <small style={{ color: "#64748b" }}>Secs (default: 60s / 1m)</small>
+            </label>
+            <label>
+              <span style={{ fontSize: "11px", fontWeight: 700 }}>2nd Ad Delay</span>
+              <input
+                type="number"
+                min={30}
+                max={7200}
+                value={currentPopupConfig.secondAdDelaySeconds ?? 300}
+                onChange={(e) => updatePopupConfig("secondAdDelaySeconds", Math.max(30, Number(e.target.value) || 300))}
+              />
+              <small style={{ color: "#64748b" }}>Secs (default: 300s / 5m)</small>
+            </label>
+            <label>
+              <span style={{ fontSize: "11px", fontWeight: 700 }}>3rd Ad Delay</span>
+              <input
+                type="number"
+                min={60}
+                max={10800}
+                value={currentPopupConfig.thirdAdDelaySeconds ?? 600}
+                onChange={(e) => updatePopupConfig("thirdAdDelaySeconds", Math.max(60, Number(e.target.value) || 600))}
+              />
+              <small style={{ color: "#64748b" }}>Secs (default: 600s / 10m)</small>
+            </label>
+            <label>
+              <span style={{ fontSize: "11px", fontWeight: 700 }}>Repeat Interval</span>
+              <input
+                type="number"
+                min={30}
+                max={7200}
+                value={currentPopupConfig.repeatIntervalSeconds ?? 300}
+                onChange={(e) => updatePopupConfig("repeatIntervalSeconds", Math.max(30, Number(e.target.value) || 300))}
+              />
+              <small style={{ color: "#64748b" }}>Secs (default: 300s / 5m)</small>
+            </label>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    {/* Section 5: Discover Page Popup Video Ads Settings */}
-    <section>
-      <div className="panel-heading">
+      {/* SECTION 6: AUDIO ADVERTISEMENT SPOT */}
+      <section style={{ background: "#ffffff", padding: "20px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+        <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#0f172a", margin: "0 0 4px" }}>
+          6. Audio Advertisement Spot (Radio / Podcast Stream)
+        </h3>
+        <p style={{ fontSize: "12px", color: "#64748b", margin: "0 0 12px" }}>
+          Optionally add a radio / audio spot. Supported formats: MP3, MPEG, M4A, WAV and OGG. All fields are optional.
+        </p>
+        <label>
+          <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Headline</span>
+          <input
+            value={config.audioAd.title}
+            maxLength={100}
+            placeholder="e.g. Listen to today's local shopping updates"
+            onChange={(event) =>
+              setConfig((current) => ({ ...current, audioAd: { ...current.audioAd, title: event.target.value } }))
+            }
+          />
+        </label>
+        <label>
+          <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Description</span>
+          <textarea
+            rows={2}
+            value={config.audioAd.description}
+            maxLength={220}
+            placeholder="Brief audio description..."
+            onChange={(event) =>
+              setConfig((current) => ({ ...current, audioAd: { ...current.audioAd, description: event.target.value } }))
+            }
+          />
+        </label>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+          <label className="ad-upload-field">
+            <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Upload Audio File</span>
+            <input
+              type="file"
+              accept=".mp3,.mpeg,.mpga,.mp2,audio/mpeg,audio/mp4,audio/wav,audio/x-wav,audio/ogg"
+              disabled={Boolean(uploading)}
+              onChange={(event) =>
+                void uploadSelected(event, "audio", (url, current) => ({
+                  ...current,
+                  audioAd: { ...current.audioAd, sourceUrl: url },
+                }))
+              }
+            />
+            {uploading === "audio" ? <small>Uploading and publishing audio...</small> : <small>{config.audioAd.sourceUrl ? "✓ Audio ready" : "Choose MP3, MPEG, M4A, WAV or OGG (max 30 MB)"}</small>}
+          </label>
+          <label>
+            <span style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>Or Audio Direct URL</span>
+            <input
+              value={config.audioAd.sourceUrl || ""}
+              placeholder="https://.../audio.mp3"
+              onChange={(event) =>
+                setConfig((current) => ({ ...current, audioAd: { ...current.audioAd, sourceUrl: event.target.value } }))
+              }
+            />
+          </label>
+        </div>
+        {config.audioAd.sourceUrl && (
+          <div style={{ marginTop: "10px" }}>
+            <audio className="ad-audio-preview" controls preload="metadata" src={config.audioAd.sourceUrl}>
+              Your browser does not support audio.
+            </audio>
+          </div>
+        )}
+      </section>
+
+      {/* BOTTOM SAVE CONTROLS */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", padding: "16px 0" }}>
         <div>
-          <h3>Discover Page Popup Video Ads & Customer Search Triggers</h3>
-          <p>Configure mandatory 15-second unskippable video ads presented in a popup dialog to visitors on the Discover page. Displays search-matched video ads when a customer searches, or falls back to the time-based sequence.</p>
+          {saved && <span style={{ color: "#166534", fontWeight: 700, fontSize: "13px" }}>✓ All advertising settings saved and published!</span>}
+          {error && <span style={{ color: "#dc2626", fontWeight: 700, fontSize: "13px" }}>✕ {error}</span>}
         </div>
         <button
-          type="button"
-          className="outline-button"
-          style={{ fontWeight: 600 }}
-          onClick={() => {
-            window.dispatchEvent(new CustomEvent("test-popup-video-ad"));
-            setTestNotification("Opening test popup video ad with mandatory 15s skip lock!");
-            setTimeout(() => setTestNotification(""), 4000);
-          }}
+          className="primary-button"
+          disabled={saving || Boolean(uploading)}
+          type="submit"
+          style={{ minWidth: "220px", padding: "12px 24px", fontSize: "13px", fontWeight: 800 }}
         >
-          ▶ Test Discover Popup Ad (15s Skip)
+          {saving ? "Saving settings..." : "💾 Save Advertising Settings"}
         </button>
       </div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", margin: "0.75rem 0" }}>
-        <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer", fontWeight: 500 }}>
-          <input
-            type="checkbox"
-            checked={currentPopupConfig.enabled !== false}
-            onChange={(e) => updatePopupConfig("enabled", e.target.checked)}
-            style={{ width: "18px", height: "18px" }}
-          />
-          Enable Popup Video Ads on Discover Page
-        </label>
-
-        <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer", fontWeight: 500 }}>
-          <input
-            type="checkbox"
-            checked={currentPopupConfig.searchTriggerEnabled !== false}
-            onChange={(e) => updatePopupConfig("searchTriggerEnabled", e.target.checked)}
-            style={{ width: "18px", height: "18px" }}
-          />
-          Enable Customer Search-Triggered Popup Ads
-        </label>
-      </div>
-
-      <label>
-        Mandatory Watch Duration Before Skip (Seconds)
-        <input
-          type="number"
-          min={5}
-          max={60}
-          value={currentPopupConfig.mandatoryWatchSeconds ?? 15}
-          onChange={(e) => updatePopupConfig("mandatoryWatchSeconds", Math.max(5, Math.min(60, Number(e.target.value) || 15)))}
-        />
-        <small style={{ color: "var(--muted, #64748b)" }}>
-          The skip (✕) button will remain locked with a live countdown for this many seconds (default: 15s). After this, the customer can skip.
-        </small>
-      </label>
-
-      <div style={{ marginTop: "1rem", padding: "12px", background: "var(--surface-sunken, #f8fafc)", borderRadius: "8px", border: "1px solid var(--border, #e2e8f0)" }}>
-        <h4 style={{ margin: "0 0 0.5rem 0", fontSize: "0.95rem" }}>Sequential Dwell-Time Popups (When no search match):</h4>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.75rem" }}>
-          <label>
-            1st Ad Delay
-            <input
-              type="number"
-              min={10}
-              max={3600}
-              value={currentPopupConfig.firstAdDelaySeconds ?? 60}
-              onChange={(e) => updatePopupConfig("firstAdDelaySeconds", Math.max(10, Number(e.target.value) || 60))}
-            />
-            <small style={{ color: "var(--muted, #64748b)" }}>Secs (default: 60s / 1m)</small>
-          </label>
-          <label>
-            2nd Ad Delay
-            <input
-              type="number"
-              min={30}
-              max={7200}
-              value={currentPopupConfig.secondAdDelaySeconds ?? 300}
-              onChange={(e) => updatePopupConfig("secondAdDelaySeconds", Math.max(30, Number(e.target.value) || 300))}
-            />
-            <small style={{ color: "var(--muted, #64748b)" }}>Secs (default: 300s / 5m)</small>
-          </label>
-          <label>
-            3rd Ad Delay
-            <input
-              type="number"
-              min={60}
-              max={10800}
-              value={currentPopupConfig.thirdAdDelaySeconds ?? 600}
-              onChange={(e) => updatePopupConfig("thirdAdDelaySeconds", Math.max(60, Number(e.target.value) || 600))}
-            />
-            <small style={{ color: "var(--muted, #64748b)" }}>Secs (default: 600s / 10m)</small>
-          </label>
-          <label>
-            Repeat Interval
-            <input
-              type="number"
-              min={30}
-              max={7200}
-              value={currentPopupConfig.repeatIntervalSeconds ?? 300}
-              onChange={(e) => updatePopupConfig("repeatIntervalSeconds", Math.max(30, Number(e.target.value) || 300))}
-            />
-            <small style={{ color: "var(--muted, #64748b)" }}>Secs (default: 300s / 5m)</small>
-          </label>
-        </div>
-      </div>
-    </section>
-
-    {/* Section 6: Audio advertisement */}
-    <section>
-      <h3>Audio advertisement spot</h3>
-      <p>Optionally add a radio / audio spot. Supported formats: MP3, MPEG, M4A, WAV and OGG. All fields are optional.</p>
-      <label>
-        Headline
-        <input value={config.audioAd.title} maxLength={100} onChange={(event) => setConfig((current) => ({ ...current, audioAd: { ...current.audioAd, title: event.target.value } }))} />
-      </label>
-      <label>
-        Description
-        <textarea rows={2} value={config.audioAd.description} maxLength={220} onChange={(event) => setConfig((current) => ({ ...current, audioAd: { ...current.audioAd, description: event.target.value } }))} />
-      </label>
-      <label className="ad-upload-field">
-        Audio file
-        <input
-          type="file"
-          accept=".mp3,.mpeg,.mpga,.mp2,audio/mpeg,audio/mp4,audio/wav,audio/x-wav,audio/ogg"
-          disabled={Boolean(uploading)}
-          onChange={(event) => void uploadSelected(event, "audio", (url, current) => ({ ...current, audioAd: { ...current.audioAd, sourceUrl: url } }))}
-        />
-        {uploading === "audio" ? <small>Uploading and publishing audio...</small> : <small>{config.audioAd.sourceUrl ? "Audio ready" : "Choose MP3, MPEG, M4A, WAV or OGG (max 30 MB)"}</small>}
-      </label>
-      {config.audioAd.sourceUrl && <audio className="ad-audio-preview" controls preload="metadata" src={config.audioAd.sourceUrl}>Your browser does not support audio.</audio>}
-    </section>
-
-    {testNotification && <p className="status-pill verified" style={{ display: "block", marginBottom: "0.75rem" }}>{testNotification}</p>}
-    {error && <p className="form-error" role="alert">{error}</p>}
-    {saved && <p className="status-pill verified" role="status">✓ All advertising and video settings saved and published successfully.</p>}
-
-    <button className="primary-button" disabled={saving || Boolean(uploading)} type="submit">
-      {saving ? "Saving settings..." : "Save advertising settings"}
-    </button>
-  </form>;
+    </form>
+  );
 }
 
 function PlansSection({

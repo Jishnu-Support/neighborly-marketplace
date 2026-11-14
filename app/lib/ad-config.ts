@@ -1,6 +1,17 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { defaultAdConfig, defaultPopupAdConfig, defaultVideoSettings, defaultInitialVideoAds, type AdConfig, type VideoAd, type VideoAdSettings, type PopupAdConfig } from "./ad-config.shared";
+import {
+  defaultAdConfig,
+  defaultPopupAdConfig,
+  defaultVideoSettings,
+  defaultInitialVideoAds,
+  defaultTickerMessages,
+  defaultInitialImageAds,
+  type AdConfig,
+  type VideoAd,
+  type VideoAdSettings,
+  type PopupAdConfig,
+} from "./ad-config.shared";
 import { resolveStorePath } from "./storage-paths";
 import { saveActivityLog } from "./activity-logs";
 import { saveAdActivityLog } from "./ad-activity-logs";
@@ -14,7 +25,7 @@ export function normalizeAdConfig(input: unknown): AdConfig {
   const raw = input as Record<string, unknown>;
 
   // 1. Ticker messages (trim strings, filter empty, max 20)
-  const tickerMessages = Array.isArray(raw.tickerMessages)
+  const rawTickerMessages = Array.isArray(raw.tickerMessages)
     ? raw.tickerMessages
         .filter((item): item is string => typeof item === "string")
         .map((item) => item.trim())
@@ -22,22 +33,29 @@ export function normalizeAdConfig(input: unknown): AdConfig {
         .slice(0, 20)
     : [];
 
+  const tickerMessages = rawTickerMessages.length > 0 ? rawTickerMessages : defaultTickerMessages;
+
   // 2. Image ads (allow any valid image URL, root path, or data URI)
-  const imageAds: AdConfig["imageAds"] = Array.isArray(raw.imageAds)
+  const rawImageAds: AdConfig["imageAds"] = Array.isArray(raw.imageAds)
     ? raw.imageAds
         .filter((item): item is Record<string, unknown> => Boolean(item && typeof item === "object"))
         .map((item, idx) => ({
           id: typeof item.id === "string" && item.id.trim() ? item.id.trim() : `ad-${idx + 1}`,
+          adBookingId: typeof item.adBookingId === "string" && item.adBookingId.trim() ? item.adBookingId.trim() : undefined,
+          businessName: typeof item.businessName === "string" && item.businessName.trim() ? item.businessName.trim() : undefined,
           label: typeof item.label === "string" && item.label.trim() ? item.label.trim().slice(0, 100) : "Featured Store",
           title: typeof item.title === "string" && item.title.trim() ? item.title.trim().slice(0, 120) : "Discover this business",
           image: typeof item.image === "string" ? item.image.trim() : "",
           tone: typeof item.tone === "string" && item.tone.trim() ? item.tone.trim().slice(0, 40) : "community",
           viewsCount: typeof item.viewsCount === "number" ? item.viewsCount : 0,
-          locality: typeof item.locality === "string" ? item.locality : undefined,
-          category: typeof item.category === "string" ? item.category : undefined,
+          locality: typeof item.locality === "string" && item.locality.trim() ? item.locality.trim() : undefined,
+          category: typeof item.category === "string" && item.category.trim() ? item.category.trim() : undefined,
+          distanceKm: typeof item.distanceKm === "number" ? item.distanceKm : undefined,
         }))
         .slice(0, 20)
     : [];
+
+  const imageAds = rawImageAds.length > 0 ? rawImageAds : defaultInitialImageAds;
 
   // 3. Video ad (optional or populated)
   const rawVideo = raw.videoAd && typeof raw.videoAd === "object" ? (raw.videoAd as Record<string, unknown>) : {};
@@ -53,7 +71,7 @@ export function normalizeAdConfig(input: unknown): AdConfig {
   };
 
   // 3b. Multiple cyclic video ads
-  const videoAds: VideoAd[] = Array.isArray(raw.videoAds) && raw.videoAds.length > 0
+  const rawVideoAds: VideoAd[] = Array.isArray(raw.videoAds) && raw.videoAds.length > 0
     ? raw.videoAds
         .filter((item): item is Record<string, unknown> => Boolean(item && typeof item === "object"))
         .map((item, idx) => ({
@@ -70,7 +88,9 @@ export function normalizeAdConfig(input: unknown): AdConfig {
           viewsCount: typeof item.viewsCount === "number" ? item.viewsCount : 0,
           locality: typeof item.locality === "string" ? item.locality : undefined,
         }))
-    : (videoAd.sourceUrl || videoAd.posterUrl ? [videoAd] : defaultInitialVideoAds);
+    : (videoAd.sourceUrl ? [videoAd] : defaultInitialVideoAds);
+
+  const videoAds = rawVideoAds.length > 0 ? rawVideoAds : defaultInitialVideoAds;
 
   // 3c. Video settings (splash screen & timing)
   const rawVidSettings = raw.videoSettings && typeof raw.videoSettings === "object" ? (raw.videoSettings as Record<string, unknown>) : {};
@@ -114,6 +134,10 @@ export function normalizeAdConfig(input: unknown): AdConfig {
 
 export function validateAdConfig(input: unknown): input is AdConfig {
   if (!input || typeof input !== "object") return false;
+  const config = input as Partial<AdConfig>;
+  if (!Array.isArray(config.tickerMessages) || !Array.isArray(config.imageAds) || typeof config.videoAd !== "object" || typeof config.audioAd !== "object") {
+    return false;
+  }
   return true;
 }
 
@@ -157,9 +181,18 @@ export async function recordPlatformAdImpression(params: {
   let viewsCount = 1;
 
   if (surface === "video") {
-    config.videoAd.viewsCount = (config.videoAd.viewsCount || 0) + 1;
-    viewsCount = config.videoAd.viewsCount;
-    targetAdTitle = config.videoAd.title || targetAdTitle;
+    let matchedVideo = config.videoAds?.find(
+      (v) => (params.adId && v.id === params.adId) || (params.adTitle && v.title === params.adTitle)
+    );
+    if (matchedVideo) {
+      matchedVideo.viewsCount = (matchedVideo.viewsCount || 0) + 1;
+      viewsCount = matchedVideo.viewsCount;
+      targetAdTitle = matchedVideo.title || targetAdTitle;
+    } else {
+      config.videoAd.viewsCount = (config.videoAd.viewsCount || 0) + 1;
+      viewsCount = config.videoAd.viewsCount;
+      targetAdTitle = config.videoAd.title || targetAdTitle;
+    }
   } else {
     // Find matching image ad by id, title or label
     const adId = params.adId;
