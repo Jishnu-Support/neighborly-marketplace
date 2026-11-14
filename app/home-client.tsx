@@ -435,7 +435,7 @@ export type MarketplaceNotification = {
 
 const initialNotifications: MarketplaceNotification[] = [];
 
-const NOTIF_STORAGE_KEY = "neighborly-notifications-v4";
+const NOTIF_STORAGE_KEY = "neighborly-notifications-v5";
 
 const STORAGE_KEY = "neighborly-demo-v5";
 const vehicleTypeOptions = ["Two wheeler", "Three wheeler", "Four wheeler", "Multi wheel / commercial"];
@@ -3005,11 +3005,19 @@ export default function Home() {
 
   useEffect(() => {
     try {
+      ["neighborly-notifications-v1", "neighborly-notifications-v2", "neighborly-notifications-v3", "neighborly-notifications-v4"].forEach((k) => {
+        try { window.localStorage.removeItem(k); } catch {}
+      });
       const saved = window.localStorage.getItem(NOTIF_STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setNotifications(parsed);
+          const UNREAL = ["tarun", "velan", "muneer", "reliance digital", "samsung experience", "ord-84210", "ord-test-"];
+          const cleaned = parsed.filter((n: any) => {
+            const str = JSON.stringify(n).toLowerCase();
+            return !UNREAL.some((u) => str.includes(u));
+          });
+          setNotifications(cleaned);
         }
       }
     } catch {}
@@ -3078,36 +3086,20 @@ export default function Home() {
         const data = (await res.json()) as { notifications?: MarketplaceNotification[] };
         if (cancelled || !Array.isArray(data.notifications)) return;
 
-        setNotifications((current) => {
-          const serverNotifs = data.notifications!;
-          const currentMap = new Map(current.map((n) => [n.id, n]));
-          
-          let hasNewUnread = false;
-          for (const sn of serverNotifs) {
-            const existing = currentMap.get(sn.id);
-            if (!existing) {
-              currentMap.set(sn.id, sn);
-              if (!sn.read && !alertedNotifIdsRef.current.has(sn.id)) {
-                alertedNotifIdsRef.current.add(sn.id);
-                hasNewUnread = true;
-                showNotificationToast(sn);
-                triggerDesktopNotification(sn, () => handleNotificationAction(sn));
-              }
-            } else if (existing.read !== sn.read) {
-              currentMap.set(sn.id, { ...existing, read: sn.read });
-            }
+        const serverNotifs = data.notifications || [];
+        let hasNewUnread = false;
+        for (const sn of serverNotifs) {
+          if (!sn.read && !alertedNotifIdsRef.current.has(sn.id)) {
+            alertedNotifIdsRef.current.add(sn.id);
+            hasNewUnread = true;
+            showNotificationToast(sn);
+            triggerDesktopNotification(sn, () => handleNotificationAction(sn));
           }
-
-          if (hasNewUnread) {
-            playNotificationSound();
-          }
-
-          return Array.from(currentMap.values()).sort((a, b) => {
-            const timeA = new Date(a.timestamp).getTime() || 0;
-            const timeB = new Date(b.timestamp).getTime() || 0;
-            return timeB - timeA;
-          });
-        });
+        }
+        if (hasNewUnread) {
+          playNotificationSound();
+        }
+        setNotifications(serverNotifs);
       } catch {}
     };
 
@@ -4279,39 +4271,24 @@ export default function Home() {
       ["neighborly-demo-v1", "neighborly-demo-v2", "neighborly-demo-v3", "neighborly-demo-v4", "neighborly-demo-v5"].forEach((k) => {
         try { window.localStorage.removeItem(k); } catch {}
       });
-      let savedOrders: OrderRecord[] = [];
-      try {
-        const dedicatedOrdersRaw = window.localStorage.getItem("bizearch_customer_orders_v1");
-        if (dedicatedOrdersRaw) {
-          const ords = JSON.parse(dedicatedOrdersRaw);
-          if (Array.isArray(ords)) savedOrders = ords;
-        }
-      } catch {}
+      // Purge cross-user orders cache so users never see other accounts' orders
+      try { window.localStorage.removeItem("bizearch_customer_orders_v1"); } catch {}
 
       const saved = window.localStorage.getItem("bizearch-customer-session-v1");
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
           if (parsed && typeof parsed === "object") {
-            const rawOrders = Array.isArray(parsed.orders) ? (parsed.orders as OrderRecord[]) : [];
-            const mergedOrders = [...savedOrders, ...rawOrders].filter(
-              (o, idx, arr) => arr.findIndex((x) => x.id === o.id) === idx
-            );
             setDemoData((prev) => ({
               ...prev,
               favorites: Array.isArray(parsed.favorites) ? parsed.favorites : prev.favorites,
               recentSearches: Array.isArray(parsed.recentSearches) ? parsed.recentSearches : prev.recentSearches,
               enquiries: Array.isArray(parsed.enquiries) ? parsed.enquiries : prev.enquiries,
               checkouts: Array.isArray(parsed.checkouts) ? parsed.checkouts : prev.checkouts,
-              orders: mergedOrders.length > 0 ? mergedOrders : (prev.orders || []),
+              orders: [], // Strictly initialized empty; authenticated user orders load securely from /api/orders
             }));
           }
         } catch {}
-      } else if (savedOrders.length > 0) {
-        setDemoData((prev) => ({
-          ...prev,
-          orders: savedOrders,
-        }));
       }
       setStorageReady(true);
       try { window.sessionStorage.removeItem("bizearch_auto_retry"); } catch {}
@@ -4456,9 +4433,20 @@ export default function Home() {
 
   const loadServerOrders = useCallback(() => {
     const bizName = (businessAccountBusinesses[0]?.name) || "";
-    const url = (role === "Business" && bizName)
-      ? `/api/orders?businessName=${encodeURIComponent(bizName)}`
-      : "/api/orders";
+    const activeCustomerPhone = currentCustomerProfile?.phone || (role === "Account" && !sessionIdentity.includes("@") ? sessionIdentity : "");
+
+    let url = "";
+    if (role === "Business" && bizName) {
+      url = `/api/orders?businessName=${encodeURIComponent(bizName)}`;
+    } else if (role === "Company") {
+      url = "/api/orders";
+    } else if (role === "Account" && activeCustomerPhone) {
+      url = `/api/orders?customer=${encodeURIComponent(activeCustomerPhone)}`;
+    } else {
+      // Unauthenticated or guest: never query or store other users' orders
+      setServerOrders([]);
+      return;
+    }
 
     fetch(url, { cache: "no-store", credentials: "include" })
       .then((res) => (res.ok ? res.json() : null))
@@ -4466,25 +4454,25 @@ export default function Home() {
         if (data && Array.isArray(data.orders)) {
           setServerOrders(data.orders);
           setDemoData((prev) => {
-            const currentOrders = prev.orders || [];
-            const merged = [...data.orders, ...currentOrders].filter(
-              (o, idx, arr) => arr.findIndex((x) => x.id === o.id) === idx
-            );
-            try {
-              if (merged.length > 0) {
-                window.localStorage.setItem("bizearch_customer_orders_v1", JSON.stringify(merged));
-                const raw = window.localStorage.getItem("bizearch-customer-session-v1");
-                const parsed = raw ? JSON.parse(raw) : {};
-                parsed.orders = merged;
-                window.localStorage.setItem("bizearch-customer-session-v1", JSON.stringify(parsed));
-              }
-            } catch {}
-            return { ...prev, orders: merged };
+            const cleanPhoneDigits = activeCustomerPhone.replace(/\D/g, "");
+            const filtered = (role === "Business" || role === "Company")
+              ? data.orders
+              : data.orders.filter((o: OrderRecord) => {
+                  if (cleanPhoneDigits.length >= 8 && o.customerPhone) {
+                    const oDigits = o.customerPhone.replace(/\D/g, "");
+                    return oDigits === cleanPhoneDigits || oDigits.endsWith(cleanPhoneDigits) || cleanPhoneDigits.endsWith(oDigits);
+                  }
+                  return false;
+                });
+            return {
+              ...prev,
+              orders: filtered,
+            };
           });
         }
       })
       .catch(() => {});
-  }, [role, businessAccountBusinesses]);
+  }, [businessAccountBusinesses, currentCustomerProfile?.phone, role, sessionIdentity]);
 
   useEffect(() => {
     loadServerQuotes();
@@ -6278,6 +6266,12 @@ export default function Home() {
         setLocationEnabled(false);
         setLocationCoordinates(null);
         window.sessionStorage.removeItem("neighborly_login_location");
+        try {
+          window.localStorage.removeItem("bizearch_customer_orders_v1");
+          window.localStorage.removeItem(NOTIF_STORAGE_KEY);
+        } catch {}
+        setDemoData((prev) => ({ ...prev, orders: [] }));
+        setNotifications([]);
       } catch {
         // Ignore browser storage exceptions
       }
@@ -10151,6 +10145,8 @@ export default function Home() {
             data={demoData}
             quotes={serverQuotes}
             initialTab={portalActiveTab}
+            customerProfile={currentCustomerProfile}
+            sessionIdentity={sessionIdentity}
             onRemoveFavorite={toggleFavorite}
             onSearch={(term) => {
               setQuery(term);
@@ -11360,6 +11356,8 @@ function CustomerPortal({
   data,
   quotes = [],
   initialTab = "Overview",
+  customerProfile,
+  sessionIdentity,
   onRemoveFavorite,
   onSearch,
   onFindBusiness,
@@ -11373,6 +11371,8 @@ function CustomerPortal({
   data: DemoData;
   quotes?: QuoteEnquiry[];
   initialTab?: string;
+  customerProfile?: MemberProfile | null;
+  sessionIdentity?: string;
   onRemoveFavorite: (businessName: string) => void;
   onSearch: (term: string) => void;
   onFindBusiness: (businessName: string) => void;
@@ -11384,6 +11384,22 @@ function CustomerPortal({
   showNotice: (message: string) => void;
 }) {
   const [tab, setTab] = useState(initialTab || "Overview");
+
+  const activeCustomerPhone = (customerProfile?.phone || (sessionIdentity && !sessionIdentity.includes("@") ? sessionIdentity : "")).trim();
+  const cleanActivePhoneDigits = activeCustomerPhone.replace(/\D/g, "");
+  const isLoggedInCustomer = Boolean(customerProfile?.phone || (sessionIdentity && sessionIdentity.trim().length > 0));
+
+  const userOrders = useMemo(() => {
+    if (!isLoggedInCustomer || cleanActivePhoneDigits.length < 8) {
+      return [];
+    }
+    const all = data.orders || [];
+    return all.filter((o) => {
+      if (!o.customerPhone) return false;
+      const oDigits = o.customerPhone.replace(/\D/g, "");
+      return oDigits.length >= 8 && (oDigits === cleanActivePhoneDigits || oDigits.endsWith(cleanActivePhoneDigits) || cleanActivePhoneDigits.endsWith(oDigits));
+    });
+  }, [data.orders, isLoggedInCustomer, cleanActivePhoneDigits]);
   useEffect(() => {
     if (initialTab && initialTab !== "Overview") setTab(initialTab);
   }, [initialTab]);
@@ -11409,8 +11425,8 @@ function CustomerPortal({
       <div className="metric-grid">
         <Metric
           label="Orders placed"
-          value={String((data.orders || []).length)}
-          delta="Active orders on device"
+          value={String(userOrders.length)}
+          delta={isLoggedInCustomer ? "Your placed orders" : "Sign in to view"}
           icon="🛍️"
           onClick={() => setTab("Orders")}
         />
@@ -11450,7 +11466,9 @@ function CustomerPortal({
           </div>
         </div>
         <CustomerOrdersManager
-          orders={data.orders || []}
+          orders={userOrders}
+          isLoggedIn={isLoggedInCustomer}
+          onOpenAccount={onOpenAccount}
           onViewReceipt={onViewReceipt || (() => {})}
           onCancelOrder={onCancelOrder}
         />
@@ -14402,13 +14420,36 @@ function MerchantOrdersManager({
 
 function CustomerOrdersManager({
   orders,
+  isLoggedIn = true,
+  onOpenAccount,
   onViewReceipt,
   onCancelOrder,
 }: {
   orders: OrderRecord[];
+  isLoggedIn?: boolean;
+  onOpenAccount?: () => void;
   onViewReceipt: (order: OrderRecord) => void;
   onCancelOrder?: (order: OrderRecord) => void;
 }) {
+  if (!isLoggedIn) {
+    return (
+      <div style={{ textAlign: "center", padding: "40px 20px", background: "#f8faf8", borderRadius: "12px", border: "1px dashed #cbd5e1" }}>
+        <span style={{ fontSize: "36px", display: "block", marginBottom: "12px" }}>🔒</span>
+        <strong style={{ fontSize: "16px", color: "#1e293b", display: "block", marginBottom: "6px" }}>
+          Sign In to View Your Orders
+        </strong>
+        <p style={{ fontSize: "13px", color: "#64748b", maxWidth: "380px", margin: "0 auto 16px" }}>
+          Your order history and live delivery tracking are strictly private. Please sign in with your mobile number to view and track your orders.
+        </p>
+        {onOpenAccount && (
+          <button className="primary-button" type="button" onClick={onOpenAccount}>
+            Sign in or register ↗
+          </button>
+        )}
+      </div>
+    );
+  }
+
   if (orders.length === 0) {
     return (
       <EmptyState

@@ -74,22 +74,45 @@ export async function listAllOrders(): Promise<OrderRecord[]> {
   return orders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
+const GENERIC_CUSTOMER_TERMS = new Set([
+  "",
+  "account",
+  "customer",
+  "shopper",
+  "resident shopper",
+  "guest",
+  "guest visitor",
+  "demo",
+]);
+
 export async function listOrdersForCustomer(customerQuery: string): Promise<OrderRecord[]> {
-  const orders = await listAllOrders();
-  const cleanQuery = customerQuery.trim().toLowerCase();
+  const cleanQuery = (customerQuery || "").trim().toLowerCase();
   const cleanDigits = customerQuery.replace(/\D/g, "");
 
+  // If query is empty or purely a generic placeholder without sufficient phone digits, return empty list
+  if (!cleanQuery || (GENERIC_CUSTOMER_TERMS.has(cleanQuery) && cleanDigits.length < 8)) {
+    return [];
+  }
+
+  const orders = await listAllOrders();
+
   return orders.filter((o) => {
-    if (!cleanQuery) return true;
-    if (o.customerPhone) {
+    // 1. Strict phone number matching
+    if (cleanDigits.length >= 8 && o.customerPhone) {
       const oDigits = o.customerPhone.replace(/\D/g, "");
-      if (cleanDigits.length >= 8 && (oDigits === cleanDigits || oDigits.endsWith(cleanDigits) || cleanDigits.endsWith(oDigits))) {
+      if (oDigits.length >= 8 && (oDigits === cleanDigits || oDigits.endsWith(cleanDigits) || cleanDigits.endsWith(oDigits))) {
         return true;
       }
     }
-    if (o.customerName && (o.customerName.toLowerCase() === cleanQuery || o.customerName.toLowerCase().includes(cleanQuery) || cleanQuery.includes(o.customerName.toLowerCase()))) {
-      return true;
+
+    // 2. Exact customer name or email matching (only if not a generic placeholder)
+    if (!GENERIC_CUSTOMER_TERMS.has(cleanQuery) && o.customerName) {
+      const oName = o.customerName.trim().toLowerCase();
+      if (oName === cleanQuery) {
+        return true;
+      }
     }
+
     return false;
   });
 }

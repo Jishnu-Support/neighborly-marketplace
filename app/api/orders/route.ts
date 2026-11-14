@@ -153,26 +153,22 @@ export async function GET(request: Request) {
       return NextResponse.json({ orders, count: orders.length }, { headers: noStoreHeaders });
     }
 
-    // 3. If Customer role (Account) or explicit customer query
-    if (customerQuery || session?.role === "Account") {
-      const custIdentity = customerQuery || session?.identity || "";
-      const orders = await listOrdersForCustomer(custIdentity);
-      if (orders.length === 0 && !customerQuery) {
-        const all = await listAllOrders();
-        return NextResponse.json({ orders: all, count: all.length }, { headers: noStoreHeaders });
-      }
-      return NextResponse.json({ orders, count: orders.length }, { headers: noStoreHeaders });
-    }
-
-    // 4. If businessName is explicitly queried
+    // 3. If businessName is explicitly queried (e.g. from Business portal)
     if (businessQuery) {
       const orders = await listOrdersForBusiness(businessQuery);
       return NextResponse.json({ orders, count: orders.length }, { headers: noStoreHeaders });
     }
 
-    // 5. Fallback: list all orders
-    const orders = await listAllOrders();
-    return NextResponse.json({ orders, count: orders.length }, { headers: noStoreHeaders });
+    // 4. If Customer role (Account) or explicit customer query
+    const custIdentity = customerQuery || (session?.role === "Account" ? session.identity : "");
+    if (custIdentity && custIdentity.trim()) {
+      const orders = await listOrdersForCustomer(custIdentity.trim());
+      // Strictly return ONLY this customer's orders. If 0 orders, returns []
+      return NextResponse.json({ orders, count: orders.length }, { headers: noStoreHeaders });
+    }
+
+    // 5. Fallback for unauthenticated or guest users: NEVER leak other users' orders!
+    return NextResponse.json({ orders: [], count: 0 }, { headers: noStoreHeaders });
   } catch (error) {
     console.error("GET /api/orders error:", error);
     return NextResponse.json(

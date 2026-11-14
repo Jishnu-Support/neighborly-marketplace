@@ -229,6 +229,10 @@ export async function ensureSystemGeneratedNotifications(): Promise<MarketplaceN
       const orderBizLower = (order.businessName || "").toLowerCase();
       if (UNREAL_BUSINESS_KEYWORDS.some((fake) => orderBizLower.includes(fake))) continue;
 
+      const orderPhone = (order.customerPhone || "").trim();
+      // Orders must be strictly targeted to the specific customer phone number
+      if (!orderPhone || orderPhone.replace(/\D/g, "").length < 8) continue;
+
       const orderNotifId = `notif-order-${order.id}`;
       if (!existingIds.has(orderNotifId)) {
         const statusDisplay = order.status === "placed" ? "Confirmed" : order.status === "cancelled" ? "Cancelled" : order.status.toUpperCase();
@@ -240,7 +244,7 @@ export async function ensureSystemGeneratedNotifications(): Promise<MarketplaceN
           type: "order",
           read: false,
           targetRole: "Account",
-          targetIdentity: order.customerPhone || "Customer",
+          targetIdentity: orderPhone,
           linkText: "Track Order",
           action: { type: "portal", payload: "Account", tab: "Orders" },
         });
@@ -296,17 +300,29 @@ export async function listNotificationsForUser(
 
     // Customer Account
     if (cleanRole === "Account" && n.targetRole === "Account") {
+      // General customer suggestions or registered product offers
+      if (n.type === "offer" || n.type === "system") {
+        return true;
+      }
+
+      // Order notifications MUST be strictly scoped to the matching customer's phone
+      if (n.type === "order") {
+        if (!n.targetIdentity || !cleanId) return false;
+        const GENERIC_USERS = ["account", "customer", "shopper", "resident shopper", "guest", "demo"];
+        if (GENERIC_USERS.includes(cleanId) || GENERIC_USERS.includes(n.targetIdentity.toLowerCase())) {
+          return false;
+        }
+        const targetDigits = n.targetIdentity.replace(/\D/g, "");
+        const userDigits = cleanId.replace(/\D/g, "");
+        if (targetDigits.length >= 8 && userDigits.length >= 8) {
+          return userDigits === targetDigits || userDigits.endsWith(targetDigits) || targetDigits.endsWith(userDigits);
+        }
+        return cleanId === n.targetIdentity.toLowerCase();
+      }
+
       if (!n.targetIdentity) return true;
       const target = n.targetIdentity.toLowerCase();
-      if (!cleanId || cleanId === "account" || cleanId === "customer" || target === "customer") return true;
-      if (cleanId === target || cleanId.includes(target) || target.includes(cleanId)) return true;
-      
-      const targetDigits = n.targetIdentity.replace(/\D/g, "");
-      const userDigits = cleanId.replace(/\D/g, "");
-      if (targetDigits.length >= 7 && userDigits.length >= 7) {
-        return userDigits.includes(targetDigits) || targetDigits.includes(userDigits);
-      }
-      return false;
+      return cleanId === target || cleanId.includes(target) || target.includes(cleanId);
     }
 
     // Discover page visitors (can see public suggestions and announcements)
