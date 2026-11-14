@@ -16466,51 +16466,7 @@ function BusinessSettingsView({
     }
   };
 
-  const handleExportCatalogueCsv = () => {
-    const products = business?.products || [];
-    if (!products.length) {
-      showNotice?.("No products or services in your catalogue to export.");
-      return;
-    }
-    const headers = ["Product ID", "Product Name", "Price (INR)", "Unit", "Description"];
-    const rows = products.map((p) => [
-      p.id,
-      `"${p.name.replace(/"/g, '""')}"`,
-      p.price,
-      p.unit || "unit",
-      `"${(p.description || "").replace(/"/g, '""')}"`,
-    ]);
-    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-    const encoded = encodeURI(csvContent);
-    const a = document.createElement("a");
-    a.href = encoded;
-    a.download = `${(business?.name || "bizearch").toLowerCase().replace(/\s+/g, "-")}-catalogue.csv`;
-    a.click();
-    showNotice?.("✓ Catalogue exported as CSV!");
-  };
 
-  const handleExportBackupJson = () => {
-    const backup = {
-      exportedAt: new Date().toISOString(),
-      business,
-      settings: {
-        orderSound,
-        whatsappAlerts,
-        emailInvoices,
-        isOpenForBusiness,
-        defaultRadius,
-        selectedLang,
-      },
-    };
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${(business?.name || "bizearch").toLowerCase().replace(/\s+/g, "-")}-backup.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showNotice?.("✓ Business backup downloaded!");
-  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -16821,40 +16777,7 @@ function BusinessSettingsView({
         </div>
       </section>
 
-      {/* CARD 5: Data & Exports */}
-      <section className="panel" style={{ padding: "20px" }}>
-        <div style={{ marginBottom: "16px" }}>
-          <div style={{ fontSize: "11px", fontWeight: 800, color: "#00438b", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-            DATA &amp; RECORDS
-          </div>
-          <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#0f172a", margin: "2px 0 4px" }}>
-            Export Business Records
-          </h3>
-          <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
-            Download spreadsheets of your products, orders, and offline data backups.
-          </p>
-        </div>
 
-        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-          <button
-            type="button"
-            onClick={handleExportCatalogueCsv}
-            className="outline-button"
-            style={{ padding: "9px 16px", fontSize: "12px", fontWeight: 700 }}
-          >
-            📊 Export Products (CSV)
-          </button>
-
-          <button
-            type="button"
-            onClick={handleExportBackupJson}
-            className="outline-button"
-            style={{ padding: "9px 16px", fontSize: "12px", fontWeight: 700 }}
-          >
-            📦 Download Backup (JSON)
-          </button>
-        </div>
-      </section>
     </div>
   );
 }
@@ -20027,7 +19950,7 @@ function ProfileAndSettingsPanel({
         >
           <span>📦</span> Data &amp; Storage
         </button>
-        {role !== "Agent" && (
+        {role === "Company" && (
           <button
             type="button"
             className={`profile-subtab-btn ${activeSubTab === "features" ? "active" : ""}`}
@@ -20808,11 +20731,11 @@ function ProfileAndSettingsPanel({
       {activeSubTab === "data" && (
         <div className="settings-section-card">
           <div className="settings-card-header">
-            <h3><span>📦</span> Data Storage {role !== "Agent" ? "& Backups" : "& Device Cache"}</h3>
+            <h3><span>📦</span> Data Storage {role === "Company" ? "& Backups" : "& Device Cache"}</h3>
             <p>
-              {role === "Agent"
-                ? "Inspect local storage allocations, device caching, and secure session telemetry."
-                : "Inspect local storage statistics, download GDPR-compliant JSON backups, or export order spreadsheets."}
+              {role === "Company"
+                ? "Inspect local storage statistics, download GDPR-compliant JSON backups, or export order spreadsheets."
+                : "Inspect local storage allocations, device caching, and secure session telemetry."}
             </p>
           </div>
 
@@ -20883,8 +20806,8 @@ function ProfileAndSettingsPanel({
             )}
           </div>
 
-          {/* Export Actions - Hidden in agent portal */}
-          {role !== "Agent" && (
+          {/* Export Actions - Restricted to Company/Super Admin portal only */}
+          {role === "Company" && (
             <div style={{ display: "flex", gap: "12px", marginTop: "10px", flexWrap: "wrap" }}>
               <button
                 type="button"
@@ -20925,7 +20848,7 @@ function ProfileAndSettingsPanel({
       )}
 
       {/* TAB 6: CONNECTED FEATURES & PORTALS */}
-      {activeSubTab === "features" && role !== "Agent" && (
+      {activeSubTab === "features" && role === "Company" && (
         <div className="settings-section-card">
           <div className="settings-card-header">
             <h3><span>⚡</span> Platform Workspace Switcher &amp; Features</h3>
