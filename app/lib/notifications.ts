@@ -1,6 +1,8 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { resolveStorePath } from "./storage-paths";
+import { readBusinessRecords } from "./businesses";
+import { readOrdersFile } from "./orders";
 import {
   type MarketplaceNotification,
   type NotificationType,
@@ -77,135 +79,182 @@ export async function createServerNotification(params: {
   return notif;
 }
 
-// Built-in system seeds for business renewals, ad statistics, agent referral deadlines, and customer search suggestions
-const MANDATORY_SYSTEM_NOTIFICATIONS: MarketplaceNotification[] = [
-  // 1. Business Portal - Subscription Renewal Notice
-  {
-    id: "notif-sys-renewal-tarun",
-    title: "⏳ Subscription Renewal Notice: Pro Plan",
-    message: "Your Pro Annual membership for Tarun Motors Hero expires in 5 days (19/11/2026). Renew now to preserve #1 top ranking in Automobiles, Verified Shield, and priority direct booking leads.",
-    timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
-    type: "plan",
-    read: false,
-    targetRole: "Business",
-    targetIdentity: "Tarun Motors Hero",
-    linkText: "Renew Plan Now",
-    action: { type: "portal", payload: "Business", tab: "plans" },
-  },
-  {
-    id: "notif-sys-renewal-velan",
-    title: "⏳ Subscription Renewal Deadline: Growth Plan",
-    message: "Velan Honda's Growth subscription renewal deadline is in 8 days. Renew on time to keep active customer booking calls, WhatsApp lead tracking, and catalog visibility.",
-    timestamp: new Date(Date.now() - 3600000 * 5).toISOString(),
-    type: "plan",
-    read: false,
-    targetRole: "Business",
-    targetIdentity: "Velan Honda",
-    linkText: "Renew Plan Now",
-    action: { type: "portal", payload: "Business", tab: "plans" },
-  },
-  // 2. Business Portal - Ad Views & Performance Details
-  {
-    id: "notif-sys-adview-tarun",
-    title: "📈 Ad Performance Alert: 485+ Impressions",
-    message: "Your Bizearch Discover Video Spotlight ad for Tarun Motors Hero achieved 485 verified views and 42 customer dialer / WhatsApp leads this week across Hosur!",
-    timestamp: new Date(Date.now() - 3600000 * 8).toISOString(),
-    type: "ad",
-    read: false,
-    targetRole: "Business",
-    targetIdentity: "Tarun Motors Hero",
-    linkText: "View Ad Performance",
-    action: { type: "portal", payload: "Business", tab: "ads" },
-  },
-  {
-    id: "notif-sys-adview-velan",
-    title: "📊 Spotlight Banner Performance: 310 Views",
-    message: "Your rotating banner ad on the Bizearch Discover page had 310 views with a 14% direct click-to-WhatsApp conversion rate this week.",
-    timestamp: new Date(Date.now() - 3600000 * 12).toISOString(),
-    type: "ad",
-    read: false,
-    targetRole: "Business",
-    targetIdentity: "Velan Honda",
-    linkText: "View Ad Analytics",
-    action: { type: "portal", payload: "Business", tab: "ads" },
-  },
-  // 3. Agent Portal - Referral Subscription Renewal Deadlines
-  {
-    id: "notif-sys-agent-renewal-tarun",
-    title: "⏰ Referral Renewal Deadline: Tarun Motors Hero",
-    message: "Subscription for your referred merchant 'Tarun Motors Hero' expires in 5 days. Follow up with the business owner to assist their renewal and secure your 20% recurring commission (₹600)!",
-    timestamp: new Date(Date.now() - 3600000 * 3).toISOString(),
-    type: "agent",
-    read: false,
-    targetRole: "Agent",
-    targetIdentity: "JIT",
-    linkText: "View Referral",
-    action: { type: "portal", payload: "Agent", tab: "referrals" },
-  },
-  {
-    id: "notif-sys-agent-renewal-velan",
-    title: "⏰ Referral Renewal Deadline: Velan Honda",
-    message: "Subscription for your referred business 'Velan Honda' has a renewal deadline in 8 days. Ensure plan continuity to retain your active monthly referral bonus!",
-    timestamp: new Date(Date.now() - 3600000 * 6).toISOString(),
-    type: "agent",
-    read: false,
-    targetRole: "Agent",
-    targetIdentity: "JIT",
-    linkText: "View Referral",
-    action: { type: "portal", payload: "Agent", tab: "referrals" },
-  },
-  // 4. Customer Portal - Order Details & Suggestions Related to Search
-  {
-    id: "notif-sys-cust-order-placed",
-    title: "✅ Order #ORD-84210 Confirmed",
-    message: "Your order from Muneer Bakery (Plum Cake & Butter Cookies) has been accepted and is being freshly prepared 👨‍🍳. Estimated delivery: 25-30 mins.",
-    timestamp: new Date(Date.now() - 3600000 * 1).toISOString(),
-    type: "order",
-    read: false,
-    targetRole: "Account",
-    targetIdentity: "Customer",
-    linkText: "Track Order",
-    action: { type: "portal", payload: "Account", tab: "Orders" },
-  },
-  {
-    id: "notif-sys-cust-suggest-auto",
-    title: "💡 Smart Suggestion: Verified Two-Wheeler Care",
-    message: "Looking for bike service or test rides in Hosur? Velan Honda (Denkanikotta Rd) and Tarun Motors Hero (Mathigiri) offer 4.6★ service packages with instant appointment booking!",
-    timestamp: new Date(Date.now() - 3600000 * 4).toISOString(),
-    type: "offer",
-    read: false,
-    targetRole: "Account",
-    targetIdentity: "Customer",
-    linkText: "Explore Two-Wheeler Services",
-    action: { type: "search", payload: "service" },
-  },
-  {
-    id: "notif-sys-cust-suggest-elec",
-    title: "💡 Smart Suggestion: Top Electronics Deals",
-    message: "Searching for appliances or smartphones? Reliance Digital and Samsung Experience Store on Bagalur Road offer genuine warranties, 0% EMI, and doorstep setup in Hosur.",
-    timestamp: new Date(Date.now() - 3600000 * 7).toISOString(),
-    type: "offer",
-    read: false,
-    targetRole: "Account",
-    targetIdentity: "Customer",
-    linkText: "Explore Electronics",
-    action: { type: "search", payload: "electronics" },
-  },
+// Known fake/unreal business names and legacy fake notification IDs to purge permanently
+const UNREAL_BUSINESS_KEYWORDS = [
+  "tarun motors",
+  "velan honda",
+  "muneer bakery",
+  "reliance digital",
+  "samsung experience store",
+  "ord-84210",
+  "ord-test-1794642165978",
+];
+
+const UNREAL_NOTIFICATION_PREFIXES = [
+  "notif-sys-renewal-tarun",
+  "notif-sys-renewal-velan",
+  "notif-sys-adview-tarun",
+  "notif-sys-adview-velan",
+  "notif-sys-agent-renewal-tarun",
+  "notif-sys-agent-renewal-velan",
+  "notif-sys-cust-order-placed",
+  "notif-sys-cust-suggest-auto",
+  "notif-sys-cust-suggest-elec",
 ];
 
 export async function ensureSystemGeneratedNotifications(): Promise<MarketplaceNotification[]> {
   try {
     const existing = await readAllNotifications();
-    const existingIds = new Set(existing.map((n) => n.id));
-    const toAdd = MANDATORY_SYSTEM_NOTIFICATIONS.filter((sn) => !existingIds.has(sn.id));
 
-    if (toAdd.length > 0) {
-      const merged = [...existing, ...toAdd];
-      await saveAllNotifications(merged);
-      return merged;
+    // 1. Purge any legacy unreal/fake notifications completely
+    const cleanedExisting = existing.filter((n) => {
+      if (UNREAL_NOTIFICATION_PREFIXES.includes(n.id)) return false;
+      const titleLower = (n.title || "").toLowerCase();
+      const messageLower = (n.message || "").toLowerCase();
+      const identityLower = (n.targetIdentity || "").toLowerCase();
+      for (const fake of UNREAL_BUSINESS_KEYWORDS) {
+        if (
+          titleLower.includes(fake) ||
+          messageLower.includes(fake) ||
+          identityLower.includes(fake)
+        ) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    // 2. Query strictly registered platform data only
+    const [businesses, orders] = await Promise.all([
+      readBusinessRecords().catch(() => []),
+      readOrdersFile().catch(() => []),
+    ]);
+
+    const existingIds = new Set(cleanedExisting.map((n) => n.id));
+    const dynamicNotifications: MarketplaceNotification[] = [];
+
+    // Process only verified/active businesses registered on our platform
+    for (const biz of businesses) {
+      if (!biz || !biz.name) continue;
+      const bizName = biz.name.trim();
+      const bizSlug = (biz.id || bizName).toLowerCase().replace(/[^a-z0-9]/g, "-");
+
+      // A. Business Portal: Subscription renewal & plan status
+      const planNotifId = `notif-biz-plan-${bizSlug}`;
+      if (!existingIds.has(planNotifId)) {
+        dynamicNotifications.push({
+          id: planNotifId,
+          title: `⏳ Subscription Plan Active: ${bizName}`,
+          message: `Your business listing for "${bizName}" is active on Bizearch. Check renewal status, update your product catalog, and monitor customer leads in your Business Portal.`,
+          timestamp: biz.createdAt || new Date().toISOString(),
+          type: "plan",
+          read: false,
+          targetRole: "Business",
+          targetIdentity: bizName,
+          linkText: "Manage Plan",
+          action: { type: "portal", payload: "Business", tab: "plans" },
+        });
+        existingIds.add(planNotifId);
+      }
+
+      // B. Business Portal: Ad views & customer impression performance
+      const views = (biz.profileViews || 0) + (biz.searchAppearances || 0);
+      if (views > 0) {
+        const viewsNotifId = `notif-biz-views-${bizSlug}`;
+        if (!existingIds.has(viewsNotifId)) {
+          dynamicNotifications.push({
+            id: viewsNotifId,
+            title: `📈 Performance Alert: ${views} Customer Views`,
+            message: `Your listing "${bizName}" has received ${views} verified customer impressions on Bizearch!`,
+            timestamp: new Date().toISOString(),
+            type: "ad",
+            read: false,
+            targetRole: "Business",
+            targetIdentity: bizName,
+            linkText: "View Performance",
+            action: { type: "portal", payload: "Business", tab: "analytics" },
+          });
+          existingIds.add(viewsNotifId);
+        }
+      }
+
+      // C. Agent Portal: Referral subscription renewal & merchant tracking
+      const agentTarget = biz.assignedAgentName || biz.agentVerification?.agentName || (biz.agentReferralCode ? "JIT" : null);
+      if (agentTarget) {
+        const agentNotifId = `notif-agent-renewal-${bizSlug}`;
+        if (!existingIds.has(agentNotifId)) {
+          dynamicNotifications.push({
+            id: agentNotifId,
+            title: `⏰ Merchant Listing Active: ${bizName}`,
+            message: `Your referred merchant "${bizName}" is active on the platform. Keep in touch with the business owner to ensure smooth renewals and retain recurring benefits.`,
+            timestamp: biz.createdAt || new Date().toISOString(),
+            type: "agent",
+            read: false,
+            targetRole: "Agent",
+            targetIdentity: agentTarget,
+            linkText: "View Referral",
+            action: { type: "portal", payload: "Agent", tab: "referrals" },
+          });
+          existingIds.add(agentNotifId);
+        }
+      }
+
+      // D. Customer Portal: Genuine smart suggestions based ONLY on registered products & businesses
+      if (biz.active !== false && Array.isArray(biz.products) && biz.products.length > 0) {
+        const firstProd = biz.products[0];
+        const suggestNotifId = `notif-cust-suggest-${bizSlug}`;
+        if (!existingIds.has(suggestNotifId)) {
+          const area = biz.address?.area || biz.address?.cityTown || "Hosur";
+          dynamicNotifications.push({
+            id: suggestNotifId,
+            title: `💡 Local Suggestion: ${firstProd.name}`,
+            message: `Looking for ${firstProd.name}? Available now from verified local business "${bizName}" in ${area}!`,
+            timestamp: new Date().toISOString(),
+            type: "offer",
+            read: false,
+            targetRole: "Account",
+            targetIdentity: "Customer",
+            linkText: `Explore ${bizName}`,
+            action: { type: "search", payload: bizName },
+          });
+          existingIds.add(suggestNotifId);
+        }
+      }
     }
-    return existing;
-  } catch {
+
+    // E. Customer Portal: Genuine order status updates for registered businesses
+    for (const order of orders) {
+      if (!order || !order.id) continue;
+      // Do not process orders referencing non-registered or test businesses
+      const orderBizLower = (order.businessName || "").toLowerCase();
+      if (UNREAL_BUSINESS_KEYWORDS.some((fake) => orderBizLower.includes(fake))) continue;
+
+      const orderNotifId = `notif-order-${order.id}`;
+      if (!existingIds.has(orderNotifId)) {
+        const statusDisplay = order.status === "placed" ? "Confirmed" : order.status === "cancelled" ? "Cancelled" : order.status.toUpperCase();
+        dynamicNotifications.push({
+          id: orderNotifId,
+          title: `Order #${order.id} ${statusDisplay}`,
+          message: `Your order from "${order.businessName}" (Total: ₹${order.totalAmount}) is ${order.status}.`,
+          timestamp: order.createdAt || new Date().toISOString(),
+          type: "order",
+          read: false,
+          targetRole: "Account",
+          targetIdentity: order.customerPhone || "Customer",
+          linkText: "Track Order",
+          action: { type: "portal", payload: "Account", tab: "Orders" },
+        });
+        existingIds.add(orderNotifId);
+      }
+    }
+
+    const merged = [...cleanedExisting, ...dynamicNotifications];
+    if (merged.length !== existing.length || dynamicNotifications.length > 0) {
+      await saveAllNotifications(merged);
+    }
+    return merged;
+  } catch (err) {
+    console.error("ensureSystemGeneratedNotifications error:", err);
     return [];
   }
 }
