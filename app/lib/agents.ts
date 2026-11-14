@@ -73,17 +73,6 @@ export function createDefaultJitAgent(): StoredAgentPartner {
     referredCount: 0,
     salt,
     passwordHash,
-    ratings: {
-      businessFeedback: 98,
-      registrationsCount: 95,
-      registrationRenewal: 100,
-      overall: 98,
-      feedbackNote: "High merchant satisfaction, accurate storefront GPS verification.",
-      registrationsNote: "Exceeded monthly onboarding target for Hosur commercial hubs.",
-      renewalNote: "98% on-time subscription renewals from referred merchants.",
-      lastUpdated: new Date().toISOString(),
-      updatedBy: "Super Admin",
-    },
   };
 }
 
@@ -136,20 +125,7 @@ export async function readAgentRecords(): Promise<StoredAgentPartner[]> {
         modified = true;
       }
 
-      if (!a.ratings) {
-        a.ratings = {
-          businessFeedback: 98,
-          registrationsCount: 95,
-          registrationRenewal: 100,
-          overall: 98,
-          feedbackNote: "Positive merchant feedback and prompt onboarding support.",
-          registrationsNote: "Consistent onboarding performance across assigned sectors.",
-          renewalNote: "Solid retention on merchant subscription renewal deadlines.",
-          lastUpdated: a.approvedAt || a.createdAt || new Date().toISOString(),
-          updatedBy: a.approvedBy || "Super Admin",
-        };
-        modified = true;
-      }
+      // No fake ratings auto-injection: ratings are genuine from Super Admin evaluation or merchant feedback
     }
 
     if (!foundJit) {

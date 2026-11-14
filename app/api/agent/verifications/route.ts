@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getCurrentSession } from "@/app/lib/auth";
 import { getAgentByIdentity } from "@/app/lib/agents";
 import { listBusinessesForAgentVerification, submitAgentVerification } from "@/app/lib/businesses";
+import { getFeedbacksForAgent } from "@/app/lib/agent-feedback";
 
 export async function GET(request: Request) {
   const session = await getCurrentSession(request);
@@ -11,6 +12,20 @@ export async function GET(request: Request) {
 
   const agent = await getAgentByIdentity(session.identity);
   const businesses = await listBusinessesForAgentVerification(session.identity);
+  const code = agent?.referralCode || "JIT";
+  const feedbacks = await getFeedbacksForAgent(code, agent?.id);
+
+  const referredBiz = businesses.filter((b) => {
+    const bCode = (b as any).agentReferralCode || b.agentVerification?.agentReferralCode || (b as any).referredBy;
+    return bCode && bCode.toUpperCase() === code.toUpperCase();
+  });
+  const referredCount = referredBiz.length;
+  const activeRenewals = referredBiz.filter((b) => b.subscribed).length;
+  const totalFeedbackCount = feedbacks.length;
+  const averageFeedbackStars = totalFeedbackCount
+    ? Number((feedbacks.reduce((a, f) => a + f.rating, 0) / totalFeedbackCount).toFixed(1))
+    : null;
+
   return NextResponse.json(
     {
       businesses,
@@ -20,7 +35,14 @@ export async function GET(request: Request) {
             name: agent.name,
             phone: agent.phone,
             referralCode: agent.referralCode || "JIT",
-            ratings: agent.ratings,
+            ratings: agent.ratings || null,
+            stats: {
+              referredCount,
+              activeRenewals,
+              feedbackCount: totalFeedbackCount,
+              averageFeedbackStars,
+              feedbacks: feedbacks.slice(0, 5),
+            },
           }
         : null,
     },

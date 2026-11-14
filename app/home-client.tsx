@@ -17492,16 +17492,28 @@ function AgentPortal({
   const [copied, setCopied] = useState(false);
   const [tab, setTab] = useState(initialTab || "Overview");
   const [agentReferralCode, setAgentReferralCode] = useState("JIT");
-  const [agentRatings, setAgentRatings] = useState({
-    businessFeedback: 98,
-    registrationsCount: 95,
-    registrationRenewal: 100,
-    overall: 98,
-    feedbackNote: "Positive merchant feedback and prompt onboarding support.",
-    registrationsNote: "Consistent onboarding performance across assigned sectors.",
-    renewalNote: "Solid retention on merchant subscription renewal deadlines.",
-    lastUpdated: "",
-    updatedBy: "Super Admin",
+  const [agentRatings, setAgentRatings] = useState<{
+    businessFeedback: number;
+    registrationsCount: number;
+    registrationRenewal: number;
+    overall: number;
+    feedbackNote?: string;
+    registrationsNote?: string;
+    renewalNote?: string;
+    lastUpdated?: string;
+    updatedBy?: string;
+  } | null>(null);
+  const [agentStats, setAgentStats] = useState<{
+    referredCount: number;
+    activeRenewals: number;
+    feedbackCount: number;
+    averageFeedbackStars: number | null;
+    feedbacks?: any[];
+  }>({
+    referredCount: 0,
+    activeRenewals: 0,
+    feedbackCount: 0,
+    averageFeedbackStars: null,
   });
   const [verifications, setVerifications] = useState<AgentVerificationItem[]>([]);
   const [verificationsLoading, setVerificationsLoading] = useState(false);
@@ -17639,6 +17651,11 @@ function AgentPortal({
           }
           if ((result.agent as any)?.ratings) {
             setAgentRatings((result.agent as any).ratings);
+          } else {
+            setAgentRatings(null);
+          }
+          if ((result.agent as any)?.stats) {
+            setAgentStats((result.agent as any).stats);
           }
           try {
             const raw = localStorage.getItem("neighborly_profile_Agent");
@@ -17976,94 +17993,136 @@ function AgentPortal({
               </button>
             </div>
           </section>
-          {/* Performance & Ratings Breakdown Card (Visible to Agent) */}
-          <section className="panel" style={{ background: "linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)", border: "1.5px solid #bbf7d0", borderRadius: "12px", padding: "18px 20px", marginBottom: "18px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "10px", marginBottom: "14px" }}>
-              <div>
-                <span style={{ fontSize: "10.5px", fontWeight: 800, color: "#166534", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                  ⭐ PERFORMANCE RATINGS &amp; EVALUATION
-                </span>
-                <h3 style={{ margin: "2px 0 0", fontSize: "17px", color: "#065f46" }}>
-                  Field Partner Performance Score
-                </h3>
-                <small style={{ color: "#047857" }}>
-                  Independent multi-pillar evaluation verified by Super Admin &amp; merchant feedback.
-                </small>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <span style={{ fontSize: "24px", fontWeight: 800, color: "#166534" }}>
-                  {agentRatings.overall}%
-                </span>
-                <span style={{ fontSize: "11px", fontWeight: 700, padding: "3px 10px", borderRadius: "12px", background: "#dcfce7", color: "#166534", border: "1px solid #86efac" }}>
-                  ● Top Standing
-                </span>
-              </div>
-            </div>
+          {/* Performance & Ratings Breakdown Card (Genuine Data Only) */}
+          {(() => {
+            const hasEval = Boolean(agentRatings && typeof agentRatings.overall === "number");
+            const regTotal = agentStats.referredCount || referrals.length;
+            const renewTotal = agentStats.activeRenewals;
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px" }}>
-              {/* Pillar 1 */}
-              <div style={{ background: "#ffffff", border: "1px solid #bbf7d0", borderRadius: "8px", padding: "12px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                  <strong style={{ fontSize: "12px", color: "#065f46" }}>🏢 Business Feedback</strong>
-                  <span style={{ fontSize: "13px", fontWeight: 800, color: "#166534" }}>{agentRatings.businessFeedback}%</span>
-                </div>
-                <div style={{ background: "#e2e8f0", borderRadius: "4px", height: "6px", overflow: "hidden", marginBottom: "6px" }}>
-                  <div style={{ background: "#166534", width: `${agentRatings.businessFeedback}%`, height: "100%" }} />
-                </div>
-                <small style={{ color: "#64748b", fontSize: "10.5px", display: "block" }}>
-                  Direct ratings &amp; reviews from onboarded Hosur merchants.
-                </small>
-                {agentRatings.feedbackNote && (
-                  <small style={{ color: "#047857", fontSize: "10px", display: "block", marginTop: "4px", fontStyle: "italic" }}>
-                    &ldquo;{agentRatings.feedbackNote}&rdquo;
-                  </small>
-                )}
-              </div>
+            // Genuine score display
+            const overallDisplay = hasEval ? `${agentRatings!.overall}%` : (regTotal > 0 || agentStats.feedbackCount > 0 ? "Active" : "New");
+            const standingText = hasEval
+              ? (agentRatings!.overall >= 90 ? "● Top Standing" : agentRatings!.overall >= 70 ? "● Good Standing" : "● Standard Standing")
+              : (regTotal > 0 ? "● Active Field Partner" : "● In Review / Evaluation Pending");
 
-              {/* Pillar 2 */}
-              <div style={{ background: "#ffffff", border: "1px solid #bfdbfe", borderRadius: "8px", padding: "12px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                  <strong style={{ fontSize: "12px", color: "#1e40af" }}>📝 Registrations Count</strong>
-                  <span style={{ fontSize: "13px", fontWeight: 800, color: "#1e40af" }}>{agentRatings.registrationsCount}%</span>
-                </div>
-                <div style={{ background: "#e2e8f0", borderRadius: "4px", height: "6px", overflow: "hidden", marginBottom: "6px" }}>
-                  <div style={{ background: "#2563eb", width: `${agentRatings.registrationsCount}%`, height: "100%" }} />
-                </div>
-                <small style={{ color: "#64748b", fontSize: "10.5px", display: "block" }}>
-                  Verified merchant onboarding volume vs monthly targets.
-                </small>
-                {agentRatings.registrationsNote && (
-                  <small style={{ color: "#1e40af", fontSize: "10px", display: "block", marginTop: "4px", fontStyle: "italic" }}>
-                    &ldquo;{agentRatings.registrationsNote}&rdquo;
-                  </small>
-                )}
-              </div>
+            // Genuine Pillar 1: Business Feedback
+            const hasBf = hasEval && typeof agentRatings!.businessFeedback === "number";
+            const bfVal = hasBf ? agentRatings!.businessFeedback : (agentStats.averageFeedbackStars ? Math.round((agentStats.averageFeedbackStars / 5) * 100) : null);
+            const bfText = bfVal !== null ? `${bfVal}% (${((bfVal / 20)).toFixed(1)} ★)` : "No ratings yet";
+            const bfBar = bfVal !== null ? bfVal : 0;
+            const bfDesc = agentStats.feedbackCount > 0
+              ? `Based on ${agentStats.feedbackCount} verified merchant review${agentStats.feedbackCount > 1 ? "s" : ""}.`
+              : "Awaiting ratings from onboarded merchants.";
+            const bfRemark = hasEval && agentRatings!.feedbackNote ? agentRatings!.feedbackNote : (agentStats.feedbacks?.[0]?.feedback ? `"${agentStats.feedbacks[0].feedback}" — ${agentStats.feedbacks[0].businessName}` : "");
 
-              {/* Pillar 3 */}
-              <div style={{ background: "#ffffff", border: "1px solid #e9d5ff", borderRadius: "8px", padding: "12px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                  <strong style={{ fontSize: "12px", color: "#6b21a8" }}>🔄 Registration Renewal</strong>
-                  <span style={{ fontSize: "13px", fontWeight: 800, color: "#6b21a8" }}>{agentRatings.registrationRenewal}%</span>
-                </div>
-                <div style={{ background: "#e2e8f0", borderRadius: "4px", height: "6px", overflow: "hidden", marginBottom: "6px" }}>
-                  <div style={{ background: "#7c3aed", width: `${agentRatings.registrationRenewal}%`, height: "100%" }} />
-                </div>
-                <small style={{ color: "#64748b", fontSize: "10.5px", display: "block" }}>
-                  Subscription renewal conversion &amp; deadline compliance.
-                </small>
-                {agentRatings.renewalNote && (
-                  <small style={{ color: "#6b21a8", fontSize: "10px", display: "block", marginTop: "4px", fontStyle: "italic" }}>
-                    &ldquo;{agentRatings.renewalNote}&rdquo;
-                  </small>
-                )}
-              </div>
-            </div>
+            // Genuine Pillar 2: Registrations Count
+            const hasReg = hasEval && typeof agentRatings!.registrationsCount === "number";
+            const regVal = hasReg ? `${agentRatings!.registrationsCount}%` : `${regTotal} Onboarded`;
+            const regBar = hasReg ? agentRatings!.registrationsCount : Math.min(100, regTotal * 20);
+            const regDesc = regTotal > 0
+              ? `${regTotal} verified merchant registration${regTotal > 1 ? "s" : ""} on platform.`
+              : "No verified businesses registered yet.";
+            const regRemark = hasEval && agentRatings!.registrationsNote ? agentRatings!.registrationsNote : "";
 
-            <div style={{ marginTop: "10px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "6px", fontSize: "10.5px", color: "#475569" }}>
-              <span>Verified by <strong>Super Admin Console</strong></span>
-              {agentRatings.lastUpdated && <span>Last Evaluated: {new Date(agentRatings.lastUpdated).toLocaleDateString()}</span>}
-            </div>
-          </section>
+            // Genuine Pillar 3: Registration Renewal
+            const hasRen = hasEval && typeof agentRatings!.registrationRenewal === "number";
+            const renVal = hasRen ? `${agentRatings!.registrationRenewal}%` : `${renewTotal} Active`;
+            const renBar = hasRen ? agentRatings!.registrationRenewal : (regTotal > 0 ? Math.round((renewTotal / regTotal) * 100) : 0);
+            const renDesc = renewTotal > 0
+              ? `${renewTotal} active subscription renewal${renewTotal > 1 ? "s" : ""} maintained.`
+              : "No merchant subscription renewals yet.";
+            const renRemark = hasEval && agentRatings!.renewalNote ? agentRatings!.renewalNote : "";
+
+            return (
+              <section className="panel" style={{ background: "linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)", border: "1.5px solid #bbf7d0", borderRadius: "12px", padding: "18px 20px", marginBottom: "18px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "10px", marginBottom: "14px" }}>
+                  <div>
+                    <span style={{ fontSize: "10.5px", fontWeight: 800, color: "#166534", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                      ⭐ PERFORMANCE RATINGS &amp; EVALUATION
+                    </span>
+                    <h3 style={{ margin: "2px 0 0", fontSize: "17px", color: "#065f46" }}>
+                      Field Partner Performance Score
+                    </h3>
+                    <small style={{ color: "#047857" }}>
+                      {hasEval ? "Evaluated and verified by Super Admin & merchant feedback." : "Live system performance based on verified registrations and merchant feedback."}
+                    </small>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <span style={{ fontSize: "24px", fontWeight: 800, color: "#166534" }}>
+                      {overallDisplay}
+                    </span>
+                    <span style={{ fontSize: "11px", fontWeight: 700, padding: "3px 10px", borderRadius: "12px", background: "#dcfce7", color: "#166534", border: "1px solid #86efac" }}>
+                      {standingText}
+                    </span>
+                  </div>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px" }}>
+                  {/* Pillar 1: Business Feedback */}
+                  <div style={{ background: "#ffffff", border: "1px solid #bbf7d0", borderRadius: "8px", padding: "12px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                      <strong style={{ fontSize: "12px", color: "#065f46" }}>🏢 Business Feedback</strong>
+                      <span style={{ fontSize: "13px", fontWeight: 800, color: "#166534" }}>{bfText}</span>
+                    </div>
+                    <div style={{ background: "#e2e8f0", borderRadius: "4px", height: "6px", overflow: "hidden", marginBottom: "6px" }}>
+                      <div style={{ background: "#166534", width: `${bfBar}%`, height: "100%", transition: "width 0.3s ease" }} />
+                    </div>
+                    <small style={{ color: "#64748b", fontSize: "10.5px", display: "block" }}>
+                      {bfDesc}
+                    </small>
+                    {bfRemark && (
+                      <small style={{ color: "#047857", fontSize: "10px", display: "block", marginTop: "4px", fontStyle: "italic", background: "#f0fdf4", padding: "3px 6px", borderRadius: "4px" }}>
+                        💬 {bfRemark}
+                      </small>
+                    )}
+                  </div>
+
+                  {/* Pillar 2: Registrations Count */}
+                  <div style={{ background: "#ffffff", border: "1px solid #bfdbfe", borderRadius: "8px", padding: "12px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                      <strong style={{ fontSize: "12px", color: "#1e40af" }}>📝 Registrations Count</strong>
+                      <span style={{ fontSize: "13px", fontWeight: 800, color: "#1e40af" }}>{regVal}</span>
+                    </div>
+                    <div style={{ background: "#e2e8f0", borderRadius: "4px", height: "6px", overflow: "hidden", marginBottom: "6px" }}>
+                      <div style={{ background: "#2563eb", width: `${regBar}%`, height: "100%", transition: "width 0.3s ease" }} />
+                    </div>
+                    <small style={{ color: "#64748b", fontSize: "10.5px", display: "block" }}>
+                      {regDesc}
+                    </small>
+                    {regRemark && (
+                      <small style={{ color: "#1e40af", fontSize: "10px", display: "block", marginTop: "4px", fontStyle: "italic", background: "#eff6ff", padding: "3px 6px", borderRadius: "4px" }}>
+                        💬 {regRemark}
+                      </small>
+                    )}
+                  </div>
+
+                  {/* Pillar 3: Registration Renewal */}
+                  <div style={{ background: "#ffffff", border: "1px solid #e9d5ff", borderRadius: "8px", padding: "12px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                      <strong style={{ fontSize: "12px", color: "#6b21a8" }}>🔄 Registration Renewal</strong>
+                      <span style={{ fontSize: "13px", fontWeight: 800, color: "#6b21a8" }}>{renVal}</span>
+                    </div>
+                    <div style={{ background: "#e2e8f0", borderRadius: "4px", height: "6px", overflow: "hidden", marginBottom: "6px" }}>
+                      <div style={{ background: "#7c3aed", width: `${renBar}%`, height: "100%", transition: "width 0.3s ease" }} />
+                    </div>
+                    <small style={{ color: "#64748b", fontSize: "10.5px", display: "block" }}>
+                      {renDesc}
+                    </small>
+                    {renRemark && (
+                      <small style={{ color: "#6b21a8", fontSize: "10px", display: "block", marginTop: "4px", fontStyle: "italic", background: "#faf5ff", padding: "3px 6px", borderRadius: "4px" }}>
+                        💬 {renRemark}
+                      </small>
+                    )}
+                  </div>
+                </div>
+
+                <div style={{ marginTop: "10px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "6px", fontSize: "10.5px", color: "#475569" }}>
+                  <span>{hasEval ? `Verified by ${agentRatings!.updatedBy || "Super Admin Console"}` : "Super Admin Performance Evaluation"}</span>
+                  <span>{hasEval && agentRatings!.lastUpdated ? `Last Evaluated: ${new Date(agentRatings!.lastUpdated).toLocaleDateString()}` : "Status: Awaiting Super Admin review"}</span>
+                </div>
+              </section>
+            );
+          })()}
 
           <div className="metric-grid">
             <Metric
@@ -19198,17 +19257,17 @@ function ProfileAndSettingsPanel({
     initialSubTab === "features" && role === "Agent" ? "profile" : initialSubTab
   );
   const [showAgentRatingsBreakdown, setShowAgentRatingsBreakdown] = useState(false);
-  const [agentRatingsInfo, setAgentRatingsInfo] = useState({
-    businessFeedback: 98,
-    registrationsCount: 95,
-    registrationRenewal: 100,
-    overall: 98,
-    feedbackNote: "Positive merchant feedback and prompt onboarding support.",
-    registrationsNote: "Consistent onboarding performance across assigned sectors.",
-    renewalNote: "Solid retention on merchant subscription renewal deadlines.",
-    lastUpdated: "",
-    updatedBy: "Super Admin",
-  });
+  const [agentRatingsInfo, setAgentRatingsInfo] = useState<{
+    businessFeedback: number;
+    registrationsCount: number;
+    registrationRenewal: number;
+    overall: number;
+    feedbackNote?: string;
+    registrationsNote?: string;
+    renewalNote?: string;
+    lastUpdated?: string;
+    updatedBy?: string;
+  } | null>(null);
 
   useEffect(() => {
     if (role === "Agent") {
@@ -19715,7 +19774,7 @@ function ProfileAndSettingsPanel({
                 title="Click to toggle multi-pillar rating breakdown"
               >
                 <strong style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                  ⭐ {agentRatingsInfo.overall}%
+                  {agentRatingsInfo?.overall ? `⭐ ${agentRatingsInfo.overall}%` : "Active"}
                 </strong>
                 <small style={{ textDecoration: "underline" }}>Rating ℹ</small>
               </div>
@@ -19741,16 +19800,16 @@ function ProfileAndSettingsPanel({
         </div>
       </section>
 
-      {/* Expandable Agent Ratings Breakdown (Visible to Agent) */}
+      {/* Expandable Agent Ratings Breakdown (Genuine Data Only) */}
       {role === "Agent" && showAgentRatingsBreakdown && (
         <div style={{ background: "#f0fdf4", border: "1.5px solid #86efac", borderRadius: "12px", padding: "16px 20px", margin: "14px 0 18px", boxShadow: "0 4px 12px rgba(22, 101, 52, 0.08)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
             <div>
               <span style={{ fontSize: "10.5px", fontWeight: 800, color: "#166534", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                ⭐ OFFICIAL PERFORMANCE RATINGS
+                ⭐ PERFORMANCE EVALUATION
               </span>
               <h4 style={{ margin: "2px 0 0", fontSize: "16px", color: "#065f46" }}>
-                Ratings Breakdown: {agentRatingsInfo.overall}% Overall
+                {agentRatingsInfo?.overall ? `Ratings Breakdown: ${agentRatingsInfo.overall}% Overall` : "Agent Ratings & Activity Status"}
               </h4>
             </div>
             <button
@@ -19763,52 +19822,58 @@ function ProfileAndSettingsPanel({
             </button>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "10px" }}>
-            <div style={{ background: "#ffffff", border: "1px solid #bbf7d0", borderRadius: "8px", padding: "10px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                <span style={{ fontSize: "11.5px", fontWeight: 700, color: "#065f46" }}>1. Business Feedback</span>
-                <strong style={{ color: "#166534" }}>{agentRatingsInfo.businessFeedback}%</strong>
-              </div>
-              <small style={{ color: "#64748b", fontSize: "10px", display: "block" }}>
-                Reviews &amp; satisfaction from verified merchants.
-              </small>
-              {agentRatingsInfo.feedbackNote && (
-                <small style={{ color: "#047857", fontSize: "9.5px", display: "block", marginTop: "3px", fontStyle: "italic" }}>
-                  &ldquo;{agentRatingsInfo.feedbackNote}&rdquo;
+          {agentRatingsInfo ? (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "10px" }}>
+              <div style={{ background: "#ffffff", border: "1px solid #bbf7d0", borderRadius: "8px", padding: "10px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                  <span style={{ fontSize: "11.5px", fontWeight: 700, color: "#065f46" }}>1. Business Feedback</span>
+                  <strong style={{ color: "#166534" }}>{agentRatingsInfo.businessFeedback}%</strong>
+                </div>
+                <small style={{ color: "#64748b", fontSize: "10px", display: "block" }}>
+                  Reviews &amp; ratings submitted by verified merchants.
                 </small>
-              )}
-            </div>
+                {agentRatingsInfo.feedbackNote && (
+                  <small style={{ color: "#047857", fontSize: "9.5px", display: "block", marginTop: "3px", fontStyle: "italic" }}>
+                    &ldquo;{agentRatingsInfo.feedbackNote}&rdquo;
+                  </small>
+                )}
+              </div>
 
-            <div style={{ background: "#ffffff", border: "1px solid #bfdbfe", borderRadius: "8px", padding: "10px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                <span style={{ fontSize: "11.5px", fontWeight: 700, color: "#1e40af" }}>2. Registrations Count</span>
-                <strong style={{ color: "#1e40af" }}>{agentRatingsInfo.registrationsCount}%</strong>
-              </div>
-              <small style={{ color: "#64748b", fontSize: "10px", display: "block" }}>
-                Merchant registration volume &amp; onboarding quota.
-              </small>
-              {agentRatingsInfo.registrationsNote && (
-                <small style={{ color: "#1e40af", fontSize: "9.5px", display: "block", marginTop: "3px", fontStyle: "italic" }}>
-                  &ldquo;{agentRatingsInfo.registrationsNote}&rdquo;
+              <div style={{ background: "#ffffff", border: "1px solid #bfdbfe", borderRadius: "8px", padding: "10px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                  <span style={{ fontSize: "11.5px", fontWeight: 700, color: "#1e40af" }}>2. Registrations Count</span>
+                  <strong style={{ color: "#1e40af" }}>{agentRatingsInfo.registrationsCount}%</strong>
+                </div>
+                <small style={{ color: "#64748b", fontSize: "10px", display: "block" }}>
+                  Verified merchant onboarding quota performance.
                 </small>
-              )}
-            </div>
+                {agentRatingsInfo.registrationsNote && (
+                  <small style={{ color: "#1e40af", fontSize: "9.5px", display: "block", marginTop: "3px", fontStyle: "italic" }}>
+                    &ldquo;{agentRatingsInfo.registrationsNote}&rdquo;
+                  </small>
+                )}
+              </div>
 
-            <div style={{ background: "#ffffff", border: "1px solid #e9d5ff", borderRadius: "8px", padding: "10px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                <span style={{ fontSize: "11.5px", fontWeight: 700, color: "#6b21a8" }}>3. Registration Renewal</span>
-                <strong style={{ color: "#6b21a8" }}>{agentRatingsInfo.registrationRenewal}%</strong>
-              </div>
-              <small style={{ color: "#64748b", fontSize: "10px", display: "block" }}>
-                Annual subscription renewal compliance rate.
-              </small>
-              {agentRatingsInfo.renewalNote && (
-                <small style={{ color: "#6b21a8", fontSize: "9.5px", display: "block", marginTop: "3px", fontStyle: "italic" }}>
-                  &ldquo;{agentRatingsInfo.renewalNote}&rdquo;
+              <div style={{ background: "#ffffff", border: "1px solid #e9d5ff", borderRadius: "8px", padding: "10px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                  <span style={{ fontSize: "11.5px", fontWeight: 700, color: "#6b21a8" }}>3. Registration Renewal</span>
+                  <strong style={{ color: "#6b21a8" }}>{agentRatingsInfo.registrationRenewal}%</strong>
+                </div>
+                <small style={{ color: "#64748b", fontSize: "10px", display: "block" }}>
+                  Subscription renewal retention compliance.
                 </small>
-              )}
+                {agentRatingsInfo.renewalNote && (
+                  <small style={{ color: "#6b21a8", fontSize: "9.5px", display: "block", marginTop: "3px", fontStyle: "italic" }}>
+                    &ldquo;{agentRatingsInfo.renewalNote}&rdquo;
+                  </small>
+                )}
+              </div>
             </div>
-          </div>
+          ) : (
+            <p style={{ margin: 0, fontSize: "12px", color: "#475569" }}>
+              Performance ratings have not been evaluated yet by Super Admin. Onboard local businesses and collect merchant feedback to build your rating.
+            </p>
+          )}
         </div>
       )}
 
@@ -22826,9 +22891,9 @@ function CompanyPortal({
   const [selectedAgentForRatings, setSelectedAgentForRatings] = useState<AgentRecord | null>(null);
   const [showRatingsModal, setShowRatingsModal] = useState(false);
   const [ratingsForm, setRatingsForm] = useState({
-    businessFeedback: 98,
-    registrationsCount: 95,
-    registrationRenewal: 100,
+    businessFeedback: 0,
+    registrationsCount: 0,
+    registrationRenewal: 0,
     feedbackNote: "",
     registrationsNote: "",
     renewalNote: "",
@@ -23635,16 +23700,22 @@ function CompanyPortal({
                       </small>
                     )}
 
-                    {/* Agent Multi-Pillar Performance Ratings */}
+                    {/* Agent Multi-Pillar Performance Ratings (Genuine Data Only) */}
                     <div style={{ marginTop: "10px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "10px 12px" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px", flexWrap: "wrap", gap: "6px" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                           <span style={{ fontSize: "11px", fontWeight: 800, color: "#0f172a", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                            ⭐ Agent Ratings
+                            ⭐ Performance Ratings
                           </span>
-                          <span style={{ fontSize: "13px", fontWeight: 800, color: "#166534", background: "#dcfce7", padding: "1px 8px", borderRadius: "10px" }}>
-                            Overall: {agent.ratings?.overall ?? 98}%
-                          </span>
+                          {agent.ratings?.overall !== undefined ? (
+                            <span style={{ fontSize: "13px", fontWeight: 800, color: "#166534", background: "#dcfce7", padding: "1px 8px", borderRadius: "10px" }}>
+                              Overall: {agent.ratings.overall}%
+                            </span>
+                          ) : (
+                            <span style={{ fontSize: "11.5px", fontWeight: 700, color: "#b45309", background: "#fef3c7", padding: "1px 8px", borderRadius: "10px" }}>
+                              Pending Evaluation
+                            </span>
+                          )}
                         </div>
                         {accessLevel === "Super Admin" && (
                           <button
@@ -23653,9 +23724,9 @@ function CompanyPortal({
                             onClick={() => {
                               setSelectedAgentForRatings(agent);
                               setRatingsForm({
-                                businessFeedback: agent.ratings?.businessFeedback ?? 98,
-                                registrationsCount: agent.ratings?.registrationsCount ?? 95,
-                                registrationRenewal: agent.ratings?.registrationRenewal ?? 100,
+                                businessFeedback: agent.ratings?.businessFeedback ?? 0,
+                                registrationsCount: agent.ratings?.registrationsCount ?? 0,
+                                registrationRenewal: agent.ratings?.registrationRenewal ?? 0,
                                 feedbackNote: agent.ratings?.feedbackNote || "",
                                 registrationsNote: agent.ratings?.registrationsNote || "",
                                 renewalNote: agent.ratings?.renewalNote || "",
@@ -23664,30 +23735,38 @@ function CompanyPortal({
                             }}
                             style={{ fontSize: "11px", padding: "4px 10px", color: "#166534", borderColor: "#86efac", background: "#f0fdf4" }}
                           >
-                            ⭐ Update Ratings
+                            ⭐ {agent.ratings?.overall !== undefined ? "Update Ratings" : "Evaluate Agent"}
                           </button>
                         )}
                       </div>
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: "8px", fontSize: "11px" }}>
-                        <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "6px 8px" }}>
-                          <span style={{ color: "#64748b", display: "block", fontSize: "10px", fontWeight: 600 }}>1. Business Feedback</span>
-                          <strong style={{ color: "#065f46", fontSize: "13px" }}>{agent.ratings?.businessFeedback ?? 98}%</strong>
-                          <span style={{ display: "block", color: "#94a3b8", fontSize: "9.5px" }}>Merchant satisfaction</span>
-                        </div>
-                        <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "6px 8px" }}>
-                          <span style={{ color: "#64748b", display: "block", fontSize: "10px", fontWeight: 600 }}>2. Registrations Count</span>
-                          <strong style={{ color: "#1e40af", fontSize: "13px" }}>{agent.ratings?.registrationsCount ?? 95}%</strong>
-                          <span style={{ display: "block", color: "#94a3b8", fontSize: "9.5px" }}>Onboarding quota</span>
-                        </div>
-                        <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "6px 8px" }}>
-                          <span style={{ color: "#64748b", display: "block", fontSize: "10px", fontWeight: 600 }}>3. Registration Renewal</span>
-                          <strong style={{ color: "#6b21a8", fontSize: "13px" }}>{agent.ratings?.registrationRenewal ?? 100}%</strong>
-                          <span style={{ display: "block", color: "#94a3b8", fontSize: "9.5px" }}>Renewal retention</span>
-                        </div>
-                      </div>
-                      {agent.ratings?.feedbackNote && (
-                        <div style={{ fontSize: "10.5px", color: "#475569", marginTop: "6px", fontStyle: "italic", background: "#f1f5f9", padding: "4px 8px", borderRadius: "4px" }}>
-                          💬 &ldquo;{agent.ratings.feedbackNote}&rdquo; · Updated by {agent.ratings.updatedBy || "Super Admin"}
+                      {agent.ratings?.overall !== undefined ? (
+                        <>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: "8px", fontSize: "11px" }}>
+                            <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "6px 8px" }}>
+                              <span style={{ color: "#64748b", display: "block", fontSize: "10px", fontWeight: 600 }}>1. Business Feedback</span>
+                              <strong style={{ color: "#065f46", fontSize: "13px" }}>{agent.ratings.businessFeedback}%</strong>
+                              <span style={{ display: "block", color: "#94a3b8", fontSize: "9.5px" }}>Merchant satisfaction</span>
+                            </div>
+                            <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "6px 8px" }}>
+                              <span style={{ color: "#64748b", display: "block", fontSize: "10px", fontWeight: 600 }}>2. Registrations Count</span>
+                              <strong style={{ color: "#1e40af", fontSize: "13px" }}>{agent.ratings.registrationsCount}%</strong>
+                              <span style={{ display: "block", color: "#94a3b8", fontSize: "9.5px" }}>Onboarding quota</span>
+                            </div>
+                            <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "6px 8px" }}>
+                              <span style={{ color: "#64748b", display: "block", fontSize: "10px", fontWeight: 600 }}>3. Registration Renewal</span>
+                              <strong style={{ color: "#6b21a8", fontSize: "13px" }}>{agent.ratings.registrationRenewal}%</strong>
+                              <span style={{ display: "block", color: "#94a3b8", fontSize: "9.5px" }}>Renewal retention</span>
+                            </div>
+                          </div>
+                          {agent.ratings.feedbackNote && (
+                            <div style={{ fontSize: "10.5px", color: "#475569", marginTop: "6px", fontStyle: "italic", background: "#f1f5f9", padding: "4px 8px", borderRadius: "4px" }}>
+                              💬 &ldquo;{agent.ratings.feedbackNote}&rdquo; · Evaluated by {agent.ratings.updatedBy || "Super Admin"}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div style={{ fontSize: "11px", color: "#64748b" }}>
+                          No performance evaluation has been recorded yet. Click &quot;Evaluate Agent&quot; to score Business Feedback, Registrations Count, and Registration Renewal.
                         </div>
                       )}
                     </div>

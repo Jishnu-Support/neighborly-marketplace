@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentSession } from "@/app/lib/auth";
 import { readAgentRecords, updateAgentRatings } from "@/app/lib/agents";
+import { saveAgentFeedback, getFeedbacksForAgent } from "@/app/lib/agent-feedback";
 import { saveActivityLog } from "@/app/lib/activity-logs";
 import { createServerNotification } from "@/app/lib/notifications";
 
@@ -26,25 +27,37 @@ export async function POST(request: Request) {
   };
 
   const score = Math.max(1, Math.min(5, Math.round(Number(rating) || 5)));
-  const percentageScore = score * 20;
+  const code = (agentReferralCode || "JIT").trim().toUpperCase();
 
   const records = await readAgentRecords();
   const agent = records.find(
-    (a) => (agentId && a.id === agentId) || (agentReferralCode && a.referralCode === agentReferralCode) || a.referralCode === "JIT"
+    (a) => (agentId && a.id === agentId) || (a.referralCode && a.referralCode.toUpperCase() === code) || a.referralCode === "JIT"
   );
 
   if (!agent) {
     return NextResponse.json({ error: "Agent not found." }, { status: 404 });
   }
 
-  const currentBf = agent.ratings?.businessFeedback ?? 98;
-  const newBf = Math.round((currentBf * 0.7) + (percentageScore * 0.3));
+  // Save the genuine feedback record
+  await saveAgentFeedback({
+    agentId: agent.id,
+    agentReferralCode: agent.referralCode,
+    businessName: businessName || session.identity || "Local Merchant",
+    rating: score,
+    feedback: feedback || "",
+  });
+
+  // Calculate real average from all submitted feedbacks for this agent
+  const allFeedbacks = await getFeedbacksForAgent(agent.referralCode, agent.id);
+  const totalStars = allFeedbacks.reduce((acc, f) => acc + f.rating, 0);
+  const avgStars = totalStars / allFeedbacks.length;
+  const genuinePercentage = Math.round((avgStars / 5) * 100);
 
   const updatedRatings = {
-    businessFeedback: newBf,
-    registrationsCount: agent.ratings?.registrationsCount ?? 95,
-    registrationRenewal: agent.ratings?.registrationRenewal ?? 100,
-    feedbackNote: feedback ? `Merchant feedback from ${businessName || "Partner"}: "${feedback}" (${score}★)` : agent.ratings?.feedbackNote,
+    businessFeedback: genuinePercentage,
+    registrationsCount: agent.ratings?.registrationsCount ?? 0,
+    registrationRenewal: agent.ratings?.registrationRenewal ?? 0,
+    feedbackNote: feedback ? `Merchant review from ${businessName || "Verified Merchant"}: "${feedback}" (${score}★)` : (agent.ratings?.feedbackNote || `Average ${avgStars.toFixed(1)}★ across ${allFeedbacks.length} verified review${allFeedbacks.length > 1 ? "s" : ""}`),
     registrationsNote: agent.ratings?.registrationsNote,
     renewalNote: agent.ratings?.renewalNote,
   };
@@ -57,7 +70,7 @@ export async function POST(request: Request) {
       category: "Review",
       actorName: businessName || session.identity,
       actorRole: "Business",
-      details: `Merchant ${businessName || session.identity} rated field agent ${agent.name} ${score}/5 stars. Feedback: "${feedback || "No remarks"}". Business feedback score updated to ${newBf}%.`,
+      details: `Merchant ${businessName || session.identity} rated field agent ${agent.name} ${score}/5 stars. Feedback: "${feedback || "No remarks"}". Business feedback score updated to ${genuinePercentage}%.`,
     });
   } catch {}
 
