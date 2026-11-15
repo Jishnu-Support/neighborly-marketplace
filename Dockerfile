@@ -35,6 +35,11 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/cluster.js ./cluster.js
+
+# Ensure high-concurrency Node.js threadpool and memory headroom
+ENV UV_THREADPOOL_SIZE=64
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 
 # Ensure the app working directory and persistent volume mount are writable by nextjs user
 RUN mkdir -p /app/data && chown -R nextjs:nodejs /app /app/data
@@ -43,4 +48,4 @@ USER nextjs
 
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+CMD ["node", "cluster.js"]

@@ -99,7 +99,14 @@ export function createDefaultJitAgent(): StoredAgentPartner {
   };
 }
 
+let _cachedAgentRecords: StoredAgentPartner[] | null = null;
+let _cachedAgentTime = 0;
+const AGENT_CACHE_TTL_MS = 2500;
+
 export async function readAgentRecords(): Promise<StoredAgentPartner[]> {
+  if (_cachedAgentRecords && (Date.now() - _cachedAgentTime < AGENT_CACHE_TTL_MS)) {
+    return _cachedAgentRecords.map((a) => ({ ...a }));
+  }
   try {
     const raw = await readFile(storePath, "utf8");
     const parsed = JSON.parse(raw) as unknown;
@@ -167,6 +174,8 @@ export async function readAgentRecords(): Promise<StoredAgentPartner[]> {
       } catch {}
     }
 
+    _cachedAgentRecords = records;
+    _cachedAgentTime = Date.now();
     return records;
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
@@ -181,6 +190,8 @@ export async function readAgentRecords(): Promise<StoredAgentPartner[]> {
 }
 
 export async function writeAgentRecords(agents: StoredAgentPartner[]) {
+  _cachedAgentRecords = null;
+  _cachedAgentTime = 0;
   await mkdir(path.dirname(storePath), { recursive: true });
   await writeFile(storePath, JSON.stringify(agents, null, 2), { encoding: "utf8" });
 }

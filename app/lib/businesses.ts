@@ -126,6 +126,10 @@ export type PublicBusiness = Omit<StoredBusiness, "salt" | "passwordHash">;
 
 const storePath = resolveStorePath("NEIGHBORLY_BUSINESS_STORE", ".neighborly-businesses.json");
 
+let _cachedBusinessRecords: StoredBusiness[] | null = null;
+let _cachedBusinessTime = 0;
+const BUSINESS_CACHE_TTL_MS = 2500; // 2.5s in-memory burst cache to prevent disk I/O bottlenecks under high concurrency
+
 function hashPassword(password: string, salt: string) {
   return scryptSync(password, salt, 64).toString("hex");
 }
@@ -137,6 +141,9 @@ function passwordsMatch(password: string, salt: string, expectedHash: string) {
 }
 
 export async function readBusinessRecords(): Promise<StoredBusiness[]> {
+  if (_cachedBusinessRecords && (Date.now() - _cachedBusinessTime < BUSINESS_CACHE_TTL_MS)) {
+    return _cachedBusinessRecords.map((b) => ({ ...b }));
+  }
   try {
     const raw = await readFile(storePath, "utf8");
     const parsed = JSON.parse(raw) as unknown;
@@ -180,6 +187,8 @@ export async function readBusinessRecords(): Promise<StoredBusiness[]> {
           await writeBusinessRecords(records);
         } catch {}
       }
+      _cachedBusinessRecords = records;
+      _cachedBusinessTime = Date.now();
       return records;
     }
     return [];
@@ -192,6 +201,8 @@ export async function readBusinessRecords(): Promise<StoredBusiness[]> {
 }
 
 export async function writeBusinessRecords(businesses: StoredBusiness[]) {
+  _cachedBusinessRecords = null;
+  _cachedBusinessTime = 0;
   await mkdir(path.dirname(storePath), { recursive: true });
   const temporaryPath = `${storePath}.${process.pid}.tmp`;
   await writeFile(temporaryPath, JSON.stringify(businesses, null, 2), { encoding: "utf8", mode: 0o600 });
