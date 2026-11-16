@@ -142,7 +142,7 @@ function passwordsMatch(password: string, salt: string, expectedHash: string) {
 
 export async function readBusinessRecords(): Promise<StoredBusiness[]> {
   if (_cachedBusinessRecords && (Date.now() - _cachedBusinessTime < BUSINESS_CACHE_TTL_MS)) {
-    return _cachedBusinessRecords.map((b) => ({ ...b }));
+    return structuredClone(_cachedBusinessRecords);
   }
   try {
     const raw = await readFile(storePath, "utf8");

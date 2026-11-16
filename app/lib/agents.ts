@@ -105,7 +105,7 @@ const AGENT_CACHE_TTL_MS = 2500;
 
 export async function readAgentRecords(): Promise<StoredAgentPartner[]> {
   if (_cachedAgentRecords && (Date.now() - _cachedAgentTime < AGENT_CACHE_TTL_MS)) {
-    return _cachedAgentRecords.map((a) => ({ ...a }));
+    return structuredClone(_cachedAgentRecords);
   }
   try {
     const raw = await readFile(storePath, "utf8");
