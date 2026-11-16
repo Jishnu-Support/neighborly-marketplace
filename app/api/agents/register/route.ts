@@ -12,12 +12,20 @@ export async function POST(request: Request) {
       phone?: string;
       email?: string;
       password?: string;
+      aadharNumber?: string;
+      panNumber?: string;
+      aadharPhoto?: string;
+      panPhoto?: string;
     };
 
     const name = typeof body.name === "string" ? body.name.trim() : "";
     const phone = typeof body.phone === "string" ? body.phone.trim() : "";
     const password = typeof body.password === "string" ? body.password : "";
     const email = typeof body.email === "string" ? body.email.trim() : "";
+    const aadharNumber = typeof body.aadharNumber === "string" ? body.aadharNumber.trim() : "";
+    const panNumber = typeof body.panNumber === "string" ? body.panNumber.trim().toUpperCase() : "";
+    const aadharPhoto = typeof body.aadharPhoto === "string" ? body.aadharPhoto.trim() : "";
+    const panPhoto = typeof body.panPhoto === "string" ? body.panPhoto.trim() : "";
 
     if (!name || name.length < 2) {
       return NextResponse.json({ error: "Please provide your full name." }, { status: 400 });
@@ -46,6 +54,10 @@ export async function POST(request: Request) {
       password: password.length >= 6 ? password : undefined,
       approvalStatus: "Pending",
       active: false,
+      aadharNumber: aadharNumber || undefined,
+      panNumber: panNumber || undefined,
+      aadharPhoto: aadharPhoto || undefined,
+      panPhoto: panPhoto || undefined,
     });
 
     // Record persistent activity log for agent approval request
@@ -56,7 +68,7 @@ export async function POST(request: Request) {
         actorName: agent.name,
         actorPhone: agent.phone,
         actorRole: "Agent",
-        details: `New field agent partner application submitted by ${agent.name} (${agent.phone}${agent.email ? `, ${agent.email}` : ""}). Awaiting Administrator or Super Admin review and approval.`,
+        details: `New field agent partner application submitted by ${agent.name} (${agent.phone}${agent.email ? `, ${agent.email}` : ""}). ${agent.aadharNumber ? `Aadhaar: ${agent.aadharNumber}, ` : ""}${agent.panNumber ? `PAN: ${agent.panNumber}, ` : ""}${agent.aadharPhoto ? "Aadhaar Photo: Uploaded, " : ""}${agent.panPhoto ? "PAN Photo: Uploaded. " : ""}Awaiting Administrator or Super Admin review and approval.`,
       });
     } catch {
       // Non-blocking log

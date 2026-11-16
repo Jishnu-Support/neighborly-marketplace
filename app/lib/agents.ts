@@ -37,6 +37,10 @@ export type AgentPartner = {
   rejectionReason?: string;
   ratings?: AgentRatingBreakdown;
   commissionPricing?: AgentCommissionPricing;
+  aadharNumber?: string;
+  panNumber?: string;
+  aadharPhoto?: string;
+  panPhoto?: string;
 };
 
 export type StoredAgentPartner = AgentPartner & {
@@ -209,6 +213,10 @@ export async function createAgentPartner(input: {
   referralCode?: string;
   approvalStatus?: AgentApprovalStatus;
   active?: boolean;
+  aadharNumber?: string;
+  panNumber?: string;
+  aadharPhoto?: string;
+  panPhoto?: string;
 }): Promise<AgentPartner> {
   const existing = await readAgentRecords();
   const cleanPhone = (input.phone || "").replace(/\D/g, "");
@@ -249,6 +257,10 @@ export async function createAgentPartner(input: {
     approvalStatus,
     createdAt: new Date().toISOString(),
     referredCount: 0,
+    aadharNumber: input.aadharNumber?.trim() || undefined,
+    panNumber: input.panNumber?.trim()?.toUpperCase() || undefined,
+    aadharPhoto: input.aadharPhoto?.trim() || undefined,
+    panPhoto: input.panPhoto?.trim() || undefined,
     salt,
     passwordHash,
   };
@@ -388,6 +400,10 @@ export async function updateAgentDetails(
     email?: string;
     referralCode?: string;
     active?: boolean;
+    aadharNumber?: string;
+    panNumber?: string;
+    aadharPhoto?: string;
+    panPhoto?: string;
     commissionPricing?: {
       registrationPercentage: number;
       firstRenewalPercentage: number;
@@ -416,6 +432,18 @@ export async function updateAgentDetails(
   }
   if (typeof details.active === "boolean") {
     agent.active = details.active;
+  }
+  if (typeof details.aadharNumber === "string") {
+    agent.aadharNumber = details.aadharNumber.trim() || undefined;
+  }
+  if (typeof details.panNumber === "string") {
+    agent.panNumber = details.panNumber.trim().toUpperCase() || undefined;
+  }
+  if (typeof details.aadharPhoto === "string") {
+    agent.aadharPhoto = details.aadharPhoto.trim() || undefined;
+  }
+  if (typeof details.panPhoto === "string") {
+    agent.panPhoto = details.panPhoto.trim() || undefined;
   }
   if (details.commissionPricing) {
     const reg = Math.max(0, Math.min(100, Math.round(Number(details.commissionPricing.registrationPercentage) * 10) / 10));

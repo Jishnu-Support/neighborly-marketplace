@@ -23196,6 +23196,10 @@ function CompanyPortal({
     rejectionReason?: string;
     ratings?: AgentRatingDetails;
     commissionPricing?: AgentCommissionPricing;
+    aadharNumber?: string;
+    panNumber?: string;
+    aadharPhoto?: string;
+    panPhoto?: string;
   };
   const [approvalSubTab, setApprovalSubTab] = useState<"businesses" | "agents">("businesses");
   const [agentFilterTab, setAgentFilterTab] = useState<"all" | "pending" | "active" | "rejected">("all");
@@ -23227,6 +23231,10 @@ function CompanyPortal({
     secondRenewalPercentage: 10,
     subsequentRenewalPercentage: 10,
     customNotes: "",
+    aadharNumber: "",
+    panNumber: "",
+    aadharPhoto: "",
+    panPhoto: "",
   });
   const [pricingSubmitting, setPricingSubmitting] = useState(false);
 
@@ -23242,6 +23250,10 @@ function CompanyPortal({
       secondRenewalPercentage: agent.commissionPricing?.secondRenewalPercentage ?? 10,
       subsequentRenewalPercentage: agent.commissionPricing?.subsequentRenewalPercentage ?? 10,
       customNotes: agent.commissionPricing?.customNotes || "",
+      aadharNumber: agent.aadharNumber || "",
+      panNumber: agent.panNumber || "",
+      aadharPhoto: agent.aadharPhoto || "",
+      panPhoto: agent.panPhoto || "",
     });
     setShowAgentPricingModal(true);
   };
@@ -23262,6 +23274,10 @@ function CompanyPortal({
           phone: pricingForm.phone.trim(),
           email: pricingForm.email.trim(),
           referralCode: pricingForm.referralCode.trim(),
+          aadharNumber: pricingForm.aadharNumber.trim(),
+          panNumber: pricingForm.panNumber.trim().toUpperCase(),
+          aadharPhoto: pricingForm.aadharPhoto.trim(),
+          panPhoto: pricingForm.panPhoto.trim(),
           commissionPricing: {
             registrationPercentage: Number(pricingForm.registrationPercentage) || 0,
             firstRenewalPercentage: Number(pricingForm.firstRenewalPercentage) || 0,
@@ -24124,6 +24140,31 @@ function CompanyPortal({
                     <small style={{ display: "block", color: "#0f172a" }}>
                       Referral Code: <strong style={{ color: "#1e3a8a" }}>{agent.referralCode}</strong> · Businesses referred: {agent.referredCount || 0}
                     </small>
+                    {(agent.aadharNumber || agent.panNumber || agent.aadharPhoto || agent.panPhoto) && (
+                      <div style={{ marginTop: "6px", display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap", fontSize: "11px", background: "#f8fafc", padding: "6px 10px", borderRadius: "6px", border: "1px solid #e2e8f0" }}>
+                        <span>🪪 <strong>KYC Documents:</strong></span>
+                        {agent.aadharNumber && (
+                          <span style={{ color: "#334155" }}>
+                            Aadhaar: <strong style={{ letterSpacing: "0.5px" }}>{agent.aadharNumber}</strong>
+                            {agent.aadharPhoto && (
+                              <a href={agent.aadharPhoto} target="_blank" rel="noopener noreferrer" style={{ marginLeft: "4px", color: "#2563eb", textDecoration: "underline", fontWeight: 700 }}>
+                                [View Aadhaar Photo ↗]
+                              </a>
+                            )}
+                          </span>
+                        )}
+                        {agent.panNumber && (
+                          <span style={{ color: "#334155" }}>
+                            PAN: <strong style={{ letterSpacing: "0.5px", textTransform: "uppercase" }}>{agent.panNumber}</strong>
+                            {agent.panPhoto && (
+                              <a href={agent.panPhoto} target="_blank" rel="noopener noreferrer" style={{ marginLeft: "4px", color: "#2563eb", textDecoration: "underline", fontWeight: 700 }}>
+                                [View PAN Photo ↗]
+                              </a>
+                            )}
+                          </span>
+                        )}
+                      </div>
+                    )}
                     {isRejected && agent.rejectionReason && (
                       <div style={{ marginTop: "4px", fontSize: "11px", color: "#991b1b", background: "#fee2e2", padding: "3px 8px", borderRadius: "4px" }}>
                         Reason for rejection: {agent.rejectionReason}
@@ -25911,6 +25952,53 @@ function CompanyPortal({
                       onChange={(e) => setPricingForm((prev) => ({ ...prev, email: e.target.value }))}
                       style={{ width: "100%", padding: "7px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12.5px" }}
                     />
+                  </div>
+                </div>
+              </div>
+
+              {/* KYC Identity Verification Section in Modal */}
+              <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "10px", padding: "12px" }}>
+                <strong style={{ fontSize: "12px", color: "#166534", display: "block", marginBottom: "8px" }}>
+                  🪪 Agent KYC Documents (Aadhaar &amp; PAN)
+                </strong>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "#475569", marginBottom: "3px" }}>
+                      Aadhaar Number
+                    </label>
+                    <input
+                      type="text"
+                      value={pricingForm.aadharNumber}
+                      onChange={(e) => setPricingForm((prev) => ({ ...prev, aadharNumber: e.target.value }))}
+                      placeholder="12-digit Aadhaar"
+                      style={{ width: "100%", padding: "7px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12px" }}
+                    />
+                    {pricingForm.aadharPhoto && (
+                      <div style={{ marginTop: "4px" }}>
+                        <a href={pricingForm.aadharPhoto} target="_blank" rel="noopener noreferrer" style={{ fontSize: "11px", color: "#2563eb", textDecoration: "underline", fontWeight: 700 }}>
+                          👁️ View Aadhaar Card Photo ↗
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "#475569", marginBottom: "3px" }}>
+                      PAN Card Number
+                    </label>
+                    <input
+                      type="text"
+                      value={pricingForm.panNumber}
+                      onChange={(e) => setPricingForm((prev) => ({ ...prev, panNumber: e.target.value.toUpperCase() }))}
+                      placeholder="10-digit PAN"
+                      style={{ width: "100%", padding: "7px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "12px", textTransform: "uppercase" }}
+                    />
+                    {pricingForm.panPhoto && (
+                      <div style={{ marginTop: "4px" }}>
+                        <a href={pricingForm.panPhoto} target="_blank" rel="noopener noreferrer" style={{ fontSize: "11px", color: "#2563eb", textDecoration: "underline", fontWeight: 700 }}>
+                          👁️ View PAN Card Photo ↗
+                        </a>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

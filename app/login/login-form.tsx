@@ -130,6 +130,14 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
   const [regEmergencyPhone, setRegEmergencyPhone] = useState("");
   const [regEmergencyRelation, setRegEmergencyRelation] = useState("Family");
 
+  // Agent KYC & Identity Documents State
+  const [agentAadharNumber, setAgentAadharNumber] = useState("");
+  const [agentPanNumber, setAgentPanNumber] = useState("");
+  const [agentAadharPhoto, setAgentAadharPhoto] = useState("");
+  const [agentPanPhoto, setAgentPanPhoto] = useState("");
+  const [uploadingAadhar, setUploadingAadhar] = useState(false);
+  const [uploadingPan, setUploadingPan] = useState(false);
+
   // Controlled address states for Business registration with typeahead dropdowns
   const [bizLocality, setBizLocality] = useState("");
   const [bizCity, setBizCity] = useState("");
@@ -158,6 +166,10 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
     setRegPassword("");
     setRegConfirmPassword("");
     setPinnedBusinessCoords(null);
+    setAgentAadharNumber("");
+    setAgentPanNumber("");
+    setAgentAadharPhoto("");
+    setAgentPanPhoto("");
   };
   const info = portalInfo[portal];
 
@@ -360,11 +372,34 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
         return;
       }
       if (portal === "Agent") {
+        const formAadhar = String(form.get("aadharNumber") || agentAadharNumber).trim();
+        const formPan = String(form.get("panNumber") || agentPanNumber).trim();
+        if (!formAadhar) {
+          setIsSuccess(false);
+          setMessage("Please provide your 12-digit Aadhaar Card number for Agent registration.");
+          setBusy(false);
+          return;
+        }
+        if (!formPan) {
+          setIsSuccess(false);
+          setMessage("Please provide your 10-character PAN Card number for Agent registration.");
+          setBusy(false);
+          return;
+        }
         try {
           const response = await fetch("/api/agents/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, phone, password, email }),
+            body: JSON.stringify({
+              name,
+              phone,
+              password,
+              email,
+              aadharNumber: formAadhar,
+              panNumber: formPan,
+              aadharPhoto: agentAadharPhoto.trim(),
+              panPhoto: agentPanPhoto.trim(),
+            }),
           });
           const result = (await response.json()) as { error?: string; message?: string; requiresApproval?: boolean; agent?: { referralCode: string } };
           if (!response.ok) throw new Error(result.error || "Could not complete agent registration.");
@@ -1240,6 +1275,280 @@ export default function LoginForm({ portal }: { portal: PortalRole }) {
                   </div>
                 </div>
               </>
+            )}
+
+            {portal === "Agent" && (
+              <div style={{ background: "#f8fafc", border: "1.5px solid #cbd5e1", borderRadius: "10px", padding: "16px", margin: "6px 0 12px 0", display: "grid", gap: "14px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", borderBottom: "1px solid #e2e8f0", paddingBottom: "8px" }}>
+                  <span style={{ fontSize: "18px" }}>🪪</span>
+                  <div>
+                    <strong style={{ fontSize: "13px", color: "#0f172a", display: "block" }}>
+                      Identity Verification (KYC Documents) *
+                    </strong>
+                    <small style={{ color: "#64748b", fontSize: "11px" }}>
+                      Provide your official Aadhaar and PAN card details for company background verification and approval.
+                    </small>
+                  </div>
+                </div>
+
+                {/* Aadhaar Section */}
+                <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "12px", display: "grid", gap: "10px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <label style={{ fontSize: "12px", fontWeight: 700, color: "#1e293b", margin: 0 }}>
+                      1. Aadhaar Card Number *
+                    </label>
+                    <span style={{ fontSize: "10px", color: "#64748b" }}>12 digits</span>
+                  </div>
+                  <input
+                    name="aadharNumber"
+                    type="text"
+                    required
+                    maxLength={14}
+                    placeholder="e.g. 1234 5678 9012"
+                    value={agentAadharNumber}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/\D/g, "").slice(0, 12);
+                      const formatted = raw.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
+                      setAgentAadharNumber(formatted);
+                    }}
+                    style={{ background: "#f8fafc", fontSize: "13px", letterSpacing: "1px", fontWeight: 600 }}
+                  />
+
+                  {/* Aadhaar Photo Upload */}
+                  <div>
+                    <label style={{ fontSize: "11px", fontWeight: 600, color: "#475569", display: "block", marginBottom: "4px" }}>
+                      Upload Aadhaar Card Photo (Front / Full)
+                    </label>
+                    <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+                      <input
+                        type="file"
+                        id="agent-aadhar-file-input"
+                        accept="image/*"
+                        style={{ display: "none" }}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setUploadingAadhar(true);
+                          try {
+                            const formData = new FormData();
+                            formData.append("file", file);
+                            const res = await fetch("/api/businesses/upload", {
+                              method: "POST",
+                              body: formData,
+                            });
+                            const data = await res.json();
+                            if (!res.ok) throw new Error(data.error || "Upload failed");
+                            setAgentAadharPhoto(data.url);
+                          } catch (err: any) {
+                            alert(err.message || "Failed to upload Aadhaar card photo.");
+                          } finally {
+                            setUploadingAadhar(false);
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        disabled={uploadingAadhar}
+                        onClick={() => document.getElementById("agent-aadhar-file-input")?.click()}
+                        style={{
+                          padding: "7px 14px",
+                          background: agentAadharPhoto ? "#ecfdf5" : "#0f172a",
+                          color: agentAadharPhoto ? "#166534" : "#ffffff",
+                          border: agentAadharPhoto ? "1.5px solid #86efac" : "none",
+                          borderRadius: "7px",
+                          fontSize: "12px",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        {uploadingAadhar ? "⏳ Uploading..." : agentAadharPhoto ? "✓ Change Aadhaar Photo" : "📷 Upload Aadhaar Photo"}
+                      </button>
+
+                      {agentAadharPhoto && (
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <a
+                            href={agentAadharPhoto}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              fontSize: "11px",
+                              color: "#2563eb",
+                              textDecoration: "underline",
+                              fontWeight: 600,
+                            }}
+                          >
+                            👁️ View Photo
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => setAgentAadharPhoto("")}
+                            style={{
+                              background: "#fee2e2",
+                              color: "#991b1b",
+                              border: "none",
+                              borderRadius: "4px",
+                              padding: "2px 6px",
+                              fontSize: "10px",
+                              cursor: "pointer",
+                              fontWeight: 700,
+                            }}
+                          >
+                            ✕ Remove
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {agentAadharPhoto && (
+                      <div style={{ marginTop: "6px" }}>
+                        <img
+                          src={agentAadharPhoto}
+                          alt="Aadhaar Card Preview"
+                          style={{
+                            maxHeight: "90px",
+                            maxWidth: "160px",
+                            borderRadius: "6px",
+                            border: "1px solid #cbd5e1",
+                            objectFit: "contain",
+                            background: "#f1f5f9",
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* PAN Section */}
+                <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "12px", display: "grid", gap: "10px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <label style={{ fontSize: "12px", fontWeight: 700, color: "#1e293b", margin: 0 }}>
+                      2. PAN Card Number *
+                    </label>
+                    <span style={{ fontSize: "10px", color: "#64748b" }}>10 alphanumeric characters</span>
+                  </div>
+                  <input
+                    name="panNumber"
+                    type="text"
+                    required
+                    maxLength={10}
+                    placeholder="e.g. ABCDE1234F"
+                    value={agentPanNumber}
+                    onChange={(e) => {
+                      setAgentPanNumber(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10));
+                    }}
+                    style={{ background: "#f8fafc", fontSize: "13px", letterSpacing: "1px", fontWeight: 600, textTransform: "uppercase" }}
+                  />
+
+                  {/* PAN Photo Upload */}
+                  <div>
+                    <label style={{ fontSize: "11px", fontWeight: 600, color: "#475569", display: "block", marginBottom: "4px" }}>
+                      Upload PAN Card Photo
+                    </label>
+                    <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+                      <input
+                        type="file"
+                        id="agent-pan-file-input"
+                        accept="image/*"
+                        style={{ display: "none" }}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setUploadingPan(true);
+                          try {
+                            const formData = new FormData();
+                            formData.append("file", file);
+                            const res = await fetch("/api/businesses/upload", {
+                              method: "POST",
+                              body: formData,
+                            });
+                            const data = await res.json();
+                            if (!res.ok) throw new Error(data.error || "Upload failed");
+                            setAgentPanPhoto(data.url);
+                          } catch (err: any) {
+                            alert(err.message || "Failed to upload PAN card photo.");
+                          } finally {
+                            setUploadingPan(false);
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        disabled={uploadingPan}
+                        onClick={() => document.getElementById("agent-pan-file-input")?.click()}
+                        style={{
+                          padding: "7px 14px",
+                          background: agentPanPhoto ? "#ecfdf5" : "#0f172a",
+                          color: agentPanPhoto ? "#166534" : "#ffffff",
+                          border: agentPanPhoto ? "1.5px solid #86efac" : "none",
+                          borderRadius: "7px",
+                          fontSize: "12px",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        {uploadingPan ? "⏳ Uploading..." : agentPanPhoto ? "✓ Change PAN Photo" : "📷 Upload PAN Photo"}
+                      </button>
+
+                      {agentPanPhoto && (
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <a
+                            href={agentPanPhoto}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              fontSize: "11px",
+                              color: "#2563eb",
+                              textDecoration: "underline",
+                              fontWeight: 600,
+                            }}
+                          >
+                            👁️ View Photo
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => setAgentPanPhoto("")}
+                            style={{
+                              background: "#fee2e2",
+                              color: "#991b1b",
+                              border: "none",
+                              borderRadius: "4px",
+                              padding: "2px 6px",
+                              fontSize: "10px",
+                              cursor: "pointer",
+                              fontWeight: 700,
+                            }}
+                          >
+                            ✕ Remove
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {agentPanPhoto && (
+                      <div style={{ marginTop: "6px" }}>
+                        <img
+                          src={agentPanPhoto}
+                          alt="PAN Card Preview"
+                          style={{
+                            maxHeight: "90px",
+                            maxWidth: "160px",
+                            borderRadius: "6px",
+                            border: "1px solid #cbd5e1",
+                            objectFit: "contain",
+                            background: "#f1f5f9",
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             )}
 
             <label>

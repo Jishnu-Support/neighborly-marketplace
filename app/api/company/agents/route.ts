@@ -47,6 +47,10 @@ export async function POST(request: Request) {
       email?: string;
       password?: string;
       referralCode?: string;
+      aadharNumber?: string;
+      panNumber?: string;
+      aadharPhoto?: string;
+      panPhoto?: string;
       ratings?: {
         businessFeedback: number;
         registrationsCount: number;
@@ -110,6 +114,10 @@ export async function POST(request: Request) {
         email: typeof body.email === "string" ? body.email : undefined,
         referralCode: typeof body.referralCode === "string" ? body.referralCode : undefined,
         active: typeof body.active === "boolean" ? body.active : undefined,
+        aadharNumber: typeof body.aadharNumber === "string" ? body.aadharNumber : undefined,
+        panNumber: typeof body.panNumber === "string" ? body.panNumber : undefined,
+        aadharPhoto: typeof body.aadharPhoto === "string" ? body.aadharPhoto : undefined,
+        panPhoto: typeof body.panPhoto === "string" ? body.panPhoto : undefined,
         commissionPricing,
       }, adminIdentity);
 
