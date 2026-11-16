@@ -27399,7 +27399,7 @@ function CompanyCategoryManager({ accessLevel }: { accessLevel: CompanyAccessLev
         <button
           className="outline-button"
           type="button"
-          disabled={config.sectors.length >= 40}
+          disabled={config.sectors.length >= 200}
           onClick={() => setConfig((current) => ({ ...current, sectors: [...current.sectors, { name: "New sector", icon: "*", paths: [] }] }))}
         >
           + Add sector
@@ -27610,9 +27610,8 @@ function CategoryTreeEditor({
   function addChoice() {
     const name = newChoice.trim();
     if (!name || name.length > 60) { setMessage("Enter a name between 1 and 60 characters."); return; }
-    if (validPath.length >= 5) { setMessage("This category path has reached the five-level limit."); return; }
-    const choiceLimit = validPath.length < 2 ? 6 : 100;
-    if (currentNodes.length >= choiceLimit) { setMessage(`This level has reached its limit of ${choiceLimit} options.`); return; }
+    if (validPath.length >= 10) { setMessage("This category path has reached the maximum level limit."); return; }
+    if (currentNodes.length >= 5000) { setMessage("This level has reached its maximum capacity."); return; }
     if (currentNodes.some((node) => node.name.toLowerCase() === name.toLowerCase())) { setMessage("That choice already exists at this level."); return; }
     const prefix = validPath;
     const next = paths.filter((path) => !(path.length === prefix.length && prefix.every((part, index) => path[index]?.toLowerCase() === part.toLowerCase())));
@@ -27630,7 +27629,7 @@ function CategoryTreeEditor({
   return <div className="category-tree-editor">
     <div className="category-subcategory-heading"><div><h3>Categories and subcategories</h3><p>Select a checkbox to view its next level.</p></div></div>
     <div className="category-tree-breadcrumbs"><button type="button" className={validPath.length === 0 ? "active" : ""} onClick={() => { setActivePath([]); setEditingBranch([]); setMessage(""); }}>Top level</button>{validPath.map((part, index) => <Fragment key={`${part}-${index}`}><span aria-hidden="true">&gt;</span><button type="button" className={index === validPath.length - 1 ? "active" : ""} onClick={() => { setActivePath(validPath.slice(0, index + 1)); setEditingBranch([]); setMessage(""); }}><span aria-hidden="true">&#9745;</span> {part}</button></Fragment>)}</div>
-    <div className="category-tree-level"><div className="category-tree-level-heading"><strong>{validPath.length ? `Options under ${validPath[validPath.length - 1]}` : "Top-level options"}</strong><button type="button" className="category-add-choice" disabled={validPath.length >= 5 || currentNodes.length >= (validPath.length < 2 ? 6 : 100)} onClick={() => { setAdding((value) => !value); setNewChoice(""); setMessage(""); }}><span aria-hidden="true">+</span> New</button></div>
+    <div className="category-tree-level"><div className="category-tree-level-heading"><strong>{validPath.length ? `Options under ${validPath[validPath.length - 1]}` : "Top-level options"}</strong><button type="button" className="category-add-choice" disabled={validPath.length >= 10} onClick={() => { setAdding((value) => !value); setNewChoice(""); setMessage(""); }}><span aria-hidden="true">+</span> New</button></div>
       {adding && <div className="category-add-choice-form"><input autoFocus value={newChoice} onChange={(event) => setNewChoice(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addChoice(); } }} maxLength={60} placeholder="New option name" aria-label="New option name" /><button type="button" className="outline-button" onClick={addChoice}>Add</button><button type="button" className="outline-button" onClick={() => setAdding(false)}>Cancel</button></div>}
       {currentNodes.length ? <div className="category-tree-choice-list">{currentNodes.map((node) => {
         const logo = brandLogoFor(node.name, brandLogos);

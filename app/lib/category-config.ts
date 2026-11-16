@@ -24,30 +24,30 @@ export function validateCategoryConfig(input: unknown): input is CategoryConfig 
   const value = input as { sectors?: unknown; brandLogos?: unknown };
   const sectors = value.sectors;
   if (value.brandLogos !== undefined && (!value.brandLogos || typeof value.brandLogos !== "object" || Array.isArray(value.brandLogos) ||
-    Object.entries(value.brandLogos).length > 500 ||
+    Object.entries(value.brandLogos).length > 2000 ||
     Object.entries(value.brandLogos).some(([name, url]) => !name.trim() || name.length > 60 ||
       typeof url !== "string" || !/^\/api\/ads\/media\/[0-9a-f-]{36}\.(?:jpe?g|png|webp)$/i.test(url)))) return false;
-  if (!Array.isArray(sectors) || sectors.length < 1 || sectors.length > 50) return false;
+  if (!Array.isArray(sectors) || sectors.length < 1 || sectors.length > 200) return false;
   const names = new Set<string>();
   for (const value of sectors) {
     if (!value || typeof value !== "object") return false;
     const sector = value as Partial<CategorySector>;
     if (typeof sector.name !== "string" || !sector.name.trim() || sector.name.trim().length > 60 ||
       typeof sector.icon !== "string" || !sector.icon.trim() || sector.icon.length > 8 ||
-      !Array.isArray(sector.paths) || sector.paths.length > 1000) return false;
+      !Array.isArray(sector.paths) || sector.paths.length > 25000) return false;
     const normalized = sector.name.trim().toLowerCase();
     if (normalized === "all" || names.has(normalized)) return false;
     names.add(normalized);
     const paths = new Set<string>();
     for (const path of sector.paths) {
-      if (!Array.isArray(path) || path.length < 1 || path.length > 5 ||
+      if (!Array.isArray(path) || path.length < 1 || path.length > 10 ||
         !path.every((part) => typeof part === "string" && part.trim().length > 0 && part.trim().length <= 60)) return false;
       const normalizedPath = path.map((part) => part.trim().toLowerCase()).join("/");
       if (paths.has(normalizedPath)) return false;
       paths.add(normalizedPath);
     }
     const checkChildren = (nodes: { name: string; children: any[] }[], depth = 0): boolean =>
-      nodes.length <= (depth < 2 ? 15 : 100) && nodes.every((node) => checkChildren(node.children, depth + 1));
+      nodes.length <= 5000 && nodes.every((node) => checkChildren(node.children, depth + 1));
     if (!checkChildren(buildTree(sector.paths))) return false;
   }
   return true;
