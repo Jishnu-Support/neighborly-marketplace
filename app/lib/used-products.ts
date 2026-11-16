@@ -12,6 +12,11 @@ export type UsedProduct = {
   condition: string; // "Brand New" | "Like New" | "Good Condition" | "Fair Condition"
   description: string;
   location: string;
+  coordinates?: { latitude: number; longitude: number };
+  locality?: string;
+  city?: string;
+  pincode?: string;
+  landmark?: string;
   images: string[];
   sellerName: string;
   sellerPhone: string;
@@ -83,6 +88,11 @@ export async function createUsedProduct(input: {
   condition: string;
   description: string;
   location: string;
+  coordinates?: { latitude: number; longitude: number };
+  locality?: string;
+  city?: string;
+  pincode?: string;
+  landmark?: string;
   images: string[];
   sellerName: string;
   sellerPhone: string;
@@ -99,6 +109,14 @@ export async function createUsedProduct(input: {
     condition: input.condition.trim() || "Good Condition",
     description: input.description.trim(),
     location: input.location.trim() || "Local Area",
+    coordinates: input.coordinates && typeof input.coordinates.latitude === "number" && typeof input.coordinates.longitude === "number" ? {
+      latitude: input.coordinates.latitude,
+      longitude: input.coordinates.longitude,
+    } : undefined,
+    locality: input.locality?.trim() || undefined,
+    city: input.city?.trim() || undefined,
+    pincode: input.pincode?.trim() || undefined,
+    landmark: input.landmark?.trim() || undefined,
     images: Array.isArray(input.images) ? input.images.filter((url) => typeof url === "string" && url.trim().length > 0) : [],
     sellerName: input.sellerName.trim() || "Community Member",
     sellerPhone: input.sellerPhone.trim(),

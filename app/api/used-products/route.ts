@@ -46,6 +46,21 @@ export async function POST(request: Request) {
     const sellerWhatsapp = typeof body.sellerWhatsapp === "string" ? body.sellerWhatsapp.trim() : sellerPhone;
     const images = Array.isArray(body.images) ? (body.images as string[]) : [];
 
+    // Location coordinates and details
+    let coordinates: { latitude: number; longitude: number } | undefined;
+    if (body.coordinates && typeof body.coordinates === "object") {
+      const coords = body.coordinates as Record<string, unknown>;
+      const lat = Number(coords.latitude);
+      const lng = Number(coords.longitude);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        coordinates = { latitude: lat, longitude: lng };
+      }
+    }
+    const locality = typeof body.locality === "string" ? body.locality.trim() : undefined;
+    const city = typeof body.city === "string" ? body.city.trim() : undefined;
+    const pincode = typeof body.pincode === "string" ? body.pincode.trim() : undefined;
+    const landmark = typeof body.landmark === "string" ? body.landmark.trim() : undefined;
+
     if (!title) {
       return NextResponse.json({ error: "Product title is required." }, { status: 400 });
     }
@@ -64,6 +79,11 @@ export async function POST(request: Request) {
       condition,
       description,
       location,
+      coordinates,
+      locality,
+      city,
+      pincode,
+      landmark,
       images,
       sellerName,
       sellerPhone,

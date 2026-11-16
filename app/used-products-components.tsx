@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import { MapPinModal, type Coordinates } from "./map-pin-modal";
+import { calculateDistanceMeters, findNearestNeighborhood } from "./lib/ad-booking.shared";
 import type { UsedProduct } from "@/app/lib/used-products";
 
 export const USED_PRODUCT_CATEGORIES = [
@@ -244,6 +246,7 @@ export function UsedProductsMarketplaceModal({
   initialMode = "buy",
   onClose,
   currentLocality = "Hosur",
+  initialCoordinates = null,
   userName = "",
   userPhone = "",
   showNotice,
@@ -252,6 +255,7 @@ export function UsedProductsMarketplaceModal({
   initialMode?: "buy" | "sell";
   onClose: () => void;
   currentLocality?: string;
+  initialCoordinates?: Coordinates | null;
   userName?: string;
   userPhone?: string;
   showNotice?: (msg: string) => void;
@@ -269,7 +273,19 @@ export function UsedProductsMarketplaceModal({
   const [formPrice, setFormPrice] = useState("");
   const [formNegotiable, setFormNegotiable] = useState(true);
   const [formCondition, setFormCondition] = useState<string>("Good Condition (Gently Used)");
+  // Buyer Location State (Auto-fetch & Map Pin)
+  const [buyerCoords, setBuyerCoords] = useState<Coordinates | null>(initialCoordinates || null);
+  const [buyerLocality, setBuyerLocality] = useState<string>(currentLocality || "Hosur");
+  const [buyerLocating, setBuyerLocating] = useState(false);
+  const [showBuyerMapModal, setShowBuyerMapModal] = useState(false);
+  const [sortBy, setSortBy] = useState<"distance" | "newest" | "price_asc" | "price_desc">(initialCoordinates ? "distance" : "newest");
+
+  // Seller Location State (Auto-fetch & Map Pin)
   const [formLocation, setFormLocation] = useState(currentLocality || "Hosur");
+  const [formCoordinates, setFormCoordinates] = useState<Coordinates | null>(initialCoordinates || null);
+  const [formLocality, setFormLocality] = useState<string>(currentLocality || "Hosur");
+  const [sellerLocating, setSellerLocating] = useState(false);
+  const [showSellerMapModal, setShowSellerMapModal] = useState(false);
   const [formDescription, setFormDescription] = useState("");
   const [formSellerName, setFormSellerName] = useState(userName || "");
   const [formSellerPhone, setFormSellerPhone] = useState(userPhone || "");
@@ -307,7 +323,59 @@ export function UsedProductsMarketplaceModal({
     }
   };
 
-  const handleImageFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFetchBuyerLocation = () => {
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      if (showNotice) showNotice("Geolocation is not supported by your browser.");
+      return;
+    }
+    setBuyerLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const coords: Coordinates = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+        setBuyerCoords(coords);
+        const nearest = findNearestNeighborhood(coords);
+        if (nearest) setBuyerLocality(nearest);
+        setSortBy("distance");
+        setBuyerLocating(false);
+        if (showNotice) showNotice(`✓ Buyer location fetched: ${nearest} (${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)})`);
+      },
+      () => {
+        setBuyerLocating(false);
+        if (showNotice) showNotice("Could not access GPS. Click 'Change Pin' to pin on map.");
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  };
+
+  const handleFetchSellerLocation = () => {
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      setFormError("Geolocation is not supported by your browser.");
+      return;
+    }
+    setSellerLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const coords: Coordinates = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+        setFormCoordinates(coords);
+        const nearest = findNearestNeighborhood(coords);
+        setFormLocality(nearest);
+        setFormLocation((prev) => {
+          if (!prev || prev === "Hosur" || prev === "Local Area") return `${nearest}, Hosur`;
+          if (!prev.toLowerCase().includes(nearest.toLowerCase())) return `${prev}, ${nearest}`;
+          return prev;
+        });
+        setSellerLocating(false);
+        if (showNotice) showNotice(`✓ Seller location fetched: ${nearest} (${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)})`);
+      },
+      () => {
+        setSellerLocating(false);
+        setFormError("Could not access GPS. Please click 'Pin on Map' to choose your location.");
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  };
+
+    const handleImageFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -377,6 +445,9 @@ export function UsedProductsMarketplaceModal({
         negotiable: formNegotiable,
         condition: formCondition,
         location: formLocation.trim() || currentLocality || "Local Area",
+        coordinates: formCoordinates ? { latitude: formCoordinates.latitude, longitude: formCoordinates.longitude } : undefined,
+        locality: formLocality,
+        city: "Hosur",
         description: formDescription.trim(),
         sellerName: formSellerName.trim() || "Local Seller",
         sellerPhone: formSellerPhone.trim(),
@@ -418,21 +489,41 @@ export function UsedProductsMarketplaceModal({
 
   if (!isOpen) return null;
 
-  // Filtered products
-  const filteredProducts = products.filter((p) => {
-    if (selectedCategory !== "All" && p.category.toLowerCase() !== selectedCategory.toLowerCase()) {
-      return false;
+  // Sorted & Filtered products (by Category, Search Query, and Distance)
+  const filteredProducts = useMemo(() => {
+    let result = products.filter((p) => {
+      if (selectedCategory !== "All" && p.category.toLowerCase() !== selectedCategory.toLowerCase()) {
+        return false;
+      }
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchTitle = p.title.toLowerCase().includes(q);
+        const matchDesc = p.description.toLowerCase().includes(q);
+        const matchLoc = p.location.toLowerCase().includes(q);
+        const matchCat = p.category.toLowerCase().includes(q);
+        const matchSeller = p.sellerName.toLowerCase().includes(q);
+        if (!matchTitle && !matchDesc && !matchLoc && !matchCat && !matchSeller) return false;
+      }
+      return true;
+    });
+
+    if (sortBy === "distance" && buyerCoords) {
+      result.sort((a, b) => {
+        const distA = a.coordinates ? calculateDistanceMeters(buyerCoords, a.coordinates) : 9999999;
+        const distB = b.coordinates ? calculateDistanceMeters(buyerCoords, b.coordinates) : 9999999;
+        return distA - distB;
+      });
+    } else if (sortBy === "price_asc") {
+      result.sort((a, b) => a.price - b.price);
+    } else if (sortBy === "price_desc") {
+      result.sort((a, b) => b.price - a.price);
+    } else {
+      // newest
+      result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      const matchTitle = p.title.toLowerCase().includes(q);
-      const matchDesc = p.description.toLowerCase().includes(q);
-      const matchLoc = p.location.toLowerCase().includes(q);
-      const matchCat = p.category.toLowerCase().includes(q);
-      if (!matchTitle && !matchDesc && !matchLoc && !matchCat) return false;
-    }
-    return true;
-  });
+
+    return result;
+  }, [products, selectedCategory, searchQuery, sortBy, buyerCoords]);
 
   return (
     <div
@@ -597,6 +688,102 @@ export function UsedProductsMarketplaceModal({
         <div style={{ flex: 1, overflowY: "auto", padding: "18px 20px" }}>
           {mode === "buy" ? (
             <div>
+              {/* Buyer Location Bar */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  flexWrap: "wrap",
+                  gap: "10px",
+                  background: "#f0fdf4",
+                  border: "1px solid #bbf7d0",
+                  padding: "10px 14px",
+                  borderRadius: "12px",
+                  marginBottom: "14px",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: "18px" }}>📍</span>
+                  <div>
+                    <div style={{ fontSize: "10.5px", fontWeight: 700, color: "#166534", textTransform: "uppercase" }}>
+                      Buyer Location &amp; Proximity
+                    </div>
+                    <div style={{ fontSize: "13px", fontWeight: 700, color: "#065f46", display: "flex", alignItems: "center", gap: "6px" }}>
+                      <span>{buyerLocality || "Hosur"}</span>
+                      {buyerCoords && (
+                        <span style={{ fontSize: "11px", fontWeight: 500, color: "#15803d" }}>
+                          ({buyerCoords.latitude.toFixed(3)}, {buyerCoords.longitude.toFixed(3)})
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    onClick={handleFetchBuyerLocation}
+                    disabled={buyerLocating}
+                    style={{
+                      padding: "6px 12px",
+                      background: "#ffffff",
+                      border: "1.5px solid #16a34a",
+                      borderRadius: "8px",
+                      fontSize: "12px",
+                      fontWeight: 700,
+                      color: "#166534",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                  >
+                    {buyerLocating ? "⏳ Locating..." : "🎯 Auto-Fetch My Location"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowBuyerMapModal(true)}
+                    style={{
+                      padding: "6px 12px",
+                      background: "#166534",
+                      border: "none",
+                      borderRadius: "8px",
+                      fontSize: "12px",
+                      fontWeight: 700,
+                      color: "#ffffff",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                  >
+                    🗺️ Pin on Map
+                  </button>
+
+                  <div style={{ display: "flex", alignItems: "center", gap: "4px", marginLeft: "4px" }}>
+                    <label style={{ fontSize: "11.5px", fontWeight: 600, color: "#334155" }}>Sort:</label>
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value as any)}
+                      style={{
+                        padding: "5px 8px",
+                        borderRadius: "8px",
+                        border: "1px solid #cbd5e1",
+                        fontSize: "12px",
+                        background: "#ffffff",
+                        fontWeight: 600,
+                      }}
+                    >
+                      <option value="distance">📍 Nearest First</option>
+                      <option value="newest">🕒 Newest Listed</option>
+                      <option value="price_asc">₹ Price: Low to High</option>
+                      <option value="price_desc">₹ Price: High to Low</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
               {/* Search & Category Filter Bar */}
               <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginBottom: "14px" }}>
                 <div style={{ flex: "1 1 260px", position: "relative" }}>
@@ -755,6 +942,7 @@ export function UsedProductsMarketplaceModal({
                     <UsedProductCard
                       key={item.id}
                       item={item}
+                      buyerCoords={buyerCoords}
                       onSelect={() => setSelectedProduct(item)}
                     />
                   ))}
@@ -898,25 +1086,80 @@ export function UsedProductsMarketplaceModal({
                   </div>
                 </div>
 
-                {/* Location */}
-                <div>
-                  <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#334155", marginBottom: "4px" }}>
-                    Location / Locality *
-                  </label>
+                {/* Seller Location & Map Pin */}
+                <div style={{ background: "#f0fdf4", padding: "14px", borderRadius: "10px", border: "1.5px solid #86efac" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px", flexWrap: "wrap", gap: "6px" }}>
+                    <label style={{ fontSize: "12px", fontWeight: 700, color: "#166534", margin: 0 }}>
+                      📍 Seller Location &amp; Map Pin *
+                    </label>
+                    <div style={{ display: "flex", gap: "6px" }}>
+                      <button
+                        type="button"
+                        onClick={handleFetchSellerLocation}
+                        disabled={sellerLocating}
+                        style={{
+                          padding: "5px 10px",
+                          background: "#ffffff",
+                          border: "1.5px solid #16a34a",
+                          borderRadius: "6px",
+                          fontSize: "11.5px",
+                          fontWeight: 700,
+                          color: "#166534",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {sellerLocating ? "⏳ Fetching GPS..." : "🎯 Auto-Fetch Location"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowSellerMapModal(true)}
+                        style={{
+                          padding: "5px 10px",
+                          background: "#166534",
+                          border: "none",
+                          borderRadius: "6px",
+                          fontSize: "11.5px",
+                          fontWeight: 700,
+                          color: "#ffffff",
+                          cursor: "pointer",
+                        }}
+                      >
+                        🗺️ Pin on Map
+                      </button>
+                    </div>
+                  </div>
+
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Bagalur Road, Hosur or Mathigiri"
+                    placeholder="e.g. Bagalur Road, Near Ring Road Circle, Hosur"
                     value={formLocation}
                     onChange={(e) => setFormLocation(e.target.value)}
                     style={{
                       width: "100%",
                       padding: "10px 12px",
                       borderRadius: "8px",
-                      border: "1px solid #cbd5e1",
+                      border: "1px solid #86efac",
                       fontSize: "13px",
+                      marginBottom: "6px",
+                      background: "#ffffff",
                     }}
                   />
+
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "11.5px", color: "#15803d", flexWrap: "wrap", gap: "6px" }}>
+                    <span>
+                      {formCoordinates ? (
+                        <span>✓ Pin Pinned: <strong>{formLocality}</strong> ({formCoordinates.latitude.toFixed(4)}, {formCoordinates.longitude.toFixed(4)})</span>
+                      ) : (
+                        <span>💡 Click <em>Auto-Fetch Location</em> or <em>Pin on Map</em> so nearby buyers can see exact distance.</span>
+                      )}
+                    </span>
+                    {formCoordinates && (
+                      <span style={{ background: "#dcfce7", color: "#166534", padding: "2px 8px", borderRadius: "6px", fontWeight: 700, fontSize: "10.5px", border: "1px solid #bbf7d0" }}>
+                        GPS Verified Pin
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Description */}
@@ -1171,10 +1414,50 @@ export function UsedProductsMarketplaceModal({
       {selectedProduct && (
         <UsedProductDetailModal
           product={selectedProduct}
+          buyerCoords={buyerCoords}
+          buyerLocality={buyerLocality}
           onClose={() => setSelectedProduct(null)}
           showNotice={showNotice}
         />
       )}
+
+      {/* Buyer Map Pin Modal */}
+      <MapPinModal
+        isOpen={showBuyerMapModal}
+        initialCoordinates={buyerCoords}
+        title="Pin Your Buyer Location"
+        onClose={() => setShowBuyerMapModal(false)}
+        onConfirm={(coords: Coordinates) => {
+          setBuyerCoords(coords);
+          const locality = findNearestNeighborhood(coords);
+          if (locality) setBuyerLocality(locality);
+          setSortBy("distance");
+          setShowBuyerMapModal(false);
+          if (showNotice) showNotice(`✓ Buyer location pinned: ${locality || "Hosur"}`);
+        }}
+      />
+
+      {/* Seller Map Pin Modal */}
+      <MapPinModal
+        isOpen={showSellerMapModal}
+        initialCoordinates={formCoordinates}
+        title="Pin Your Product Pickup Location"
+        onClose={() => setShowSellerMapModal(false)}
+        onConfirm={(coords: Coordinates) => {
+          setFormCoordinates(coords);
+          const locality = findNearestNeighborhood(coords);
+          if (locality) {
+            setFormLocality(locality);
+            setFormLocation((prev) => {
+              if (!prev || prev === "Hosur" || prev === "Local Area") return `${locality}, Hosur`;
+              if (!prev.toLowerCase().includes(locality.toLowerCase())) return `${prev}, ${locality}`;
+              return prev;
+            });
+          }
+          setShowSellerMapModal(false);
+          if (showNotice) showNotice(`✓ Product location pinned: ${locality || "Hosur"}`);
+        }}
+      />
     </div>
   );
 }
@@ -1184,14 +1467,25 @@ export function UsedProductsMarketplaceModal({
  */
 function UsedProductCard({
   item,
+  buyerCoords,
   onSelect,
 }: {
   item: UsedProduct;
+  buyerCoords?: Coordinates | null;
   onSelect: () => void;
 }) {
   const cleanPhone = (item.sellerPhone || "").replace(/\D/g, "");
   const whatsappNumber = (item.sellerWhatsapp || item.sellerPhone || "").replace(/\D/g, "");
   const defaultImage = item.images && item.images.length > 0 ? item.images[0] : null;
+
+  const distanceMeters = useMemo(() => {
+    if (!buyerCoords || !item.coordinates) return null;
+    return calculateDistanceMeters(buyerCoords, item.coordinates);
+  }, [buyerCoords, item.coordinates]);
+
+  const distanceText = distanceMeters !== null
+    ? (distanceMeters < 1000 ? `${Math.round(distanceMeters)}m away` : `${(distanceMeters / 1000).toFixed(1)} km away`)
+    : null;
 
   const handleCall = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -1203,8 +1497,9 @@ function UsedProductCard({
   const handleWhatsapp = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (whatsappNumber) {
+      const distInfo = distanceText ? ` (~ ${distanceText})` : '';
       const msg = encodeURIComponent(
-        `Hi ${item.sellerName}, I am interested in your used item "${item.title}" (₹${item.price.toLocaleString("en-IN")}) listed on Bizearch.in.`
+        `Hi ${item.sellerName}, I am interested in your used item "${item.title}" (₹${item.price.toLocaleString("en-IN")}) listed on Bizearch.in${distInfo}. Is it still available?`
       );
       window.open(`https://wa.me/91${whatsappNumber.slice(-10)}?text=${msg}`, "_blank");
     }
@@ -1336,9 +1631,24 @@ function UsedProductCard({
           {item.title}
         </h4>
 
-        {/* Location & Seller */}
-        <div style={{ fontSize: "11px", color: "#64748b", marginBottom: "10px" }}>
-          📍 {item.location} • 👤 {item.sellerName}
+        {/* Location & Seller & Proximity Badge */}
+        <div style={{ fontSize: "11px", color: "#64748b", marginBottom: "10px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "4px" }}>
+          <span>📍 {item.location} • 👤 {item.sellerName}</span>
+          {distanceText && (
+            <span
+              style={{
+                background: "#dcfce7",
+                color: "#166534",
+                fontSize: "10px",
+                fontWeight: 700,
+                padding: "2px 6px",
+                borderRadius: "5px",
+                border: "1px solid #86efac",
+              }}
+            >
+              🚗 {distanceText}
+            </span>
+          )}
         </div>
 
         {/* Action Buttons: Call & WhatsApp */}
@@ -1394,16 +1704,39 @@ function UsedProductCard({
  */
 export function UsedProductDetailModal({
   product,
+  buyerCoords = null,
+  buyerLocality = "Hosur",
   onClose,
   showNotice,
 }: {
   product: UsedProduct;
+  buyerCoords?: Coordinates | null;
+  buyerLocality?: string;
   onClose: () => void;
   showNotice?: (msg: string) => void;
 }) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const cleanPhone = (product.sellerPhone || "").replace(/\D/g, "");
   const whatsappNumber = (product.sellerWhatsapp || product.sellerPhone || "").replace(/\D/g, "");
+
+  const distanceMeters = useMemo(() => {
+    if (!buyerCoords || !product.coordinates) return null;
+    return calculateDistanceMeters(buyerCoords, product.coordinates);
+  }, [buyerCoords, product.coordinates]);
+
+  const distanceText = distanceMeters !== null
+    ? (distanceMeters < 1000 ? `${Math.round(distanceMeters)}m away` : `${(distanceMeters / 1000).toFixed(1)} km away`)
+    : null;
+
+  const getDirectionsUrl = () => {
+    if (product.coordinates) {
+      if (buyerCoords) {
+        return `https://www.google.com/maps/dir/?api=1&origin=${buyerCoords.latitude},${buyerCoords.longitude}&destination=${product.coordinates.latitude},${product.coordinates.longitude}`;
+      }
+      return `https://www.google.com/maps/search/?api=1&query=${product.coordinates.latitude},${product.coordinates.longitude}`;
+    }
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(product.location + ", Hosur")}`;
+  };
 
   const handleCall = () => {
     if (cleanPhone) {
@@ -1413,8 +1746,9 @@ export function UsedProductDetailModal({
 
   const handleWhatsapp = () => {
     if (whatsappNumber) {
+      const locDetail = distanceText ? ` located near ${buyerLocality || 'Hosur'} (~${distanceText})` : (buyerLocality ? ` located in ${buyerLocality}` : '');
       const msg = encodeURIComponent(
-        `Hi ${product.sellerName}, I am interested in your used item "${product.title}" (₹${product.price.toLocaleString("en-IN")}) listed on Bizearch.in.`
+        `Hi ${product.sellerName}, I am interested in your used item "${product.title}" (₹${product.price.toLocaleString("en-IN")}) listed on Bizearch.in.${locDetail ? ` I am a buyer${locDetail}.` : ''} Is it still available for pickup?`
       );
       window.open(`https://wa.me/91${whatsappNumber.slice(-10)}?text=${msg}`, "_blank");
     }
@@ -1593,9 +1927,64 @@ export function UsedProductDetailModal({
             {product.title}
           </h3>
 
-          <div style={{ display: "flex", gap: "12px", fontSize: "12px", color: "#64748b", marginBottom: "16px" }}>
+          <div style={{ display: "flex", gap: "12px", fontSize: "12px", color: "#64748b", marginBottom: "14px" }}>
             <span>📁 {product.category}</span>
-            <span>📍 {product.location}</span>
+          </div>
+
+          {/* Location & Map Directions Card */}
+          <div
+            style={{
+              background: "#f0fdf4",
+              border: "1px solid #bbf7d0",
+              borderRadius: "10px",
+              padding: "10px 14px",
+              marginBottom: "16px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: "8px",
+            }}
+          >
+            <div>
+              <div style={{ fontSize: "10.5px", fontWeight: 700, color: "#166534", textTransform: "uppercase" }}>
+                ITEM LOCATION &amp; PROXIMITY
+              </div>
+              <div style={{ fontSize: "13px", fontWeight: 700, color: "#065f46" }}>
+                📍 {product.location}
+              </div>
+              {distanceText && (
+                <div style={{ fontSize: "12px", color: "#15803d", fontWeight: 600, marginTop: "2px" }}>
+                  🚗 Approx. <strong>{distanceText}</strong> from your pinned location ({buyerLocality || "Hosur"})
+                </div>
+              )}
+              {product.coordinates && (
+                <div style={{ fontSize: "11px", color: "#64748b", marginTop: "2px" }}>
+                  GPS: {product.coordinates.latitude.toFixed(4)}, {product.coordinates.longitude.toFixed(4)}
+                </div>
+              )}
+            </div>
+
+            <a
+              href={getDirectionsUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                padding: "7px 12px",
+                background: "#166534",
+                color: "#ffffff",
+                borderRadius: "8px",
+                fontSize: "12px",
+                fontWeight: 700,
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "4px",
+                boxShadow: "0 2px 4px rgba(22, 101, 52, 0.2)",
+              }}
+            >
+              🗺️ {buyerCoords && product.coordinates ? "Get Directions" : "View on Google Maps"}
+            </a>
           </div>
 
           {/* Description */}

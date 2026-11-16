@@ -11526,6 +11526,7 @@ export default function Home() {
           loadUsedProductsCount();
         }}
         currentLocality={selectedNeighborhood !== "All Localities" ? selectedNeighborhood : (selectedCity !== "All India" ? selectedCity : "Hosur")}
+        initialCoordinates={locationCoordinates}
         userName={currentCustomerProfile?.fullName || sessionIdentity || ""}
         userPhone={currentCustomerProfile?.phone || ""}
         showNotice={showNotice}
