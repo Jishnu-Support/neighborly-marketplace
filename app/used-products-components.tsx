@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { MapPinModal, type Coordinates } from "./map-pin-modal";
 import { calculateDistanceMeters, findNearestNeighborhood } from "./lib/ad-booking.shared";
 import type { UsedProduct } from "@/app/lib/used-products";
@@ -299,14 +299,19 @@ export function UsedProductsMarketplaceModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setMode(initialMode);
-  }, [initialMode]);
-
-  useEffect(() => {
     if (isOpen) {
+      setMode(initialMode);
+      setFormError("");
       loadProducts();
+      if (userName && !formSellerName) setFormSellerName(userName);
+      if (userPhone && !formSellerPhone) setFormSellerPhone(userPhone);
+      if (userPhone && !formSellerWhatsapp) setFormSellerWhatsapp(userPhone);
+      if (initialCoordinates && !formCoordinates) setFormCoordinates(initialCoordinates);
+      if (initialCoordinates && !buyerCoords) setBuyerCoords(initialCoordinates);
+      if (currentLocality && !formLocality) setFormLocality(currentLocality);
+      if (currentLocality && !buyerLocality) setBuyerLocality(currentLocality);
     }
-  }, [isOpen]);
+  }, [isOpen, initialMode, userName, userPhone, initialCoordinates, currentLocality]);
 
   const loadProducts = async () => {
     setLoading(true);
@@ -479,6 +484,9 @@ export function UsedProductsMarketplaceModal({
 
       // Refresh listings and switch to Buy mode
       await loadProducts();
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("neighborly-used-products-updated"));
+      }
       setMode("buy");
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Failed to post product.");
@@ -2076,26 +2084,62 @@ export function UsedProductDetailModal({
 export function UsedProductsPanel({
   onOpenSell,
   showNotice,
+  currentLocality = "Hosur",
+  initialCoordinates = null,
+  userName = "",
+  userPhone = "",
+  onOpenMarketplace,
 }: {
   onOpenSell?: () => void;
   showNotice?: (msg: string) => void;
+  currentLocality?: string;
+  initialCoordinates?: Coordinates | null;
+  userName?: string;
+  userPhone?: string;
+  onOpenMarketplace?: (mode: "buy" | "sell") => void;
 }) {
   const [products, setProducts] = useState<UsedProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [selectedProduct, setSelectedProduct] = useState<UsedProduct | null>(null);
+  const [panelSellModalOpen, setPanelSellModalOpen] = useState(false);
 
-  useEffect(() => {
-    fetch("/api/used-products", { cache: "no-store" })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
+  const loadPanelProducts = useCallback(async () => {
+    try {
+      const res = await fetch("/api/used-products", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
         if (data && Array.isArray(data.products)) {
           setProducts(data.products);
         }
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      }
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadPanelProducts();
+    const handleUpdated = () => {
+      loadPanelProducts();
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("neighborly-used-products-updated", handleUpdated);
+      return () => window.removeEventListener("neighborly-used-products-updated", handleUpdated);
+    }
+  }, [loadPanelProducts]);
+
+  const handleOpenSell = () => {
+    if (onOpenMarketplace) {
+      onOpenMarketplace("sell");
+    } else if (onOpenSell) {
+      onOpenSell();
+    } else {
+      setPanelSellModalOpen(true);
+    }
+  };
 
   const filtered = products.filter((p) => {
     if (selectedCategory !== "All" && p.category.toLowerCase() !== selectedCategory.toLowerCase()) {
@@ -2114,16 +2158,14 @@ export function UsedProductsPanel({
             Buy pre-owned goods or list your used items for free. Direct Call &amp; WhatsApp reach.
           </p>
         </div>
-        {onOpenSell && (
-          <button
-            type="button"
-            className="primary-button"
-            onClick={onOpenSell}
-            style={{ fontSize: "12.5px", padding: "8px 14px" }}
-          >
-            + Sell a Used Product
-          </button>
-        )}
+        <button
+          type="button"
+          className="primary-button"
+          onClick={handleOpenSell}
+          style={{ fontSize: "12.5px", padding: "8px 14px" }}
+        >
+          + Sell a Used Product
+        </button>
       </div>
 
       {/* Category Pills */}
@@ -2159,16 +2201,14 @@ export function UsedProductsPanel({
           <p style={{ margin: "0 0 12px", fontSize: "12px", color: "#64748b" }}>
             Be the first to list a pre-owned item for sale in your neighborhood.
           </p>
-          {onOpenSell && (
-            <button
-              type="button"
-              className="primary-button"
-              onClick={onOpenSell}
-              style={{ fontSize: "12px", padding: "6px 12px" }}
-            >
-              + Sell a Used Product
-            </button>
-          )}
+          <button
+            type="button"
+            className="primary-button"
+            onClick={handleOpenSell}
+            style={{ fontSize: "12px", padding: "6px 12px" }}
+          >
+            + Sell a Used Product
+          </button>
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "14px" }}>
@@ -2182,6 +2222,22 @@ export function UsedProductsPanel({
         <UsedProductDetailModal
           product={selectedProduct}
           onClose={() => setSelectedProduct(null)}
+          showNotice={showNotice}
+        />
+      )}
+
+      {panelSellModalOpen && (
+        <UsedProductsMarketplaceModal
+          isOpen={panelSellModalOpen}
+          initialMode="sell"
+          onClose={() => {
+            setPanelSellModalOpen(false);
+            loadPanelProducts();
+          }}
+          currentLocality={currentLocality}
+          initialCoordinates={initialCoordinates}
+          userName={userName}
+          userPhone={userPhone}
           showNotice={showNotice}
         />
       )}

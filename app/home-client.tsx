@@ -2536,7 +2536,8 @@ export default function Home() {
       if (custom.detail?.askChoice) {
         setShowUsedProductChoiceModal(true);
       } else {
-        if (custom.detail?.mode) setUsedProductInitialMode(custom.detail.mode);
+        const targetMode = custom.detail?.mode || "buy";
+        setUsedProductInitialMode(targetMode);
         setShowUsedProductsModal(true);
       }
     };
@@ -10318,6 +10319,12 @@ export default function Home() {
             onOpenPortal={openPortal}
             onLanguageChange={(l) => setLang(l)}
             showNotice={showNotice}
+            onOpenUsedMarketplace={(targetMode) => {
+              setUsedProductInitialMode(targetMode);
+              setShowUsedProductsModal(true);
+            }}
+            currentLocality={selectedNeighborhood !== "All Localities" ? selectedNeighborhood : (selectedCity !== "All India" ? selectedCity : "Hosur")}
+            initialCoordinates={locationCoordinates}
           />
         )}
         {role === "Business" && (
@@ -11586,6 +11593,9 @@ function CustomerPortal({
   onOpenPortal,
   onLanguageChange,
   showNotice,
+  onOpenUsedMarketplace,
+  currentLocality = "Hosur",
+  initialCoordinates = null,
 }: {
   data: DemoData;
   quotes?: QuoteEnquiry[];
@@ -11601,6 +11611,9 @@ function CustomerPortal({
   onOpenPortal?: (role: Role) => void;
   onLanguageChange?: (lang: "en" | "ta" | "kn" | "te") => void;
   showNotice: (message: string) => void;
+  onOpenUsedMarketplace?: (mode: "buy" | "sell") => void;
+  currentLocality?: string;
+  initialCoordinates?: Coordinates | null;
 }) {
   const [tab, setTab] = useState(initialTab || "Overview");
 
@@ -11695,10 +11708,19 @@ function CustomerPortal({
     )}
     {(tab === "Used Products" || tab === "Saved") && (
       <UsedProductsPanel
+        onOpenMarketplace={onOpenUsedMarketplace}
         onOpenSell={() => {
-          window.dispatchEvent(new CustomEvent("neighborly-open-used-products", { detail: { mode: "sell" } }));
+          if (onOpenUsedMarketplace) {
+            onOpenUsedMarketplace("sell");
+          } else {
+            window.dispatchEvent(new CustomEvent("neighborly-open-used-products", { detail: { mode: "sell" } }));
+          }
         }}
         showNotice={showNotice}
+        currentLocality={currentLocality}
+        initialCoordinates={initialCoordinates}
+        userName={customerProfile?.fullName || sessionIdentity || ""}
+        userPhone={customerProfile?.phone || ""}
       />
     )}
     {tab === "Recent searches" && <section className="panel tab-panel"><div className="eyebrow">YOUR RECENT SEARCHES</div><h2>Pick up where you left off</h2>{data.recentSearches.length ? data.recentSearches.map((term) => <button className="history-row" key={term} onClick={() => onSearch(term)}><span>⌕</span><strong>{term}</strong><span>Search again →</span></button>) : <EmptyState title="No recent searches" text="Your search history appears here after you choose Find nearby." />}</section>}
