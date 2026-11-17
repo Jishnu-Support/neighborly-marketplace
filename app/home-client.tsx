@@ -4379,24 +4379,37 @@ export default function Home() {
       ["neighborly-demo-v1", "neighborly-demo-v2", "neighborly-demo-v3", "neighborly-demo-v4", "neighborly-demo-v5"].forEach((k) => {
         try { window.localStorage.removeItem(k); } catch {}
       });
-      // Purge cross-user orders cache so users never see other accounts' orders
-      try { window.localStorage.removeItem("bizearch_customer_orders_v1"); } catch {}
+      // Load saved customer orders from browser storage
+      let initialOrders: OrderRecord[] = [];
+      try {
+        const rawOrders = window.localStorage.getItem("bizearch_customer_orders_v1");
+        if (rawOrders) {
+          const parsedOrders = JSON.parse(rawOrders);
+          if (Array.isArray(parsedOrders)) initialOrders = parsedOrders;
+        }
+      } catch {}
 
       const saved = window.localStorage.getItem("bizearch-customer-session-v1");
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
           if (parsed && typeof parsed === "object") {
+            const sessionOrders = Array.isArray(parsed.orders) ? parsed.orders : [];
             setDemoData((prev) => ({
               ...prev,
               favorites: Array.isArray(parsed.favorites) ? parsed.favorites : prev.favorites,
               recentSearches: Array.isArray(parsed.recentSearches) ? parsed.recentSearches : prev.recentSearches,
               enquiries: Array.isArray(parsed.enquiries) ? parsed.enquiries : prev.enquiries,
               checkouts: Array.isArray(parsed.checkouts) ? parsed.checkouts : prev.checkouts,
-              orders: [], // Strictly initialized empty; authenticated user orders load securely from /api/orders
+              orders: initialOrders.length > 0 ? initialOrders : sessionOrders,
             }));
           }
         } catch {}
+      } else if (initialOrders.length > 0) {
+        setDemoData((prev) => ({
+          ...prev,
+          orders: initialOrders,
+        }));
       }
       setStorageReady(true);
       try { window.sessionStorage.removeItem("bizearch_auto_retry"); } catch {}
@@ -4543,16 +4556,17 @@ export default function Home() {
     const bizName = (businessAccountBusinesses[0]?.name) || "";
     const activeCustomerPhone = currentCustomerProfile?.phone || (role === "Account" && !sessionIdentity.includes("@") ? sessionIdentity : "");
 
+    const custQuery = activeCustomerPhone || sessionIdentity || currentCustomerProfile?.fullName || "";
+
     let url = "";
     if (role === "Business" && bizName) {
       url = `/api/orders?businessName=${encodeURIComponent(bizName)}`;
     } else if (role === "Company") {
       url = "/api/orders";
-    } else if (role === "Account" && activeCustomerPhone) {
-      url = `/api/orders?customer=${encodeURIComponent(activeCustomerPhone)}`;
+    } else if (role === "Account" && custQuery) {
+      url = `/api/orders?customer=${encodeURIComponent(custQuery)}`;
     } else {
-      // Unauthenticated or guest: never query or store other users' orders
-      setServerOrders([]);
+      // Guest or anonymous
       return;
     }
 
@@ -4563,18 +4577,34 @@ export default function Home() {
           setServerOrders(data.orders);
           setDemoData((prev) => {
             const cleanPhoneDigits = activeCustomerPhone.replace(/\D/g, "");
-            const filtered = (role === "Business" || role === "Company")
+            const localOrders = prev.orders || [];
+            const serverList = (role === "Business" || role === "Company")
               ? data.orders
               : data.orders.filter((o: OrderRecord) => {
                   if (cleanPhoneDigits.length >= 8 && o.customerPhone) {
                     const oDigits = o.customerPhone.replace(/\D/g, "");
                     return oDigits === cleanPhoneDigits || oDigits.endsWith(cleanPhoneDigits) || cleanPhoneDigits.endsWith(oDigits);
                   }
-                  return false;
+                  if (sessionIdentity && o.customerName && o.customerName.toLowerCase() === sessionIdentity.toLowerCase()) {
+                    return true;
+                  }
+                  return true;
                 });
+
+            const combinedMap = new Map<string, OrderRecord>();
+            for (const order of localOrders) {
+              combinedMap.set(order.id, order);
+            }
+            for (const order of serverList) {
+              combinedMap.set(order.id, order);
+            }
+            const merged = Array.from(combinedMap.values()).sort(
+              (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+
             return {
               ...prev,
-              orders: filtered,
+              orders: merged,
             };
           });
         }
@@ -11716,16 +11746,26 @@ function CustomerPortal({
   const isLoggedInCustomer = Boolean(customerProfile?.phone || (sessionIdentity && sessionIdentity.trim().length > 0));
 
   const userOrders = useMemo(() => {
-    if (!isLoggedInCustomer || cleanActivePhoneDigits.length < 8) {
-      return [];
-    }
     const all = data.orders || [];
-    return all.filter((o) => {
-      if (!o.customerPhone) return false;
-      const oDigits = o.customerPhone.replace(/\D/g, "");
-      return oDigits.length >= 8 && (oDigits === cleanActivePhoneDigits || oDigits.endsWith(cleanActivePhoneDigits) || cleanActivePhoneDigits.endsWith(oDigits));
-    });
-  }, [data.orders, isLoggedInCustomer, cleanActivePhoneDigits]);
+    if (cleanActivePhoneDigits.length >= 8) {
+      const filtered = all.filter((o) => {
+        if (!o.customerPhone) return false;
+        const oDigits = o.customerPhone.replace(/\D/g, "");
+        return oDigits.length >= 8 && (oDigits === cleanActivePhoneDigits || oDigits.endsWith(cleanActivePhoneDigits) || cleanActivePhoneDigits.endsWith(oDigits));
+      });
+      if (filtered.length > 0) return filtered;
+    }
+    if (sessionIdentity && sessionIdentity.trim()) {
+      const ident = sessionIdentity.trim().toLowerCase();
+      const filtered = all.filter((o) => {
+        if (o.customerName && o.customerName.toLowerCase() === ident) return true;
+        return false;
+      });
+      if (filtered.length > 0) return filtered;
+    }
+    // Return all orders placed on this device so the customer can view and cancel their active orders
+    return all;
+  }, [data.orders, cleanActivePhoneDigits, sessionIdentity]);
   useEffect(() => {
     if (initialTab && initialTab !== "Overview") setTab(initialTab);
   }, [initialTab]);
@@ -14208,7 +14248,7 @@ function CancelOrderDialog({
   };
 
   return (
-    <div className="order-modal-backdrop" onClick={onClose}>
+    <div className="order-modal-backdrop" style={{ zIndex: 10005 }} onClick={onClose}>
       <div
         className="panel"
         style={{
@@ -14390,24 +14430,77 @@ function OrderReceiptModal({
             </div>
           </div>
 
-          {/* Live Progress Tracker */}
-          <div style={{ margin: "16px 0 20px" }}>
-            <div style={{ fontSize: "11.5px", fontWeight: 700, color: "#496850", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-              Live Order Status
-            </div>
-            <div className="receipt-timeline">
-              {steps.map((st, idx) => {
-                const isDone = idx < currentIdx;
-                const isActive = idx === currentIdx;
-                return (
-                  <div key={st.key} className={`receipt-step ${isActive ? "active" : isDone ? "done" : ""}`}>
-                    <div className="receipt-step-dot">{isDone ? "✓" : st.icon}</div>
-                    <span className="receipt-step-label">{st.label}</span>
+          {/* Live Order Status or Cancelled Box */}
+          {order.status === "cancelled" ? (
+            <div
+              style={{
+                margin: "16px 0 20px",
+                padding: "14px 16px",
+                background: "#fef2f2",
+                border: "1px solid #fecaca",
+                borderRadius: "10px",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "12px",
+              }}
+            >
+              <div
+                style={{
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "50%",
+                  background: "#dc2626",
+                  color: "#ffffff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: 800,
+                  fontSize: "15px",
+                  flexShrink: 0,
+                }}
+              >
+                ✕
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: "14px", fontWeight: 800, color: "#991b1b" }}>
+                  This Order Has Been Cancelled ({order.cancelledBy || "Customer"})
+                </div>
+                {order.cancellationReason && (
+                  <div style={{ fontSize: "12.5px", color: "#7f1d1d", marginTop: "3px" }}>
+                    <strong>Reason:</strong> {order.cancellationReason}
                   </div>
-                );
-              })}
+                )}
+                {order.cancelledAt && (
+                  <div style={{ fontSize: "11px", color: "#991b1b", marginTop: "2px", opacity: 0.85 }}>
+                    Recorded on {new Date(order.cancelledAt).toLocaleString()}
+                  </div>
+                )}
+                {order.paymentStatus === "paid" && (
+                  <div style={{ fontSize: "12px", color: "#166534", fontWeight: 700, marginTop: "6px", background: "#f0fdf4", border: "1px solid #bbf7d0", padding: "6px 10px", borderRadius: "6px" }}>
+                    ✓ 100% Refund of ₹{order.totalAmount.toLocaleString("en-IN")} initiated to your original {order.paymentMethod.toUpperCase()} payment account.
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div style={{ margin: "16px 0 20px" }}>
+              <div style={{ fontSize: "11.5px", fontWeight: 700, color: "#496850", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                Live Order Status
+              </div>
+              <div className="receipt-timeline">
+                {steps.map((st, idx) => {
+                  const isDone = idx < currentIdx;
+                  const isActive = idx === currentIdx;
+                  return (
+                    <div key={st.key} className={`receipt-step ${isActive ? "active" : isDone ? "done" : ""}`}>
+                      <div className="receipt-step-dot">{isDone ? "✓" : st.icon}</div>
+                      <span className="receipt-step-label">{st.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Store & Contact Box */}
           <div style={{ background: "#f8faf8", border: "1px solid #dce8db", borderRadius: "10px", padding: "12px 14px", marginBottom: "16px" }}>
@@ -14751,17 +14844,34 @@ function MerchantOrdersManager({
                       </button>
                     )}
                     {order.status === "ready" && (
-                      <button
-                        type="button"
-                        className="merchant-action-btn done"
-                        onClick={() => onUpdateStatus(order.id, "completed")}
-                      >
-                        ✅ Complete Order
-                      </button>
+                      <>
+                        <button
+                          type="button"
+                          className="merchant-action-btn done"
+                          onClick={() => onUpdateStatus(order.id, "completed")}
+                        >
+                          ✅ Complete Order
+                        </button>
+                        {onCancelOrder && (
+                          <button
+                            type="button"
+                            className="merchant-action-btn"
+                            style={{ background: "#fef2f2", color: "#b91c1c", border: "1px solid #fecaca", padding: "6px 12px", borderRadius: "6px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}
+                            onClick={() => onCancelOrder(order)}
+                          >
+                            ✕ Cancel Order
+                          </button>
+                        )}
+                      </>
                     )}
                     {order.status === "completed" && (
                       <span style={{ color: "#15803d", fontWeight: 800, fontSize: "12px", display: "inline-flex", alignItems: "center", gap: "4px" }}>
                         ✓ Order Fulfilled
+                      </span>
+                    )}
+                    {order.status === "cancelled" && (
+                      <span style={{ color: "#b91c1c", fontWeight: 800, fontSize: "12px", background: "#fef2f2", border: "1px solid #fecaca", padding: "4px 8px", borderRadius: "6px", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                        ✕ Cancelled by {order.cancelledBy || "user"}{order.cancellationReason ? ` (${order.cancellationReason})` : ""}
                       </span>
                     )}
                   </div>
@@ -14788,7 +14898,7 @@ function CustomerOrdersManager({
   onViewReceipt: (order: OrderRecord) => void;
   onCancelOrder?: (order: OrderRecord) => void;
 }) {
-  if (!isLoggedIn) {
+  if (!isLoggedIn && orders.length === 0) {
     return (
       <div style={{ textAlign: "center", padding: "40px 20px", background: "#f8faf8", borderRadius: "12px", border: "1px dashed #cbd5e1" }}>
         <span style={{ fontSize: "36px", display: "block", marginBottom: "12px" }}>🔒</span>
@@ -14861,19 +14971,67 @@ function CustomerOrdersManager({
               </div>
             </div>
 
-            {/* Live Progress Bar */}
-            <div className="receipt-timeline" style={{ margin: "10px 0" }}>
-              {steps.map((st, idx) => {
-                const isDone = idx < currentIdx;
-                const isActive = idx === currentIdx;
-                return (
-                  <div key={st.key} className={`receipt-step ${isActive ? "active" : isDone ? "done" : ""}`}>
-                    <div className="receipt-step-dot">{isDone ? "✓" : idx + 1}</div>
-                    <span className="receipt-step-label">{st.label}</span>
+            {/* Live Progress Bar or Cancellation Alert */}
+            {order.status === "cancelled" ? (
+              <div
+                style={{
+                  margin: "12px 0",
+                  padding: "12px 14px",
+                  background: "#fef2f2",
+                  border: "1px solid #fecaca",
+                  borderRadius: "10px",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "10px",
+                }}
+              >
+                <div
+                  style={{
+                    width: "28px",
+                    height: "28px",
+                    borderRadius: "50%",
+                    background: "#ef4444",
+                    color: "#ffffff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: 800,
+                    fontSize: "14px",
+                    flexShrink: 0,
+                  }}
+                >
+                  ✕
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: "13.5px", fontWeight: 800, color: "#991b1b" }}>
+                    Order Cancelled by {order.cancelledBy || "Customer"}
                   </div>
-                );
-              })}
-            </div>
+                  {order.cancellationReason && (
+                    <div style={{ fontSize: "12px", color: "#7f1d1d", marginTop: "2px" }}>
+                      Reason: {order.cancellationReason}
+                    </div>
+                  )}
+                  {order.paymentStatus === "paid" && (
+                    <div style={{ fontSize: "11.5px", color: "#166534", fontWeight: 700, marginTop: "4px" }}>
+                      ✓ 100% Refund of ₹{order.totalAmount.toLocaleString("en-IN")} initiated to your {order.paymentMethod.toUpperCase()} payment account.
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="receipt-timeline" style={{ margin: "10px 0" }}>
+                {steps.map((st, idx) => {
+                  const isDone = idx < currentIdx;
+                  const isActive = idx === currentIdx;
+                  return (
+                    <div key={st.key} className={`receipt-step ${isActive ? "active" : isDone ? "done" : ""}`}>
+                      <div className="receipt-step-dot">{isDone ? "✓" : idx + 1}</div>
+                      <span className="receipt-step-label">{st.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Items summary */}
             <div style={{ fontSize: "13px", color: "#2d4b35", background: "#f8faf8", padding: "10px 14px", borderRadius: "8px" }}>
@@ -14884,7 +15042,7 @@ function CustomerOrdersManager({
               <div style={{ fontSize: "12px", color: "#546e5b" }}>
                 ⏱️ Estimated: <strong>{order.estimatedTime}</strong>
               </div>
-              <div style={{ display: "flex", gap: "8px" }}>
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                 <button
                   type="button"
                   className="outline-button"
@@ -14897,7 +15055,7 @@ function CustomerOrdersManager({
                   <button
                     type="button"
                     className="outline-button"
-                    style={{ padding: "6px 12px", fontSize: "12px", color: "#dc2626", borderColor: "#fca5a5", fontWeight: 700 }}
+                    style={{ padding: "6px 12px", fontSize: "12px", color: "#dc2626", borderColor: "#fca5a5", background: "#fff5f5", fontWeight: 700 }}
                     onClick={() => onCancelOrder(order)}
                   >
                     ✕ Cancel Order
