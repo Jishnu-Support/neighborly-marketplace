@@ -247,6 +247,7 @@ export function UsedProductSellForm({
   initialCoordinates = null,
   userName = "",
   userPhone = "",
+  initialProduct = null,
   onSuccess,
   onCancel,
   showNotice,
@@ -255,27 +256,30 @@ export function UsedProductSellForm({
   initialCoordinates?: Coordinates | null;
   userName?: string;
   userPhone?: string;
+  initialProduct?: UsedProduct | null;
   onSuccess?: (product: UsedProduct) => void;
   onCancel?: () => void;
   showNotice?: (msg: string) => void;
 }) {
-  const [formTitle, setFormTitle] = useState("");
-  const [formCategory, setFormCategory] = useState<string>("Mobiles & Tablets");
-  const [formPrice, setFormPrice] = useState("");
-  const [formNegotiable, setFormNegotiable] = useState(true);
-  const [formCondition, setFormCondition] = useState<string>("Good Condition (Gently Used)");
+  const isEditing = Boolean(initialProduct);
+
+  const [formTitle, setFormTitle] = useState(initialProduct?.title || "");
+  const [formCategory, setFormCategory] = useState<string>(initialProduct?.category || "Mobiles & Tablets");
+  const [formPrice, setFormPrice] = useState(initialProduct ? String(initialProduct.price ?? "") : "");
+  const [formNegotiable, setFormNegotiable] = useState(initialProduct ? Boolean(initialProduct.negotiable) : true);
+  const [formCondition, setFormCondition] = useState<string>(initialProduct?.condition || "Good Condition (Gently Used)");
 
   // Seller Location State (Auto-fetch & Map Pin)
-  const [formLocation, setFormLocation] = useState(currentLocality || "Hosur");
-  const [formCoordinates, setFormCoordinates] = useState<Coordinates | null>(initialCoordinates || null);
-  const [formLocality, setFormLocality] = useState<string>(currentLocality || "Hosur");
+  const [formLocation, setFormLocation] = useState(initialProduct?.location || currentLocality || "Hosur");
+  const [formCoordinates, setFormCoordinates] = useState<Coordinates | null>(initialProduct?.coordinates || initialCoordinates || null);
+  const [formLocality, setFormLocality] = useState<string>(initialProduct?.locality || currentLocality || "Hosur");
   const [sellerLocating, setSellerLocating] = useState(false);
   const [showSellerMapModal, setShowSellerMapModal] = useState(false);
-  const [formDescription, setFormDescription] = useState("");
-  const [formSellerName, setFormSellerName] = useState(userName || "");
-  const [formSellerPhone, setFormSellerPhone] = useState(userPhone || "");
-  const [formSellerWhatsapp, setFormSellerWhatsapp] = useState(userPhone || "");
-  const [formImages, setFormImages] = useState<string[]>([]);
+  const [formDescription, setFormDescription] = useState(initialProduct?.description || "");
+  const [formSellerName, setFormSellerName] = useState(initialProduct?.sellerName || userName || "");
+  const [formSellerPhone, setFormSellerPhone] = useState(initialProduct?.sellerPhone || userPhone || "");
+  const [formSellerWhatsapp, setFormSellerWhatsapp] = useState(initialProduct?.sellerWhatsapp || userPhone || "");
+  const [formImages, setFormImages] = useState<string[]>(initialProduct?.images || []);
   const [imageUrlInput, setImageUrlInput] = useState("");
   const [uploadingImage, setUploadingImage] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -284,12 +288,28 @@ export function UsedProductSellForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (userName && !formSellerName) setFormSellerName(userName);
-    if (userPhone && !formSellerPhone) setFormSellerPhone(userPhone);
-    if (userPhone && !formSellerWhatsapp) setFormSellerWhatsapp(userPhone);
-    if (initialCoordinates && !formCoordinates) setFormCoordinates(initialCoordinates);
-    if (currentLocality && !formLocality) setFormLocality(currentLocality);
-  }, [userName, userPhone, initialCoordinates, currentLocality]);
+    if (initialProduct) {
+      setFormTitle(initialProduct.title || "");
+      setFormCategory(initialProduct.category || "Mobiles & Tablets");
+      setFormPrice(String(initialProduct.price ?? ""));
+      setFormNegotiable(Boolean(initialProduct.negotiable));
+      setFormCondition(initialProduct.condition || "Good Condition (Gently Used)");
+      setFormLocation(initialProduct.location || currentLocality || "Hosur");
+      setFormCoordinates(initialProduct.coordinates || initialCoordinates || null);
+      setFormLocality(initialProduct.locality || currentLocality || "Hosur");
+      setFormDescription(initialProduct.description || "");
+      setFormSellerName(initialProduct.sellerName || userName || "");
+      setFormSellerPhone(initialProduct.sellerPhone || userPhone || "");
+      setFormSellerWhatsapp(initialProduct.sellerWhatsapp || userPhone || "");
+      setFormImages(initialProduct.images || []);
+    } else {
+      if (userName && !formSellerName) setFormSellerName(userName);
+      if (userPhone && !formSellerPhone) setFormSellerPhone(userPhone);
+      if (userPhone && !formSellerWhatsapp) setFormSellerWhatsapp(userPhone);
+      if (initialCoordinates && !formCoordinates) setFormCoordinates(initialCoordinates);
+      if (currentLocality && !formLocality) setFormLocality(currentLocality);
+    }
+  }, [initialProduct, userName, userPhone, initialCoordinates, currentLocality]);
 
   const handleFetchSellerLocation = () => {
     if (typeof window === "undefined" || !navigator.geolocation) {
@@ -382,7 +402,7 @@ export function UsedProductSellForm({
 
     setSubmitting(true);
     try {
-      const payload = {
+      const payload: Record<string, unknown> = {
         title: formTitle.trim(),
         category: formCategory,
         price: numPrice,
@@ -399,19 +419,27 @@ export function UsedProductSellForm({
         images: formImages,
       };
 
+      if (isEditing && initialProduct) {
+        payload.id = initialProduct.id;
+      }
+
       const res = await fetch("/api/used-products", {
-        method: "POST",
+        method: isEditing ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       const result = await res.json();
       if (!res.ok || !result.success) {
-        throw new Error(result.error || "Could not post used product.");
+        throw new Error(result.error || `Could not ${isEditing ? "update" : "post"} used product.`);
       }
 
       if (showNotice) {
-        showNotice("✓ Your used product has been posted! Buyers can now call or WhatsApp you directly.");
+        showNotice(
+          isEditing
+            ? `✓ Your listing for "${formTitle.trim()}" was updated successfully!`
+            : "✓ Your used product has been posted! Buyers can now call or WhatsApp you directly."
+        );
       }
 
       if (typeof window !== "undefined") {
@@ -420,7 +448,7 @@ export function UsedProductSellForm({
 
       onSuccess?.(result.product);
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Failed to post product.");
+      setFormError(err instanceof Error ? err.message : `Failed to ${isEditing ? "update" : "post"} product.`);
     } finally {
       setSubmitting(false);
     }
@@ -430,10 +458,12 @@ export function UsedProductSellForm({
     <div style={{ maxWidth: "680px", margin: "0 auto", padding: "4px 0" }}>
       <div style={{ marginBottom: "18px" }}>
         <h3 style={{ fontSize: "17px", fontWeight: 800, color: "#0f172a", margin: "0 0 4px" }}>
-          List Your Used Product for Sale
+          {isEditing ? `Edit Listing: ${initialProduct?.title || "Used Product"}` : "List Your Used Product for Sale"}
         </h3>
         <p style={{ fontSize: "12.5px", color: "#64748b", margin: 0 }}>
-          Anyone can post! Provide accurate details and photos to connect with verified local buyers directly via Call &amp; WhatsApp.
+          {isEditing
+            ? "Update your price, negotiation status, condition, photos, description, or contact information."
+            : "Anyone can post! Provide accurate details and photos to connect with verified local buyers directly via Call & WhatsApp."}
         </p>
       </div>
 
@@ -851,17 +881,23 @@ export function UsedProductSellForm({
             style={{
               flex: 1,
               padding: "12px 18px",
-              background: "#166534",
+              background: isEditing ? "#1d4ed8" : "#166534",
               color: "#ffffff",
               borderRadius: "10px",
               border: "none",
               fontWeight: 800,
               fontSize: "14px",
               cursor: submitting ? "not-allowed" : "pointer",
-              boxShadow: "0 4px 12px rgba(22, 101, 52, 0.25)",
+              boxShadow: isEditing ? "0 4px 12px rgba(29, 78, 216, 0.25)" : "0 4px 12px rgba(22, 101, 52, 0.25)",
             }}
           >
-            {submitting ? "Publishing Listing..." : "✓ Publish Used Product Listing"}
+            {submitting
+              ? isEditing
+                ? "Saving Changes..."
+                : "Publishing Listing..."
+              : isEditing
+              ? "✓ Save Changes"
+              : "✓ Publish Used Product Listing"}
           </button>
           {onCancel && (
             <button
@@ -878,7 +914,7 @@ export function UsedProductSellForm({
                 cursor: "pointer",
               }}
             >
-              Cancel
+              {isEditing ? "Cancel Edit" : "Cancel"}
             </button>
           )}
         </div>
@@ -932,6 +968,7 @@ export function UsedProductsMarketplaceModal({
   showNotice?: (msg: string) => void;
 }) {
   const [mode, setMode] = useState<"buy" | "sell">(initialMode);
+  const [editingProduct, setEditingProduct] = useState<UsedProduct | null>(null);
   const [products, setProducts] = useState<UsedProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -947,10 +984,12 @@ export function UsedProductsMarketplaceModal({
 
   useEffect(() => {
     if (isOpen) {
-      setMode(initialMode);
+      if (!editingProduct) setMode(initialMode);
       loadProducts();
       if (initialCoordinates && !buyerCoords) setBuyerCoords(initialCoordinates);
       if (currentLocality && !buyerLocality) setBuyerLocality(currentLocality);
+    } else {
+      setEditingProduct(null);
     }
   }, [isOpen, initialMode, initialCoordinates, currentLocality]);
 
@@ -1150,7 +1189,10 @@ export function UsedProductsMarketplaceModal({
             >
               <button
                 type="button"
-                onClick={() => setMode("buy")}
+                onClick={() => {
+                  setEditingProduct(null);
+                  setMode("buy");
+                }}
                 style={{
                   padding: "6px 14px",
                   fontSize: "12.5px",
@@ -1168,7 +1210,10 @@ export function UsedProductsMarketplaceModal({
               </button>
               <button
                 type="button"
-                onClick={() => setMode("sell")}
+                onClick={() => {
+                  setEditingProduct(null);
+                  setMode("sell");
+                }}
                 style={{
                   padding: "6px 14px",
                   fontSize: "12.5px",
@@ -1393,7 +1438,10 @@ export function UsedProductsMarketplaceModal({
                   </p>
                   <button
                     type="button"
-                    onClick={() => setMode("sell")}
+                    onClick={() => {
+                      setEditingProduct(null);
+                      setMode("sell");
+                    }}
                     style={{
                       padding: "10px 20px",
                       background: "#2563eb",
@@ -1422,6 +1470,10 @@ export function UsedProductsMarketplaceModal({
                       item={item}
                       buyerCoords={buyerCoords}
                       onSelect={() => setSelectedProduct(item)}
+                      onEdit={(prod) => {
+                        setEditingProduct(prod);
+                        setMode("sell");
+                      }}
                       onDelete={handleDeleteProduct}
                     />
                   ))}
@@ -1430,13 +1482,18 @@ export function UsedProductsMarketplaceModal({
             </div>
           ) : (
             <UsedProductSellForm
+              initialProduct={editingProduct}
               currentLocality={currentLocality}
               initialCoordinates={initialCoordinates}
               userName={userName}
               userPhone={userPhone}
               showNotice={showNotice}
-              onCancel={() => setMode("buy")}
+              onCancel={() => {
+                setEditingProduct(null);
+                setMode("buy");
+              }}
               onSuccess={async () => {
+                setEditingProduct(null);
                 await loadProducts();
                 setMode("buy");
               }}
@@ -1452,6 +1509,11 @@ export function UsedProductsMarketplaceModal({
           buyerCoords={buyerCoords}
           buyerLocality={buyerLocality}
           onClose={() => setSelectedProduct(null)}
+          onEdit={(prod) => {
+            setSelectedProduct(null);
+            setEditingProduct(prod);
+            setMode("sell");
+          }}
           showNotice={showNotice}
         />
       )}
@@ -1481,11 +1543,13 @@ function UsedProductCard({
   item,
   buyerCoords,
   onSelect,
+  onEdit,
   onDelete,
 }: {
   item: UsedProduct;
   buyerCoords?: Coordinates | null;
   onSelect: () => void;
+  onEdit?: (item: UsedProduct) => void;
   onDelete?: (item: UsedProduct) => void;
 }) {
   const cleanPhone = (item.sellerPhone || "").replace(/\D/g, "");
@@ -1586,37 +1650,74 @@ function UsedProductCard({
           {item.condition}
         </span>
 
-        {/* Remove Listing Button for Seller */}
-        {onDelete && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(item);
-            }}
-            title="Remove your listed used product"
+        {/* Seller Actions: Edit & Remove */}
+        {(onEdit || onDelete) && (
+          <div
             style={{
               position: "absolute",
               top: "8px",
               right: "8px",
-              background: "rgba(255, 255, 255, 0.95)",
-              backdropFilter: "blur(4px)",
-              border: "1px solid #fecaca",
-              color: "#dc2626",
-              fontSize: "10.5px",
-              fontWeight: 700,
-              padding: "3px 8px",
-              borderRadius: "6px",
-              cursor: "pointer",
               display: "flex",
               alignItems: "center",
-              gap: "3px",
-              boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
+              gap: "4px",
               zIndex: 3,
             }}
           >
-            🗑️ Remove
-          </button>
+            {onEdit && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(item);
+                }}
+                title="Edit your listed product"
+                style={{
+                  background: "rgba(255, 255, 255, 0.95)",
+                  backdropFilter: "blur(4px)",
+                  border: "1px solid #bfdbfe",
+                  color: "#1d4ed8",
+                  fontSize: "10.5px",
+                  fontWeight: 700,
+                  padding: "3px 8px",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "3px",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
+                }}
+              >
+                ✏️ Edit
+              </button>
+            )}
+            {onDelete && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(item);
+                }}
+                title="Remove your listed used product"
+                style={{
+                  background: "rgba(255, 255, 255, 0.95)",
+                  backdropFilter: "blur(4px)",
+                  border: "1px solid #fecaca",
+                  color: "#dc2626",
+                  fontSize: "10.5px",
+                  fontWeight: 700,
+                  padding: "3px 8px",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "3px",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
+                }}
+              >
+                🗑️ Remove
+              </button>
+            )}
+          </div>
         )}
 
         {/* Category tag */}
@@ -1754,12 +1855,14 @@ export function UsedProductDetailModal({
   buyerCoords = null,
   buyerLocality = "Hosur",
   onClose,
+  onEdit,
   showNotice,
 }: {
   product: UsedProduct;
   buyerCoords?: Coordinates | null;
   buyerLocality?: string;
   onClose: () => void;
+  onEdit?: (product: UsedProduct) => void;
   showNotice?: (msg: string) => void;
 }) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -2137,13 +2240,13 @@ export function UsedProductDetailModal({
             </div>
           </div>
 
-          {/* Seller Listing Controls: Remove listing */}
+          {/* Seller Listing Controls: Edit & Remove */}
           <div
             style={{
               marginTop: "16px",
               padding: "14px 16px",
-              background: "#fff5f5",
-              border: "1px dashed #fca5a5",
+              background: "#f8fafc",
+              border: "1px dashed #cbd5e1",
               borderRadius: "12px",
               display: "flex",
               justifyContent: "space-between",
@@ -2153,34 +2256,61 @@ export function UsedProductDetailModal({
             }}
           >
             <div>
-              <div style={{ fontSize: "11px", fontWeight: 700, color: "#991b1b", textTransform: "uppercase" }}>
+              <div style={{ fontSize: "11px", fontWeight: 700, color: "#334155", textTransform: "uppercase" }}>
                 SELLER LISTING CONTROLS
               </div>
-              <div style={{ fontSize: "12px", color: "#7f1d1d", marginTop: "2px" }}>
-                Already sold or want to withdraw this item from Bizearch?
+              <div style={{ fontSize: "12px", color: "#64748b", marginTop: "2px" }}>
+                Need to update details, price or remove this listing from Bizearch?
               </div>
             </div>
-            <button
-              type="button"
-              onClick={handleDeleteListing}
-              disabled={deleting}
-              style={{
-                padding: "8px 14px",
-                background: "#dc2626",
-                color: "#ffffff",
-                border: "none",
-                borderRadius: "8px",
-                fontSize: "12px",
-                fontWeight: 700,
-                cursor: "pointer",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "5px",
-                boxShadow: "0 2px 6px rgba(220, 38, 38, 0.25)",
-              }}
-            >
-              {deleting ? "Removing Listing..." : "🗑️ Remove My Listing"}
-            </button>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+              {onEdit && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onEdit(product);
+                  }}
+                  style={{
+                    padding: "8px 14px",
+                    background: "#2563eb",
+                    color: "#ffffff",
+                    border: "none",
+                    borderRadius: "8px",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    boxShadow: "0 2px 6px rgba(37, 99, 235, 0.25)",
+                  }}
+                >
+                  ✏️ Edit Listing
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleDeleteListing}
+                disabled={deleting}
+                style={{
+                  padding: "8px 14px",
+                  background: "#dc2626",
+                  color: "#ffffff",
+                  border: "none",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  boxShadow: "0 2px 6px rgba(220, 38, 38, 0.25)",
+                }}
+              >
+                {deleting ? "Removing Listing..." : "🗑️ Remove My Listing"}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -2214,6 +2344,7 @@ export function UsedProductsPanel({
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [selectedProduct, setSelectedProduct] = useState<UsedProduct | null>(null);
   const [isSelling, setIsSelling] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<UsedProduct | null>(null);
 
   const loadPanelProducts = useCallback(async () => {
     try {
@@ -2243,6 +2374,7 @@ export function UsedProductsPanel({
   }, [loadPanelProducts]);
 
   const handleOpenSell = () => {
+    setEditingProduct(null);
     setIsSelling(true);
   };
 
@@ -2279,15 +2411,22 @@ export function UsedProductsPanel({
           <div className="panel-heading" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "10px", marginBottom: "16px" }}>
             <div>
               <div className="eyebrow">PRE-OWNED MARKETPLACE</div>
-              <h2 style={{ margin: "2px 0 0" }}>List a Used Product for Sale</h2>
+              <h2 style={{ margin: "2px 0 0" }}>
+                {editingProduct ? `Edit Listing: ${editingProduct.title}` : "List a Used Product for Sale"}
+              </h2>
               <p style={{ fontSize: "13px", color: "#64748b", margin: 0 }}>
-                Anyone can post! Direct Call &amp; WhatsApp connection with 0% platform commission.
+                {editingProduct
+                  ? "Update your price, negotiation status, condition, photos, description, or contact information."
+                  : "Anyone can post! Direct Call & WhatsApp connection with 0% platform commission."}
               </p>
             </div>
             <button
               type="button"
               className="outline-button"
-              onClick={() => setIsSelling(false)}
+              onClick={() => {
+                setEditingProduct(null);
+                setIsSelling(false);
+              }}
               style={{ fontSize: "12.5px", padding: "8px 14px" }}
             >
               ← Back to Listings ({products.length})
@@ -2295,13 +2434,18 @@ export function UsedProductsPanel({
           </div>
 
           <UsedProductSellForm
+            initialProduct={editingProduct}
             currentLocality={currentLocality}
             initialCoordinates={initialCoordinates}
             userName={userName}
             userPhone={userPhone}
             showNotice={showNotice}
-            onCancel={() => setIsSelling(false)}
+            onCancel={() => {
+              setEditingProduct(null);
+              setIsSelling(false);
+            }}
             onSuccess={() => {
+              setEditingProduct(null);
               setIsSelling(false);
               loadPanelProducts();
             }}
@@ -2376,6 +2520,10 @@ export function UsedProductsPanel({
                   key={item.id}
                   item={item}
                   onSelect={() => setSelectedProduct(item)}
+                  onEdit={(prod) => {
+                    setEditingProduct(prod);
+                    setIsSelling(true);
+                  }}
                   onDelete={handleDeleteProduct}
                 />
               ))}
@@ -2386,6 +2534,11 @@ export function UsedProductsPanel({
             <UsedProductDetailModal
               product={selectedProduct}
               onClose={() => setSelectedProduct(null)}
+              onEdit={(prod) => {
+                setSelectedProduct(null);
+                setEditingProduct(prod);
+                setIsSelling(true);
+              }}
               showNotice={showNotice}
             />
           )}

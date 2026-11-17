@@ -140,6 +140,59 @@ export async function markUsedProductStatus(id: string, status: "active" | "sold
   return product;
 }
 
+export async function updateUsedProduct(
+  id: string,
+  input: {
+    title?: string;
+    category?: string;
+    price?: number;
+    negotiable?: boolean;
+    condition?: string;
+    description?: string;
+    location?: string;
+    coordinates?: { latitude: number; longitude: number };
+    locality?: string;
+    city?: string;
+    pincode?: string;
+    landmark?: string;
+    images?: string[];
+    sellerName?: string;
+    sellerPhone?: string;
+    sellerWhatsapp?: string;
+  }
+): Promise<UsedProduct | null> {
+  const products = await readUsedProducts();
+  const product = products.find((p) => p.id === id);
+  if (!product) return null;
+
+  if (typeof input.title === "string") product.title = input.title.trim();
+  if (typeof input.category === "string") product.category = input.category.trim();
+  if (typeof input.price === "number") product.price = Math.max(0, Math.round(input.price));
+  if (typeof input.negotiable === "boolean") product.negotiable = input.negotiable;
+  if (typeof input.condition === "string") product.condition = input.condition.trim();
+  if (typeof input.description === "string") product.description = input.description.trim();
+  if (typeof input.location === "string") product.location = input.location.trim();
+  if (input.coordinates) {
+    product.coordinates = {
+      latitude: input.coordinates.latitude,
+      longitude: input.coordinates.longitude,
+    };
+  }
+  if (typeof input.locality === "string") product.locality = input.locality.trim();
+  if (typeof input.city === "string") product.city = input.city.trim();
+  if (typeof input.pincode === "string") product.pincode = input.pincode.trim();
+  if (typeof input.landmark === "string") product.landmark = input.landmark.trim();
+  if (Array.isArray(input.images)) {
+    product.images = input.images.filter((url) => typeof url === "string" && url.trim().length > 0);
+  }
+  if (typeof input.sellerName === "string") product.sellerName = input.sellerName.trim();
+  if (typeof input.sellerPhone === "string") product.sellerPhone = input.sellerPhone.trim();
+  if (typeof input.sellerWhatsapp === "string") product.sellerWhatsapp = input.sellerWhatsapp.trim();
+
+  await writeUsedProducts(products);
+  return product;
+}
+
 export async function deleteUsedProduct(id: string): Promise<boolean> {
   const products = await readUsedProducts();
   const index = products.findIndex((p) => p.id === id);
