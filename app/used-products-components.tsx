@@ -239,46 +239,31 @@ export function UsedProductChoiceModal({
 }
 
 /**
- * Main Used Products Marketplace Modal (supports Buy & Sell modes).
+ * Standalone, reusable Sell Form for listing used/pre-owned products.
+ * Used both inline in UsedProductsPanel and inside UsedProductsMarketplaceModal.
  */
-export function UsedProductsMarketplaceModal({
-  isOpen,
-  initialMode = "buy",
-  onClose,
+export function UsedProductSellForm({
   currentLocality = "Hosur",
   initialCoordinates = null,
   userName = "",
   userPhone = "",
+  onSuccess,
+  onCancel,
   showNotice,
 }: {
-  isOpen: boolean;
-  initialMode?: "buy" | "sell";
-  onClose: () => void;
   currentLocality?: string;
   initialCoordinates?: Coordinates | null;
   userName?: string;
   userPhone?: string;
+  onSuccess?: (product: UsedProduct) => void;
+  onCancel?: () => void;
   showNotice?: (msg: string) => void;
 }) {
-  const [mode, setMode] = useState<"buy" | "sell">(initialMode);
-  const [products, setProducts] = useState<UsedProduct[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("All");
-  const [selectedProduct, setSelectedProduct] = useState<UsedProduct | null>(null);
-
-  // Form state for Sell mode
   const [formTitle, setFormTitle] = useState("");
   const [formCategory, setFormCategory] = useState<string>("Mobiles & Tablets");
   const [formPrice, setFormPrice] = useState("");
   const [formNegotiable, setFormNegotiable] = useState(true);
   const [formCondition, setFormCondition] = useState<string>("Good Condition (Gently Used)");
-  // Buyer Location State (Auto-fetch & Map Pin)
-  const [buyerCoords, setBuyerCoords] = useState<Coordinates | null>(initialCoordinates || null);
-  const [buyerLocality, setBuyerLocality] = useState<string>(currentLocality || "Hosur");
-  const [buyerLocating, setBuyerLocating] = useState(false);
-  const [showBuyerMapModal, setShowBuyerMapModal] = useState(false);
-  const [sortBy, setSortBy] = useState<"distance" | "newest" | "price_asc" | "price_desc">(initialCoordinates ? "distance" : "newest");
 
   // Seller Location State (Auto-fetch & Map Pin)
   const [formLocation, setFormLocation] = useState(currentLocality || "Hosur");
@@ -299,58 +284,12 @@ export function UsedProductsMarketplaceModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (isOpen) {
-      setMode(initialMode);
-      setFormError("");
-      loadProducts();
-      if (userName && !formSellerName) setFormSellerName(userName);
-      if (userPhone && !formSellerPhone) setFormSellerPhone(userPhone);
-      if (userPhone && !formSellerWhatsapp) setFormSellerWhatsapp(userPhone);
-      if (initialCoordinates && !formCoordinates) setFormCoordinates(initialCoordinates);
-      if (initialCoordinates && !buyerCoords) setBuyerCoords(initialCoordinates);
-      if (currentLocality && !formLocality) setFormLocality(currentLocality);
-      if (currentLocality && !buyerLocality) setBuyerLocality(currentLocality);
-    }
-  }, [isOpen, initialMode, userName, userPhone, initialCoordinates, currentLocality]);
-
-  const loadProducts = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/used-products", { cache: "no-store" });
-      if (res.ok) {
-        const data = await res.json();
-        setProducts(Array.isArray(data.products) ? data.products : []);
-      }
-    } catch {
-      // Graceful fallback
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleFetchBuyerLocation = () => {
-    if (typeof window === "undefined" || !navigator.geolocation) {
-      if (showNotice) showNotice("Geolocation is not supported by your browser.");
-      return;
-    }
-    setBuyerLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const coords: Coordinates = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
-        setBuyerCoords(coords);
-        const nearest = findNearestNeighborhood(coords);
-        if (nearest) setBuyerLocality(nearest);
-        setSortBy("distance");
-        setBuyerLocating(false);
-        if (showNotice) showNotice(`✓ Buyer location fetched: ${nearest} (${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)})`);
-      },
-      () => {
-        setBuyerLocating(false);
-        if (showNotice) showNotice("Could not access GPS. Click 'Change Pin' to pin on map.");
-      },
-      { enableHighAccuracy: true, timeout: 8000 }
-    );
-  };
+    if (userName && !formSellerName) setFormSellerName(userName);
+    if (userPhone && !formSellerPhone) setFormSellerPhone(userPhone);
+    if (userPhone && !formSellerWhatsapp) setFormSellerWhatsapp(userPhone);
+    if (initialCoordinates && !formCoordinates) setFormCoordinates(initialCoordinates);
+    if (currentLocality && !formLocality) setFormLocality(currentLocality);
+  }, [userName, userPhone, initialCoordinates, currentLocality]);
 
   const handleFetchSellerLocation = () => {
     if (typeof window === "undefined" || !navigator.geolocation) {
@@ -380,7 +319,7 @@ export function UsedProductsMarketplaceModal({
     );
   };
 
-    const handleImageFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -475,24 +414,583 @@ export function UsedProductsMarketplaceModal({
         showNotice("✓ Your used product has been posted! Buyers can now call or WhatsApp you directly.");
       }
 
-      // Reset form
-      setFormTitle("");
-      setFormPrice("");
-      setFormDescription("");
-      setFormImages([]);
-      setImageUrlInput("");
-
-      // Refresh listings and switch to Buy mode
-      await loadProducts();
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("neighborly-used-products-updated"));
       }
-      setMode("buy");
+
+      onSuccess?.(result.product);
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Failed to post product.");
     } finally {
       setSubmitting(false);
     }
+  };
+
+  return (
+    <div style={{ maxWidth: "680px", margin: "0 auto", padding: "4px 0" }}>
+      <div style={{ marginBottom: "18px" }}>
+        <h3 style={{ fontSize: "17px", fontWeight: 800, color: "#0f172a", margin: "0 0 4px" }}>
+          List Your Used Product for Sale
+        </h3>
+        <p style={{ fontSize: "12.5px", color: "#64748b", margin: 0 }}>
+          Anyone can post! Provide accurate details and photos to connect with verified local buyers directly via Call &amp; WhatsApp.
+        </p>
+      </div>
+
+      {formError && (
+        <div
+          style={{
+            background: "#fef2f2",
+            color: "#b91c1c",
+            padding: "10px 14px",
+            borderRadius: "8px",
+            fontSize: "12.5px",
+            marginBottom: "14px",
+            border: "1px solid #fecaca",
+          }}
+        >
+          ⚠️ {formError}
+        </div>
+      )}
+
+      <form onSubmit={handleSellSubmit} style={{ display: "grid", gap: "14px" }}>
+        {/* Title */}
+        <div>
+          <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#334155", marginBottom: "4px" }}>
+            Product Title / Name *
+          </label>
+          <input
+            type="text"
+            required
+            placeholder="e.g. Samsung Galaxy S21 5G 128GB or Royal Enfield Classic 350"
+            value={formTitle}
+            onChange={(e) => setFormTitle(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "10px 12px",
+              borderRadius: "8px",
+              border: "1px solid #cbd5e1",
+              fontSize: "13px",
+            }}
+          />
+        </div>
+
+        {/* Category & Condition */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+          <div>
+            <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#334155", marginBottom: "4px" }}>
+              Category *
+            </label>
+            <select
+              value={formCategory}
+              onChange={(e) => setFormCategory(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "10px 12px",
+                borderRadius: "8px",
+                border: "1px solid #cbd5e1",
+                fontSize: "13px",
+                background: "#fff",
+              }}
+            >
+              {USED_PRODUCT_CATEGORIES.filter((c) => c !== "All").map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#334155", marginBottom: "4px" }}>
+              Condition *
+            </label>
+            <select
+              value={formCondition}
+              onChange={(e) => setFormCondition(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "10px 12px",
+                borderRadius: "8px",
+                border: "1px solid #cbd5e1",
+                fontSize: "13px",
+                background: "#fff",
+              }}
+            >
+              {USED_PRODUCT_CONDITIONS.map((cond) => (
+                <option key={cond} value={cond}>
+                  {cond}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Price & Negotiable */}
+        <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: "12px", alignItems: "center" }}>
+          <div>
+            <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#334155", marginBottom: "4px" }}>
+              Price (₹) *
+            </label>
+            <input
+              type="number"
+              required
+              min="0"
+              placeholder="e.g. 4500"
+              value={formPrice}
+              onChange={(e) => setFormPrice(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "10px 12px",
+                borderRadius: "8px",
+                border: "1px solid #cbd5e1",
+                fontSize: "13px",
+              }}
+            />
+          </div>
+
+          <div style={{ paddingTop: "18px" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12.5px", color: "#334155", cursor: "pointer" }}>
+              <input
+                type="checkbox"
+                checked={formNegotiable}
+                onChange={(e) => setFormNegotiable(e.target.checked)}
+                style={{ width: "16px", height: "16px", accentColor: "#166534" }}
+              />
+              <span>Price is Negotiable</span>
+            </label>
+          </div>
+        </div>
+
+        {/* Seller Location & Map Pin */}
+        <div style={{ background: "#f0fdf4", padding: "14px", borderRadius: "10px", border: "1.5px solid #86efac" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px", flexWrap: "wrap", gap: "6px" }}>
+            <label style={{ fontSize: "12px", fontWeight: 700, color: "#166534", margin: 0 }}>
+              📍 Seller Location &amp; Map Pin *
+            </label>
+            <div style={{ display: "flex", gap: "6px" }}>
+              <button
+                type="button"
+                onClick={handleFetchSellerLocation}
+                disabled={sellerLocating}
+                style={{
+                  padding: "5px 10px",
+                  background: "#ffffff",
+                  border: "1.5px solid #16a34a",
+                  borderRadius: "6px",
+                  fontSize: "11.5px",
+                  fontWeight: 700,
+                  color: "#166534",
+                  cursor: "pointer",
+                }}
+              >
+                {sellerLocating ? "⏳ Fetching GPS..." : "🎯 Auto-Fetch Location"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowSellerMapModal(true)}
+                style={{
+                  padding: "5px 10px",
+                  background: "#166534",
+                  border: "none",
+                  borderRadius: "6px",
+                  fontSize: "11.5px",
+                  fontWeight: 700,
+                  color: "#ffffff",
+                  cursor: "pointer",
+                }}
+              >
+                🗺️ Pin on Map
+              </button>
+            </div>
+          </div>
+
+          <input
+            type="text"
+            required
+            placeholder="e.g. Bagalur Road, Near Ring Road Circle, Hosur"
+            value={formLocation}
+            onChange={(e) => setFormLocation(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "10px 12px",
+              borderRadius: "8px",
+              border: "1px solid #86efac",
+              fontSize: "13px",
+              marginBottom: "6px",
+              background: "#ffffff",
+            }}
+          />
+
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "11.5px", color: "#15803d", flexWrap: "wrap", gap: "6px" }}>
+            <span>
+              {formCoordinates ? (
+                <span>✓ Pin Pinned: <strong>{formLocality}</strong> ({formCoordinates.latitude.toFixed(4)}, {formCoordinates.longitude.toFixed(4)})</span>
+              ) : (
+                <span>💡 Click <em>Auto-Fetch Location</em> or <em>Pin on Map</em> so nearby buyers can see exact distance.</span>
+              )}
+            </span>
+            {formCoordinates && (
+              <span style={{ background: "#dcfce7", color: "#166534", padding: "2px 8px", borderRadius: "6px", fontWeight: 700, fontSize: "10.5px", border: "1px solid #bbf7d0" }}>
+                GPS Verified Pin
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Description */}
+        <div>
+          <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#334155", marginBottom: "4px" }}>
+            Description &amp; Specifications
+          </label>
+          <textarea
+            rows={3}
+            placeholder="Describe item condition, age, usage, accessories included (box, charger, bills), and reasons for selling..."
+            value={formDescription}
+            onChange={(e) => setFormDescription(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "10px 12px",
+              borderRadius: "8px",
+              border: "1px solid #cbd5e1",
+              fontSize: "13px",
+              resize: "vertical",
+            }}
+          />
+        </div>
+
+        {/* Product Images */}
+        <div style={{ background: "#f8fafc", padding: "14px", borderRadius: "10px", border: "1px solid #e2e8f0" }}>
+          <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#334155", marginBottom: "6px" }}>
+            Product Images (Upload or URL)
+          </label>
+
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center", marginBottom: "10px" }}>
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={handleImageFileUpload}
+            />
+            <button
+              type="button"
+              disabled={uploadingImage}
+              onClick={() => fileInputRef.current?.click()}
+              style={{
+                padding: "8px 14px",
+                background: "#0f172a",
+                color: "#ffffff",
+                borderRadius: "8px",
+                border: "none",
+                fontSize: "12px",
+                fontWeight: 600,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+            >
+              {uploadingImage ? "Uploading..." : "📷 Upload Photo"}
+            </button>
+
+            <div style={{ display: "flex", gap: "6px", flex: 1, minWidth: "200px" }}>
+              <input
+                type="url"
+                placeholder="Or paste image URL"
+                value={imageUrlInput}
+                onChange={(e) => setImageUrlInput(e.target.value)}
+                style={{
+                  flex: 1,
+                  padding: "7px 10px",
+                  borderRadius: "8px",
+                  border: "1px solid #cbd5e1",
+                  fontSize: "12px",
+                }}
+              />
+              <button
+                type="button"
+                onClick={handleAddImageUrl}
+                style={{
+                  padding: "7px 12px",
+                  background: "#e2e8f0",
+                  border: "none",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                Add
+              </button>
+            </div>
+          </div>
+
+          {/* Image Thumbnails */}
+          {formImages.length > 0 && (
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "8px" }}>
+              {formImages.map((img, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    position: "relative",
+                    width: "72px",
+                    height: "72px",
+                    borderRadius: "8px",
+                    overflow: "hidden",
+                    border: "1px solid #cbd5e1",
+                  }}
+                >
+                  <img
+                    src={img}
+                    alt="Upload preview"
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(idx)}
+                    style={{
+                      position: "absolute",
+                      top: "2px",
+                      right: "2px",
+                      background: "rgba(0,0,0,0.6)",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "50%",
+                      width: "18px",
+                      height: "18px",
+                      fontSize: "10px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Seller Contact Details */}
+        <div style={{ background: "#f0fdf4", padding: "14px", borderRadius: "10px", border: "1px solid #bbf7d0" }}>
+          <div style={{ fontSize: "12.5px", fontWeight: 700, color: "#166534", marginBottom: "8px" }}>
+            📞 Seller Contact Information (Buyers will contact you directly)
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+            <div>
+              <label style={{ display: "block", fontSize: "11.5px", fontWeight: 600, color: "#166534", marginBottom: "3px" }}>
+                Your Name *
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Ramesh K."
+                value={formSellerName}
+                onChange={(e) => setFormSellerName(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "8px 10px",
+                  borderRadius: "7px",
+                  border: "1px solid #86efac",
+                  fontSize: "12.5px",
+                }}
+              />
+            </div>
+            <div>
+              <label style={{ display: "block", fontSize: "11.5px", fontWeight: 600, color: "#166534", marginBottom: "3px" }}>
+                Phone Number (for Call) *
+              </label>
+              <input
+                type="tel"
+                required
+                placeholder="e.g. 9842012345"
+                value={formSellerPhone}
+                onChange={(e) => {
+                  setFormSellerPhone(e.target.value);
+                  if (!formSellerWhatsapp) setFormSellerWhatsapp(e.target.value);
+                }}
+                style={{
+                  width: "100%",
+                  padding: "8px 10px",
+                  borderRadius: "7px",
+                  border: "1px solid #86efac",
+                  fontSize: "12.5px",
+                }}
+              />
+            </div>
+          </div>
+
+          <div style={{ marginTop: "10px" }}>
+            <label style={{ display: "block", fontSize: "11.5px", fontWeight: 600, color: "#166534", marginBottom: "3px" }}>
+              WhatsApp Number (optional, defaults to Phone)
+            </label>
+            <input
+              type="tel"
+              placeholder="e.g. 9842012345"
+              value={formSellerWhatsapp}
+              onChange={(e) => setFormSellerWhatsapp(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "8px 10px",
+                borderRadius: "7px",
+                border: "1px solid #86efac",
+                fontSize: "12.5px",
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Form Buttons */}
+        <div style={{ display: "flex", gap: "10px", marginTop: "6px" }}>
+          <button
+            type="submit"
+            disabled={submitting}
+            style={{
+              flex: 1,
+              padding: "12px 18px",
+              background: "#166534",
+              color: "#ffffff",
+              borderRadius: "10px",
+              border: "none",
+              fontWeight: 800,
+              fontSize: "14px",
+              cursor: submitting ? "not-allowed" : "pointer",
+              boxShadow: "0 4px 12px rgba(22, 101, 52, 0.25)",
+            }}
+          >
+            {submitting ? "Publishing Listing..." : "✓ Publish Used Product Listing"}
+          </button>
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              style={{
+                padding: "12px 18px",
+                background: "#f1f5f9",
+                color: "#475569",
+                borderRadius: "10px",
+                border: "none",
+                fontWeight: 600,
+                fontSize: "13px",
+                cursor: "pointer",
+              }}
+            >
+              Cancel
+            </button>
+          )}
+        </div>
+      </form>
+
+      {/* Seller Map Pin Modal */}
+      <MapPinModal
+        isOpen={showSellerMapModal}
+        initialCoordinates={formCoordinates}
+        title="Pin Your Product Pickup Location"
+        onClose={() => setShowSellerMapModal(false)}
+        onConfirm={(coords: Coordinates) => {
+          setFormCoordinates(coords);
+          const locality = findNearestNeighborhood(coords);
+          if (locality) {
+            setFormLocality(locality);
+            setFormLocation((prev) => {
+              if (!prev || prev === "Hosur" || prev === "Local Area") return `${locality}, Hosur`;
+              if (!prev.toLowerCase().includes(locality.toLowerCase())) return `${prev}, ${locality}`;
+              return prev;
+            });
+          }
+          setShowSellerMapModal(false);
+          if (showNotice) showNotice(`✓ Product location pinned: ${locality || "Hosur"}`);
+        }}
+      />
+    </div>
+  );
+}
+
+/**
+ * Main Used Products Marketplace Modal (supports Buy & Sell modes).
+ */
+export function UsedProductsMarketplaceModal({
+  isOpen,
+  initialMode = "buy",
+  onClose,
+  currentLocality = "Hosur",
+  initialCoordinates = null,
+  userName = "",
+  userPhone = "",
+  showNotice,
+}: {
+  isOpen: boolean;
+  initialMode?: "buy" | "sell";
+  onClose: () => void;
+  currentLocality?: string;
+  initialCoordinates?: Coordinates | null;
+  userName?: string;
+  userPhone?: string;
+  showNotice?: (msg: string) => void;
+}) {
+  const [mode, setMode] = useState<"buy" | "sell">(initialMode);
+  const [products, setProducts] = useState<UsedProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [selectedProduct, setSelectedProduct] = useState<UsedProduct | null>(null);
+
+  // Buyer Location State (Auto-fetch & Map Pin)
+  const [buyerCoords, setBuyerCoords] = useState<Coordinates | null>(initialCoordinates || null);
+  const [buyerLocality, setBuyerLocality] = useState<string>(currentLocality || "Hosur");
+  const [buyerLocating, setBuyerLocating] = useState(false);
+  const [showBuyerMapModal, setShowBuyerMapModal] = useState(false);
+  const [sortBy, setSortBy] = useState<"distance" | "newest" | "price_asc" | "price_desc">(initialCoordinates ? "distance" : "newest");
+
+  useEffect(() => {
+    if (isOpen) {
+      setMode(initialMode);
+      loadProducts();
+      if (initialCoordinates && !buyerCoords) setBuyerCoords(initialCoordinates);
+      if (currentLocality && !buyerLocality) setBuyerLocality(currentLocality);
+    }
+  }, [isOpen, initialMode, initialCoordinates, currentLocality]);
+
+  const loadProducts = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/used-products", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        setProducts(Array.isArray(data.products) ? data.products : []);
+      }
+    } catch {
+      // Graceful fallback
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFetchBuyerLocation = () => {
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      if (showNotice) showNotice("Geolocation is not supported by your browser.");
+      return;
+    }
+    setBuyerLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const coords: Coordinates = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+        setBuyerCoords(coords);
+        const nearest = findNearestNeighborhood(coords);
+        if (nearest) setBuyerLocality(nearest);
+        setSortBy("distance");
+        setBuyerLocating(false);
+        if (showNotice) showNotice(`✓ Buyer location fetched: ${nearest} (${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)})`);
+      },
+      () => {
+        setBuyerLocating(false);
+        if (showNotice) showNotice("Could not access GPS. Click 'Change Pin' to pin on map.");
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
   };
 
   if (!isOpen) return null;
@@ -707,39 +1205,30 @@ export function UsedProductsMarketplaceModal({
                   background: "#f0fdf4",
                   border: "1px solid #bbf7d0",
                   padding: "10px 14px",
-                  borderRadius: "12px",
+                  borderRadius: "10px",
                   marginBottom: "14px",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-                  <span style={{ fontSize: "18px" }}>📍</span>
-                  <div>
-                    <div style={{ fontSize: "10.5px", fontWeight: 700, color: "#166534", textTransform: "uppercase" }}>
-                      Buyer Location &amp; Proximity
-                    </div>
-                    <div style={{ fontSize: "13px", fontWeight: 700, color: "#065f46", display: "flex", alignItems: "center", gap: "6px" }}>
-                      <span>{buyerLocality || "Hosur"}</span>
-                      {buyerCoords && (
-                        <span style={{ fontSize: "11px", fontWeight: 500, color: "#15803d" }}>
-                          ({buyerCoords.latitude.toFixed(3)}, {buyerCoords.longitude.toFixed(3)})
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12.5px", color: "#166534" }}>
+                  <span>📍 Showing items near:</span>
+                  <strong style={{ color: "#14532d" }}>
+                    {buyerLocality}
+                    {buyerCoords ? ` (${buyerCoords.latitude.toFixed(3)}, ${buyerCoords.longitude.toFixed(3)})` : ""}
+                  </strong>
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                   <button
                     type="button"
                     onClick={handleFetchBuyerLocation}
                     disabled={buyerLocating}
                     style={{
-                      padding: "6px 12px",
+                      padding: "5px 11px",
                       background: "#ffffff",
-                      border: "1.5px solid #16a34a",
-                      borderRadius: "8px",
-                      fontSize: "12px",
-                      fontWeight: 700,
+                      border: "1px solid #86efac",
+                      borderRadius: "6px",
+                      fontSize: "11.5px",
+                      fontWeight: 600,
                       color: "#166534",
                       cursor: "pointer",
                       display: "flex",
@@ -747,18 +1236,18 @@ export function UsedProductsMarketplaceModal({
                       gap: "4px",
                     }}
                   >
-                    {buyerLocating ? "⏳ Locating..." : "🎯 Auto-Fetch My Location"}
+                    {buyerLocating ? "⏳ Locating..." : "🎯 Auto-Detect My Location"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowBuyerMapModal(true)}
                     style={{
-                      padding: "6px 12px",
+                      padding: "5px 11px",
                       background: "#166534",
                       border: "none",
-                      borderRadius: "8px",
-                      fontSize: "12px",
-                      fontWeight: 700,
+                      borderRadius: "6px",
+                      fontSize: "11.5px",
+                      fontWeight: 600,
                       color: "#ffffff",
                       cursor: "pointer",
                       display: "flex",
@@ -768,99 +1257,64 @@ export function UsedProductsMarketplaceModal({
                   >
                     🗺️ Pin on Map
                   </button>
-
-                  <div style={{ display: "flex", alignItems: "center", gap: "4px", marginLeft: "4px" }}>
-                    <label style={{ fontSize: "11.5px", fontWeight: 600, color: "#334155" }}>Sort:</label>
-                    <select
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value as any)}
-                      style={{
-                        padding: "5px 8px",
-                        borderRadius: "8px",
-                        border: "1px solid #cbd5e1",
-                        fontSize: "12px",
-                        background: "#ffffff",
-                        fontWeight: 600,
-                      }}
-                    >
-                      <option value="distance">📍 Nearest First</option>
-                      <option value="newest">🕒 Newest Listed</option>
-                      <option value="price_asc">₹ Price: Low to High</option>
-                      <option value="price_desc">₹ Price: High to Low</option>
-                    </select>
-                  </div>
                 </div>
               </div>
 
-              {/* Search & Category Filter Bar */}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginBottom: "14px" }}>
-                <div style={{ flex: "1 1 260px", position: "relative" }}>
+              {/* Search & Sort Controls */}
+              <div
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  marginBottom: "14px",
+                  flexWrap: "wrap",
+                }}
+              >
+                <div style={{ flex: 1, minWidth: "220px", position: "relative" }}>
                   <input
                     type="text"
-                    placeholder="Search used mobiles, bikes, furniture, laptops..."
+                    placeholder="Search by title, brand, description, or locality..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     style={{
                       width: "100%",
-                      padding: "10px 14px 10px 36px",
-                      borderRadius: "10px",
-                      border: "1.5px solid #cbd5e1",
-                      fontSize: "13px",
-                      outline: "none",
+                      padding: "9px 12px 9px 34px",
+                      borderRadius: "8px",
+                      border: "1px solid #cbd5e1",
+                      fontSize: "12.5px",
                     }}
                   />
                   <span
                     style={{
                       position: "absolute",
-                      left: "12px",
+                      left: "11px",
                       top: "50%",
                       transform: "translateY(-50%)",
-                      fontSize: "14px",
                       color: "#94a3b8",
+                      fontSize: "14px",
                     }}
                   >
                     🔍
                   </span>
-                  {searchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => setSearchQuery("")}
-                      style={{
-                        position: "absolute",
-                        right: "10px",
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        background: "none",
-                        border: "none",
-                        fontSize: "14px",
-                        cursor: "pointer",
-                        color: "#94a3b8",
-                      }}
-                    >
-                      ✕
-                    </button>
-                  )}
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => setMode("sell")}
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
                   style={{
-                    padding: "9px 16px",
-                    background: "#166534",
-                    color: "#ffffff",
-                    borderRadius: "10px",
-                    border: "none",
-                    fontWeight: 700,
-                    fontSize: "12.5px",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
+                    padding: "9px 12px",
+                    borderRadius: "8px",
+                    border: "1px solid #cbd5e1",
+                    fontSize: "12px",
+                    background: "#ffffff",
+                    color: "#334155",
+                    fontWeight: 600,
                   }}
                 >
-                  <span>+</span> Post Used Product
-                </button>
+                  <option value="distance">📍 Sort by Distance (Nearest First)</option>
+                  <option value="newest">🕒 Sort by Newest Listed</option>
+                  <option value="price_asc">💰 Price: Low to High</option>
+                  <option value="price_desc">💰 Price: High to Low</option>
+                </select>
               </div>
 
               {/* Category Pills */}
@@ -871,38 +1325,35 @@ export function UsedProductsMarketplaceModal({
                   overflowX: "auto",
                   paddingBottom: "10px",
                   marginBottom: "16px",
-                  scrollbarWidth: "none",
                 }}
               >
-                {USED_PRODUCT_CATEGORIES.map((cat) => {
-                  const active = selectedCategory === cat;
-                  return (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => setSelectedCategory(cat)}
-                      style={{
-                        padding: "5px 12px",
-                        borderRadius: "20px",
-                        border: active ? "1.5px solid #166534" : "1px solid #e2e8f0",
-                        background: active ? "#ecfdf5" : "#f8fafc",
-                        color: active ? "#166534" : "#475569",
-                        fontWeight: active ? 700 : 500,
-                        fontSize: "12px",
-                        cursor: "pointer",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {cat}
-                    </button>
-                  );
-                })}
+                {USED_PRODUCT_CATEGORIES.map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setSelectedCategory(cat)}
+                    style={{
+                      padding: "6px 12px",
+                      borderRadius: "20px",
+                      border: selectedCategory === cat ? "1.5px solid #166534" : "1px solid #cbd5e1",
+                      background: selectedCategory === cat ? "#ecfdf5" : "#ffffff",
+                      color: selectedCategory === cat ? "#166534" : "#475569",
+                      fontSize: "12px",
+                      fontWeight: selectedCategory === cat ? 700 : 500,
+                      cursor: "pointer",
+                      whiteSpace: "nowrap",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    {cat}
+                  </button>
+                ))}
               </div>
 
-              {/* Products List */}
+              {/* Product Grid / Empty State */}
               {loading ? (
-                <div style={{ textAlign: "center", padding: "40px 20px", color: "#64748b" }}>
-                  <p>Loading available used products...</p>
+                <div style={{ textAlign: "center", padding: "40px 0", color: "#64748b" }}>
+                  <p>Loading pre-owned marketplace...</p>
                 </div>
               ) : filteredProducts.length === 0 ? (
                 <div
@@ -958,462 +1409,18 @@ export function UsedProductsMarketplaceModal({
               )}
             </div>
           ) : (
-            /* Sell Mode Form */
-            <div style={{ maxWidth: "680px", margin: "0 auto" }}>
-              <div style={{ marginBottom: "18px" }}>
-                <h3 style={{ fontSize: "17px", fontWeight: 800, color: "#0f172a", margin: "0 0 4px" }}>
-                  List Your Used Product for Sale
-                </h3>
-                <p style={{ fontSize: "12.5px", color: "#64748b", margin: 0 }}>
-                  Anyone can post! Provide accurate details and photos to connect with verified local buyers directly via Call &amp; WhatsApp.
-                </p>
-              </div>
-
-              {formError && (
-                <div
-                  style={{
-                    background: "#fef2f2",
-                    color: "#b91c1c",
-                    padding: "10px 14px",
-                    borderRadius: "8px",
-                    fontSize: "12.5px",
-                    marginBottom: "14px",
-                    border: "1px solid #fecaca",
-                  }}
-                >
-                  ⚠️ {formError}
-                </div>
-              )}
-
-              <form onSubmit={handleSellSubmit} style={{ display: "grid", gap: "14px" }}>
-                {/* Title */}
-                <div>
-                  <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#334155", marginBottom: "4px" }}>
-                    Product Title / Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Samsung Galaxy S21 5G 128GB or Royal Enfield Classic 350"
-                    value={formTitle}
-                    onChange={(e) => setFormTitle(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "10px 12px",
-                      borderRadius: "8px",
-                      border: "1px solid #cbd5e1",
-                      fontSize: "13px",
-                    }}
-                  />
-                </div>
-
-                {/* Category & Condition */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-                  <div>
-                    <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#334155", marginBottom: "4px" }}>
-                      Category *
-                    </label>
-                    <select
-                      value={formCategory}
-                      onChange={(e) => setFormCategory(e.target.value)}
-                      style={{
-                        width: "100%",
-                        padding: "10px 12px",
-                        borderRadius: "8px",
-                        border: "1px solid #cbd5e1",
-                        fontSize: "13px",
-                        background: "#fff",
-                      }}
-                    >
-                      {USED_PRODUCT_CATEGORIES.filter((c) => c !== "All").map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#334155", marginBottom: "4px" }}>
-                      Condition *
-                    </label>
-                    <select
-                      value={formCondition}
-                      onChange={(e) => setFormCondition(e.target.value)}
-                      style={{
-                        width: "100%",
-                        padding: "10px 12px",
-                        borderRadius: "8px",
-                        border: "1px solid #cbd5e1",
-                        fontSize: "13px",
-                        background: "#fff",
-                      }}
-                    >
-                      {USED_PRODUCT_CONDITIONS.map((cond) => (
-                        <option key={cond} value={cond}>
-                          {cond}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Price & Negotiable */}
-                <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: "12px", alignItems: "center" }}>
-                  <div>
-                    <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#334155", marginBottom: "4px" }}>
-                      Price (₹) *
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      min="0"
-                      placeholder="e.g. 4500"
-                      value={formPrice}
-                      onChange={(e) => setFormPrice(e.target.value)}
-                      style={{
-                        width: "100%",
-                        padding: "10px 12px",
-                        borderRadius: "8px",
-                        border: "1px solid #cbd5e1",
-                        fontSize: "13px",
-                      }}
-                    />
-                  </div>
-
-                  <div style={{ paddingTop: "18px" }}>
-                    <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12.5px", color: "#334155", cursor: "pointer" }}>
-                      <input
-                        type="checkbox"
-                        checked={formNegotiable}
-                        onChange={(e) => setFormNegotiable(e.target.checked)}
-                        style={{ width: "16px", height: "16px", accentColor: "#166534" }}
-                      />
-                      <span>Price is Negotiable</span>
-                    </label>
-                  </div>
-                </div>
-
-                {/* Seller Location & Map Pin */}
-                <div style={{ background: "#f0fdf4", padding: "14px", borderRadius: "10px", border: "1.5px solid #86efac" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px", flexWrap: "wrap", gap: "6px" }}>
-                    <label style={{ fontSize: "12px", fontWeight: 700, color: "#166534", margin: 0 }}>
-                      📍 Seller Location &amp; Map Pin *
-                    </label>
-                    <div style={{ display: "flex", gap: "6px" }}>
-                      <button
-                        type="button"
-                        onClick={handleFetchSellerLocation}
-                        disabled={sellerLocating}
-                        style={{
-                          padding: "5px 10px",
-                          background: "#ffffff",
-                          border: "1.5px solid #16a34a",
-                          borderRadius: "6px",
-                          fontSize: "11.5px",
-                          fontWeight: 700,
-                          color: "#166534",
-                          cursor: "pointer",
-                        }}
-                      >
-                        {sellerLocating ? "⏳ Fetching GPS..." : "🎯 Auto-Fetch Location"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setShowSellerMapModal(true)}
-                        style={{
-                          padding: "5px 10px",
-                          background: "#166534",
-                          border: "none",
-                          borderRadius: "6px",
-                          fontSize: "11.5px",
-                          fontWeight: 700,
-                          color: "#ffffff",
-                          cursor: "pointer",
-                        }}
-                      >
-                        🗺️ Pin on Map
-                      </button>
-                    </div>
-                  </div>
-
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Bagalur Road, Near Ring Road Circle, Hosur"
-                    value={formLocation}
-                    onChange={(e) => setFormLocation(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "10px 12px",
-                      borderRadius: "8px",
-                      border: "1px solid #86efac",
-                      fontSize: "13px",
-                      marginBottom: "6px",
-                      background: "#ffffff",
-                    }}
-                  />
-
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "11.5px", color: "#15803d", flexWrap: "wrap", gap: "6px" }}>
-                    <span>
-                      {formCoordinates ? (
-                        <span>✓ Pin Pinned: <strong>{formLocality}</strong> ({formCoordinates.latitude.toFixed(4)}, {formCoordinates.longitude.toFixed(4)})</span>
-                      ) : (
-                        <span>💡 Click <em>Auto-Fetch Location</em> or <em>Pin on Map</em> so nearby buyers can see exact distance.</span>
-                      )}
-                    </span>
-                    {formCoordinates && (
-                      <span style={{ background: "#dcfce7", color: "#166534", padding: "2px 8px", borderRadius: "6px", fontWeight: 700, fontSize: "10.5px", border: "1px solid #bbf7d0" }}>
-                        GPS Verified Pin
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Description */}
-                <div>
-                  <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#334155", marginBottom: "4px" }}>
-                    Description &amp; Specifications
-                  </label>
-                  <textarea
-                    rows={3}
-                    placeholder="Describe item condition, age, usage, accessories included (box, charger, bills), and reasons for selling..."
-                    value={formDescription}
-                    onChange={(e) => setFormDescription(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "10px 12px",
-                      borderRadius: "8px",
-                      border: "1px solid #cbd5e1",
-                      fontSize: "13px",
-                      resize: "vertical",
-                    }}
-                  />
-                </div>
-
-                {/* Product Images */}
-                <div style={{ background: "#f8fafc", padding: "14px", borderRadius: "10px", border: "1px solid #e2e8f0" }}>
-                  <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#334155", marginBottom: "6px" }}>
-                    Product Images (Upload or URL)
-                  </label>
-
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center", marginBottom: "10px" }}>
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      accept="image/*"
-                      style={{ display: "none" }}
-                      onChange={handleImageFileUpload}
-                    />
-                    <button
-                      type="button"
-                      disabled={uploadingImage}
-                      onClick={() => fileInputRef.current?.click()}
-                      style={{
-                        padding: "8px 14px",
-                        background: "#0f172a",
-                        color: "#ffffff",
-                        borderRadius: "8px",
-                        border: "none",
-                        fontSize: "12px",
-                        fontWeight: 600,
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "6px",
-                      }}
-                    >
-                      {uploadingImage ? "Uploading..." : "📷 Upload Photo"}
-                    </button>
-
-                    <div style={{ display: "flex", gap: "6px", flex: 1, minWidth: "200px" }}>
-                      <input
-                        type="url"
-                        placeholder="Or paste image URL"
-                        value={imageUrlInput}
-                        onChange={(e) => setImageUrlInput(e.target.value)}
-                        style={{
-                          flex: 1,
-                          padding: "7px 10px",
-                          borderRadius: "8px",
-                          border: "1px solid #cbd5e1",
-                          fontSize: "12px",
-                        }}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleAddImageUrl}
-                        style={{
-                          padding: "7px 12px",
-                          background: "#e2e8f0",
-                          border: "none",
-                          borderRadius: "8px",
-                          fontSize: "12px",
-                          fontWeight: 600,
-                          cursor: "pointer",
-                        }}
-                      >
-                        Add
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Image Thumbnails */}
-                  {formImages.length > 0 && (
-                    <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "8px" }}>
-                      {formImages.map((img, idx) => (
-                        <div
-                          key={idx}
-                          style={{
-                            position: "relative",
-                            width: "72px",
-                            height: "72px",
-                            borderRadius: "8px",
-                            overflow: "hidden",
-                            border: "1px solid #cbd5e1",
-                          }}
-                        >
-                          <img
-                            src={img}
-                            alt="Upload preview"
-                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveImage(idx)}
-                            style={{
-                              position: "absolute",
-                              top: "2px",
-                              right: "2px",
-                              background: "rgba(0,0,0,0.6)",
-                              color: "#fff",
-                              border: "none",
-                              borderRadius: "50%",
-                              width: "18px",
-                              height: "18px",
-                              fontSize: "10px",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              cursor: "pointer",
-                            }}
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Seller Contact Details */}
-                <div style={{ background: "#f0fdf4", padding: "14px", borderRadius: "10px", border: "1px solid #bbf7d0" }}>
-                  <div style={{ fontSize: "12.5px", fontWeight: 700, color: "#166534", marginBottom: "8px" }}>
-                    📞 Seller Contact Information (Buyers will contact you directly)
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-                    <div>
-                      <label style={{ display: "block", fontSize: "11.5px", fontWeight: 600, color: "#166534", marginBottom: "3px" }}>
-                        Your Name *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. Ramesh K."
-                        value={formSellerName}
-                        onChange={(e) => setFormSellerName(e.target.value)}
-                        style={{
-                          width: "100%",
-                          padding: "8px 10px",
-                          borderRadius: "7px",
-                          border: "1px solid #86efac",
-                          fontSize: "12.5px",
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <label style={{ display: "block", fontSize: "11.5px", fontWeight: 600, color: "#166534", marginBottom: "3px" }}>
-                        Phone Number (for Call) *
-                      </label>
-                      <input
-                        type="tel"
-                        required
-                        placeholder="e.g. 9842012345"
-                        value={formSellerPhone}
-                        onChange={(e) => {
-                          setFormSellerPhone(e.target.value);
-                          if (!formSellerWhatsapp) setFormSellerWhatsapp(e.target.value);
-                        }}
-                        style={{
-                          width: "100%",
-                          padding: "8px 10px",
-                          borderRadius: "7px",
-                          border: "1px solid #86efac",
-                          fontSize: "12.5px",
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div style={{ marginTop: "10px" }}>
-                    <label style={{ display: "block", fontSize: "11.5px", fontWeight: 600, color: "#166534", marginBottom: "3px" }}>
-                      WhatsApp Number (optional, defaults to Phone)
-                    </label>
-                    <input
-                      type="tel"
-                      placeholder="e.g. 9842012345"
-                      value={formSellerWhatsapp}
-                      onChange={(e) => setFormSellerWhatsapp(e.target.value)}
-                      style={{
-                        width: "100%",
-                        padding: "8px 10px",
-                        borderRadius: "7px",
-                        border: "1px solid #86efac",
-                        fontSize: "12.5px",
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* Form Buttons */}
-                <div style={{ display: "flex", gap: "10px", marginTop: "6px" }}>
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    style={{
-                      flex: 1,
-                      padding: "12px 18px",
-                      background: "#166534",
-                      color: "#ffffff",
-                      borderRadius: "10px",
-                      border: "none",
-                      fontWeight: 800,
-                      fontSize: "14px",
-                      cursor: submitting ? "not-allowed" : "pointer",
-                      boxShadow: "0 4px 12px rgba(22, 101, 52, 0.25)",
-                    }}
-                  >
-                    {submitting ? "Publishing Listing..." : "✓ Publish Used Product Listing"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setMode("buy")}
-                    style={{
-                      padding: "12px 18px",
-                      background: "#f1f5f9",
-                      color: "#475569",
-                      borderRadius: "10px",
-                      border: "none",
-                      fontWeight: 600,
-                      fontSize: "13px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            </div>
+            <UsedProductSellForm
+              currentLocality={currentLocality}
+              initialCoordinates={initialCoordinates}
+              userName={userName}
+              userPhone={userPhone}
+              showNotice={showNotice}
+              onCancel={() => setMode("buy")}
+              onSuccess={async () => {
+                await loadProducts();
+                setMode("buy");
+              }}
+            />
           )}
         </div>
       </div>
@@ -1444,32 +1451,9 @@ export function UsedProductsMarketplaceModal({
           if (showNotice) showNotice(`✓ Buyer location pinned: ${locality || "Hosur"}`);
         }}
       />
-
-      {/* Seller Map Pin Modal */}
-      <MapPinModal
-        isOpen={showSellerMapModal}
-        initialCoordinates={formCoordinates}
-        title="Pin Your Product Pickup Location"
-        onClose={() => setShowSellerMapModal(false)}
-        onConfirm={(coords: Coordinates) => {
-          setFormCoordinates(coords);
-          const locality = findNearestNeighborhood(coords);
-          if (locality) {
-            setFormLocality(locality);
-            setFormLocation((prev) => {
-              if (!prev || prev === "Hosur" || prev === "Local Area") return `${locality}, Hosur`;
-              if (!prev.toLowerCase().includes(locality.toLowerCase())) return `${prev}, ${locality}`;
-              return prev;
-            });
-          }
-          setShowSellerMapModal(false);
-          if (showNotice) showNotice(`✓ Product location pinned: ${locality || "Hosur"}`);
-        }}
-      />
     </div>
   );
 }
-
 /**
  * Single Card for Used Product Listing in the Grid.
  */
@@ -2080,6 +2064,7 @@ export function UsedProductDetailModal({
 
 /**
  * Embedded Used Products Panel for AccountPortal tabs.
+ * Supports direct inline selling and instant auto-refresh.
  */
 export function UsedProductsPanel({
   onOpenSell,
@@ -2102,7 +2087,7 @@ export function UsedProductsPanel({
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [selectedProduct, setSelectedProduct] = useState<UsedProduct | null>(null);
-  const [panelSellModalOpen, setPanelSellModalOpen] = useState(false);
+  const [isSelling, setIsSelling] = useState(false);
 
   const loadPanelProducts = useCallback(async () => {
     try {
@@ -2132,13 +2117,7 @@ export function UsedProductsPanel({
   }, [loadPanelProducts]);
 
   const handleOpenSell = () => {
-    if (onOpenMarketplace) {
-      onOpenMarketplace("sell");
-    } else if (onOpenSell) {
-      onOpenSell();
-    } else {
-      setPanelSellModalOpen(true);
-    }
+    setIsSelling(true);
   };
 
   const filtered = products.filter((p) => {
@@ -2150,96 +2129,117 @@ export function UsedProductsPanel({
 
   return (
     <section className="panel tab-panel">
-      <div className="panel-heading" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "10px" }}>
-        <div>
-          <div className="eyebrow">PRE-OWNED MARKETPLACE</div>
-          <h2>Used Product Sales</h2>
-          <p style={{ fontSize: "13px", color: "#64748b", margin: 0 }}>
-            Buy pre-owned goods or list your used items for free. Direct Call &amp; WhatsApp reach.
-          </p>
-        </div>
-        <button
-          type="button"
-          className="primary-button"
-          onClick={handleOpenSell}
-          style={{ fontSize: "12.5px", padding: "8px 14px" }}
-        >
-          + Sell a Used Product
-        </button>
-      </div>
+      {isSelling ? (
+        <>
+          <div className="panel-heading" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "10px", marginBottom: "16px" }}>
+            <div>
+              <div className="eyebrow">PRE-OWNED MARKETPLACE</div>
+              <h2 style={{ margin: "2px 0 0" }}>List a Used Product for Sale</h2>
+              <p style={{ fontSize: "13px", color: "#64748b", margin: 0 }}>
+                Anyone can post! Direct Call &amp; WhatsApp connection with 0% platform commission.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="outline-button"
+              onClick={() => setIsSelling(false)}
+              style={{ fontSize: "12.5px", padding: "8px 14px" }}
+            >
+              ← Back to Listings ({products.length})
+            </button>
+          </div>
 
-      {/* Category Pills */}
-      <div style={{ display: "flex", gap: "6px", overflowX: "auto", paddingBottom: "10px", margin: "14px 0" }}>
-        {USED_PRODUCT_CATEGORIES.map((cat) => (
-          <button
-            key={cat}
-            type="button"
-            onClick={() => setSelectedCategory(cat)}
-            style={{
-              padding: "4px 10px",
-              borderRadius: "16px",
-              border: selectedCategory === cat ? "1.5px solid #166534" : "1px solid #cbd5e1",
-              background: selectedCategory === cat ? "#ecfdf5" : "#f8fafc",
-              color: selectedCategory === cat ? "#166534" : "#475569",
-              fontSize: "11.5px",
-              fontWeight: selectedCategory === cat ? 700 : 500,
-              cursor: "pointer",
-              whiteSpace: "nowrap",
+          <UsedProductSellForm
+            currentLocality={currentLocality}
+            initialCoordinates={initialCoordinates}
+            userName={userName}
+            userPhone={userPhone}
+            showNotice={showNotice}
+            onCancel={() => setIsSelling(false)}
+            onSuccess={() => {
+              setIsSelling(false);
+              loadPanelProducts();
             }}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
-
-      {loading ? (
-        <p style={{ color: "#64748b", fontSize: "13px" }}>Loading used products...</p>
-      ) : filtered.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "30px 16px", background: "#f8fafc", borderRadius: "12px", border: "1px dashed #cbd5e1" }}>
-          <div style={{ fontSize: "32px", marginBottom: "8px" }}>🏷️</div>
-          <h4 style={{ margin: "0 0 4px", fontSize: "15px" }}>No used products listed yet</h4>
-          <p style={{ margin: "0 0 12px", fontSize: "12px", color: "#64748b" }}>
-            Be the first to list a pre-owned item for sale in your neighborhood.
-          </p>
-          <button
-            type="button"
-            className="primary-button"
-            onClick={handleOpenSell}
-            style={{ fontSize: "12px", padding: "6px 12px" }}
-          >
-            + Sell a Used Product
-          </button>
-        </div>
+          />
+        </>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "14px" }}>
-          {filtered.map((item) => (
-            <UsedProductCard key={item.id} item={item} onSelect={() => setSelectedProduct(item)} />
-          ))}
-        </div>
-      )}
+        <>
+          <div className="panel-heading" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "10px" }}>
+            <div>
+              <div className="eyebrow">PRE-OWNED MARKETPLACE</div>
+              <h2>Used Product Sales</h2>
+              <p style={{ fontSize: "13px", color: "#64748b", margin: 0 }}>
+                Buy pre-owned goods or list your used items for free. Direct Call &amp; WhatsApp reach.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="primary-button"
+              onClick={handleOpenSell}
+              style={{ fontSize: "12.5px", padding: "8px 14px" }}
+            >
+              + Sell a Used Product
+            </button>
+          </div>
 
-      {selectedProduct && (
-        <UsedProductDetailModal
-          product={selectedProduct}
-          onClose={() => setSelectedProduct(null)}
-          showNotice={showNotice}
-        />
-      )}
+          {/* Category Pills */}
+          <div style={{ display: "flex", gap: "6px", overflowX: "auto", paddingBottom: "10px", margin: "14px 0" }}>
+            {USED_PRODUCT_CATEGORIES.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setSelectedCategory(cat)}
+                style={{
+                  padding: "4px 10px",
+                  borderRadius: "16px",
+                  border: selectedCategory === cat ? "1.5px solid #166534" : "1px solid #cbd5e1",
+                  background: selectedCategory === cat ? "#ecfdf5" : "#f8fafc",
+                  color: selectedCategory === cat ? "#166534" : "#475569",
+                  fontSize: "11.5px",
+                  fontWeight: selectedCategory === cat ? 700 : 500,
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
 
-      {panelSellModalOpen && (
-        <UsedProductsMarketplaceModal
-          isOpen={panelSellModalOpen}
-          initialMode="sell"
-          onClose={() => {
-            setPanelSellModalOpen(false);
-            loadPanelProducts();
-          }}
-          currentLocality={currentLocality}
-          initialCoordinates={initialCoordinates}
-          userName={userName}
-          userPhone={userPhone}
-          showNotice={showNotice}
-        />
+          {loading ? (
+            <p style={{ color: "#64748b", fontSize: "13px" }}>Loading used products...</p>
+          ) : filtered.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "30px 16px", background: "#f8fafc", borderRadius: "12px", border: "1px dashed #cbd5e1" }}>
+              <div style={{ fontSize: "32px", marginBottom: "8px" }}>🏷️</div>
+              <h4 style={{ margin: "0 0 4px", fontSize: "15px" }}>No used products listed yet</h4>
+              <p style={{ margin: "0 0 12px", fontSize: "12px", color: "#64748b" }}>
+                Be the first to list a pre-owned item for sale in your neighborhood.
+              </p>
+              <button
+                type="button"
+                className="primary-button"
+                onClick={handleOpenSell}
+                style={{ fontSize: "12px", padding: "6px 12px" }}
+              >
+                + Sell a Used Product
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "14px" }}>
+              {filtered.map((item) => (
+                <UsedProductCard key={item.id} item={item} onSelect={() => setSelectedProduct(item)} />
+              ))}
+            </div>
+          )}
+
+          {selectedProduct && (
+            <UsedProductDetailModal
+              product={selectedProduct}
+              onClose={() => setSelectedProduct(null)}
+              showNotice={showNotice}
+            />
+          )}
+        </>
       )}
     </section>
   );

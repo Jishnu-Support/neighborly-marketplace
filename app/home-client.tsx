@@ -11526,6 +11526,7 @@ export default function Home() {
       />
 
       <UsedProductsMarketplaceModal
+        key={`used-marketplace-${showUsedProductsModal ? 'open' : 'closed'}-${usedProductInitialMode}`}
         isOpen={showUsedProductsModal}
         initialMode={usedProductInitialMode}
         onClose={() => {
