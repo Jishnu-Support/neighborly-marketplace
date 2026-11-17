@@ -128,7 +128,33 @@ export function ensureStoresInitialized(): void {
     initFileIfNotExists(resolveStorePath("NEIGHBORLY_QUOTES_STORE", ".neighborly-quotes.json"), "[]");
     initFileIfNotExists(resolveStorePath("NEIGHBORLY_NOTIFICATIONS_STORE", ".neighborly-notifications.json"), "[]");
     initFileIfNotExists(resolveStorePath("NEIGHBORLY_USED_PRODUCTS_STORE", ".neighborly-used-products.json"), "[]");
-    initFileIfNotExists(resolveStorePath("NEIGHBORLY_JOBS_STORE", ".neighborly-jobs.json"), "[]");
+    const jobsPath = resolveStorePath("NEIGHBORLY_JOBS_STORE", ".neighborly-jobs.json");
+    initFileIfNotExists(jobsPath, "[]");
+    try {
+      if (fs.existsSync(jobsPath)) {
+        const raw = fs.readFileSync(jobsPath, "utf8");
+        const list = JSON.parse(raw);
+        if (Array.isArray(list)) {
+          const cleaned = list.filter((j: any) => {
+            if (!j || typeof j !== "object") return false;
+            if (typeof j.id === "string" && j.id.startsWith("job-hosur-")) return false;
+            if (
+              j.businessName === "Sri Krishna Precision Engineering" ||
+              j.businessName === "Nilgiris Supermarket & Bakers" ||
+              j.businessName === "Hosur Quick Express Logistics" ||
+              j.businessName === "Cauvery Electricals & Automation" ||
+              j.businessName === "Apex Auto Components Pvt Ltd"
+            ) {
+              return false;
+            }
+            return true;
+          });
+          if (cleaned.length !== list.length) {
+            fs.writeFileSync(jobsPath, JSON.stringify(cleaned, null, 2), "utf8");
+          }
+        }
+      }
+    } catch {}
     initFileIfNotExists(
       resolveStorePath("NEIGHBORLY_AD_PRICING_STORE", ".neighborly-ad-pricing.json"),
       JSON.stringify(

@@ -42,7 +42,29 @@ export async function readJobs(): Promise<JobListing[]> {
     const raw = await readFile(storePath, { encoding: "utf8" });
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) {
-      return parsed;
+      // Filter out any demo jobs that have IDs starting with 'job-hosur-' or contain demo titles/businesses
+      const realJobs = parsed.filter((job) => {
+        if (!job || typeof job !== "object") return false;
+        if (typeof job.id === "string" && job.id.startsWith("job-hosur-")) {
+          return false;
+        }
+        if (
+          job.businessName === "Sri Krishna Precision Engineering" ||
+          job.businessName === "Nilgiris Supermarket & Bakers" ||
+          job.businessName === "Hosur Quick Express Logistics" ||
+          job.businessName === "Cauvery Electricals & Automation" ||
+          job.businessName === "Apex Auto Components Pvt Ltd"
+        ) {
+          return false;
+        }
+        return true;
+      });
+
+      // If any demo jobs were purged from disk, persist the clean array immediately
+      if (realJobs.length !== parsed.length) {
+        await writeJobs(realJobs);
+      }
+      return realJobs;
     }
     return [];
   } catch (err) {
