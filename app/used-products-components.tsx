@@ -969,6 +969,25 @@ export function UsedProductsMarketplaceModal({
     }
   };
 
+  const handleDeleteProduct = async (item: UsedProduct) => {
+    const ok = window.confirm(`Are you sure you want to remove your listing for "${item.title}"?`);
+    if (!ok) return;
+
+    try {
+      const res = await fetch(`/api/used-products?id=${encodeURIComponent(item.id)}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to delete used product.");
+      if (showNotice) showNotice(`✓ "${item.title}" was removed successfully.`);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("neighborly-used-products-updated"));
+      }
+      loadProducts();
+    } catch (err: any) {
+      if (showNotice) showNotice(err.message || "Failed to remove product.");
+    }
+  };
+
   const handleFetchBuyerLocation = () => {
     if (typeof window === "undefined" || !navigator.geolocation) {
       if (showNotice) showNotice("Geolocation is not supported by your browser.");
@@ -1403,6 +1422,7 @@ export function UsedProductsMarketplaceModal({
                       item={item}
                       buyerCoords={buyerCoords}
                       onSelect={() => setSelectedProduct(item)}
+                      onDelete={handleDeleteProduct}
                     />
                   ))}
                 </div>
@@ -1461,10 +1481,12 @@ function UsedProductCard({
   item,
   buyerCoords,
   onSelect,
+  onDelete,
 }: {
   item: UsedProduct;
   buyerCoords?: Coordinates | null;
   onSelect: () => void;
+  onDelete?: (item: UsedProduct) => void;
 }) {
   const cleanPhone = (item.sellerPhone || "").replace(/\D/g, "");
   const whatsappNumber = (item.sellerWhatsapp || item.sellerPhone || "").replace(/\D/g, "");
@@ -1563,6 +1585,39 @@ function UsedProductCard({
         >
           {item.condition}
         </span>
+
+        {/* Remove Listing Button for Seller */}
+        {onDelete && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(item);
+            }}
+            title="Remove your listed used product"
+            style={{
+              position: "absolute",
+              top: "8px",
+              right: "8px",
+              background: "rgba(255, 255, 255, 0.95)",
+              backdropFilter: "blur(4px)",
+              border: "1px solid #fecaca",
+              color: "#dc2626",
+              fontSize: "10.5px",
+              fontWeight: 700,
+              padding: "3px 8px",
+              borderRadius: "6px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "3px",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
+              zIndex: 3,
+            }}
+          >
+            🗑️ Remove
+          </button>
+        )}
 
         {/* Category tag */}
         <span
@@ -1750,6 +1805,31 @@ export function UsedProductDetailModal({
     if (navigator.clipboard) {
       navigator.clipboard.writeText(window.location.href);
       if (showNotice) showNotice("✓ Link copied to clipboard!");
+    }
+  };
+
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteListing = async () => {
+    const ok = window.confirm(`Are you sure you want to permanently remove your listing "${product.title}"?`);
+    if (!ok) return;
+
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/used-products?id=${encodeURIComponent(product.id)}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to remove product.");
+      if (showNotice) showNotice(`✓ Used product "${product.title}" was removed successfully.`);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("neighborly-used-products-updated"));
+      }
+      onClose();
+    } catch (err: any) {
+      if (showNotice) showNotice(err.message || "Failed to remove product.");
+      else alert(err.message || "Failed to remove product.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -2056,6 +2136,52 @@ export function UsedProductDetailModal({
               </button>
             </div>
           </div>
+
+          {/* Seller Listing Controls: Remove listing */}
+          <div
+            style={{
+              marginTop: "16px",
+              padding: "14px 16px",
+              background: "#fff5f5",
+              border: "1px dashed #fca5a5",
+              borderRadius: "12px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "10px",
+            }}
+          >
+            <div>
+              <div style={{ fontSize: "11px", fontWeight: 700, color: "#991b1b", textTransform: "uppercase" }}>
+                SELLER LISTING CONTROLS
+              </div>
+              <div style={{ fontSize: "12px", color: "#7f1d1d", marginTop: "2px" }}>
+                Already sold or want to withdraw this item from Bizearch?
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleDeleteListing}
+              disabled={deleting}
+              style={{
+                padding: "8px 14px",
+                background: "#dc2626",
+                color: "#ffffff",
+                border: "none",
+                borderRadius: "8px",
+                fontSize: "12px",
+                fontWeight: 700,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+                boxShadow: "0 2px 6px rgba(220, 38, 38, 0.25)",
+              }}
+            >
+              {deleting ? "Removing Listing..." : "🗑️ Remove My Listing"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -2118,6 +2244,25 @@ export function UsedProductsPanel({
 
   const handleOpenSell = () => {
     setIsSelling(true);
+  };
+
+  const handleDeleteProduct = async (item: UsedProduct) => {
+    const ok = window.confirm(`Are you sure you want to remove your listing "${item.title}" from the marketplace?`);
+    if (!ok) return;
+
+    try {
+      const res = await fetch(`/api/used-products?id=${encodeURIComponent(item.id)}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to delete used product.");
+      if (showNotice) showNotice(`✓ "${item.title}" was removed successfully.`);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("neighborly-used-products-updated"));
+      }
+      loadPanelProducts();
+    } catch (err: any) {
+      if (showNotice) showNotice(err.message || "Failed to remove product.");
+    }
   };
 
   const filtered = products.filter((p) => {
@@ -2227,7 +2372,12 @@ export function UsedProductsPanel({
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "14px" }}>
               {filtered.map((item) => (
-                <UsedProductCard key={item.id} item={item} onSelect={() => setSelectedProduct(item)} />
+                <UsedProductCard
+                  key={item.id}
+                  item={item}
+                  onSelect={() => setSelectedProduct(item)}
+                  onDelete={handleDeleteProduct}
+                />
               ))}
             </div>
           )}
