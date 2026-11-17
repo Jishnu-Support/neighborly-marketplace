@@ -54,6 +54,11 @@ import {
   UsedProductsPanel,
 } from "./used-products-components";
 import {
+  JobsDirectoryModal,
+  BusinessJobsManager,
+  JobsPanel,
+} from "./jobs-components";
+import {
   type AgentCommissionConfig,
   type AgentCommissionPricing,
   DEFAULT_AGENT_COMMISSION_CONFIG,
@@ -2546,6 +2551,31 @@ export default function Home() {
   }, [loadUsedProductsCount]);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showJobsModal, setShowJobsModal] = useState(false);
+  const [jobsCount, setJobsCount] = useState<number>(0);
+
+  const loadJobsCount = useCallback(() => {
+    fetch("/api/jobs?status=active", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && Array.isArray(data.jobs)) {
+          setJobsCount(data.jobs.length);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    loadJobsCount();
+    const handleOpenJobs = () => setShowJobsModal(true);
+    const handleJobsUpdated = () => loadJobsCount();
+    window.addEventListener("neighborly-open-jobs", handleOpenJobs);
+    window.addEventListener("neighborly-jobs-updated", handleJobsUpdated);
+    return () => {
+      window.removeEventListener("neighborly-open-jobs", handleOpenJobs);
+      window.removeEventListener("neighborly-jobs-updated", handleJobsUpdated);
+    };
+  }, [loadJobsCount]);
   const [authenticatedPortals, setAuthenticatedPortals] = useState<PortalRole[]>([]);
   const [customerCareConfig, setCustomerCareConfig] = useState<SupportConfig>(defaultSupportConfig);
   const [agentCommissionConfig, setAgentCommissionConfig] = useState<AgentCommissionConfig>(DEFAULT_AGENT_COMMISSION_CONFIG);
@@ -8142,6 +8172,45 @@ export default function Home() {
           </a>
           <div className="topbar-actions" style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "nowrap", flexShrink: 0, marginLeft: "auto" }}>
             <button
+              type="button"
+              onClick={() => setShowJobsModal(true)}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+                height: "32px",
+                padding: "0 10px",
+                fontSize: "11px",
+                fontWeight: 700,
+                color: "#065f46",
+                background: "#ecfdf5",
+                border: "1px solid #a7f3d0",
+                borderRadius: "7px",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                flexShrink: 0,
+                lineHeight: 1,
+              }}
+              title="Local Job Openings in Hosur & Nearby"
+            >
+              <span>💼</span>
+              <span>Jobs</span>
+              {jobsCount > 0 && (
+                <span
+                  style={{
+                    background: "#16a34a",
+                    color: "#ffffff",
+                    borderRadius: "10px",
+                    padding: "1px 6px",
+                    fontSize: "10px",
+                    fontWeight: 800,
+                  }}
+                >
+                  {jobsCount}
+                </span>
+              )}
+            </button>
+            <button
               className="location-chip"
               onClick={toggleDeviceLocation}
               style={{
@@ -10901,6 +10970,20 @@ export default function Home() {
                   {usedProductsCount > 0 && <span className="mobile-bottom-tab-badge">{usedProductsCount}</span>}
                   {(showUsedProductsModal || showUsedProductChoiceModal || (role === "Account" && portalActiveTab === "Used Products")) && <span className="mobile-bottom-tab-dot" />}
                 </button>
+
+                <button
+                  type="button"
+                  className={`mobile-bottom-tab ${showJobsModal || (role === "Account" && portalActiveTab === "Jobs") ? "active" : ""}`}
+                  onClick={() => {
+                    setShowJobsModal(true);
+                  }}
+                  title="Local Jobs in Hosur - Hiring & Vacancies"
+                >
+                  <span className="tab-icon">💼</span>
+                  <span>Jobs</span>
+                  {jobsCount > 0 && <span className="mobile-bottom-tab-badge">{jobsCount}</span>}
+                  {(showJobsModal || (role === "Account" && portalActiveTab === "Jobs")) && <span className="mobile-bottom-tab-dot" />}
+                </button>
               </>
             )}
 
@@ -11540,6 +11623,16 @@ export default function Home() {
         showNotice={showNotice}
       />
 
+      <JobsDirectoryModal
+        isOpen={showJobsModal}
+        onClose={() => {
+          setShowJobsModal(false);
+          loadJobsCount();
+        }}
+        currentLocality={selectedNeighborhood !== "All Localities" ? selectedNeighborhood : (selectedCity !== "All India" ? selectedCity : "Hosur")}
+        showNotice={showNotice}
+      />
+
       {/* Floating Interactive Notification Toast Popups */}
       {toastQueue.length > 0 && (
         <div className="notification-toasts-container" role="region" aria-label="Notifications" aria-live="polite">
@@ -11653,7 +11746,7 @@ function CustomerPortal({
   const displayEnquiries = (quotes && quotes.length > 0) ? quotes : data.enquiries;
   return <div className="page-content portal-content">
     <div className="portal-header"><div><div className="eyebrow"><span /> YOUR NEIGHBORHOOD ACTIVITY</div><h1>Your local <em>shortlist.</em></h1><p>Saved places, searches and active enquiries with neighborhood businesses.</p></div><button className="primary-button" onClick={onOpenAccount}>Sign in or register ↗</button></div>
-    <div className="portal-tabs">{["Overview", "Orders", "Used Products", "Recent searches", "Enquiries", "Profile details", "Settings"].map((item) => <button key={item} className={tab === item || (item === "Profile details" && tab === "Profile") ? "current" : ""} onClick={() => setTab(item)}>{item}</button>)}</div>
+    <div className="portal-tabs">{["Overview", "Orders", "Used Products", "Jobs", "Recent searches", "Enquiries", "Profile details", "Settings"].map((item) => <button key={item} className={tab === item || (item === "Profile details" && tab === "Profile") ? "current" : ""} onClick={() => setTab(item)}>{item}</button>)}</div>
     {tab === "Overview" && <>
       <div className="metric-grid">
         <Metric
@@ -11669,6 +11762,13 @@ function CustomerPortal({
           delta="Pre-owned marketplace"
           icon="🏷️"
           onClick={() => setTab("Used Products")}
+        />
+        <Metric
+          label="Local Jobs"
+          value="Browse / Apply"
+          delta="Verified jobs in Hosur"
+          icon="💼"
+          onClick={() => setTab("Jobs")}
         />
         <Metric
           label="Recent searches"
@@ -11722,6 +11822,14 @@ function CustomerPortal({
         initialCoordinates={initialCoordinates}
         userName={customerProfile?.fullName || sessionIdentity || ""}
         userPhone={customerProfile?.phone || ""}
+      />
+    )}
+    {tab === "Jobs" && (
+      <JobsPanel
+        onOpenDirectory={() => {
+          window.dispatchEvent(new CustomEvent("neighborly-open-jobs"));
+        }}
+        showNotice={showNotice}
       />
     )}
     {tab === "Recent searches" && <section className="panel tab-panel"><div className="eyebrow">YOUR RECENT SEARCHES</div><h2>Pick up where you left off</h2>{data.recentSearches.length ? data.recentSearches.map((term) => <button className="history-row" key={term} onClick={() => onSearch(term)}><span>⌕</span><strong>{term}</strong><span>Search again →</span></button>) : <EmptyState title="No recent searches" text="Your search history appears here after you choose Find nearby." />}</section>}
@@ -17183,7 +17291,7 @@ function BusinessPortal({
   }, []);
   return <div className="page-content portal-content">
     <div className="portal-header"><div><div className="eyebrow"><span /> FOR LOCAL BUSINESSES</div><h1>Grow with your <em>neighbors.</em></h1><p>Manage your business and connect with nearby customers.</p></div><button className="primary-button" onClick={() => setTab("Profile")}>Manage your business profile</button></div>
-    <div className="portal-tabs">{["Overview", "Profile", "Settings", "Products & services", "Orders", "Enquiries", "Plans & billing", "Ad promotions", "Verification"].map((item) => <button key={item} className={tab === item || (item === "Profile" && (tab === "My business" || tab === "Profile details")) ? "current" : ""} onClick={() => setTab(item)}>{item === "Orders" && pendingPrepCount > 0 ? `Orders (${pendingPrepCount})` : item === "Ad promotions" ? "Ad promotions 📢" : item === "Profile" ? "🏢 Profile" : item === "Settings" ? "⚙️ Settings" : item}</button>)}</div>
+    <div className="portal-tabs">{["Overview", "Profile", "Settings", "Products & services", "Orders", "Job Openings", "Enquiries", "Plans & billing", "Ad promotions", "Verification"].map((item) => <button key={item} className={tab === item || (item === "Profile" && (tab === "My business" || tab === "Profile details")) ? "current" : ""} onClick={() => setTab(item)}>{item === "Orders" && pendingPrepCount > 0 ? `Orders (${pendingPrepCount})` : item === "Ad promotions" ? "Ad promotions 📢" : item === "Job Openings" ? "💼 Job Openings" : item === "Profile" ? "🏢 Profile" : item === "Settings" ? "⚙️ Settings" : item}</button>)}</div>
     {businesses[0]?.verificationStatus && businesses[0]?.verificationStatus !== "Approved" && (
       <div className="onboarding-verification-card" style={{
         background: "#fffbeb",
@@ -17252,6 +17360,13 @@ function BusinessPortal({
           delta={accountOrders.length > 0 ? `${pendingPrepCount} awaiting preparation` : "No pending orders"}
           icon="🛍️"
           onClick={() => setTab("Orders")}
+        />
+        <Metric
+          label="Job Openings"
+          value="Hiring"
+          delta="Post openings & hire staff"
+          icon="💼"
+          onClick={() => setTab("Job Openings")}
         />
         <Metric
           label="Customer enquiries"
@@ -17348,6 +17463,18 @@ function BusinessPortal({
           businessName={accountBusinessName}
           onUpdateStatus={onUpdateOrderStatus || (() => {})}
           onCancelOrder={onCancelOrder}
+        />
+      </section>
+    )}
+    {tab === "Job Openings" && (
+      <section className="panel tab-panel">
+        <BusinessJobsManager
+          businessName={accountBusinessName || businesses[0]?.name || "Local Business"}
+          businessPhone={businessPhoneFor(businesses[0]) || ""}
+          businessWhatsapp={(businesses[0] as any)?.whatsapp || businessPhoneFor(businesses[0]) || ""}
+          businessAddress={businesses[0]?.address ? (typeof businesses[0]?.address === "string" ? businesses[0]?.address : `${businesses[0]?.address.street || ""}, ${businesses[0]?.address.area || ""}, ${businesses[0]?.address.cityTown || ""}`.trim()) : ""}
+          businessLocality={businesses[0]?.address?.area || businesses[0]?.address?.cityTown || "Hosur"}
+          showNotice={showNotice}
         />
       </section>
     )}

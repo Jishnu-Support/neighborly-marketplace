@@ -128,6 +128,7 @@ export function ensureStoresInitialized(): void {
     initFileIfNotExists(resolveStorePath("NEIGHBORLY_QUOTES_STORE", ".neighborly-quotes.json"), "[]");
     initFileIfNotExists(resolveStorePath("NEIGHBORLY_NOTIFICATIONS_STORE", ".neighborly-notifications.json"), "[]");
     initFileIfNotExists(resolveStorePath("NEIGHBORLY_USED_PRODUCTS_STORE", ".neighborly-used-products.json"), "[]");
+    initFileIfNotExists(resolveStorePath("NEIGHBORLY_JOBS_STORE", ".neighborly-jobs.json"), "[]");
     initFileIfNotExists(
       resolveStorePath("NEIGHBORLY_AD_PRICING_STORE", ".neighborly-ad-pricing.json"),
       JSON.stringify(
