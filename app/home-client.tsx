@@ -7921,20 +7921,22 @@ export default function Home() {
               >
                 <img className="brand-logo-img" src="/bizearch-logo.png" alt="Bizearch.in" />
               </a>
-              <button
-                type="button"
-                className="mobile-locality-pill"
-                onClick={() => setMobileLocalitySheetOpen(true)}
-                title="Change city or locality"
-              >
-                <span>📍</span>
-                <span>
-                  {selectedCity === "All India"
-                    ? (selectedNeighborhood && !selectedNeighborhood.startsWith("All") ? selectedNeighborhood : "🇮🇳 All India")
-                    : (selectedNeighborhood && !selectedNeighborhood.startsWith("All") ? `${selectedNeighborhood}, ${selectedCity}` : selectedCity)}
-                </span>
-                <span style={{ fontSize: "8px", opacity: 0.7 }}>▾</span>
-              </button>
+              {role === "Discover" && (
+                <button
+                  type="button"
+                  className="mobile-locality-pill"
+                  onClick={() => setMobileLocalitySheetOpen(true)}
+                  title="Change city or locality"
+                >
+                  <span>📍</span>
+                  <span>
+                    {selectedCity === "All India"
+                      ? (selectedNeighborhood && !selectedNeighborhood.startsWith("All") ? selectedNeighborhood : "🇮🇳 All India")
+                      : (selectedNeighborhood && !selectedNeighborhood.startsWith("All") ? `${selectedNeighborhood}, ${selectedCity}` : selectedCity)}
+                  </span>
+                  <span style={{ fontSize: "8px", opacity: 0.7 }}>▾</span>
+                </button>
+              )}
             </div>
             <div className="mobile-header-right">
               <button
@@ -8250,36 +8252,38 @@ export default function Home() {
                 </span>
               )}
             </button>
-            <button
-              className="location-chip"
-              onClick={toggleDeviceLocation}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-                height: "32px",
-                padding: "0 10px",
-                fontSize: "11px",
-                fontWeight: 600,
-                color: "#2c4835",
-                background: "#f4f8f4",
-                border: "1px solid #d8e5d9",
-                borderRadius: "7px",
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-                flexShrink: 0,
-                lineHeight: 1,
-              }}
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#285536" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
-              <span>{locationEnabled ? "📍 Live GPS" : (currentCustomerProfile?.locality ? `📍 ${currentCustomerProfile.locality}` : "📍 Nearby")}</span>
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#698070" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginLeft: "2px" }}>
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
+            {role === "Discover" && (
+              <button
+                className="location-chip"
+                onClick={toggleDeviceLocation}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  height: "32px",
+                  padding: "0 10px",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  color: "#2c4835",
+                  background: "#f4f8f4",
+                  border: "1px solid #d8e5d9",
+                  borderRadius: "7px",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
+                  lineHeight: 1,
+                }}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#285536" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+                <span>{locationEnabled ? "📍 Live GPS" : (currentCustomerProfile?.locality ? `📍 ${currentCustomerProfile.locality}` : "📍 Nearby")}</span>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#698070" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginLeft: "2px" }}>
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+            )}
             <div className="notification-wrapper" ref={notificationsRef} style={{ position: "relative", display: "inline-flex", alignItems: "center", height: "32px" }}>
               <button
                 className="icon-button notification-button"
