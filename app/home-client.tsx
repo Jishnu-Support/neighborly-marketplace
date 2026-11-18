@@ -11650,6 +11650,8 @@ export default function Home() {
         initialCoordinates={locationCoordinates}
         userName={currentCustomerProfile?.fullName || sessionIdentity || ""}
         userPhone={currentCustomerProfile?.phone || ""}
+        sessionIdentity={sessionIdentity}
+        isCompanyAdmin={role === "Company" || authenticatedPortals.includes("Company")}
         showNotice={showNotice}
       />
 
@@ -11862,6 +11864,8 @@ function CustomerPortal({
         initialCoordinates={initialCoordinates}
         userName={customerProfile?.fullName || sessionIdentity || ""}
         userPhone={customerProfile?.phone || ""}
+        sessionIdentity={sessionIdentity}
+        isCompanyAdmin={false}
       />
     )}
     {tab === "Jobs" && (

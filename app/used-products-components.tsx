@@ -24,6 +24,128 @@ export const USED_PRODUCT_CONDITIONS = [
   "Brand New (Unopened)",
 ] as const;
 
+/* -------------------------------------------------------------------------- */
+/* Listing Ownership & Verification Helpers                                    */
+/* -------------------------------------------------------------------------- */
+
+const MY_USED_PRODUCTS_STORAGE_KEY = "bizearch_my_used_products_v1";
+
+export function getMyUsedProductIds(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(MY_USED_PRODUCTS_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveMyUsedProductId(id: string) {
+  if (typeof window === "undefined" || !id) return;
+  try {
+    const ids = getMyUsedProductIds();
+    if (!ids.includes(id)) {
+      ids.push(id);
+      localStorage.setItem(MY_USED_PRODUCTS_STORAGE_KEY, JSON.stringify(ids));
+    }
+  } catch {
+    // ignore
+  }
+}
+
+export function removeMyUsedProductId(id: string) {
+  if (typeof window === "undefined" || !id) return;
+  try {
+    const ids = getMyUsedProductIds().filter((existingId) => existingId !== id);
+    localStorage.setItem(MY_USED_PRODUCTS_STORAGE_KEY, JSON.stringify(ids));
+  } catch {
+    // ignore
+  }
+}
+
+export function isProductOwner({
+  item,
+  userPhone,
+  userName,
+  sessionIdentity,
+  isCompanyAdmin,
+  localOwnedIds,
+}: {
+  item: UsedProduct;
+  userPhone?: string;
+  userName?: string;
+  sessionIdentity?: string;
+  isCompanyAdmin?: boolean;
+  localOwnedIds?: string[];
+}): boolean {
+  // 1. Company Admins have full moderation permissions
+  if (isCompanyAdmin) return true;
+
+  // 2. Local device ownership check (stored on product posting)
+  const ownedList = localOwnedIds ?? getMyUsedProductIds();
+  if (ownedList.includes(item.id)) return true;
+
+  // 3. Contact phone match (checks 10-digit normalized phone against seller contact)
+  const cleanSellerPhone = (item.sellerPhone || "").replace(/\D/g, "");
+  const cleanSellerWhatsapp = (item.sellerWhatsapp || "").replace(/\D/g, "");
+  const sellerPhone10 = cleanSellerPhone.length >= 10 ? cleanSellerPhone.slice(-10) : cleanSellerPhone;
+  const sellerWa10 = cleanSellerWhatsapp.length >= 10 ? cleanSellerWhatsapp.slice(-10) : cleanSellerWhatsapp;
+
+  const candidatePhones: string[] = [];
+  if (userPhone && userPhone.trim()) candidatePhones.push(userPhone.trim());
+  if (sessionIdentity && !sessionIdentity.includes("@") && sessionIdentity.trim()) {
+    candidatePhones.push(sessionIdentity.trim());
+  }
+
+  for (const p of candidatePhones) {
+    const cleanUser = p.replace(/\D/g, "");
+    const userPhone10 = cleanUser.length >= 10 ? cleanUser.slice(-10) : cleanUser;
+    if (userPhone10.length >= 8) {
+      if ((sellerPhone10 && sellerPhone10 === userPhone10) || (sellerWa10 && sellerWa10 === userPhone10)) {
+        return true;
+      }
+    }
+  }
+
+  // 4. Exact seller name match (non-generic, at least 3 characters)
+  const genericNames = new Set([
+    "customer",
+    "user",
+    "guest",
+    "seller",
+    "buyer",
+    "local seller",
+    "local buyer",
+    "admin",
+    "anonymous",
+    "unknown",
+    "member",
+    "community member",
+  ]);
+
+  const candidateNames: string[] = [];
+  if (userName && userName.trim()) candidateNames.push(userName.trim().toLowerCase());
+  if (sessionIdentity && sessionIdentity.includes("@")) {
+    const emailPrefix = sessionIdentity.split("@")[0].trim().toLowerCase();
+    if (emailPrefix) candidateNames.push(emailPrefix);
+  }
+
+  const sellerNameLower = (item.sellerName || "").trim().toLowerCase();
+  if (sellerNameLower && !genericNames.has(sellerNameLower)) {
+    for (const name of candidateNames) {
+      if (!genericNames.has(name) && name.length >= 3) {
+        if (sellerNameLower === name) {
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
 /**
  * Modal that asks the user whether they want to BUY or SELL used products.
  */
@@ -432,6 +554,10 @@ export function UsedProductSellForm({
       const result = await res.json();
       if (!res.ok || !result.success) {
         throw new Error(result.error || `Could not ${isEditing ? "update" : "post"} used product.`);
+      }
+
+      if (result.product?.id) {
+        saveMyUsedProductId(result.product.id);
       }
 
       if (showNotice) {
@@ -956,6 +1082,8 @@ export function UsedProductsMarketplaceModal({
   initialCoordinates = null,
   userName = "",
   userPhone = "",
+  sessionIdentity = "",
+  isCompanyAdmin = false,
   showNotice,
 }: {
   isOpen: boolean;
@@ -965,6 +1093,8 @@ export function UsedProductsMarketplaceModal({
   initialCoordinates?: Coordinates | null;
   userName?: string;
   userPhone?: string;
+  sessionIdentity?: string;
+  isCompanyAdmin?: boolean;
   showNotice?: (msg: string) => void;
 }) {
   const [mode, setMode] = useState<"buy" | "sell">(initialMode);
@@ -974,6 +1104,7 @@ export function UsedProductsMarketplaceModal({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [selectedProduct, setSelectedProduct] = useState<UsedProduct | null>(null);
+  const [myProductIds, setMyProductIds] = useState<string[]>([]);
 
   // Buyer Location State (Auto-fetch & Map Pin)
   const [buyerCoords, setBuyerCoords] = useState<Coordinates | null>(initialCoordinates || null);
@@ -986,12 +1117,24 @@ export function UsedProductsMarketplaceModal({
     if (isOpen) {
       if (!editingProduct) setMode(initialMode);
       loadProducts();
+      setMyProductIds(getMyUsedProductIds());
       if (initialCoordinates && !buyerCoords) setBuyerCoords(initialCoordinates);
       if (currentLocality && !buyerLocality) setBuyerLocality(currentLocality);
     } else {
       setEditingProduct(null);
     }
   }, [isOpen, initialMode, initialCoordinates, currentLocality]);
+
+  useEffect(() => {
+    const handleUpdated = () => {
+      loadProducts();
+      setMyProductIds(getMyUsedProductIds());
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("neighborly-used-products-updated", handleUpdated);
+      return () => window.removeEventListener("neighborly-used-products-updated", handleUpdated);
+    }
+  }, []);
 
   const loadProducts = async () => {
     setLoading(true);
@@ -1017,6 +1160,8 @@ export function UsedProductsMarketplaceModal({
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete used product.");
+      removeMyUsedProductId(item.id);
+      setMyProductIds(getMyUsedProductIds());
       if (showNotice) showNotice(`✓ "${item.title}" was removed successfully.`);
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("neighborly-used-products-updated"));
@@ -1464,19 +1609,34 @@ export function UsedProductsMarketplaceModal({
                     gap: "16px",
                   }}
                 >
-                  {filteredProducts.map((item) => (
-                    <UsedProductCard
-                      key={item.id}
-                      item={item}
-                      buyerCoords={buyerCoords}
-                      onSelect={() => setSelectedProduct(item)}
-                      onEdit={(prod) => {
-                        setEditingProduct(prod);
-                        setMode("sell");
-                      }}
-                      onDelete={handleDeleteProduct}
-                    />
-                  ))}
+                  {filteredProducts.map((item) => {
+                    const isOwner = isProductOwner({
+                      item,
+                      userPhone,
+                      userName,
+                      sessionIdentity,
+                      isCompanyAdmin,
+                      localOwnedIds: myProductIds,
+                    });
+                    return (
+                      <UsedProductCard
+                        key={item.id}
+                        item={item}
+                        buyerCoords={buyerCoords}
+                        isOwner={isOwner}
+                        onSelect={() => setSelectedProduct(item)}
+                        onEdit={
+                          isOwner
+                            ? (prod) => {
+                                setEditingProduct(prod);
+                                setMode("sell");
+                              }
+                            : undefined
+                        }
+                        onDelete={isOwner ? handleDeleteProduct : undefined}
+                      />
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -1508,6 +1668,14 @@ export function UsedProductsMarketplaceModal({
           product={selectedProduct}
           buyerCoords={buyerCoords}
           buyerLocality={buyerLocality}
+          isOwner={isProductOwner({
+            item: selectedProduct,
+            userPhone,
+            userName,
+            sessionIdentity,
+            isCompanyAdmin,
+            localOwnedIds: myProductIds,
+          })}
           onClose={() => setSelectedProduct(null)}
           onEdit={(prod) => {
             setSelectedProduct(null);
@@ -1543,12 +1711,14 @@ function UsedProductCard({
   item,
   buyerCoords,
   onSelect,
+  isOwner = false,
   onEdit,
   onDelete,
 }: {
   item: UsedProduct;
   buyerCoords?: Coordinates | null;
   onSelect: () => void;
+  isOwner?: boolean;
   onEdit?: (item: UsedProduct) => void;
   onDelete?: (item: UsedProduct) => void;
 }) {
@@ -1650,8 +1820,8 @@ function UsedProductCard({
           {item.condition}
         </span>
 
-        {/* Seller Actions: Edit & Remove */}
-        {(onEdit || onDelete) && (
+        {/* Seller Actions: Edit & Remove (ONLY visible to verified listing owner) */}
+        {isOwner && (onEdit || onDelete) && (
           <div
             style={{
               position: "absolute",
@@ -1855,6 +2025,7 @@ export function UsedProductDetailModal({
   buyerCoords = null,
   buyerLocality = "Hosur",
   onClose,
+  isOwner = false,
   onEdit,
   showNotice,
 }: {
@@ -1862,6 +2033,7 @@ export function UsedProductDetailModal({
   buyerCoords?: Coordinates | null;
   buyerLocality?: string;
   onClose: () => void;
+  isOwner?: boolean;
   onEdit?: (product: UsedProduct) => void;
   showNotice?: (msg: string) => void;
 }) {
@@ -1923,6 +2095,7 @@ export function UsedProductDetailModal({
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to remove product.");
+      removeMyUsedProductId(product.id);
       if (showNotice) showNotice(`✓ Used product "${product.title}" was removed successfully.`);
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("neighborly-used-products-updated"));
@@ -2240,40 +2413,63 @@ export function UsedProductDetailModal({
             </div>
           </div>
 
-          {/* Seller Listing Controls: Edit & Remove */}
-          <div
-            style={{
-              marginTop: "16px",
-              padding: "14px 16px",
-              background: "#f8fafc",
-              border: "1px dashed #cbd5e1",
-              borderRadius: "12px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: "10px",
-            }}
-          >
-            <div>
-              <div style={{ fontSize: "11px", fontWeight: 700, color: "#334155", textTransform: "uppercase" }}>
-                SELLER LISTING CONTROLS
+          {/* Seller Listing Controls: Edit & Remove (ONLY shown to verified seller) */}
+          {isOwner && (
+            <div
+              style={{
+                marginTop: "16px",
+                padding: "14px 16px",
+                background: "#f8fafc",
+                border: "1px dashed #cbd5e1",
+                borderRadius: "12px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: "10px",
+              }}
+            >
+              <div>
+                <div style={{ fontSize: "11px", fontWeight: 700, color: "#334155", textTransform: "uppercase" }}>
+                  SELLER LISTING CONTROLS
+                </div>
+                <div style={{ fontSize: "12px", color: "#64748b", marginTop: "2px" }}>
+                  Need to update details, price or remove this listing from Bizearch?
+                </div>
               </div>
-              <div style={{ fontSize: "12px", color: "#64748b", marginTop: "2px" }}>
-                Need to update details, price or remove this listing from Bizearch?
-              </div>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-              {onEdit && (
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                {onEdit && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onEdit(product);
+                    }}
+                    style={{
+                      padding: "8px 14px",
+                      background: "#2563eb",
+                      color: "#ffffff",
+                      border: "none",
+                      borderRadius: "8px",
+                      fontSize: "12px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "5px",
+                      boxShadow: "0 2px 6px rgba(37, 99, 235, 0.25)",
+                    }}
+                  >
+                    ✏️ Edit Listing
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={() => {
-                    onClose();
-                    onEdit(product);
-                  }}
+                  onClick={handleDeleteListing}
+                  disabled={deleting}
                   style={{
                     padding: "8px 14px",
-                    background: "#2563eb",
+                    background: "#dc2626",
                     color: "#ffffff",
                     border: "none",
                     borderRadius: "8px",
@@ -2283,35 +2479,14 @@ export function UsedProductDetailModal({
                     display: "inline-flex",
                     alignItems: "center",
                     gap: "5px",
-                    boxShadow: "0 2px 6px rgba(37, 99, 235, 0.25)",
+                    boxShadow: "0 2px 6px rgba(220, 38, 38, 0.25)",
                   }}
                 >
-                  ✏️ Edit Listing
+                  {deleting ? "Removing Listing..." : "🗑️ Remove My Listing"}
                 </button>
-              )}
-              <button
-                type="button"
-                onClick={handleDeleteListing}
-                disabled={deleting}
-                style={{
-                  padding: "8px 14px",
-                  background: "#dc2626",
-                  color: "#ffffff",
-                  border: "none",
-                  borderRadius: "8px",
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "5px",
-                  boxShadow: "0 2px 6px rgba(220, 38, 38, 0.25)",
-                }}
-              >
-                {deleting ? "Removing Listing..." : "🗑️ Remove My Listing"}
-              </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
@@ -2329,6 +2504,8 @@ export function UsedProductsPanel({
   initialCoordinates = null,
   userName = "",
   userPhone = "",
+  sessionIdentity = "",
+  isCompanyAdmin = false,
   onOpenMarketplace,
 }: {
   onOpenSell?: () => void;
@@ -2337,6 +2514,8 @@ export function UsedProductsPanel({
   initialCoordinates?: Coordinates | null;
   userName?: string;
   userPhone?: string;
+  sessionIdentity?: string;
+  isCompanyAdmin?: boolean;
   onOpenMarketplace?: (mode: "buy" | "sell") => void;
 }) {
   const [products, setProducts] = useState<UsedProduct[]>([]);
@@ -2345,6 +2524,7 @@ export function UsedProductsPanel({
   const [selectedProduct, setSelectedProduct] = useState<UsedProduct | null>(null);
   const [isSelling, setIsSelling] = useState(false);
   const [editingProduct, setEditingProduct] = useState<UsedProduct | null>(null);
+  const [myProductIds, setMyProductIds] = useState<string[]>([]);
 
   const loadPanelProducts = useCallback(async () => {
     try {
@@ -2364,8 +2544,10 @@ export function UsedProductsPanel({
 
   useEffect(() => {
     loadPanelProducts();
+    setMyProductIds(getMyUsedProductIds());
     const handleUpdated = () => {
       loadPanelProducts();
+      setMyProductIds(getMyUsedProductIds());
     };
     if (typeof window !== "undefined") {
       window.addEventListener("neighborly-used-products-updated", handleUpdated);
@@ -2387,6 +2569,8 @@ export function UsedProductsPanel({
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete used product.");
+      removeMyUsedProductId(item.id);
+      setMyProductIds(getMyUsedProductIds());
       if (showNotice) showNotice(`✓ "${item.title}" was removed successfully.`);
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("neighborly-used-products-updated"));
@@ -2515,24 +2699,47 @@ export function UsedProductsPanel({
             </div>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "14px" }}>
-              {filtered.map((item) => (
-                <UsedProductCard
-                  key={item.id}
-                  item={item}
-                  onSelect={() => setSelectedProduct(item)}
-                  onEdit={(prod) => {
-                    setEditingProduct(prod);
-                    setIsSelling(true);
-                  }}
-                  onDelete={handleDeleteProduct}
-                />
-              ))}
+              {filtered.map((item) => {
+                const isOwner = isProductOwner({
+                  item,
+                  userPhone,
+                  userName,
+                  sessionIdentity,
+                  isCompanyAdmin,
+                  localOwnedIds: myProductIds,
+                });
+                return (
+                  <UsedProductCard
+                    key={item.id}
+                    item={item}
+                    isOwner={isOwner}
+                    onSelect={() => setSelectedProduct(item)}
+                    onEdit={
+                      isOwner
+                        ? (prod) => {
+                            setEditingProduct(prod);
+                            setIsSelling(true);
+                          }
+                        : undefined
+                    }
+                    onDelete={isOwner ? handleDeleteProduct : undefined}
+                  />
+                );
+              })}
             </div>
           )}
 
           {selectedProduct && (
             <UsedProductDetailModal
               product={selectedProduct}
+              isOwner={isProductOwner({
+                item: selectedProduct,
+                userPhone,
+                userName,
+                sessionIdentity,
+                isCompanyAdmin,
+                localOwnedIds: myProductIds,
+              })}
               onClose={() => setSelectedProduct(null)}
               onEdit={(prod) => {
                 setSelectedProduct(null);
