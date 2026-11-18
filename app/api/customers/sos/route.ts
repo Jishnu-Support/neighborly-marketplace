@@ -55,7 +55,7 @@ export async function POST(request: Request) {
   }
 
   let customerName = typeof body.customerName === "string" ? body.customerName.trim().slice(0, 100) : "";
-  if (!customerName) customerName = "Hosur Resident / Mobile Visitor";
+  if (!customerName) customerName = "Emergency Caller";
 
   let customerPhone = digits(body.customerPhone);
   if (!customerPhone || customerPhone.length < 8) {

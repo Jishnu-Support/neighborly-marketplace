@@ -67,8 +67,8 @@ export async function recordPlatformTransaction(
       data.type === "subscription" ? "Business Subscription" :
       "Manual Platform Settlement"
     ),
-    businessName: data.businessName || "Hosur Merchant Partner",
-    customerName: data.customerName || "Hosur Customer / Payer",
+    businessName: data.businessName || "Merchant Partner",
+    customerName: data.customerName || "Customer / Payer",
     customerPhone: data.customerPhone || "",
     customerId: data.customerId || `CUST-HSR-${Math.floor(10000 + Math.random() * 90000)}`,
     itemSummary: data.itemSummary || "Direct Platform Transaction Settlement",

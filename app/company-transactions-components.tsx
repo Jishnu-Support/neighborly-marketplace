@@ -191,7 +191,7 @@ export function CompanyTransactionReceiptModal({
                 PAYER / CUSTOMER
               </span>
               <strong style={{ display: "block", fontSize: "13px", color: "#163a23", marginTop: "2px" }}>
-                {transaction.customerName || "Customer in Hosur"}
+                {transaction.customerName || "Customer"}
               </strong>
               <div style={{ fontSize: "11px", color: "#56725f", marginTop: "2px" }}>
                 {transaction.customerPhone ? `Contact: ${transaction.customerPhone}` : ""}
@@ -1061,7 +1061,7 @@ export function CompanyTransactionsManager({
                       🏢 {t.businessName}
                     </strong>
                     <div style={{ fontSize: "10.5px", color: "#54735e", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                      👤 {t.customerName || "Customer in Hosur"}
+                      👤 {t.customerName || "Customer"}
                     </div>
                   </div>
 

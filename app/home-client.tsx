@@ -3907,26 +3907,66 @@ export default function Home() {
 
   function getViewerInfo() {
     let customerId = "";
-    let viewerName = "Hosur Visitor";
+    let viewerName = "";
     let viewerPhone = "";
-    let viewerRole = "Customer";
-    let locality = "Hosur, Tamil Nadu";
+    let viewerRole = role === "Business" ? "Business" : role === "Company" ? "Company" : "Customer";
+    let locality = selectedNeighborhood && !selectedNeighborhood.startsWith("All")
+      ? `${selectedNeighborhood}, ${selectedCity}`
+      : selectedCity || "Hosur, Tamil Nadu";
+
+    const demoNames = [
+      "Murali",
+      "Keerthana B",
+      "Keerthana",
+      "G Venkatesan Sir",
+      "Dharshan Ramesh",
+      "Radha Krishnan",
+      "Hosur Visitor",
+      "Hosur Resident / Visitor",
+      "Hosur Resident / Mobile Visitor",
+      "Demo",
+    ];
+    const demoPhones = ["9043022219", "9962773219", "9962775630", "9876543210"];
+
+    // 1. Check logged-in customer profile
+    if (currentCustomerProfile?.fullName && !demoNames.includes(currentCustomerProfile.fullName.trim())) {
+      viewerName = currentCustomerProfile.fullName.trim();
+    }
+    if (currentCustomerProfile?.phone && !demoPhones.some((p) => (currentCustomerProfile.phone || "").replace(/\D/g, "").includes(p))) {
+      viewerPhone = `•••• ${(currentCustomerProfile.phone || "").slice(-4)}`;
+      customerId = `CUST-${(currentCustomerProfile.phone || "").replace(/\D/g, "").slice(-5)}`;
+    }
+    if (currentCustomerProfile?.locality) {
+      locality = currentCustomerProfile.locality;
+    }
+
+    // 2. Check logged-in business profile
+    if (role === "Business" && currentBusinessRecord) {
+      if (currentBusinessRecord.name) viewerName = currentBusinessRecord.name;
+      if (currentBusinessRecord.phone) viewerPhone = `•••• ${currentBusinessRecord.phone.slice(-4)}`;
+      viewerRole = "Business";
+    }
+
+    // 3. Fallback to sessionIdentity
+    if (!viewerName && sessionIdentity && !demoNames.includes(sessionIdentity)) {
+      viewerName = sessionIdentity.includes("@") ? sessionIdentity.split("@")[0] : sessionIdentity;
+    }
 
     try {
-      const demoPhones = ["9043022219", "9962773219", "9962775630", "9876543210"];
-      const demoNames = ["Murali", "Keerthana B", "G Venkatesan Sir", "Dharshan Ramesh", "Radha Krishnan"];
-
-      const stored = window.localStorage.getItem(profileStorageKey("Account"));
+      // 4. Check stored local profile and sanitize any legacy demo / visitor names
+      const acctKey = profileStorageKey("Account");
+      const stored = window.localStorage.getItem(acctKey);
       if (stored) {
         const parsed = JSON.parse(stored);
         const phone = (parsed.phone || "").replace(/\D/g, "");
         if (demoPhones.some((p) => phone.includes(p)) || (parsed.fullName && demoNames.includes(parsed.fullName))) {
-          window.localStorage.removeItem(profileStorageKey("Account"));
+          parsed.fullName = "";
+          window.localStorage.setItem(acctKey, JSON.stringify(parsed));
         } else {
-          if (parsed.fullName) viewerName = parsed.fullName;
-          if (parsed.phone) {
+          if (!viewerName && parsed.fullName) viewerName = parsed.fullName;
+          if (!viewerPhone && parsed.phone) {
             viewerPhone = `•••• ${parsed.phone.slice(-4)}`;
-            customerId = `CUST-HSR-${parsed.phone.replace(/\D/g, "").slice(-5)}`;
+            if (!customerId) customerId = `CUST-${parsed.phone.replace(/\D/g, "").slice(-5)}`;
           }
           if (parsed.locality) locality = parsed.locality;
         }
@@ -3939,10 +3979,10 @@ export default function Home() {
         if (demoPhones.some((p) => regPhone.includes(p)) || (parsedReg.name && demoNames.includes(parsedReg.name))) {
           window.localStorage.removeItem("bizearch_registered_user");
         } else {
-          if (parsedReg.name) viewerName = parsedReg.name;
-          if (parsedReg.phone) {
+          if (!viewerName && parsedReg.name) viewerName = parsedReg.name;
+          if (!viewerPhone && parsedReg.phone) {
             viewerPhone = `•••• ${parsedReg.phone.slice(-4)}`;
-            if (!customerId) customerId = `CUST-HSR-${parsedReg.phone.replace(/\D/g, "").slice(-5)}`;
+            if (!customerId) customerId = `CUST-${parsedReg.phone.replace(/\D/g, "").slice(-5)}`;
           }
         }
       }
@@ -3950,13 +3990,17 @@ export default function Home() {
       if (!customerId) {
         let devCustId = window.localStorage.getItem("bizearch_device_customer_id");
         if (!devCustId) {
-          devCustId = `CUST-HSR-${Math.floor(10000 + Math.random() * 90000)}`;
+          devCustId = `GUEST-${Math.floor(10000 + Math.random() * 90000)}`;
           window.localStorage.setItem("bizearch_device_customer_id", devCustId);
         }
         customerId = devCustId;
       }
     } catch {
-      customerId = `CUST-HSR-${Math.floor(10000 + Math.random() * 90000)}`;
+      customerId = `GUEST-${Math.floor(10000 + Math.random() * 90000)}`;
+    }
+
+    if (!viewerName) {
+      viewerName = "Guest User";
     }
 
     const now = new Date();
@@ -3964,7 +4008,7 @@ export default function Home() {
     const viewedTime = now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true });
 
     const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
-    const device = isMobile ? "Mobile Browser (Hosur)" : "Desktop Browser (Hosur)";
+    const device = isMobile ? "Mobile Browser" : "Desktop Browser";
     return { customerId, viewerName, viewerPhone, viewerRole, viewedDate, viewedTime, locality, device };
   }
 
@@ -4180,7 +4224,7 @@ export default function Home() {
               state: customer.state || "Tamil Nadu",
               pincode: customer.pincode || "635109",
               address: customer.address || "",
-              bio: "Hosur resident & verified community member.",
+              bio: "Verified community member.",
               avatarInitials: (customer.name ? customer.name[0] : "C").toUpperCase(),
               avatarBg: "#285536",
               emergencyPhones: customer.emergencyPhones || ["", ""],
@@ -4196,7 +4240,13 @@ export default function Home() {
             try {
               const localRaw = window.localStorage.getItem(profileStorageKey("Account"));
               if (localRaw) {
-                setCurrentCustomerProfile(JSON.parse(localRaw));
+                const parsed = JSON.parse(localRaw);
+                const demoNames = ["Murali", "Keerthana B", "Keerthana", "G Venkatesan Sir", "Dharshan Ramesh", "Radha Krishnan", "Hosur Visitor", "Hosur Resident / Visitor", "Hosur Resident / Mobile Visitor", "Demo"];
+                if (parsed.fullName && demoNames.includes(parsed.fullName)) {
+                  parsed.fullName = "";
+                  window.localStorage.setItem(profileStorageKey("Account"), JSON.stringify(parsed));
+                }
+                setCurrentCustomerProfile(parsed);
               }
             } catch {}
           }
@@ -5030,7 +5080,9 @@ export default function Home() {
       }
     }
 
-    const actorName = currentCustomerProfile?.fullName || (role === "Company" ? (companyAccessLevel === "Super Admin" ? "Super Admin" : "Company Admin") : (role === "Business" ? "Business User" : (role === "Agent" ? "Field Agent" : (sessionIdentity || "Guest Visitor"))));
+    const demoActorNames = ["Murali", "Keerthana B", "Keerthana", "G Venkatesan Sir", "Dharshan Ramesh", "Radha Krishnan", "Hosur Visitor", "Hosur Resident / Visitor", "Hosur Resident / Mobile Visitor", "Demo"];
+    const validProfileName = currentCustomerProfile?.fullName && !demoActorNames.includes(currentCustomerProfile.fullName.trim()) ? currentCustomerProfile.fullName.trim() : "";
+    const actorName = validProfileName || (role === "Company" ? (companyAccessLevel === "Super Admin" ? "Super Admin" : "Company Admin") : (role === "Business" ? "Business User" : (role === "Agent" ? "Field Agent" : (sessionIdentity || "Guest User"))));
     const actorPhone = currentCustomerProfile?.phone || (role === "Account" ? sessionIdentity : undefined);
     const actorRole = role === "Company" ? (companyAccessLevel === "Super Admin" ? "Super Admin" : "Admin") : (role === "Business" ? "Business" : (role === "Agent" ? "Agent" : "Customer"));
 
@@ -8014,7 +8066,7 @@ export default function Home() {
                     <div style={{ fontSize: "11px", color: "#64748b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {(authenticatedPortals.includes("Company") || role === "Company")
                         ? (sessionIdentity || "admin@bizearch.in")
-                        : (currentCustomerProfile?.email || sessionIdentity || "Hosur Neighborhood Member")}
+                        : (currentCustomerProfile?.email || sessionIdentity || "Customer Account")}
                     </div>
                   </div>
 
@@ -19941,7 +19993,7 @@ function ProfileAndSettingsPanel({
             state: c.state || "Tamil Nadu",
             pincode: c.pincode || "635109",
             address: c.address || combined,
-            bio: c.bio || "Hosur resident & verified community member.",
+            bio: c.bio || "Verified community member.",
             avatarInitials: (c.name ? c.name[0] : "C").toUpperCase(),
             avatarBg: "#285536",
             emergencyPhones: c.emergencyPhones || ["", ""],
@@ -20028,9 +20080,11 @@ function ProfileAndSettingsPanel({
       const storedProfile = window.localStorage.getItem(profileStorageKey(role, identity));
       if (storedProfile) {
         const parsed = JSON.parse(storedProfile) as Partial<MemberProfile>;
+        const demoNames = ["Murali", "Keerthana B", "Keerthana", "G Venkatesan Sir", "Dharshan Ramesh", "Radha Krishnan", "Hosur Visitor", "Hosur Resident / Visitor", "Hosur Resident / Mobile Visitor", "Demo"];
+        const cleanFullName = parsed.fullName && !demoNames.includes(parsed.fullName.trim()) ? parsed.fullName.trim() : "";
         setProfile((curr) => ({
           ...curr,
-          fullName: curr.fullName || parsed.fullName || (role === "Company" && identity ? identity.split("@")[0].replace(/[._-]+/g, " ") : ""),
+          fullName: curr.fullName || cleanFullName || (role === "Company" && identity ? identity.split("@")[0].replace(/[._-]+/g, " ") : ""),
           phone: curr.phone || parsed.phone || "",
           email: curr.email || parsed.email || (identity || ""),
           doorNo: curr.doorNo || parsed.doorNo || "",
@@ -20041,8 +20095,8 @@ function ProfileAndSettingsPanel({
           state: curr.state || parsed.state || "Tamil Nadu",
           pincode: curr.pincode || parsed.pincode || "635109",
           address: curr.address || parsed.address || "",
-          bio: curr.bio || parsed.bio || "Hosur resident & verified community member.",
-          avatarInitials: curr.avatarInitials || parsed.avatarInitials || (parsed.fullName ? parsed.fullName[0].toUpperCase() : "U"),
+          bio: curr.bio || (parsed.bio && !parsed.bio.includes("Hosur resident") ? parsed.bio : "Verified community member."),
+          avatarInitials: curr.avatarInitials || parsed.avatarInitials || (cleanFullName ? cleanFullName[0].toUpperCase() : "U"),
           avatarBg: curr.avatarBg || parsed.avatarBg || "#285536",
           emergencyPhones: curr.emergencyPhones || [parsed.emergencyPhones?.[0] || "", parsed.emergencyPhones?.[1] || ""],
           emergencyNames: curr.emergencyNames || [parsed.emergencyNames?.[0] || "", parsed.emergencyNames?.[1] || ""],
@@ -30015,7 +30069,7 @@ function Dialog({
           const c = data.customer;
           const p1 = c.emergencyPhones?.[0] || "";
           const p2 = c.emergencyPhones?.[1] || "";
-          const sName = c.name || customerProfile?.fullName || "Keerthana";
+          const sName = c.name || customerProfile?.fullName || "";
           const sPhone = c.phone || customerProfile?.phone || "";
           setEmergencyProfile({
             customerName: sName,
@@ -30082,7 +30136,7 @@ function Dialog({
     setQuickEmergencySaving(true);
     setSosError("");
     const newEmergencyPhones: [string, string] = [quickEmergencyPhone.trim(), emergencyProfile.emergencyPhones[1] || ""];
-    const effectiveSelfName = quickEmergencySelfName.trim() || emergencyProfile.customerName || customerProfile?.fullName || "Keerthana";
+    const effectiveSelfName = quickEmergencySelfName.trim() || emergencyProfile.customerName || customerProfile?.fullName || "";
     const effectiveSelfPhone = quickEmergencySelfPhone.trim() || emergencyProfile.customerPhone || customerProfile?.phone || (sessionIdentity && !sessionIdentity.includes("@") ? sessionIdentity : "");
 
     const updated = {
@@ -30144,7 +30198,7 @@ function Dialog({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          customerName: prof.customerName || "Hosur Resident / Visitor",
+          customerName: prof.customerName || customerProfile?.fullName || (sessionIdentity && !sessionIdentity.includes("@") ? sessionIdentity : "Citizen"),
           customerPhone: prof.customerPhone || "18001024589",
           emergencyPhones: prof.emergencyPhones.filter(Boolean).length ? prof.emergencyPhones : ["112", "108"],
           requestKey: sosRequestKey.current,
@@ -30197,7 +30251,7 @@ function Dialog({
     const safeType = selectedEmergencyType || "general";
     if (!selectedEmergencyType) setSelectedEmergencyType("general");
 
-    const effectiveName = emergencyProfile.customerName.trim() || "Hosur Resident / Visitor";
+    const effectiveName = emergencyProfile.customerName.trim() || customerProfile?.fullName || (sessionIdentity && !sessionIdentity.includes("@") ? sessionIdentity : "Citizen");
     const effectivePhone = emergencyProfile.customerPhone.trim() || "18001024589";
     const effectiveP1 = emergencyDigits[0] && emergencyDigits[0].length >= 8 ? emergencyDigits[0] : "112";
     const effectiveP2 = emergencyDigits[1] && emergencyDigits[1].length >= 8 && emergencyDigits[1] !== effectiveP1 ? emergencyDigits[1] : "108";
@@ -30208,10 +30262,13 @@ function Dialog({
     };
 
     try {
-      window.localStorage.setItem(
-        profileStorageKey(profileRole, profileIdentity),
-        JSON.stringify({ ...emptyMemberProfile, fullName: effectiveName, phone: effectivePhone, emergencyPhones: [effectiveP1, effectiveP2] })
-      );
+      const demoNames = ["Murali", "Keerthana B", "Keerthana", "G Venkatesan Sir", "Dharshan Ramesh", "Radha Krishnan", "Hosur Visitor", "Hosur Resident / Visitor", "Hosur Resident / Mobile Visitor", "Citizen", "Demo"];
+      if (effectiveName && !demoNames.includes(effectiveName)) {
+        window.localStorage.setItem(
+          profileStorageKey(profileRole, profileIdentity),
+          JSON.stringify({ ...emptyMemberProfile, fullName: effectiveName, phone: effectivePhone, emergencyPhones: [effectiveP1, effectiveP2] })
+        );
+      }
     } catch { /* SOS submission can still proceed if local storage is unavailable. */ }
 
     if (!navigator.geolocation) {
@@ -31444,7 +31501,7 @@ function Dialog({
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "11.5px", marginBottom: "3px" }}>
                     <span style={{ color: "#64748b" }}>Distressed Person:</span>
                     <strong style={{ color: "#0f172a" }}>
-                      {emergencyProfile.customerName || quickEmergencySelfName || customerProfile?.fullName || "Keerthana"}
+                      {emergencyProfile.customerName || quickEmergencySelfName || customerProfile?.fullName || "Not specified"}
                     </strong>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "11.5px", marginBottom: "3px" }}>
