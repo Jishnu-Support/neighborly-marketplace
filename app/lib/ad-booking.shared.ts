@@ -431,7 +431,16 @@ export function resolveScheduledAds(
 
   const cleanQuery = targeting?.searchQuery?.trim().toLowerCase() || "";
   const activeNeighborhood = targeting?.selectedNeighborhood || "All Hosur";
-  const hasLocalityFilter = activeNeighborhood !== "All Hosur";
+  const isAllNeighborhood =
+    !activeNeighborhood ||
+    activeNeighborhood === "All Hosur" ||
+    activeNeighborhood === "All Localities" ||
+    activeNeighborhood === "All India" ||
+    activeNeighborhood.startsWith("All") ||
+    activeNeighborhood.toLowerCase().includes("all india") ||
+    activeNeighborhood.toLowerCase().includes("any city") ||
+    activeNeighborhood.toLowerCase().includes("all localities");
+  const hasLocalityFilter = !isAllNeighborhood;
   const hasGpsFilter = Boolean(targeting?.locationEnabled && targeting?.locationCoordinates);
   const radius = targeting?.radiusKm || 5;
   const businesses = targeting?.businesses || [];
@@ -638,11 +647,14 @@ export function resolveScheduledAds(
 
   let eligibleBaseImages = evaluatedBaseImages;
   if (cleanQuery) {
-    eligibleBaseImages = eligibleBaseImages.filter((x) => x.isSearchMatch);
+    const searchMatches = eligibleBaseImages.filter((x) => x.isSearchMatch);
+    if (searchMatches.length > 0) {
+      eligibleBaseImages = searchMatches;
+    }
   }
   if (hasLocalityFilter) {
     const locOnly = eligibleBaseImages.filter((x) => x.isLocMatch);
-    if (locOnly.length > 0 || !cleanQuery) {
+    if (locOnly.length > 0) {
       eligibleBaseImages = locOnly;
     }
   }
@@ -732,7 +744,9 @@ export function resolveScheduledAds(
 
   const finalVideoAds = sortedVideoAds.length > 0 ? sortedVideoAds : (baseConfig.videoAd ? [baseConfig.videoAd] : []);
 
-  const finalImageAds = [...extraImages, ...eligibleBaseImages.map((x) => x.ad)];
+  const candidateImageAds = [...extraImages, ...eligibleBaseImages.map((x) => x.ad)];
+  const fallbackImages = Array.isArray(baseConfig.imageAds) && baseConfig.imageAds.length > 0 ? baseConfig.imageAds : [];
+  const finalImageAds = candidateImageAds.length > 0 ? candidateImageAds : fallbackImages;
 
   const isSearchTargeted = Boolean(cleanQuery);
   const isLocationTargeted = Boolean(hasLocalityFilter || hasGpsFilter);
